@@ -1,0 +1,124 @@
+version: '3'
+services:
+  mongo1:
+    hostname: mongo1
+    container_name: mongo1
+    image: mongo
+    ports:
+      - 27001:27017
+    volumes:
+      - ./dockerize/mongo_setup.sh:/scripts/mongo_setup.sh
+    restart: always
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
+    healthcheck:
+      test: /scripts/mongo_setup.sh
+  mongo2:
+    container_name: mongo2
+    image: mongo
+    ports:
+      - 27002:27017
+    restart: always
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo1
+      - mongo2
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo1
+      ME_CONFIG_MONGODB_PORT: 27017
+#      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+#      ME_CONFIG_MONGODB_ADMINUSERNAME: hcmute
+#      ME_CONFIG_MONGODB_ADMINPASSWORD: hcmute
+      ME_CONFIG_BASICAUTH_USERNAME: hcmute
+      ME_CONFIG_BASICAUTH_PASSWORD: hcmute
+  #      docker exec -it mongodb bash
+  #      mongosh -u hcmute -p hcmute --authenticationDatabase admin
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    links:
+      - zookeeper:zookeeper
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+      # docker exec -it kafka /bin/sh
+      # cd opt/kafka_2.13-2.8.1/bin
+  redis:
+    image: redis:6.0.7
+    container_name: redis
+    hostname: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  redis_insight:
+    image: redislabs/redisinsight:1.14.0
+    container_name: redis_insight
+    restart: always
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+
+#  elasticsearch:
+#    container_name: elasticsearch
+#    image: elasticsearch:8.7.1
+#    ports:
+#      - 9200:9200
+#    environment:
+#      - discovery.type=single-node
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+
+  kibana:
+    container_name: kibana
+    image: kibana:8.8.0
+    ports:
+      - 5601:5601
+
+#  spring-app:
+#    container_name: spring-app
+#    build:
+#      context: .
+#      dockerfile: ./dockerize/Dockerfile
+##    image: on611/drinks-api:1.0.0
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - mongo1
+#      - mongo2
+#      - redis
+#      - kafka
+#    environment:
+#      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+#      REDIS_HOST: redis

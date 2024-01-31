@@ -1,0 +1,96 @@
+package com.hcmute.shopfee.entity.order;
+
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.BranchEntity;
+import com.hcmute.shopfee.entity.TransactionEntity;
+import com.hcmute.shopfee.entity.UserEntity;
+import com.hcmute.shopfee.entity.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.enums.OrderType;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.util.Date;
+import java.util.List;
+
+import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+
+@Entity
+@Table(name = "order_bill")
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public class OrderBillEntity {
+    @Id
+    @GenericGenerator(name = "order_bill_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "order_bill_id")
+    private String id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private UserEntity user;
+
+//    @Indexed(unique = true)
+//    private String code;
+
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "shipping_fee")
+    private Long shippingFee;
+
+    @Column(name = "total", nullable = false)
+    private Long total;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false)
+    private OrderType orderType;
+
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    @JsonBackReference
+    private BranchEntity branch;
+
+    @Column(name = "receive_time")
+    private Date receiveTime;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreatedDate
+    @Column(name = "created_at")
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @LastModifiedDate
+    @Column(name = "update_at")
+    private Date updateAt;
+    // =================================================
+
+    @OneToMany(mappedBy = "orderBill")
+    @JsonManagedReference
+    private List<OrderEventEntity> orderEventList;
+
+    @OneToMany(mappedBy = "orderBill")
+    @JsonManagedReference
+    private List<OrderItemEntity> orderItemList;
+
+    @OneToMany(mappedBy = "orderBill")
+    @JsonManagedReference
+    private List<CouponUsedEntity> couponUsedList;
+
+    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
+    @JsonManagedReference
+    private ShippingInformationEntity shippingInformation;
+
+    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
+    @JsonManagedReference
+    private TransactionEntity transaction;
+}

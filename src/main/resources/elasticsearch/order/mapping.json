@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "code": {
+      "type": "keyword"
+    },
+    "customerCode": {
+      "type": "keyword"
+    },
+    "email": {
+      "type": "keyword"
+    },
+    "phoneNumber": {
+      "type": "keyword"
+    },
+    "phoneNumberReceiver": {
+      "type": "keyword"
+    }
+  }
+}

@@ -1,0 +1,131 @@
+spring:
+  #environment
+  profiles:
+    active: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SQL_URL:jdbc:mysql://localhost:3306/shopfee}
+    username: ${SQL_USERNAME:root}
+    password: ${SQL_PASSWORD:0339930201An.}
+  jpa:
+    show-sql: true
+    hibernate.ddl-auto: update
+    properties.hibernate:
+      dialect: org.hibernate.dialect.MySQLDialect
+      format_sql: true
+
+  #mail
+  mail:
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_ID}
+    password: ${EMAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        mime:
+          charset: UTF
+        smtp:
+          writetimeout: 10000
+          connectiontimeout: 10000
+          timeout: 10000
+          auth: true
+          starttls:
+            enabled: true
+            required: true
+    verify:
+      host: ${VERIFY_EMAIL_HOST}
+  # kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}
+    producer:
+      acks: -1
+#      retries: 1
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties.[enable.idempotence]: true
+      properties.[max.in.flight.requests.per.connection]: 5
+
+    consumer:
+#      auto-offset-reset: earliest
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}
+      group-id: group-01
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.hcmute.shopfee.dto.*
+  cache:
+    type: redis
+
+  servlet:
+    multipart:
+      file-size-threshold: 2KB
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  main:
+    allow-bean-definition-overriding: true
+
+elasticsearch:
+  index.name: order
+
+# swagger
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    configUrl: /openapi/swagger-config
+    url: /openapi
+  api-docs.path: /openapi
+
+# security
+security:
+  jwt:
+    accessTokenKey: ${ACCESS_TOKEN_KEY}
+    refreshTokenKey: ${REFRESH_TOKEN_KEY}
+
+#port server
+server:
+  port: ${SERVER_PORT}
+
+
+
+#logging
+#%d{HH:mm:ss} [%thread]
+logging:
+  level:
+    tracer: TRACE
+    org:
+      elasticsearch:
+        index:
+          search:
+            slowlog:
+              query: INFO
+      springframework:
+        security: TRACE
+        data:
+          mongodb.core:
+            MongoTemplate: DEBUG
+            ReactiveMongoTemplate: DEBUG
+          elasticsearch:
+            core: DEBUG
+#          client:
+#            WIRE: trace
+  pattern:
+    console: '[%-5level] %d{HH:mm:ss} %logger{36} - %msg%n'
+
+# image cloud
+cloudinary:
+  cloud_name: ${CLOUDINARY_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}
+
+#  module-name: vna
+#  api-version: 1.0.0
+
+app:
+  username_admin: ${APP_USERNAME_ADMIN}
+  password_admin: ${APP_PASSWORD_ADMIN}
+  redis_host: ${REDIS_HOST}
+  redis_port: ${REDIS_PORT}
