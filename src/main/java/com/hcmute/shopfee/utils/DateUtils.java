@@ -1,5 +1,9 @@
 package com.hcmute.shopfee.utils;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -18,6 +22,11 @@ public class DateUtils {
         calEnd.set(Calendar.MINUTE, 59);
         calEnd.set(Calendar.SECOND, 59);
         return calEnd.getTime();
+    }
+    public static String formatYYYYMMDD(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return  sdf.format(date);
+
     }
     public static Date createDateTimeByToday(int hour, int minute, int second, int millisecond, int numberDate) {
         Calendar calendar = Calendar.getInstance();

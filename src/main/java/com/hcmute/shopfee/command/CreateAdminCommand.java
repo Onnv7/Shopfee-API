@@ -32,7 +32,7 @@ public class CreateAdminCommand implements CommandLineRunner {
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        EmployeeEntity existedAdmin = employeeRepository.findByUsername("admin").orElse(null);
+        EmployeeEntity existedAdmin = employeeRepository.findByUsernameAndIsDeletedFalse("admin").orElse(null);
         if(existedAdmin != null) {
             log.info("ADMIN IS EXISTED");
             return;

@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service;
 
 import com.hcmute.shopfee.dto.request.RegisterUserRequest;
+import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
@@ -14,4 +15,5 @@ public interface IUserAuthService {
     void verifyCodeByEmail(String code, String email);
     void changePasswordForgot(String email, String password);
     RefreshTokenResponse refreshToken(String refreshToken);
+    void changePasswordProfile(String userId, UpdatePasswordRequest data);
 }

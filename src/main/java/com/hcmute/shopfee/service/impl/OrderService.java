@@ -4,11 +4,8 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
-import com.hcmute.shopfee.dto.response.CreateOrderResponse;
-import com.hcmute.shopfee.entity.AddressEntity;
-import com.hcmute.shopfee.entity.BranchEntity;
-import com.hcmute.shopfee.entity.TransactionEntity;
-import com.hcmute.shopfee.entity.UserEntity;
+import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.entity.*;
 import com.hcmute.shopfee.entity.order.*;
 import com.hcmute.shopfee.entity.product.ProductEntity;
 import com.hcmute.shopfee.entity.product.SizeEntity;
@@ -18,19 +15,20 @@ import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.CustomException;
-import com.hcmute.shopfee.repository.database.AddressRepository;
-import com.hcmute.shopfee.repository.database.BranchRepository;
-import com.hcmute.shopfee.repository.database.TransactionRepository;
-import com.hcmute.shopfee.repository.database.UserRepository;
+import com.hcmute.shopfee.model.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
+import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.service.IOrderService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.utils.CalculateUtils;
-import com.hcmute.shopfee.utils.SecurityUtils;
-import com.hcmute.shopfee.utils.VNPayUtils;
+import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
+import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +48,9 @@ public class OrderService implements IOrderService {
     private final AddressRepository addressRepository;
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
+    private final OrderSearchService orderSearchService;
+    private final EmployeeRepository employeeRepository;
+    private final OrderEventRepository orderEventRepository;
 
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
@@ -91,6 +92,7 @@ public class OrderService implements IOrderService {
 
     private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill) {
         long totalPrice = 0;
+        List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
         int itemSize = orderItemList.size();
         for (int i = 0; i < itemSize; i++) {
             OrderItemDto orderItemDto = orderItemList.get(i);
@@ -118,14 +120,18 @@ public class OrderService implements IOrderService {
                 totalPriceToppings += toppingEntity.getPrice();
             }
             SizeEntity sizeItem = sizeList.stream()
-                    .filter(it -> it.getSize().equals(orderItemDto.getSize()))
+                    .filter(it -> it.getSize() == orderItemDto.getSize())
                     .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + orderItemDto.getSize()));
             item.setPrice(sizeItem.getPrice());
 
             totalPrice += (long) ((sizeItem.getPrice() + totalPriceToppings) * orderItemDto.getQuantity());
-
+            item.setItemToppingList(itemsToppingList);
             item.setOrderBill(orderBill);
+            item.setProduct(productInfo);
+            orderItemEntityList.add(item);
         }
+
+        orderBill.setOrderItemList(orderItemEntityList);
 
         return totalPrice;
     }
@@ -164,6 +170,7 @@ public class OrderService implements IOrderService {
         orderEventList.add(OrderEventEntity.builder()
                 .orderStatus(OrderStatus.CREATED)
                 .description("Order created successfully")
+                .orderBill(orderBill)
                 .isEmployee(false)
                 .build());
         orderBill.setOrderEventList(orderEventList);
@@ -190,6 +197,7 @@ public class OrderService implements IOrderService {
         return resData;
     }
 
+    @Transactional
     @Override
     public CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
@@ -204,7 +212,6 @@ public class OrderService implements IOrderService {
         orderBill.setTotal(totalPrice);
 
 
-
         Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, totalPrice);
 //        transaction = transactionRepository.save(transaction);
         TransactionEntity transaction = (TransactionEntity) transactionBuilderMap.get("transaction");
@@ -216,6 +223,7 @@ public class OrderService implements IOrderService {
                 .orderStatus(OrderStatus.CREATED)
                 .description("Order created successfully")
                 .isEmployee(false)
+                .orderBill(orderBill)
                 .build());
         orderBill.setOrderEventList(orderEventList);
 
@@ -224,7 +232,7 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getBranchId()));
         orderBill.setBranch(branch);
 
-        orderBill.setReceiveTime(Date.from(body.getReceiveTime().atZone(ZoneId.systemDefault()).toInstant()));
+        orderBill.setReceiveTime(body.getReceiveTime());
 
 
         if (totalPrice != body.getTotal()) {
@@ -241,5 +249,154 @@ public class OrderService implements IOrderService {
             resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
         }
         return resData;
+    }
+
+    @Override
+    public List<GetOrderHistoryForEmployeeResponse> getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key) {
+        String statusRegex = RegexUtils.generateFilterRegexString(orderStatus != null ? orderStatus.toString() : "");
+        if (key != null) {
+            List<OrderIndex> orderList = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex).getContent();
+            return modelMapperService.mapList(orderList, GetOrderHistoryForEmployeeResponse.class);
+        }
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<OrderBillEntity> orderList = orderBillRepository.getOrderBillByLastStatus(orderStatus.name(), pageable).getContent();
+        List<GetOrderHistoryForEmployeeResponse> resData = new ArrayList<>();
+        orderList.forEach(it -> {
+            GetOrderHistoryForEmployeeResponse orderResponse = GetOrderHistoryForEmployeeResponse.fromOrderBillEntity(it);
+            resData.add(orderResponse);
+        });
+        return resData;
+    }
+
+    @Override
+    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description) {
+        OrderBillEntity order = orderBillRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+
+        String clientId = SecurityUtils.getCurrentUserId();
+        UserEntity user = userRepository.findById(clientId).orElse(null);
+
+        order.getOrderEventList().add(OrderEventEntity.builder()
+                .orderStatus(orderStatus)
+                .description(description)
+                .orderBill(order)
+                .isEmployee(user == null)
+                .build()
+        );
+
+        OrderBillEntity updatedOrder = orderBillRepository.save(order);
+        orderSearchService.upsertOrder(updatedOrder);
+    }
+
+    @Override
+    public List<GetShippingOrderQueueResponse> getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size) {
+        String employeeId = SecurityUtils.getCurrentUserId();
+
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        String branchId = employeeEntity.getBranch().getId();
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
+
+        List<GetShippingOrderQueueResponse> orderListResponse = new ArrayList<>();
+        orderList.forEach(it -> {
+            GetShippingOrderQueueResponse orderResponse = GetShippingOrderQueueResponse.fromOrderBillEntity(it);
+            orderListResponse.add(orderResponse);
+        });
+        return orderListResponse;
+    }
+
+    @Override
+    public List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size) {
+        String employeeId = SecurityUtils.getCurrentUserId();
+
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        String branchId = employeeEntity.getBranch().getId();
+
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.ONSITE.name(), pageable).getContent();
+
+        List<GetOnsiteOrderQueueResponse> orderListResponse = new ArrayList<>();
+        orderList.forEach(it -> {
+            GetOnsiteOrderQueueResponse orderResponse = GetOnsiteOrderQueueResponse.fromOrderBillEntity(it);
+            orderListResponse.add(orderResponse);
+        });
+        return orderListResponse;
+    }
+
+    @Override
+    public GetOrderListResponse getOrderListForAdmin(int page, int size, String key, OrderStatus status) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        String statusRegex = RegexUtils.generateFilterRegexString(status != null ? status.toString() : "");
+        if (key != null) {
+            Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
+
+            GetOrderListResponse resultPage = new GetOrderListResponse();
+            resultPage.setTotalPage(orderPage.getTotalPages());
+            resultPage.setOrderList(modelMapperService.mapList(orderPage.getContent(), GetOrderListResponse.Order.class));
+            return resultPage;
+        }
+        Page<OrderBillEntity> orderBillPage = orderBillRepository.getOrderList(statusRegex, pageable);
+        GetOrderListResponse dataResponse = new GetOrderListResponse();
+        dataResponse.setTotalPage(orderBillPage.getTotalPages());
+
+        List<GetOrderListResponse.Order> orderList = new ArrayList<>();
+        orderBillPage.getContent().forEach(it -> {
+            GetOrderListResponse.Order orderResponse = GetOrderListResponse.Order.fromOrderBillEntity(it);
+            orderList.add(orderResponse);
+        });
+        dataResponse.setOrderList(orderList);
+        return dataResponse;
+    }
+
+    @Override
+    public GetOrderByIdResponse getOrderDetailsById(String id) {
+        OrderBillEntity orderBill = orderBillRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
+        return order;
+    }
+
+    @Override
+    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStatus orderStatus, int page, int size) {
+        SecurityUtils.checkUserId(userId);
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatus.name(), userId, pageable).getContent();
+        List<GetAllOrderHistoryByUserIdResponse> response = new ArrayList<>();
+        orderList.forEach(it -> {
+            GetAllOrderHistoryByUserIdResponse order = GetAllOrderHistoryByUserIdResponse.fromOrderBillEntity(it);
+            response.add(order);
+        });
+
+        return response;
+    }
+
+    @Override
+    public List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId) {
+        List<OrderEventEntity> orderEventEntityList = orderEventRepository.findByOrderBill_Id(orderId);
+        List<GetOrderStatusLineResponse> eventList = new ArrayList<>();
+        orderEventEntityList.forEach(it -> {
+            GetOrderStatusLineResponse event = GetOrderStatusLineResponse.fromOrderEventEntity(it);
+            eventList.add(event);
+        });
+        return eventList;
+    }
+
+    @Override
+    public GetOrderQuantityByStatusResponse getOrderQuantityByStatusAtCurrentDate(OrderStatus orderStatus) {
+        Date startDate = DateUtils.createDateTimeByToday(0, 0, 0, 0, 0);
+        Date endDate = DateUtils.createDateTimeByToday(23, 59, 59, 999, 0);
+        GetOrderQuantityByStatusResponse response = new GetOrderQuantityByStatusResponse();
+        long current = orderBillRepository.countOrderInCurrentDateByStatus(orderStatus.name(), DateUtils.formatYYYYMMDD(new Date()));
+        response.setOrderQuantity((int)current);
+
+        Date startDatePrev = DateUtils.createDateTimeByToday(0, 0, 0, 0, -1);
+        Date endDatePrev = DateUtils.createDateTimeByToday(23, 59, 59, 999, -1);
+
+        long prev = orderBillRepository.countOrderInCurrentDateByStatus(orderStatus.name(), DateUtils.formatYYYYMMDD(startDatePrev));
+        long difference = current - prev;
+        response.setDifference((int) difference);
+        return response;
     }
 }

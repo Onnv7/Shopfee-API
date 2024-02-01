@@ -58,6 +58,7 @@ public class EmployeeEntity {
 //    private ObjectId branchId;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private EmployeeStatus status;
 
     @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")

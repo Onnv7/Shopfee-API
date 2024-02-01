@@ -104,8 +104,6 @@ public class RouterConstant {
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_BY_ID_PATH = EMPLOYEE_BASE_PATH + PATCH_EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUB_PATH;
     public static final String DELETE_EMPLOYEE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH;
     public static final String DELETE_EMPLOYEE_BY_ID_PATH = EMPLOYEE_BASE_PATH + DELETE_EMPLOYEE_BY_ID_SUB_PATH;
-    public static final String POST_EMPLOYEE_REGISTER_SUB_PATH = "";
-    public static final String POST_EMPLOYEE_REGISTER_PATH = EMPLOYEE_BASE_PATH + POST_EMPLOYEE_REGISTER_SUB_PATH;
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH = EMPLOYEE_ID_PATH + "/change-password";
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH = EMPLOYEE_BASE_PATH + PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH;
 
@@ -171,6 +169,8 @@ public class RouterConstant {
     public static final String POST_AUTH_EMPLOYEE_LOGIN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH;
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH = "/employee/refresh-token";
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH;
+    public static final String POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH = "";
+    public static final String POST_AUTH_EMPLOYEE_REGISTER_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH;
     // ENDPOINT URL USER AUTH =================================================================
     public static final String POST_USER_AUTH_REGISTER_SUB_PATH = "/register";
     public static final String POST_USER_AUTH_REGISTER_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_REGISTER_SUB_PATH;

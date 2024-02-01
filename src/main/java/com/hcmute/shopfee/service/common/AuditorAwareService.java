@@ -1,14 +1,28 @@
 package com.hcmute.shopfee.service.common;
 
+import com.hcmute.shopfee.entity.UserEntity;
+import com.hcmute.shopfee.repository.database.EmployeeRepository;
+import com.hcmute.shopfee.repository.database.UserRepository;
+import com.hcmute.shopfee.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AuditorAwareService implements AuditorAware<String> {
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.empty();
+        String clientId = null;
+        try {
+
+            clientId = SecurityUtils.getCurrentUserId();
+        } catch (ClassCastException e) {
+
+        }
+        // TODO: nhớ xóa TestID
+        return Optional.of(clientId != null ? clientId : "TestID");
     }
 }

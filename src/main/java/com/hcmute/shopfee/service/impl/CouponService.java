@@ -146,7 +146,7 @@ public class CouponService implements ICouponService {
         combination.setCombinationConditionList(combinationConditionEntityList);
         couponConditionEntityList.add(combination);
 
-
+        // Saving coupon
         couponEntity.setConditionList(couponConditionEntityList);
         System.out.println(couponEntity);
         couponRepository.save(couponEntity);

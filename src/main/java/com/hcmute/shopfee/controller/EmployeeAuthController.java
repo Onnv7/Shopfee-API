@@ -3,6 +3,8 @@ package com.hcmute.shopfee.controller;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
+import com.hcmute.shopfee.dto.request.ChangePasswordEmployeeRequest;
+import com.hcmute.shopfee.dto.request.CreateEmployeeRequest;
 import com.hcmute.shopfee.dto.request.EmployeeLoginRequest;
 import com.hcmute.shopfee.dto.request.RefreshEmployeeTokenRequest;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
@@ -75,5 +77,30 @@ public class EmployeeAuthController {
         headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
 
         return new ResponseEntity<>(res, headers, StatusCode.OK);
+    }
+
+    @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
+    @PostMapping(path = POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH)
+    public ResponseEntity<ResponseAPI> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body) {
+        employeeAuthService.registerEmployee(body);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.CREATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = EMPLOYEE_UPDATE_PASSWORD_SUM)
+    @PatchMapping(path = PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH)
+    public ResponseEntity<ResponseAPI> changePasswordProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid ChangePasswordEmployeeRequest body) {
+        employeeAuthService.changePasswordProfile(body, id);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 }

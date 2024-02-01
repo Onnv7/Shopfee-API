@@ -2,17 +2,22 @@ package com.hcmute.shopfee.service.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.request.ChangePasswordEmployeeRequest;
+import com.hcmute.shopfee.dto.request.CreateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
+import com.hcmute.shopfee.entity.BranchEntity;
 import com.hcmute.shopfee.entity.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.redis.EmployeeToken;
+import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.employee.EmployeeUsernamePasswordAuthenticationToken;
 import com.hcmute.shopfee.service.IEmployeeAuthService;
 import com.hcmute.shopfee.service.common.JwtService;
+import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.redis.EmployeeRefreshTokenRedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +41,8 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     private final AuthenticationManager authenticationManager;
     private final EmployeeRefreshTokenRedisService employeeRefreshTokenRedisService;
     private final JwtService jwtService;
+    private final ModelMapperService modelMapperService;
+    private final BranchRepository branchRepository;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
@@ -50,7 +57,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         var authentication = authenticationManager.authenticate(employeeCredential);
 
         var principalAuthenticated = (UserPrincipal) authentication.getPrincipal();
-        EmployeeEntity employee = employeeRepository.findByUsername(principalAuthenticated.getUsername()).orElse(null);
+        EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(principalAuthenticated.getUsername()).orElse(null);
 
         if (employee.getStatus() == EmployeeStatus.INACTIVE) {
             throw new CustomException(ErrorConstant.ACCOUNT_BLOCKED);
@@ -99,5 +106,32 @@ public class EmployeeAuthService implements IEmployeeAuthService {
                 .refreshToken(newRefreshToken)
                 .build();
         return resData;
+    }
+
+    @Override
+    public void registerEmployee(CreateEmployeeRequest body) {
+        EmployeeEntity data = modelMapperService.mapClass(body, EmployeeEntity.class);
+        EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(data.getUsername()).orElse(null);
+        if (existedEmployee != null) {
+            throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
+        }
+        BranchEntity branch = branchRepository.findById(body.getBranchId()).orElseThrow(() -> new CustomException(NOT_FOUND + body.getBranchId()));
+        data.setBranch(branch);
+        data.setPassword(passwordEncoder.encode(data.getPassword()));
+//        data.setCode(sequenceService.generateCode(EmployeeCollection.SEQUENCE_NAME, EmployeeCollection.PREFIX_CODE, EmployeeCollection.LENGTH_NUMBER));
+        data.setStatus(EmployeeStatus.ACTIVE);
+        employeeRepository.save(data);
+    }
+
+    @Override
+    public void changePasswordProfile(ChangePasswordEmployeeRequest data, String emplId) {
+        EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(emplId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND + emplId));
+        boolean isValid = passwordEncoder.matches(data.getOldPassword(), employee.getPassword());
+        if (!isValid) {
+            throw new CustomException(ErrorConstant.INVALID_PASSWORD);
+        }
+        employee.setPassword(passwordEncoder.encode(data.getNewPassword()));
+        employeeRepository.save(employee);
     }
 }

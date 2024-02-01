@@ -53,7 +53,6 @@ public class UserEntity {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean enabled;
 

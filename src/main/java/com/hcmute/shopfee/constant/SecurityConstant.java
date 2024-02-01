@@ -73,7 +73,7 @@ public class SecurityConstant {
     };
     public static final String[] POST_ADMIN_PATH = {
             POST_PRODUCT_CREATE_PATH,
-            POST_EMPLOYEE_REGISTER_PATH,
+            POST_AUTH_EMPLOYEE_REGISTER_PATH,
             POST_CATEGORY_CREATE_PATH,
             POST_BRANCH_CREATE_PATH, POST_BANNER_CREATE_PATH,
             POST_COUPON_CREATE_PATH, POST_COUPON_CREATE_BUY_GET_TYPE_PATH,

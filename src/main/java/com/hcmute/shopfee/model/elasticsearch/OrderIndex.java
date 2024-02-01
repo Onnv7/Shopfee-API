@@ -17,8 +17,8 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 @Builder
-//@Setting(settingPath = "/config/elasticsearch/order/setting.json")
-@Mapping(mappingPath = "/config/elasticsearch/order/mapping.json")
+//@Setting(settingPath = "/elasticsearch/order/setting.json")
+@Mapping(mappingPath = "/elasticsearch/order/mapping.json")
 @Document(indexName = "order")
 public class OrderIndex {
     @Id

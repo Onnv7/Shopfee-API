@@ -39,6 +39,7 @@ public class OrderItemEntity {
     private String name;
 
     @Column(name = "size")
+    @Enumerated(EnumType.STRING)
     private ProductSize size;
 
     @Column(name = "price", nullable = false)
@@ -59,7 +60,7 @@ public class OrderItemEntity {
 
 
     // =================================================================
-    @OneToMany(mappedBy = "orderItem")
+    @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<ItemToppingEntity> itemToppingList;
 

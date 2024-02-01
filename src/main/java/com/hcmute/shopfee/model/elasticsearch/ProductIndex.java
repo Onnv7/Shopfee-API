@@ -14,8 +14,8 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 @NoArgsConstructor
 @Data
 @Builder
-@Setting(settingPath = "/config/elasticsearch/product/setting.json")
-@Mapping(mappingPath = "/config/elasticsearch/product/mapping.json")
+@Setting(settingPath = "/elasticsearch/product/setting.json")
+@Mapping(mappingPath = "/elasticsearch/product/mapping.json")
 @Document(indexName = "product")
 public class ProductIndex {
     @Id

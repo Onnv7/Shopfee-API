@@ -93,6 +93,7 @@ server:
 
 #logging
 #%d{HH:mm:ss} [%thread]
+
 logging:
   level:
     tracer: TRACE
@@ -102,6 +103,11 @@ logging:
           search:
             slowlog:
               query: INFO
+      hibernate:
+        SQL: debug
+        type.descriptor.sql: trace
+        type: trace
+        orm.jdbc.bind: trace
       springframework:
         security: TRACE
         data:

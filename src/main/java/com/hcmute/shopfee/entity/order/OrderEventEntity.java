@@ -54,7 +54,7 @@ public class OrderEventEntity {
     private Date createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "order_bill_id")
+    @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;
 }

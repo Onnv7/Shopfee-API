@@ -28,6 +28,7 @@ public class SizeEntity {
     private String id;
 
     @Column(name = "size", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProductSize size;
 
     @Column(name = "price", nullable = false)

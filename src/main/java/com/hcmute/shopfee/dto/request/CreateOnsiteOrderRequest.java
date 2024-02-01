@@ -47,7 +47,7 @@ public class CreateOnsiteOrderRequest {
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(example = DATE_ISO_EX)
     @NotNull
-    private LocalDateTime receiveTime;
+    private Date receiveTime;
 
     @Schema(example = OBJECT_ID_EX)
     @NotNull

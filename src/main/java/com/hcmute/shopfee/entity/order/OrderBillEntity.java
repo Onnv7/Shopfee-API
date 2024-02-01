@@ -74,11 +74,11 @@ public class OrderBillEntity {
     private Date updateAt;
     // =================================================
 
-    @OneToMany(mappedBy = "orderBill")
+    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<OrderEventEntity> orderEventList;
 
-    @OneToMany(mappedBy = "orderBill")
+    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<OrderItemEntity> orderItemList;
 

@@ -129,4 +129,18 @@ public class UserAuthController {
 
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+    @Operation(summary = USER_CHANGE_PWD_SUM)
+    @PatchMapping(path = PATCH_USER_CHANGE_PASSWORD_SUB_PATH)
+    public ResponseEntity<ResponseAPI> changePasswordProfile(
+            @PathVariable(USER_ID) String userId,
+            @RequestBody @Valid UpdatePasswordRequest body
+    ) {
+        userAuthService.changePasswordProfile(userId, body);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .success(true)
+                .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 }

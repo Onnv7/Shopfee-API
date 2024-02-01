@@ -4,6 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
 import com.hcmute.shopfee.dto.request.RegisterUserRequest;
+import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
@@ -24,6 +25,7 @@ import com.hcmute.shopfee.service.common.JwtService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.redis.UserRefreshTokenRedisService;
 import com.hcmute.shopfee.utils.GeneratorUtils;
+import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -33,6 +35,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -56,26 +59,28 @@ public class UserAuthService implements IUserAuthService {
     @Lazy
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     @Override
     public RegisterResponse registerUser(RegisterUserRequest body) {
-        UserEntity data = modelMapperService.mapClass(body, UserEntity.class);
+        UserEntity userEntity = modelMapperService.mapClass(body, UserEntity.class);
 
-        if (userRepository.findByEmail(data.getEmail()).orElse(null) != null) {
+        if (userRepository.findByEmail(userEntity.getEmail()).orElse(null) != null) {
             throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
         }
 
         RegisterResponse resData = new RegisterResponse();
-        modelMapperService.map(data, resData);
+        modelMapperService.map(userEntity, resData);
 
 //        data.setRoles(new Role[]{Role.ROLE_USER});
-        data.setPassword(passwordEncoder.encode(data.getPassword()));
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
 //        data.setCode(sequenceService.generateCode(UserCollection.SEQUENCE_NAME, UserCollection.PREFIX_CODE, UserCollection.LENGTH_NUMBER));
 
         Set<RoleEntity> roleList = new HashSet<>();
         RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + Role.ROLE_USER));
         roleList.add(userRole);
-        data.setRoleList(roleList);
-        UserEntity savedUser = userRepository.save(data);
+        userEntity.setRoleList(roleList);
+        userEntity.setEnabled(true);
+        UserEntity savedUser = userRepository.save(userEntity);
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
         var accessToken = jwtService.issueAccessToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
         var refreshToken = jwtService.issueRefreshToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
@@ -191,6 +196,21 @@ public class UserAuthService implements IUserAuthService {
                 .refreshToken(newRefreshToken)
                 .build();
         return resData;
+    }
+
+    @Override
+    public void changePasswordProfile(String userId, UpdatePasswordRequest data) {
+        SecurityUtils.checkUserId(userId);
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+
+        boolean isValid = passwordEncoder.matches(data.getOldPassword(), user.getPassword());
+
+        if (!isValid) {
+            throw new CustomException(ErrorConstant.INVALID_PASSWORD);
+        }
+
+        user.setPassword(passwordEncoder.encode(data.getNewPassword()));
+        userRepository.save(user);
     }
 
     public void createOrUpdateConfirmationInfo(String email, String code) {

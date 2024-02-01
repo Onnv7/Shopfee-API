@@ -18,6 +18,7 @@ public class SwaggerConstant {
     public static final String AUTH_SEND_OTP_TO_PHONE_NUMBER_SUM = "Send OTP code to phone number (The function is under maintenance)";
     public static final String AUTH_EMPLOYEE_LOGIN_SUM = "Employee login to get token";
     public static final String AUTH_REFRESH_EMPLOYEE_TOKEN_SUM = "Create new access token and refresh token for employee";
+    public static final String AUTH_EMPLOYEE_REGISTER_SUM = "Register new employee account with some information";
 
     // For user authentication =================================================================
     public static final String USER_AUTH_CONTROLLER_TITLE = "USER AUTH MANAGEMENT";
@@ -102,7 +103,6 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUM = "Update employee's new password by employee id for admin";
 
     public static final String EMPLOYEE_DELETE_BY_ID_SUM = "Delete a employee by employee id";
-    public static final String EMPLOYEE_REGISTER_SUM = "Register new employee account with some information";
 
     public static final String EMPLOYEE_GET_BY_ID_SUM = "Get a employee by employee id";
     public static final String EMPLOYEE_GET_ALL_SUM = "Get all employees";
