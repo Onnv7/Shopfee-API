@@ -27,4 +27,12 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             	and status regexp ?2
             """, nativeQuery = true)
     Page<ProductEntity> getProductList(String categoryIdRegex, String productStatusRegex, Pageable pageable);
+
+    @Query(value = """
+            select count(*)
+            from product p
+            join order_item oi on p.id = oi.product_id
+            where is_deleted = 0
+            """, nativeQuery = true)
+    long countOrderItem(String productId);
 }

@@ -51,7 +51,7 @@ public class BannerService implements IBannerService {
 
     @Override
     public void updateBannerById(UpdateBannerRequest body, String bannerId) {
-        BannerEntity bannerEntity = bannerRepository.findById(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
+        BannerEntity bannerEntity = bannerRepository.findByIdAndIsDeletedFalse(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
         modelMapperService.map(body, bannerEntity);
         if(body.getImage() != null) {
             try {
@@ -75,7 +75,7 @@ public class BannerService implements IBannerService {
 
     @Override
     public void deleteBannerById(String bannerId) {
-        BannerEntity bannerCollection = bannerRepository.findById(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
+        BannerEntity bannerCollection = bannerRepository.findByIdAndIsDeletedFalse(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
         bannerCollection.setDeleted(true);
         bannerRepository.save(bannerCollection);
     }

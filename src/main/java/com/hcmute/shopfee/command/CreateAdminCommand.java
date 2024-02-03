@@ -4,6 +4,7 @@ package com.hcmute.shopfee.command;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.EmployeeEntity;
 import com.hcmute.shopfee.entity.RoleEntity;
+import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.model.CustomException;
@@ -47,6 +48,7 @@ public class CreateAdminCommand implements CommandLineRunner {
                 .password("$2a$07$8uAcnHtjJyuBjFq8c73jKuuKj/KbxqT79v7.fpVtzYUUUYvUmzbXG")
                 .firstName("An")
                 .lastName("Nguyen")
+                .status(EmployeeStatus.ACTIVE)
                 .gender(Gender.MALE)
                 .roleList(roleList)
                 .birthDate(new Date(2002, 10, 6))

@@ -17,7 +17,7 @@ public class GetAllEmployeeResponse {
     @Data
     public static class Employee {
         private String id;
-        private String code;
+//        private String code;
         private String firstName;
         private String lastName;
         private String username;

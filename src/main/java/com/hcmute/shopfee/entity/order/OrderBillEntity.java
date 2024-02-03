@@ -7,9 +7,11 @@ import com.hcmute.shopfee.entity.BranchEntity;
 import com.hcmute.shopfee.entity.TransactionEntity;
 import com.hcmute.shopfee.entity.UserEntity;
 import com.hcmute.shopfee.entity.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,7 +20,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 
 @Entity
 @Table(name = "order_bill")
@@ -29,8 +31,13 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class OrderBillEntity {
+    //    @GenericGenerator(name = "order_bill_id", strategy = TIME_ID_GENERATOR)
     @Id
-    @GenericGenerator(name = "order_bill_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "order_bill_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
+            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "OB"),
+            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%09d")
+    })
     @GeneratedValue(generator = "order_bill_id")
     private String id;
 

@@ -9,7 +9,10 @@ public class SecurityUtils {
 
 
     public static String getCurrentUserId() {
-        return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+        if(SecurityContextHolder.getContext().getAuthentication() != null) {
+            return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+        }
+        return null;
     }
 
     public static void checkUserId(String userId) {

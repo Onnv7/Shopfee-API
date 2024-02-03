@@ -19,7 +19,7 @@ import java.util.List;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class GetOrderByIdResponse {
     private String id;
-    private String code;
+//    private String code;
     private String note;
     private Long total;
     private OrderType orderType;

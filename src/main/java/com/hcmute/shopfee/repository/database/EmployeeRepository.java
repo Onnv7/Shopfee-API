@@ -25,7 +25,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     @Query(value = """
             select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.is_deleted, e.password, e.phone_number, e.status, e.update_at, e.username, e.branch_id\s
             from employee e
-            where is_deleted = false e.
+            where is_deleted = false
             and status regexp  ?2
             and username regexp ?1
             """, nativeQuery = true)

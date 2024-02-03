@@ -23,7 +23,7 @@ import java.util.Date;
 public class OrderIndex {
     @Id
     private String id;
-    private String code;
+//    private String code;
     private String customerName;
     private String email;
     private String customerCode;

@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 public class GetOrderHistoryForEmployeeResponse {
     private String id;
-    private String code;
+//    private String code;
     private String customerName;
     private String phoneNumber;
     private String productName;

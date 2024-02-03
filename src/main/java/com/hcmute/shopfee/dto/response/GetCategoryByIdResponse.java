@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class GetCategoryByIdResponse {
     private String id;
-    private String code;
+//    private String code;
     private String name;
     private String imageUrl;
     private CategoryStatus status;

@@ -15,7 +15,7 @@ public class GetOrderListResponse {
     @Data
     public static class Order {
         private String id;
-        private String code;
+//        private String code;
         private Date createdAt;
         private OrderType orderType;
         private String customerName;

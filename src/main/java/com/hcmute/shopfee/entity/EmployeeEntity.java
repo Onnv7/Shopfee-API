@@ -1,15 +1,13 @@
 package com.hcmute.shopfee.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Parameter;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 import java.util.Set;
 
+import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
@@ -29,7 +28,12 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class EmployeeEntity {
     @Id
-    @GenericGenerator(name = "employee_id", strategy = TIME_ID_GENERATOR)
+//    @GenericGenerator(name = "employee_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "employee_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
+            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "E"),
+            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")
+    })
     @GeneratedValue(generator = "employee_id")
     private String id;
 

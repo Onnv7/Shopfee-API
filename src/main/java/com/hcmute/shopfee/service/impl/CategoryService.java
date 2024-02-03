@@ -59,7 +59,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public GetCategoryByIdResponse getCategoryById(String id) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
         return modelMapperService.mapClass(category, GetCategoryByIdResponse.class);
     }
 
@@ -77,7 +77,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void updateCategory(UpdateCategoryRequest body, String id) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));;
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));;
         if (body.getImage() != null) {
             try {
                 cloudinaryService.deleteImage(category.getImageId());
@@ -99,9 +99,9 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void deleteCategoryById(String id) {
-        CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
         // FIXME: check chỗ này
-        if (false) {
+        if (!category.getProductList().isEmpty()) {
             category.setDeleted(true);
             categoryRepository.save(category);
         } else {

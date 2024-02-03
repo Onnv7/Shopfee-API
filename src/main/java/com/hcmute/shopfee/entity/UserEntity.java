@@ -1,11 +1,12 @@
 package com.hcmute.shopfee.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
@@ -27,8 +29,13 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
+//    @GenericGenerator(name = "user_id", strategy = TIME_ID_GENERATOR)
     @Id
-    @GenericGenerator(name = "user_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "user_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
+            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "U"),
+            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%08d")
+    })
     @GeneratedValue(generator = "user_id")
     private String id;
 

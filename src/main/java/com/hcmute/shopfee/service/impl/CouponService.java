@@ -1,11 +1,13 @@
 package com.hcmute.shopfee.service.impl;
 
+import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CouponConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.ApplicableCustomerConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
 import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
+import com.hcmute.shopfee.dto.response.GetReleaseCouponListResponse;
 import com.hcmute.shopfee.entity.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.coupon.CouponRewardEntity;
@@ -15,15 +17,22 @@ import com.hcmute.shopfee.entity.coupon.condition.MinPurchaseConditionEntity;
 import com.hcmute.shopfee.entity.coupon.condition.UsageConditionEntity;
 import com.hcmute.shopfee.entity.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.service.ICouponService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import static com.hcmute.shopfee.constant.SwaggerConstant.COUPON_GET_RELEASE_LIST_SUM;
 
 @Service
 @RequiredArgsConstructor
@@ -151,4 +160,28 @@ public class CouponService implements ICouponService {
         System.out.println(couponEntity);
         couponRepository.save(couponEntity);
     }
+
+    @Override
+    public void deleteCoupon(String couponId) {
+        CouponEntity couponCollection = couponRepository.findByIdAndIsDeletedFalse(couponId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+        if(couponCollection.getStatus() == CouponStatus.UNRELEASED) {
+            throw new CustomException(ErrorConstant.COUPON_STATUS_UNRELEASED);
+        }
+        couponCollection.setDeleted(true);
+        couponRepository.save(couponCollection);
+    }
+
+    @Override
+    public List<GetReleaseCouponListResponse> getReleaseCouponList() {
+        List<CouponEntity> couponEntityList = couponRepository.getReleaseCouponList();
+        List<GetReleaseCouponListResponse> response = new ArrayList<>();
+        couponEntityList.forEach(it -> {
+            GetReleaseCouponListResponse coupon = GetReleaseCouponListResponse.fromCouponEntity(it);
+            response.add(coupon);
+        });
+        return response;
+    }
+
+
 }

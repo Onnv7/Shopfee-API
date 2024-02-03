@@ -4,13 +4,14 @@ package com.hcmute.shopfee.entity.product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.CategoryEntity;
+import com.hcmute.shopfee.entity.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.order.OrderItemEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,6 +19,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 import java.util.List;
 
+import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
@@ -30,8 +32,12 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class ProductEntity {
     @Id
-    @GenericGenerator(name = "product_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "product_id")
+    @GenericGenerator(name = "product_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
+            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "P"),
+            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d")
+    })
+    @GeneratedValue(generator = "product_id", strategy = GenerationType.SEQUENCE)
     private String id;
 
     @Column(unique = true, nullable = false)

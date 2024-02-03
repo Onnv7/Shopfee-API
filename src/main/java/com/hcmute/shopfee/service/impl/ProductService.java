@@ -170,10 +170,13 @@ public class ProductService implements IProductService {
     public void deleteProductById(String id) {
         ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
-// TODO check canDelete
-        product.setDeleted(true);
-        productRepository.save(product);
-        productSearchService.deleteProduct(id);
+        if(productRepository.countOrderItem(id) > 0) {
+            product.setDeleted(true);
+            productRepository.save(product);
+            productSearchService.deleteProduct(id);
+        } else {
+            throw new CustomException(ErrorConstant.CANT_DELETE);
+        }
     }
 
     @Override

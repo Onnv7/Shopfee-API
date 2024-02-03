@@ -20,7 +20,7 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 public class ProductIndex {
     @Id
     private String id;
-    private String code;
+//    private String code;
     private String name;
     private String thumbnailUrl;
     private String description;

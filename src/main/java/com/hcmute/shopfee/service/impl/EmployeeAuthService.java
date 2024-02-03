@@ -83,7 +83,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         String userId = jwt.getSubject().toString();
         EmployeeToken token = employeeRefreshTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
 
-        EmployeeEntity user = employeeRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        EmployeeEntity user = employeeRepository.findByIdAndIsDeletedFalse(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
 
         if (token == null) {
             throw new CustomException(INVALID_TOKEN);

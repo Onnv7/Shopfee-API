@@ -46,7 +46,6 @@ public class OrderSearchService {
                 .total(orderBillEntity.getTotal())
                 .productQuantity(orderItemList.size())
                 .productThumbnail(product.getThumbnailUrl())
-                // TODO:ở đay set tạm code là id
                 .customerCode(user.getId())
                 .timeLastEvent(orderBillEntity.getOrderEventList().get(lastIndexEvent).getCreatedAt())
                 .createdAt(orderBillEntity.getCreatedAt())
@@ -71,7 +70,6 @@ public class OrderSearchService {
             order.setTotal(orderBillEntity.getTotal());
             order.setProductQuantity(orderItemList.size());
             order.setProductThumbnail(product.getThumbnailUrl());
-            // TODO:ở đay set tạm code là id
             order.setCustomerCode(user.getId());
             order.setTimeLastEvent(lastStatus.getCreatedAt());
             orderSearchRepository.save(order);
