@@ -12,7 +12,8 @@ import java.util.Optional;
 public interface CouponRepository extends JpaRepository<CouponEntity, String> {
 
     Optional<CouponEntity> findByIdAndIsDeletedFalse(String id);
-
+    Optional<CouponEntity> findByCodeAndIsDeletedFalse(String code);
+    List<CouponEntity> findByIsDeletedFalse();
 
     @Query(value = """
             select *

@@ -6,17 +6,22 @@ import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.*;
+import com.hcmute.shopfee.entity.coupon.CouponConditionEntity;
+import com.hcmute.shopfee.entity.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.coupon.condition.CombinationConditionEntity;
+import com.hcmute.shopfee.entity.coupon.condition.UsageConditionEntity;
+import com.hcmute.shopfee.entity.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.order.*;
 import com.hcmute.shopfee.entity.product.ProductEntity;
 import com.hcmute.shopfee.entity.product.SizeEntity;
 import com.hcmute.shopfee.entity.product.ToppingEntity;
-import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.enums.OrderType;
-import com.hcmute.shopfee.enums.PaymentStatus;
-import com.hcmute.shopfee.enums.PaymentType;
+import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.repository.database.*;
+import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
+import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
+import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -35,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
@@ -51,6 +57,9 @@ public class OrderService implements IOrderService {
     private final OrderSearchService orderSearchService;
     private final EmployeeRepository employeeRepository;
     private final OrderEventRepository orderEventRepository;
+    private final CouponRepository couponRepository;
+    private final CouponUsedRepository couponUsedRepository;
+    private final CouponConditionRepository couponConditionRepository;
 
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
@@ -134,6 +143,153 @@ public class OrderService implements IOrderService {
         orderBill.setOrderItemList(orderItemEntityList);
 
         return totalPrice;
+    }
+
+    private void checkMain(List<CouponEntity> sameCouponList, CouponType couponType) {
+        CombinationType combinationType;
+        if (couponType == CouponType.ORDER) {
+            combinationType = CombinationType.ORDER;
+        } else if (couponType == CouponType.PRODUCT) {
+            combinationType = CombinationType.PRODUCT;
+        } else {
+            combinationType = CombinationType.SHIPPING;
+        }
+
+        sameCouponList.forEach(coupon -> {
+            coupon.getConditionList().forEach(cond -> {
+                List<CombinationConditionEntity> combinationConditionList = cond.getCombinationConditionList();
+                if (combinationConditionList.isEmpty()) {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+                combinationConditionList.stream().filter(com -> com.getType() == combinationType)
+                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.COUPON_INVALID));
+            });
+        });
+    }
+
+    private void checkCombinationCondition(List<CouponEntity> couponList) {
+        CouponType[] types = {CouponType.ORDER, CouponType.PRODUCT, CouponType.SHIPPING};
+
+        int[][] array = new int[3][3];
+
+        for (CouponEntity coupon : couponList) {
+            CouponType couponType = coupon.getCouponType();
+            int col = couponType == CouponType.ORDER ? 0 :
+                    couponType == CouponType.PRODUCT ? 1 : 2;
+            for (CouponConditionEntity condition : coupon.getConditionList()) {
+                if (condition.getType() != ConditionType.COMBINATION) {
+                    continue;
+                }
+                List<CombinationConditionEntity> combinationList = condition.getCombinationConditionList();
+                if (combinationList != null) {
+                    combinationList.forEach(combination -> {
+                        CombinationType combinationType = combination.getType();
+                        int row = combinationType == CombinationType.ORDER ? 0 :
+                                combinationType == CombinationType.PRODUCT ? 1 : 2;
+                        array[row][col]++;
+                    });
+                }
+            }
+        }
+
+        for (CouponType type : types) {
+            List<CouponEntity> sameCouponeList = couponList.stream()
+                    .filter(coupon -> coupon.getCouponType() == type)
+                    .toList();
+            if (sameCouponeList.size() <= 1) {
+                continue;
+            }
+            if ((type == CouponType.ORDER && array[0][0] != sameCouponeList.size()) ||
+                    (type == CouponType.PRODUCT && array[1][1] != sameCouponeList.size()) ||
+                    (type == CouponType.SHIPPING && array[2][2] != sameCouponeList.size())
+            ) {
+                throw new CustomException(ErrorConstant.COUPON_INVALID);
+            }
+
+        }
+
+
+        List<CouponEntity> orderCouponeList = couponList.stream()
+                .filter(coupon -> coupon.getCouponType() == CouponType.ORDER)
+                .toList();
+        List<CouponEntity> productCouponList = couponList.stream()
+                .filter(coupon -> coupon.getCouponType() == CouponType.PRODUCT)
+                .toList();
+        List<CouponEntity> shippingCouponList = couponList.stream()
+                .filter(coupon -> coupon.getCouponType() == CouponType.SHIPPING)
+                .toList();
+        if(orderCouponeList.size() * productCouponList.size() > 0) {
+            if(orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
+                throw new CustomException(ErrorConstant.COUPON_INVALID);
+            }
+        }
+        if(orderCouponeList.size() * shippingCouponList.size() > 0) {
+            if(orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
+                throw new CustomException(ErrorConstant.COUPON_INVALID);
+            }
+        }
+        if(productCouponList.size() * shippingCouponList.size() > 0) {
+            if(productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
+                throw new CustomException(ErrorConstant.COUPON_INVALID);
+            }
+        }
+
+    }
+
+    public void checkOrderCoupon(String couponCode, String userId, long totalOrderBill, int itemListSize) {
+        int discountMoney = 0;
+        CouponEntity couponEntity = couponRepository.findByCodeAndIsDeletedFalse(couponCode)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
+        List<CouponConditionEntity> conditionList = couponEntity.getConditionList();
+
+        for (CouponConditionEntity condition : conditionList) {
+            ConditionType conditionType = condition.getType();
+            switch (conditionType) {
+                case USAGE -> {
+                    List<UsageConditionEntity> usageConditionList = condition.getUsageConditionList();
+                    for (UsageConditionEntity usageCondition : usageConditionList) {
+                        UsageConditionType type = usageCondition.getType();
+                        switch (type) {
+                            case QUANTITY -> {
+                                if (usageCondition.getValue() <= 0) {
+                                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                                } else {
+                                    usageCondition.setValue(usageCondition.getValue() - 1);
+                                }
+                            }
+                            case LIMIT_ONE_FOR_USER -> {
+                                List<CouponUsedEntity> couponUsedEntityList = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, couponCode);
+                                if (!couponUsedEntityList.isEmpty()) {
+                                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                                }
+                            }
+                        }
+                    }
+                }
+                case MIN_PURCHASE -> {
+                    MiniPurchaseType type = condition.getMinPurchaseCondition().getType();
+                    if (type == MiniPurchaseType.MONEY) {
+                        if (condition.getMinPurchaseCondition().getValue() < totalOrderBill) {
+                            throw new CustomException(ErrorConstant.COUPON_INVALID);
+                        }
+                    } else if (type == MiniPurchaseType.QUANTITY) {
+                        if (condition.getMinPurchaseCondition().getValue() < itemListSize) {
+                            throw new CustomException(ErrorConstant.COUPON_INVALID);
+                        }
+                    }
+                }
+                case APPLICABLE_CUSTOMER -> {
+                    ApplicableCustomerType type = condition.getApplicableCustomerCondition().getType();
+                    // TODO: triển khai check điều kiện này
+                }
+                default -> {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+
+            }
+            couponConditionRepository.save(condition);
+        }
+
     }
 
     @Transactional
@@ -389,7 +545,7 @@ public class OrderService implements IOrderService {
         Date endDate = DateUtils.createDateTimeByToday(23, 59, 59, 999, 0);
         GetOrderQuantityByStatusResponse response = new GetOrderQuantityByStatusResponse();
         long current = orderBillRepository.countOrderInCurrentDateByStatus(orderStatus.name(), DateUtils.formatYYYYMMDD(new Date()));
-        response.setOrderQuantity((int)current);
+        response.setOrderQuantity((int) current);
 
         Date startDatePrev = DateUtils.createDateTimeByToday(0, 0, 0, 0, -1);
         Date endDatePrev = DateUtils.createDateTimeByToday(23, 59, 59, 999, -1);

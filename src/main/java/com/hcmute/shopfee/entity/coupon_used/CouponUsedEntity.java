@@ -28,10 +28,10 @@ public class CouponUsedEntity {
     @Column(name = "code", nullable = false)
     private String code;
 
-    @OneToOne
-    @JoinColumn(name = "coupon_id", nullable = false)
-    @JsonBackReference
-    private CouponEntity coupon;
+//    @OneToOne
+//    @JoinColumn(name = "coupon_id", nullable = false)
+//    @JsonBackReference
+//    private CouponEntity coupon;
 
     @ManyToOne
     @JoinColumn(name = "order_bill_id", nullable = false)
@@ -43,7 +43,4 @@ public class CouponUsedEntity {
     @JsonManagedReference
     private CouponRewardReceivedEntity couponRewardReceived;
 
-//    @OneToOne(mappedBy = "couponUsed")
-//    @JsonManagedReference
-//    private MoneyRewardReceivedEntity moneyRewardReceived;
 }

@@ -11,6 +11,7 @@ import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.service.impl.OrderService;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +46,13 @@ public class ToolController {
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
+    private final OrderService orderService;
 
+    @GetMapping(value = "/{code}")
+    public ResponseEntity<String> ceckCoupon(@PathVariable("code") String code) {
+//        orderService.checkOrderCoupon(code);
+        return ResponseEntity.status(200).body("Ok fine");
+    }
     @PostMapping(value = "/excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {

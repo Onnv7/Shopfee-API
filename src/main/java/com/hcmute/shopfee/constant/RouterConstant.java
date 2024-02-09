@@ -165,9 +165,9 @@ public class RouterConstant {
     public static final String POST_AUTH_SEND_OPT_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_SEND_OPT_SUB_PATH;
     public static final String POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH = "/register/send-code";
     public static final String POST_AUTH_SEND_CODE_TO_REGISTER_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH;
-    public static final String POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH = "/employee/login";
+    public static final String POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH = "/login";
     public static final String POST_AUTH_EMPLOYEE_LOGIN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH;
-    public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH = "/employee/refresh-token";
+    public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH = "/refresh-token";
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH;
     public static final String POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH = "";
     public static final String POST_AUTH_EMPLOYEE_REGISTER_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH;
@@ -212,8 +212,10 @@ public class RouterConstant {
     public static final String GET_BANNER_DETAILS_BY_ID_PATH = BANNER_BASE_PATH + GET_BANNER_DETAILS_BY_ID_SUB_PATH;
 
     // ENDPOINT URL COUPON =================================================================
-    public static final String POST_COUPON_CREATE_SUB_PATH = "/{couponType}";
-    public static final String POST_COUPON_CREATE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_SUB_PATH;
+    public static final String POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH = "/shipping";
+    public static final String POST_COUPON_CREATE_SHIPPING_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH;
+    public static final String POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH = "/order";
+    public static final String POST_COUPON_CREATE_ORDER_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH;
     public static final String POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH = "/product-gift";
     public static final String POST_COUPON_CREATE_BUY_GET_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH;
     public static final String PUT_COUPON_UPDATE_MONEY_BY_ID_SUB_PATH = COUPON_ID_PATH + "/{couponType}";

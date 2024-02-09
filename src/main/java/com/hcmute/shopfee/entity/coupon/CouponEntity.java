@@ -74,9 +74,9 @@ public class CouponEntity {
     @JsonManagedReference
     private CouponRewardEntity couponReward;
 
-    @OneToOne(mappedBy = "coupon")
-    @JsonManagedReference
-    private CouponUsedEntity couponUsed;
+//    @OneToOne(mappedBy = "coupon")
+//    @JsonManagedReference
+//    private CouponUsedEntity couponUsed;
 
 
 }

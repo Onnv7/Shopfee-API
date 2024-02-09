@@ -126,7 +126,8 @@ public class SwaggerConstant {
 
     // For banner =================================================================
     public static final String COUPON_CONTROLLER_TITLE = "COUPON MANAGEMENT";
-    public static final String COUPON_CREATE_MONEY_DISCOUNT_SUM = "Create a new coupon to get money discount";
+    public static final String COUPON_CREATE_SHIPPING_TYPE_SUM = "Create a new shipping coupon";
+    public static final String COUPON_CREATE_ORDER_TYPE_SUM = "Create a new shipping coupon";
     public static final String COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM = "Create a new coupon to buy a product and get free products";
     public static final String COUPON_UPDATE_MONEY_BY_ID_SUM = "Update a money coupon by id";
     public static final String COUPON_UPDATE_PRODUCT_GIFT_BY_ID_SUM = "Update a product gift coupon by id";
