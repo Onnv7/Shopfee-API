@@ -2,7 +2,6 @@ package com.hcmute.shopfee.entity.coupon;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.coupon.condition.*;
 import com.hcmute.shopfee.enums.ConditionType;
 import jakarta.persistence.*;
@@ -42,7 +41,7 @@ public class CouponConditionEntity {
 
     @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private ApplicableCustomerConditionEntity applicableCustomerCondition;
+    private EligibilityCustomerConditionEntity applicableCustomerCondition;
 
     @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
     @JsonManagedReference

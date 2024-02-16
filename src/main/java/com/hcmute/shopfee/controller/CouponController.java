@@ -2,7 +2,9 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
+import com.hcmute.shopfee.dto.request.CreateBuyXGetYCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateOrderCouponRequest;
+import com.hcmute.shopfee.dto.request.CreateProductMoneyCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
 import com.hcmute.shopfee.dto.response.GetCouponDetailsByIdResponse;
 import com.hcmute.shopfee.dto.response.GetCouponListResponse;
@@ -46,6 +48,32 @@ public class CouponController {
     @PostMapping(path = POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH)
     public ResponseEntity<ResponseAPI> createOrderCoupon(@RequestBody @Valid CreateOrderCouponRequest body) {
         couponService.createOrderCoupon(body);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.CREATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
+    @PostMapping(path = POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI> createAmountOffProductCoupon(@RequestBody @Valid CreateProductMoneyCouponRequest body) {
+        couponService.createAmountOffProductCoupon(body);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.CREATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM)
+    @PostMapping(path = POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI> createGiftProductCoupon(@RequestBody @Valid CreateBuyXGetYCouponRequest body) {
+        couponService.createGiftProductCoupon(body);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

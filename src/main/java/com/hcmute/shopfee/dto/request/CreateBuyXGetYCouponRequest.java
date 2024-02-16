@@ -1,12 +1,11 @@
 package com.hcmute.shopfee.dto.request;
 
-import com.hcmute.shopfee.dto.common.coupon.condition.EligibilityCustomerConditionDto;
-import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
-import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
-import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
+import com.hcmute.shopfee.dto.common.coupon.condition.*;
+import com.hcmute.shopfee.dto.common.coupon.reward.ProductRewardDto;
 import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -14,10 +13,9 @@ import java.util.Date;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
-import static com.hcmute.shopfee.constant.SwaggerConstant.DATE_ISO_EX;
-
+import static com.hcmute.shopfee.constant.SwaggerConstant.INTEGER_VALUE_EX;
 @Data
-public class  CreateOrderCouponRequest {
+public class CreateBuyXGetYCouponRequest {
     @Schema(example = COUPON_CODE_EX)
     @NotBlank
     private String code;
@@ -32,6 +30,11 @@ public class  CreateOrderCouponRequest {
     @Schema()
     private List<CombinationConditionDto> combinationConditionList;
 
+
+    @Schema()
+    @NotEmpty
+    private List<TargetObjectConditionDto> targetObjectConditionList;
+
     @Schema()
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
@@ -40,6 +43,7 @@ public class  CreateOrderCouponRequest {
     @NotNull
     private EligibilityCustomerConditionDto applicableCustomerCondition;
 
+
     @Schema(example = DATE_ISO_EX)
     @NotNull
     private Date startDate;
@@ -47,12 +51,7 @@ public class  CreateOrderCouponRequest {
     @Schema(example = DATE_ISO_EX)
     private Date expirationDate;
 
-    @Schema(example = COUPON_UNIT_EX)
-    @NotNull
-    private MoneyRewardUnit unitReward;
-
-    @Schema(example = INTEGER_VALUE_EX)
-    // TODO: check lớn hơn 0
-    @NotNull
-    private Integer valueReward;
+    @Schema
+    @NotEmpty
+    private List<ProductRewardDto> productRewardList;
 }

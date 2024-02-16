@@ -23,7 +23,7 @@ public class ProductRewardEntity {
     private String id;
 
     @Column(name = "product_id", nullable = false)
-    private String product_id;
+    private String productId;
 
     @Column(name = "product_size")
     private Short productSize;
@@ -31,7 +31,7 @@ public class ProductRewardEntity {
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "coupon_reward_id")
     @JsonBackReference
     private CouponRewardEntity couponReward;

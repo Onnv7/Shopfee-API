@@ -13,7 +13,7 @@ import java.util.List;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
-public class CreateShippingOrderRequest {
+public class ValidateCouponForOrderRequest {
     @Schema(example = OBJECT_ID_EX)
     @NotBlank
     private String userId;
@@ -22,19 +22,7 @@ public class CreateShippingOrderRequest {
     @NotEmpty
     private List<OrderItemDto> itemList;
 
-    @Schema(example = ORDER_NOTE_EX)
-    private String note;
-
-    @Schema(example = PAYMENT_TYPE_EX)
-    @NotNull
-    private PaymentType paymentType;
-
-    @Schema(example = OBJECT_ID_EX)
-    @NotNull
-    private String addressId;
-
     @Schema(example = SHIPPING_FEE_EX)
-    @NotNull
     private Long shippingFee;
 
     @Schema(example = COUPON_CODE_EX)

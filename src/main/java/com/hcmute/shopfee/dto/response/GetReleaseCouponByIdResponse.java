@@ -18,6 +18,7 @@ public class GetReleaseCouponByIdResponse {
         GetReleaseCouponByIdResponse response = new GetReleaseCouponByIdResponse();
         // TODO: xem lại conditionList
 //        response.setId(entity.getId());
+        response.setCode(entity.getCode());
         response.setDescription(entity.getDescription());
         response.setStartDate(entity.getStartDate());
         response.setExpirationDate(entity.getExpirationDate());

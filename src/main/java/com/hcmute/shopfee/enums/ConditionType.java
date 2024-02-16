@@ -4,5 +4,6 @@ public enum ConditionType {
     MIN_PURCHASE,
     COMBINATION,
     APPLICABLE_CUSTOMER,
-    USAGE
+    USAGE,
+    TARGET_OBJECT,
 }

@@ -1,14 +1,11 @@
 package com.hcmute.shopfee.dto.request;
 
-import com.hcmute.shopfee.dto.common.CouponConditionDto;
-import com.hcmute.shopfee.dto.common.coupon.condition.ApplicableCustomerConditionDto;
+import com.hcmute.shopfee.dto.common.coupon.condition.EligibilityCustomerConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
-import com.hcmute.shopfee.dto.common.coupon.reward.MoneyRewardDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -39,7 +36,7 @@ public class CreateShippingCouponRequest {
 
     @Schema()
     @NotNull
-    private ApplicableCustomerConditionDto applicableCustomerCondition;
+    private EligibilityCustomerConditionDto applicableCustomerCondition;
 
 
     @Schema(example = DATE_ISO_EX)

@@ -41,7 +41,7 @@ public class CreateProductMoneyCouponRequest {
 
     @Schema()
     @NotNull
-    private ApplicableCustomerConditionDto applicableCustomerCondition;
+    private EligibilityCustomerConditionDto applicableCustomerCondition;
 
 
     @Schema(example = DATE_ISO_EX)

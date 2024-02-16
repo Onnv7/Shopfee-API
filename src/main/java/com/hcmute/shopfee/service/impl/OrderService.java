@@ -4,12 +4,12 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
+import com.hcmute.shopfee.dto.request.ValidateCouponForOrderRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.*;
 import com.hcmute.shopfee.entity.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.coupon.CouponEntity;
-import com.hcmute.shopfee.entity.coupon.condition.CombinationConditionEntity;
-import com.hcmute.shopfee.entity.coupon.condition.UsageConditionEntity;
+import com.hcmute.shopfee.entity.coupon.condition.*;
 import com.hcmute.shopfee.entity.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.order.*;
 import com.hcmute.shopfee.entity.product.ProductEntity;
@@ -167,7 +167,54 @@ public class OrderService implements IOrderService {
         });
     }
 
-    private void checkCombinationCondition(List<CouponEntity> couponList) {
+
+    private boolean checkMinPurchaseCondition(MinPurchaseConditionEntity minPurchaseCondition, long totalOrderBill, int itemCount) {
+        if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
+            return true;
+        } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
+            if (totalOrderBill < minPurchaseCondition.getValue()) {
+                return false;
+            }
+        } else {
+            if (itemCount < minPurchaseCondition.getValue()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkUsageCondition(String userId, String couponCode, List<UsageConditionEntity> usageConditionList) {
+        for (UsageConditionEntity usageCondition : usageConditionList) {
+            UsageConditionType type = usageCondition.getType();
+            switch (type) {
+                case QUANTITY -> {
+                    if (usageCondition.getValue() <= 0) {
+                        return false;
+                    }
+                }
+                case LIMIT_ONE_FOR_USER -> {
+                    List<CouponUsedEntity> couponUsedEntityList = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, couponCode);
+                    if (!couponUsedEntityList.isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkEligibilityCustomerCondition(EligibilityCustomerConditionEntity condition, String userId) {
+        if (condition.getType() == ApplicableCustomerType.ALL) {
+            return true;
+        } else if (condition.getType() == ApplicableCustomerType.ONE) {
+            // TODO: check ONE
+        } else {
+            // TODO: check GROUP
+        }
+        return true;
+    }
+
+    private boolean checkCombinationCondition(List<CouponEntity> couponList) {
         CouponType[] types = {CouponType.ORDER, CouponType.PRODUCT, CouponType.SHIPPING};
 
         int[][] array = new int[3][3];
@@ -203,7 +250,7 @@ public class OrderService implements IOrderService {
                     (type == CouponType.PRODUCT && array[1][1] != sameCouponeList.size()) ||
                     (type == CouponType.SHIPPING && array[2][2] != sameCouponeList.size())
             ) {
-                throw new CustomException(ErrorConstant.COUPON_INVALID);
+                return false;
             }
 
         }
@@ -218,22 +265,77 @@ public class OrderService implements IOrderService {
         List<CouponEntity> shippingCouponList = couponList.stream()
                 .filter(coupon -> coupon.getCouponType() == CouponType.SHIPPING)
                 .toList();
-        if(orderCouponeList.size() * productCouponList.size() > 0) {
-            if(orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
-                throw new CustomException(ErrorConstant.COUPON_INVALID);
+        if (orderCouponeList.size() * productCouponList.size() > 0) {
+            if (orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
+                return false;
             }
         }
-        if(orderCouponeList.size() * shippingCouponList.size() > 0) {
-            if(orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
-                throw new CustomException(ErrorConstant.COUPON_INVALID);
+        if (orderCouponeList.size() * shippingCouponList.size() > 0) {
+            if (orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
+                return false;
             }
         }
-        if(productCouponList.size() * shippingCouponList.size() > 0) {
-            if(productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
-                throw new CustomException(ErrorConstant.COUPON_INVALID);
+        if (productCouponList.size() * shippingCouponList.size() > 0) {
+            if (productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
+                return false;
             }
         }
 
+        return true;
+    }
+
+    private boolean checkTargetObjectCondition(List<TargetObjectConditionEntity> conditions, String productId) {
+        for (TargetObjectConditionEntity condition : conditions) {
+            if (condition.getType() == TargetType.PRODUCT) {
+                if (!condition.getValue().equals(productId)) {
+                    return false;
+                }
+            } else if (condition.getType() == TargetType.CATEGORY) {
+                ProductEntity product = productRepository.findByIdAndCategory_IdAndIsDeletedFalse(productId, condition.getValue()).orElse(null);
+                if (product == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    public void validateCoupon(CouponEntity coupon, long total, int itemSize) {
+        coupon.getConditionList().forEach(it -> {
+            if (it.getUsageConditionList() != null) {
+                if (!checkUsageCondition(SecurityUtils.getCurrentUserId(), coupon.getCode(), it.getUsageConditionList())) {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+            } else if (it.getMinPurchaseCondition() != null) {
+                if (!checkMinPurchaseCondition(it.getMinPurchaseCondition(), total, itemSize)) {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+            } else if (it.getApplicableCustomerCondition() != null) {
+                if (!checkEligibilityCustomerCondition(it.getApplicableCustomerCondition(), SecurityUtils.getCurrentUserId())) {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+            } else if (it.getTargetObjectConditionList() != null) {
+                if (!checkTargetObjectCondition(it.getTargetObjectConditionList(), SecurityUtils.getCurrentUserId())) {
+                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+                }
+            }
+        });
+    }
+
+    public void validateCouponForOrder(ValidateCouponForOrderRequest body) {
+        CouponEntity orderCoupon = body.getOrderCouponCode() != null ? couponRepository.findByCodeAndIsDeletedFalse(body.getOrderCouponCode())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getOrderCouponCode())) : null;
+        CouponEntity shippingCoupon = body.getShippingCouponCode() != null ? couponRepository.findByCodeAndIsDeletedFalse(body.getShippingCouponCode())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getShippingCouponCode())) : null;
+        CouponEntity productCoupon = body.getProductCouponCode() != null ? couponRepository.findByCodeAndIsDeletedFalse(body.getProductCouponCode())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getProductCouponCode())) : null;
+        if (orderCoupon != null)
+            validateCoupon(orderCoupon, body.getTotal(), body.getItemList().size());
+        if (shippingCoupon != null)
+            validateCoupon(shippingCoupon, body.getTotal(), body.getItemList().size());
+        if (productCoupon != null)
+            validateCoupon(productCoupon, body.getTotal(), body.getItemList().size());
     }
 
     public void checkOrderCoupon(String couponCode, String userId, long totalOrderBill, int itemListSize) {
@@ -247,6 +349,7 @@ public class OrderService implements IOrderService {
             switch (conditionType) {
                 case USAGE -> {
                     List<UsageConditionEntity> usageConditionList = condition.getUsageConditionList();
+                    // checkUsageConditionCoupon(userId, couponCode, usageConditionList);
                     for (UsageConditionEntity usageCondition : usageConditionList) {
                         UsageConditionType type = usageCondition.getType();
                         switch (type) {

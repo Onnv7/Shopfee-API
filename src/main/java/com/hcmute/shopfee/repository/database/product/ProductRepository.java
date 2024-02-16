@@ -18,6 +18,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Optional<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status);
     List<ProductEntity> findByCategory_IdAndIsDeletedFalse(String categoryId);
     Page<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status, Pageable pageable);
+    Optional<ProductEntity> findByIdAndCategory_IdAndIsDeletedFalse(String productId, String categoryId);
 
     @Query(value = """
             select *
