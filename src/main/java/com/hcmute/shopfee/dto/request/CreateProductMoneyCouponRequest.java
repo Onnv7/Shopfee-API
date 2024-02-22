@@ -33,15 +33,15 @@ public class CreateProductMoneyCouponRequest {
 
     @Schema()
     @NotEmpty
-    private List<TargetObjectConditionDto> targetObjectConditionList;
+    private List<SubjectConditionDto> targetObjectConditionList;
 
     @Schema()
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
 
-    @Schema()
-    @NotNull
-    private EligibilityCustomerConditionDto applicableCustomerCondition;
+//    @Schema()
+//    @NotNull
+//    private EligibilityCustomerConditionDto applicableCustomerCondition;
 
 
     @Schema(example = DATE_ISO_EX)

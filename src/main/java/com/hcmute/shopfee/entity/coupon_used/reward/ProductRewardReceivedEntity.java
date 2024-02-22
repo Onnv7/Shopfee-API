@@ -1,10 +1,7 @@
 package com.hcmute.shopfee.entity.coupon_used.reward;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.coupon.CouponRewardEntity;
 import com.hcmute.shopfee.entity.coupon_used.CouponRewardReceivedEntity;
-import com.hcmute.shopfee.entity.order.OrderItemEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,22 +22,22 @@ public class ProductRewardReceivedEntity {
     private String id;
 
     @Column(name = "product_id", nullable = false)
-    private String product_id;
+    private String productId;
 
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
     @Column(name = "product_name")
-    private Short productName;
+    private String productName;
 
     @Column(name = "product_size")
-    private Short productSize;
+    private String productSize;
 
 //    @ManyToOne()
 //    @JoinColumn(name = "order_item_id", nullable = false)
 //    private OrderItemEntity orderItem;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "coupon_reward_received_id")
     @JsonBackReference
     private CouponRewardReceivedEntity couponRewardReceived;

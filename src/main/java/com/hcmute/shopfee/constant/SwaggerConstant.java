@@ -136,7 +136,10 @@ public class SwaggerConstant {
     public static final String COUPON_GET_RELEASE_LIST_SUM = "Get release coupon list";
     public static final String COUPON_GET_RELEASE_BY_ID_SUM = "Get a release coupon by id";
     public static final String COUPON_GET_LIST_SUM = "Get coupon list";
-    public static final String COUPON_GET_BY_ID_SUM = "Get coupon's details by id";
+    public static final String COUPON_GET_SHIPPING_BY_ID_SUM = "Get shipping coupon's details by id";
+    public static final String COUPON_GET_ORDER_BY_ID_SUM = "Get order coupon's details by id";
+    public static final String COUPON_GET_PRODUCT_GIFT_BY_ID_SUM = "Get product gift coupon's details by id";
+    public static final String COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM = "Get amount off product coupon's details by id";
 
 
     // For schema properties =====================================================

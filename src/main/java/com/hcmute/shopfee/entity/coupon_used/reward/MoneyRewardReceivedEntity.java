@@ -26,11 +26,12 @@ public class MoneyRewardReceivedEntity {
     @GeneratedValue(generator = "money_reward_received_id")
     private String id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
     private MoneyRewardUnit unit;
 
-    @Column(name = "coupon_type", nullable = false)
-    private CouponType couponType;
+//    @Column(name = "coupon_type", nullable = false)
+//    private CouponType couponType;
 //    @Column(name = "target_reward", nullable = false)
 //    private TargetReward targetReward;
 

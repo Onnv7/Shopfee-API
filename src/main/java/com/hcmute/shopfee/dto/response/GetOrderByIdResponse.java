@@ -21,7 +21,9 @@ public class GetOrderByIdResponse {
     private String id;
 //    private String code;
     private String note;
-    private Long total;
+    private Long totalPayment;
+    private Long shippingFee;
+    private Long totalItemPrice;
     private OrderType orderType;
     private ShippingInformation shippingInformation;
 
@@ -33,7 +35,7 @@ public class GetOrderByIdResponse {
     private Date receiveTime;
     private Long shippingDiscount;
     private Long orderDiscount;
-    private Long shippingFee;
+
 //    private Branch branch;
     private String branchAddress;
 
@@ -42,7 +44,11 @@ public class GetOrderByIdResponse {
         GetOrderByIdResponse order = new GetOrderByIdResponse();
         order.setId(entity.getId());
         order.setNote(entity.getNote());
-        order.setTotal(entity.getTotal());
+
+        order.setTotalPayment(entity.getTotalPayment());
+        order.setShippingFee(entity.getShippingFee());
+        order.setTotalItemPrice(entity.getTotalItemPrice());
+
         order.setOrderType(entity.getOrderType());
         order.setShippingInformation(entity.getShippingInformation() != null ? ShippingInformation.fromShippingInformationEntity(entity.getShippingInformation()) : null);
         order.setCreatedAt(entity.getCreatedAt());

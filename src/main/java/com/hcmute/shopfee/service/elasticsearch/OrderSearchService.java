@@ -1,15 +1,12 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.UserEntity;
 import com.hcmute.shopfee.entity.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.product.ProductEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.elasticsearch.OrderIndex;
-import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,7 +40,7 @@ public class OrderSearchService {
                 .phoneNumberReceiver(phoneNumberReceiver)
                 .orderType(orderBillEntity.getOrderType())
                 .statusLastEvent(OrderStatus.CREATED)
-                .total(orderBillEntity.getTotal())
+                .total(orderBillEntity.getTotalItemPrice())
                 .productQuantity(orderItemList.size())
                 .productThumbnail(product.getThumbnailUrl())
                 .customerCode(user.getId())
@@ -67,7 +64,7 @@ public class OrderSearchService {
             order.setPhoneNumber(orderBillEntity.getShippingInformation().getPhoneNumber());
             order.setOrderType(orderBillEntity.getOrderType());
             order.setStatusLastEvent(lastStatus.getOrderStatus());
-            order.setTotal(orderBillEntity.getTotal());
+            order.setTotal(orderBillEntity.getTotalItemPrice());
             order.setProductQuantity(orderItemList.size());
             order.setProductThumbnail(product.getThumbnailUrl());
             order.setCustomerCode(user.getId());

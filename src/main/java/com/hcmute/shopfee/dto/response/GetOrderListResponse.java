@@ -29,7 +29,7 @@ public class GetOrderListResponse {
             order.setCreatedAt(orderBillEntity.getCreatedAt());
             order.setOrderType(orderBillEntity.getOrderType());
             order.setCustomerName(orderBillEntity.getUser().getFullName());
-            order.setTotal(orderBillEntity.getTotal());
+            order.setTotal(orderBillEntity.getTotalItemPrice());
             order.setStatusLastEvent(orderBillEntity.getOrderEventList().get(eventLastIndex).getOrderStatus());
             return order;
         }

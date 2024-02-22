@@ -55,8 +55,11 @@ public class OrderBillEntity {
     @Column(name = "shipping_fee")
     private Long shippingFee;
 
-    @Column(name = "total", nullable = false)
-    private Long total;
+    @Column(name = "total_item_price", nullable = false)
+    private Long totalItemPrice;
+
+    @Column(name = "total_payment", nullable = false)
+    private Long totalPayment;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type", nullable = false)
@@ -89,7 +92,7 @@ public class OrderBillEntity {
     @JsonManagedReference
     private List<OrderItemEntity> orderItemList;
 
-    @OneToMany(mappedBy = "orderBill")
+    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<CouponUsedEntity> couponUsedList;
 

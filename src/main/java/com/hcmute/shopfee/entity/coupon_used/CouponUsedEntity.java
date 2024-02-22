@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.coupon_used.reward.MoneyRewardReceivedEntity;
 import com.hcmute.shopfee.entity.order.OrderBillEntity;
+import com.hcmute.shopfee.enums.CouponType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -28,18 +29,21 @@ public class CouponUsedEntity {
     @Column(name = "code", nullable = false)
     private String code;
 
-//    @OneToOne
-//    @JoinColumn(name = "coupon_id", nullable = false)
-//    @JsonBackReference
-//    private CouponEntity coupon;
+    @Column(name = "type", nullable = false)
+    private CouponType type;
 
     @ManyToOne
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;
 
+    @ManyToOne
+    @JoinColumn(name = "coupon_id", nullable = false)
+    @JsonBackReference
+    private CouponEntity coupon;
+
     // =================================================
-    @OneToOne(mappedBy = "couponUsed")
+    @OneToOne(mappedBy = "couponUsed", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private CouponRewardReceivedEntity couponRewardReceived;
 

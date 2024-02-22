@@ -39,9 +39,9 @@ public class CouponConditionEntity {
 
     // =================================================================
 
-    @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
-    @JsonManagedReference
-    private EligibilityCustomerConditionEntity applicableCustomerCondition;
+//    @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
+//    @JsonManagedReference
+//    private EligibilityCustomerConditionEntity applicableCustomerCondition;
 
     @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
@@ -53,7 +53,7 @@ public class CouponConditionEntity {
 
     @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private List<TargetObjectConditionEntity> targetObjectConditionList;
+    private List<SubjectConditionEntity> subjectConditionList;
 
     @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
     @JsonManagedReference

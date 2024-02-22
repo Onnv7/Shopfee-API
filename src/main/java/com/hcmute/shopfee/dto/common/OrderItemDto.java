@@ -30,6 +30,6 @@ public class OrderItemDto {
     @Schema(example = NOT_EMPTY_DES)
     private String note;
 
-    @Schema(example = COUPON_CODE_EX)
-    private String couponProductCode;
+//    @Schema(example = COUPON_CODE_EX)
+//    private String couponProductCode;
 }

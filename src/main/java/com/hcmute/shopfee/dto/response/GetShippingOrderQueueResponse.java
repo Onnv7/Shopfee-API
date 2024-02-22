@@ -29,7 +29,7 @@ public class GetShippingOrderQueueResponse {
         response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
         response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getCreatedAt());
         response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getOrderStatus());
-        response.setTotal(orderBillEntity.getTotal());
+        response.setTotal(orderBillEntity.getTotalItemPrice());
         return response;
     }
 }

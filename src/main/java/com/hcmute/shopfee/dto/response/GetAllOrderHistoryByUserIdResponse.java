@@ -22,7 +22,7 @@ public class GetAllOrderHistoryByUserIdResponse {
         GetAllOrderHistoryByUserIdResponse response = new GetAllOrderHistoryByUserIdResponse();
         int eventLastIndex = entity.getOrderEventList().size() - 1;
         response.setId(entity.getId());
-        response.setTotal(entity.getTotal());
+        response.setTotal(entity.getTotalItemPrice());
         response.setProductQuantity(entity.getOrderItemList().size());
         response.setOrderType(entity.getOrderType());
         response.setProductName(entity.getOrderItemList().get(0).getName());

@@ -26,12 +26,14 @@ public class CreateOnsiteOrderRequest {
     @NotEmpty
     private List<OrderItemDto> itemList;
 
+    @Schema(example = COUPON_CODE_EX)
+    private String productCouponCode;
 
     @Schema(example = COUPON_CODE_EX)
     private String orderCouponCode;
 
-    @Schema(example = DISCOUNT_VALUE_EX)
-    private Long orderDiscount;
+//    @Schema(example = DISCOUNT_VALUE_EX)
+//    private Long orderDiscount;
 
 
 //    @Schema(example = COUPON_CODE_LIST_EX)

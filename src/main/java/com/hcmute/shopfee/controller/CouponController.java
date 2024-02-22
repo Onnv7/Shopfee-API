@@ -6,10 +6,7 @@ import com.hcmute.shopfee.dto.request.CreateBuyXGetYCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateOrderCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateProductMoneyCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
-import com.hcmute.shopfee.dto.response.GetCouponDetailsByIdResponse;
-import com.hcmute.shopfee.dto.response.GetCouponListResponse;
-import com.hcmute.shopfee.dto.response.GetReleaseCouponByIdResponse;
-import com.hcmute.shopfee.dto.response.GetReleaseCouponListResponse;
+import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.ICouponService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -137,10 +134,52 @@ public class CouponController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = COUPON_GET_BY_ID_SUM)
-    @GetMapping(path = GET_COUPON_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getCouponById(@PathVariable(COUPON_ID) String couponId) {
-        GetCouponDetailsByIdResponse resData = couponService.getCouponById(couponId);
+    @Operation(summary = COUPON_GET_SHIPPING_BY_ID_SUM)
+    @GetMapping(path = GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI> getShippingCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+        GetShippingCouponDetailsByIdResponse resData = couponService.getShippingCouponDetailById(couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = COUPON_GET_ORDER_BY_ID_SUM)
+    @GetMapping(path = GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI> getOrderCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+        GetOrderCouponDetailByIdResponse resData = couponService.getOrderCouponDetailById(couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = COUPON_GET_PRODUCT_GIFT_BY_ID_SUM)
+    @GetMapping(path = GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_PATH)
+    public ResponseEntity<ResponseAPI> getProductGiftCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+        GetProductGiftCouponDetailByIdResponse resData = couponService.getProductGiftCouponDetailById(couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
+    @GetMapping(path = GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_PATH)
+    public ResponseEntity<ResponseAPI> getAmountOffProductCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+        GetAmountOffProductCouponDetailByIdResponse resData = couponService.getAmountOffProductCouponDetailById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

@@ -30,7 +30,7 @@ public class GetOnsiteOrderQueueResponse {
         response.setProductQuantity(orderBillEntity.getOrderItemList().get(0).getQuantity());
         response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
         response.setReceiveTime(orderBillEntity.getReceiveTime());
-        response.setTotal(orderBillEntity.getTotal());
+        response.setTotal(orderBillEntity.getTotalItemPrice());
         response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getOrderStatus());
         response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getCreatedAt());
         return response;

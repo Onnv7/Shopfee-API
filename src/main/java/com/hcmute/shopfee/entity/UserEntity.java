@@ -57,8 +57,11 @@ public class UserEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "phone_number", nullable = false)
+    @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "coin", columnDefinition = "BIGINT DEFAULT 0")
+    private Long coin;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean enabled;

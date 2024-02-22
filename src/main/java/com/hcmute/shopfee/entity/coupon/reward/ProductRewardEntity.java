@@ -22,11 +22,14 @@ public class ProductRewardEntity {
     @GeneratedValue(generator = "product_reward_id")
     private String id;
 
+    @Column(name = "product_name", nullable = false)
+    private String productName;
+
     @Column(name = "product_id", nullable = false)
     private String productId;
 
     @Column(name = "product_size")
-    private Short productSize;
+    private String productSize;
 
     @Column(name = "quantity", nullable = false)
     private Short quantity;

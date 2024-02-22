@@ -16,7 +16,14 @@ public interface CouponUsedRepository extends JpaRepository<CouponUsedEntity, St
             from coupon_used cu\s
             join order_bill ob on cu.order_bill_id ob.id\s
             where ob.user_id = ?1\s
-            and cu.code = ?2\s
+            and cu.coupon_id = ?2\s
             """, nativeQuery = true)
-    List<CouponUsedEntity> getCouponUsedByUserIdAndCode(String userId, String code);
+    Optional<CouponUsedEntity> getCouponUsedByUserIdAndCode(String userId, String couponId);
+
+    @Query(value = """
+          select count(*)
+          from coupon_used cu
+          where cu.coupon_id = ?1
+            """, nativeQuery = true)
+    int getUsedCouponCount(String couponId);
 }

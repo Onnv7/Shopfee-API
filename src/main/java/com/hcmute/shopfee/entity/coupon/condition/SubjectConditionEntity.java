@@ -16,7 +16,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TargetObjectConditionEntity {
+public class SubjectConditionEntity {
     @Id
     @GenericGenerator(name = "target_object_condition_id", strategy = TIME_ID_GENERATOR)
     @GeneratedValue(generator = "target_object_condition_id")

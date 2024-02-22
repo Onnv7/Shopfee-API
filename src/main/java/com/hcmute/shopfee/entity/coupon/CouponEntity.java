@@ -40,7 +40,6 @@ public class CouponEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private CouponStatus status;
@@ -65,6 +64,10 @@ public class CouponEntity {
     private Date updateAt;
 
     // =================================================
+
+    @OneToMany(mappedBy = "coupon")
+    @JsonManagedReference
+    private List<CouponUsedEntity> couponUsedList;
 
     @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST})
     @JsonManagedReference

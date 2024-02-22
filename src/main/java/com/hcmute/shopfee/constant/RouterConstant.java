@@ -232,7 +232,13 @@ public class RouterConstant {
     public static final String GET_COUPON_RELEASE_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_RELEASE_BY_ID_SUB_PATH;
     public static final String GET_COUPON_LIST_SUB_PATH =  "";
     public static final String GET_COUPON_LIST_PATH = COUPON_BASE_PATH + GET_COUPON_LIST_SUB_PATH;
-    public static final String GET_COUPON_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/details";
-    public static final String GET_COUPON_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_BY_ID_SUB_PATH;
+    public static final String GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/shipping";
+    public static final String GET_COUPON_SHIPPING_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH;
+    public static final String GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/order";
+    public static final String GET_COUPON_ORDER_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH;
+    public static final String GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/product-gift";
+    public static final String GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH;
+    public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/amount-off-product";
+    public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH;
 
 }

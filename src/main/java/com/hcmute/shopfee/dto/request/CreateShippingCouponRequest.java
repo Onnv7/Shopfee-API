@@ -1,6 +1,5 @@
 package com.hcmute.shopfee.dto.request;
 
-import com.hcmute.shopfee.dto.common.coupon.condition.EligibilityCustomerConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
@@ -34,9 +33,9 @@ public class CreateShippingCouponRequest {
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
 
-    @Schema()
-    @NotNull
-    private EligibilityCustomerConditionDto applicableCustomerCondition;
+//    @Schema()
+//    @NotNull
+//    private EligibilityCustomerConditionDto applicableCustomerCondition;
 
 
     @Schema(example = DATE_ISO_EX)

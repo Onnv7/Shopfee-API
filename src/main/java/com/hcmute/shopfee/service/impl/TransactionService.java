@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.service.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.response.GetOrderQuantityByStatusResponse;
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
 import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
 import com.hcmute.shopfee.entity.TransactionEntity;
@@ -48,7 +47,7 @@ public class TransactionService implements ITransactionService {
         }
 
         // nếu giao dịch vnpay thành công
-        if (transInfo.get("vnp_TransactionStatus").equals("00") && transInfo.get("vnp_Amount").equals(String.valueOf(orderBill.getTotal() * 100))) {
+        if (transInfo.get("vnp_TransactionStatus").equals("00") && transInfo.get("vnp_Amount").equals(String.valueOf(orderBill.getTotalItemPrice() * 100))) {
             transaction.setStatus(PaymentStatus.PAID);
             transaction.setTotalPaid(Long.parseLong(transInfo.get("vnp_Amount").toString()) / 100);
         } else {
@@ -65,7 +64,7 @@ public class TransactionService implements ITransactionService {
         OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + transId));
         TransactionEntity trans = orderBill.getTransaction();
-        long totalPaid = orderBill.getTotal();
+        long totalPaid = orderBill.getTotalItemPrice();
         trans.setStatus(PaymentStatus.PAID);
         trans.setTotalPaid(totalPaid);
         transactionRepository.save(trans);

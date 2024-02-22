@@ -32,7 +32,6 @@ public class RegisterUserRequest {
     private String lastName;
 
     @Schema(example = PHONE_NUMBER_EX)
-    @NotBlank
     @Pattern(regexp = PHONE_NUMBER_REGEX)
     private String phoneNumber;
 

@@ -1,9 +1,9 @@
 package com.hcmute.shopfee.repository.database.coupon.condition;
 
-import com.hcmute.shopfee.entity.coupon.condition.TargetObjectConditionEntity;
+import com.hcmute.shopfee.entity.coupon.condition.SubjectConditionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TargetObjectConditionRepository extends JpaRepository<TargetObjectConditionEntity, String> {
+public interface TargetObjectConditionRepository extends JpaRepository<SubjectConditionEntity, String> {
 }

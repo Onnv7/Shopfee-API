@@ -2,7 +2,6 @@ package com.hcmute.shopfee.dto.request;
 
 import com.hcmute.shopfee.dto.common.coupon.condition.*;
 import com.hcmute.shopfee.dto.common.coupon.reward.ProductRewardDto;
-import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
-import static com.hcmute.shopfee.constant.SwaggerConstant.INTEGER_VALUE_EX;
+
 @Data
 public class CreateBuyXGetYCouponRequest {
     @Schema(example = COUPON_CODE_EX)
@@ -33,15 +32,15 @@ public class CreateBuyXGetYCouponRequest {
 
     @Schema()
     @NotEmpty
-    private List<TargetObjectConditionDto> targetObjectConditionList;
+    private List<SubjectConditionDto> targetObjectConditionList;
 
     @Schema()
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
 
-    @Schema()
-    @NotNull
-    private EligibilityCustomerConditionDto applicableCustomerCondition;
+//    @Schema()
+//    @NotNull
+//    private EligibilityCustomerConditionDto applicableCustomerCondition;
 
 
     @Schema(example = DATE_ISO_EX)

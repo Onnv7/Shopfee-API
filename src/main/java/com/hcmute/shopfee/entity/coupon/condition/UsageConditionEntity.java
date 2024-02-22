@@ -26,6 +26,9 @@ public class UsageConditionEntity {
     @Column(name = "type", nullable = false)
     private UsageConditionType type;
 
+//    @Column(name = "value")
+//    private Integer remainAmount;
+
     @Column(name = "value")
     private Integer value;
 

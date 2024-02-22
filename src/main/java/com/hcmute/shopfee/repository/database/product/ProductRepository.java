@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<ProductEntity, String> {
     Optional<ProductEntity> findByNameAndIsDeletedFalse(String name);
     Optional<ProductEntity> findByIdAndIsDeletedFalse(String id);
+    Optional<ProductEntity> findByIdAndStatusAndIsDeletedFalse(String id, ProductStatus status);
     Optional<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status);
     List<ProductEntity> findByCategory_IdAndIsDeletedFalse(String categoryId);
     Page<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status, Pageable pageable);

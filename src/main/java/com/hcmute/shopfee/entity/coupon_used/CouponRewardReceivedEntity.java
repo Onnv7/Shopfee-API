@@ -13,6 +13,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.List;
+
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
@@ -38,12 +40,12 @@ public class CouponRewardReceivedEntity {
     private CouponUsedEntity couponUsed;
 
     // =================================================================
-    @OneToOne(mappedBy = "couponRewardReceived")
+    @OneToOne(mappedBy = "couponRewardReceived", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private MoneyRewardReceivedEntity moneyRewardReceived;
 
-    @OneToOne(mappedBy = "couponRewardReceived")
+    @OneToMany(mappedBy = "couponRewardReceived", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private ProductRewardReceivedEntity productRewardReceived;
+    private List<ProductRewardReceivedEntity> productRewardReceivedList;
 
 }

@@ -23,6 +23,7 @@ public class MoneyRewardEntity {
     @GeneratedValue(generator = "money_reward_id")
     private String id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
     private MoneyRewardUnit unit;
 

@@ -15,7 +15,7 @@ public class ProductRewardDto {
     private String productId;
 
     @Schema(example = PRODUCT_SIZE_EX)
-    private Short productSize;
+    private String productSize;
 
     @Schema(example = OBJECT_ID_EX)
     @NotNull

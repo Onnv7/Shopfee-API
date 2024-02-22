@@ -33,7 +33,7 @@ public class GetOrderHistoryForEmployeeResponse {
         orderResponse.setProductThumbnailUrl(entity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
         orderResponse.setTimeLastEvent(entity.getOrderEventList().get(lastEventIndex).getCreatedAt());
         orderResponse.setStatusLastEvent(entity.getOrderEventList().get(lastEventIndex).getOrderStatus());
-        orderResponse.setTotal(entity.getTotal());
+        orderResponse.setTotal(entity.getTotalItemPrice());
         orderResponse.setOrderType(entity.getOrderType());
         return orderResponse;
     }
