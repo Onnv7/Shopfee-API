@@ -4,6 +4,7 @@ public class RouterConstant {
     // =================================================
     public static final String USER_BASE_PATH = "/api/user";
     public static final String ADDRESS_BASE_PATH = "/api/address";
+    public static final String REVIEW_BASE_PATH = "/api/review";
     public static final String BRANCH_BASE_PATH = "/api/branch";
     public static final String EMPLOYEE_AUTH_BASE_PATH = "/api/auth/employee";
     public static final String USER_AUTH_BASE_PATH = "/api/auth/user";
@@ -66,6 +67,10 @@ public class RouterConstant {
     public static final String GET_ADDRESS_BY_USER_ID_PATH = ADDRESS_BASE_PATH + GET_ADDRESS_BY_USER_ID_SUB_PATH;
     public static final String GET_ADDRESS_DETAILS_BY_ID_SUB_PATH = ADDRESS_ID_PATH;
     public static final String GET_ADDRESS_DETAILS_BY_ID_PATH = ADDRESS_BASE_PATH + GET_ADDRESS_DETAILS_BY_ID_SUB_PATH;
+
+    // ENDPOINT URL ADDRESS =================================================================
+    public static final String POST_REVIEW_CREATE_SUB_PATH = "" ;
+    public static final String POST_REVIEW_CREATE_PATH = REVIEW_BASE_PATH +  POST_REVIEW_CREATE_SUB_PATH;
 
     // ENDPOINT URL PRODUCT =================================================================
     public static final String GET_PRODUCT_DETAILS_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/details";

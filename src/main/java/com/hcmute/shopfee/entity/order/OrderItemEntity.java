@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.order;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
+import com.hcmute.shopfee.entity.ProductReviewEntity;
 import com.hcmute.shopfee.entity.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.product.ProductEntity;
 import com.hcmute.shopfee.enums.ProductSize;
@@ -23,8 +24,8 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class OrderItemEntity {
     @Id
-    @GenericGenerator(name = "order_event_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "order_event_id")
+    @GenericGenerator(name = "order_item_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "order_item_id")
     private String id;
 
     @ManyToOne
@@ -32,21 +33,21 @@ public class OrderItemEntity {
     @JsonBackReference
     private ProductEntity product;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
+//    @Column(name = "quantity", nullable = false)
+//    private int quantity;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "size")
-    @Enumerated(EnumType.STRING)
-    private ProductSize size;
-
-    @Column(name = "price", nullable = false)
-    private Long price;
-
-    @Column(name = "note")
-    private String note;
+//    @Column(name = "size")
+//    @Enumerated(EnumType.STRING)
+//    private ProductSize size;
+//
+//    @Column(name = "price", nullable = false)
+//    private Long price;
+//
+//    @Column(name = "note")
+//    private String note;
 
 //    @Column(name = "coupon_product_code")
 //    private String couponProductCode;
@@ -58,18 +59,23 @@ public class OrderItemEntity {
     @JsonBackReference
     private OrderBillEntity orderBill;
 
+    @OneToOne(cascade = {CascadeType.PERSIST})
+    @JoinColumn(name = "product_review_id", nullable = false)
+    @JsonBackReference
+    private ProductReviewEntity productReview;
 
-    // =================================================================
-    @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST})
+    // =================================================
+    @OneToMany(mappedBy = "orderItem")
     @JsonManagedReference
-    private List<ItemToppingEntity> itemToppingList;
+    private List<ItemDetailEntity> itemDetailList;
+
 
 //    @OneToMany(mappedBy = "orderItem")
 //    @JsonManagedReference
 //    private List<ProductRewardReceivedEntity> productRewardReceivedList;
-    public void fromOrderItemDto(OrderItemDto orderItemDto) {
-        this.setQuantity(orderItemDto.getQuantity());
-        this.setNote(orderItemDto.getNote());
-        this.setSize(orderItemDto.getSize());
-    }
+//    public void fromOrderItemDto(OrderItemDto orderItemDto) {
+//        this.setQuantity(orderItemDto.getQuantity());
+//        this.setNote(orderItemDto.getNote());
+//        this.setSize(orderItemDto.getSize());
+//    }
 }

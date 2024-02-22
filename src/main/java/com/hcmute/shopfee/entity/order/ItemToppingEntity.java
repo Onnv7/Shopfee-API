@@ -32,6 +32,6 @@ public class ItemToppingEntity {
 
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name = "order_item_id", nullable = false)
-    private OrderItemEntity orderItem;
+    @JoinColumn(name = "item_detail_id", nullable = false)
+    private ItemDetailEntity itemDetail;
 }

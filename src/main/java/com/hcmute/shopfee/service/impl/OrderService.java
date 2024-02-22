@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
@@ -108,38 +109,63 @@ public class OrderService implements IOrderService {
         int itemSize = orderItemList.size();
         for (int i = 0; i < itemSize; i++) {
             OrderItemDto orderItemDto = orderItemList.get(i);
-            OrderItemEntity item = modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
-            long totalPriceToppings = 0;
+
             ProductEntity productInfo = productRepository.findByIdAndStatusAndIsDeletedFalse(orderItemDto.getProductId(), ProductStatus.AVAILABLE)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + orderItemDto.getProductId()));
+
+            OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
+            item.setProduct(productInfo);
+            item.setName(productInfo.getName());
+
+
+            long totalPriceToppings = 0;
             item.setName(productInfo.getName());
 
             List<ToppingEntity> toppingList = productInfo.getToppingList();
             List<SizeEntity> sizeList = productInfo.getSizeList();
 
             List<ItemToppingEntity> itemsToppingList = new ArrayList<>();
-            List<String> toppingNameList = orderItemDto.getToppingNameList() != null ? orderItemDto.getToppingNameList() : new ArrayList<>();
-            for (String toppingName : toppingNameList) {
-                ItemToppingEntity itemTopping = new ItemToppingEntity();
-                ToppingEntity toppingEntity = toppingList.stream()
-                        .filter(topping -> toppingName.equals(topping.getName()))
-                        .findFirst()
-                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + toppingName));
-                itemTopping.setName(toppingName);
-                itemTopping.setPrice(toppingEntity.getPrice());
-                itemTopping.setOrderItem(item);
-                itemsToppingList.add(itemTopping);
-                totalPriceToppings += toppingEntity.getPrice();
-            }
-            SizeEntity sizeItem = sizeList.stream()
-                    .filter(it -> it.getSize() == orderItemDto.getSize())
-                    .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + orderItemDto.getSize()));
-            item.setPrice(sizeItem.getPrice());
+            List<ItemDetailEntity> itemsDetailEntityList = new ArrayList<>();
 
-            totalPrice += (long) ((sizeItem.getPrice() + totalPriceToppings) * orderItemDto.getQuantity());
-            item.setItemToppingList(itemsToppingList);
+            for (ItemDetailDto itemDetail : orderItemDto.getItemDetailList()) {
+                List<String> toppingNameList = itemDetail.getToppingNameList() != null ? itemDetail.getToppingNameList() : new ArrayList<>();
+
+                // Khởi tạo và set các thuộc tính cơ bản
+                ItemDetailEntity itemDetailEntity = new ItemDetailEntity();
+                itemDetailEntity.setOrderItem(item);
+
+                itemDetailEntity.setNote(itemDetail.getNote());
+                itemDetailEntity.setQuantity(itemDetail.getQuantity());
+                itemDetailEntity.setSize(itemDetail.getSize());
+
+                // set topping list cho item detail
+                for (String toppingName : toppingNameList) {
+                    ItemToppingEntity itemTopping = new ItemToppingEntity();
+                    ToppingEntity toppingEntity = toppingList.stream()
+                            .filter(topping -> toppingName.equals(topping.getName()))
+                            .findFirst()
+                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + toppingName));
+                    itemTopping.setName(toppingName);
+                    itemTopping.setPrice(toppingEntity.getPrice());
+                    itemTopping.setItemDetail(itemDetailEntity);
+                    itemsToppingList.add(itemTopping);
+                    totalPriceToppings += toppingEntity.getPrice();
+                }
+                itemDetailEntity.setItemToppingList(itemsToppingList);
+
+                // set size
+                SizeEntity sizeItem = sizeList.stream()
+                        .filter(it -> it.getSize() == itemDetail.getSize())
+                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + itemDetail.getSize()));
+                itemDetailEntity.setPrice(sizeItem.getPrice());
+                itemsDetailEntityList.add(itemDetailEntity);
+
+                totalPrice += (long) ((sizeItem.getPrice() + totalPriceToppings) * itemDetail.getQuantity());
+            }
+
+            item.setItemDetailList(itemsDetailEntityList);
+
             item.setOrderBill(orderBill);
-            item.setProduct(productInfo);
             orderItemEntityList.add(item);
         }
 
@@ -301,7 +327,11 @@ public class OrderService implements IOrderService {
                 if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
                     return true;
                 } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-                    if (item.getQuantity() >= minPurchaseCondition.getValue()) {
+                    int quantity = 0;
+                    for (ItemDetailDto detail : item.getItemDetailList()) {
+                        quantity += detail.getQuantity();
+                    }
+                    if (quantity >= minPurchaseCondition.getValue()) {
                         return true;
                     }
                 } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
@@ -310,7 +340,11 @@ public class OrderService implements IOrderService {
                     if (product == null) {
                         return false;
                     }
-                    if (item.getQuantity() * product.getPrice() >= minPurchaseCondition.getValue()) {
+                    long money = 0;
+                    for (ItemDetailDto detail : item.getItemDetailList()) {
+                        money = money + detail.getQuantity() * product.getPrice();
+                    }
+                    if (money >= minPurchaseCondition.getValue()) {
                         return true;
                     }
                 }
@@ -322,8 +356,7 @@ public class OrderService implements IOrderService {
                                 return false;
                             }
                             return product.getCategory().getId().equals(condition.getValue());
-                        })
-                        .findFirst()
+                        }).findFirst()
                         .orElse(null);
                 if (item == null) {
                     continue;
@@ -331,7 +364,12 @@ public class OrderService implements IOrderService {
                 if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
                     return true;
                 } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-                    if (item.getQuantity() >= minPurchaseCondition.getValue()) {
+                    int quantity = 0;
+                    for (ItemDetailDto detail : item.getItemDetailList()) {
+                        quantity += detail.getQuantity();
+                    }
+
+                    if (quantity >= minPurchaseCondition.getValue()) {
                         return true;
                     }
                 } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
@@ -340,7 +378,12 @@ public class OrderService implements IOrderService {
                     if (product == null) {
                         return false;
                     }
-                    if (item.getQuantity() * product.getPrice() >= minPurchaseCondition.getValue()) {
+                    long money = 0;
+                    for (ItemDetailDto detail : item.getItemDetailList()) {
+                        money = money + detail.getQuantity() * product.getPrice();
+                    }
+
+                    if (money >= minPurchaseCondition.getValue()) {
                         return true;
                     }
                 }

@@ -37,7 +37,7 @@ public class SecurityConstant {
     public static final String[] POST_USER_PATH = {
             POST_ADDRESS_CREATE_PATH,
             POST_ORDER_CREATE_REVIEW_PATH,
-             POST_ORDER_CREATE_ONSITE_PATH
+            POST_ORDER_CREATE_ONSITE_PATH, POST_REVIEW_CREATE_PATH
     };
     public static final String[] PATCH_USER_PATH = {
             PATCH_USER_CHANGE_PASSWORD_PATH

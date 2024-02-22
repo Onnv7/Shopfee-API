@@ -2,9 +2,7 @@ package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.TransactionEntity;
-import com.hcmute.shopfee.entity.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.order.OrderItemEntity;
-import com.hcmute.shopfee.entity.order.ShippingInformationEntity;
+import com.hcmute.shopfee.entity.order.*;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -114,27 +112,52 @@ public class GetOrderByIdResponse {
     @Data
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     public static class Product {
-        private int quantity;
-        private List<Topping> toppingList;
-        private ProductSize size;
-        private Long price;
-        private String note;
         private String productId;
         private String name;
-        private Long moneyDiscount;
-        private ProductGift productGift;
+        private List<ItemDetail> itemDetailList;
 
 
-        // TODO: set discount
+        @Data
+        @JsonInclude(value = JsonInclude.Include.NON_NULL)
+        public static class ItemDetail {
+            private int quantity;
+            private List<Topping> toppingList;
+            private ProductSize size;
+            private Long price;
+            private String note;
+
+            public static ItemDetail fromItemDetailEntity(ItemDetailEntity entity) {
+                ItemDetail data= new ItemDetail();
+                data.setPrice(entity.getPrice());
+                data.setNote(entity.getNote());
+                data.setSize(entity.getSize());
+                data.setQuantity(entity.getQuantity());
+                List<Topping> toppingList = new ArrayList<>();
+                for (ItemToppingEntity topping: entity.getItemToppingList()) {
+                    Topping toppingData = new Topping();
+                    toppingData.setName(topping.getName());
+                    toppingData.setPrice(topping.getPrice());
+                    toppingList.add(toppingData);
+                }
+                data.setToppingList(toppingList);
+                return data;
+            }
+
+            public static List<ItemDetail> fromItemDetailEntityList(List<ItemDetailEntity> entityList) {
+                List<ItemDetail> data = new ArrayList<>();
+                for(ItemDetailEntity entity: entityList) {
+                    data.add(fromItemDetailEntity(entity));
+                }
+                return data;
+            }
+        }
+
         public static Product fromOrderItemEntity(OrderItemEntity orderItemEntity) {
             Product product = new Product();
-            product.setQuantity(orderItemEntity.getQuantity());
-            product.setSize(orderItemEntity.getSize());
-            product.setPrice(orderItemEntity.getPrice());
-            product.setNote(orderItemEntity.getNote());
+            List<ItemDetail> itemDetailList = ItemDetail.fromItemDetailEntityList(orderItemEntity.getItemDetailList());
+            product.setItemDetailList(itemDetailList);
             product.setProductId(orderItemEntity.getProduct().getId());
             product.setName(orderItemEntity.getName());
-            // TODO: set casc coupon
             return product;
         }
 

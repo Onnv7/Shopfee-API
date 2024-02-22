@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +52,10 @@ public class UserAuthController {
                 .message(SuccessConstant.LOGIN)
                 .data(data)
                 .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        // TODO: kiem tra expire coookie
+        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
         return new ResponseEntity<>(res, StatusCode.OK);
 
     }

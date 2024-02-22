@@ -45,9 +45,11 @@ public class SwaggerConstant {
     public static final String ADDRESS_DELETE_ADDRESS_BY_ID_SUM = "Delete address by address id";
     public static final String ADDRESS_GET_BY_USER_ID_SUM = "Get all addresses by user id";
     public static final String ADDRESS_GET_DETAILS_BY_ID_SUM = "Get an address details by id";
+    // For review =================================================================
+    public static final String REVIEW_CONTROLLER_TITLE = "REVIEW MANAGEMENT";
+    public static final String REVIEW_CREATE_SUM = "Create a new product's review";
 
     // For product =================================================================
-
     public static final String PRODUCT_CONTROLLER_TITLE = "PRODUCT MANAGEMENT";
     public static final String PRODUCT_CREATE_SUM = "Create a new product";
     public static final String PRODUCT_GET_BY_ID_SUM = "Get a product's details by product id";
