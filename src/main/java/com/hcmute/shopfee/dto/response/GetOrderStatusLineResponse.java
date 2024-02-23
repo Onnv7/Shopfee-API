@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hcmute.shopfee.entity.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import lombok.Data;
 

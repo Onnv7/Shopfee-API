@@ -5,6 +5,7 @@ public class SuccessConstant {
     public static final String UPDATED = "Update successfully";
     public static final String DELETED = "Delete successfully";
     public static final String LOGIN = "Login successfully";
+    public static final String LOGOUT = "Logout successfully";
     public static final String GET_NEW_TOKEN = "Get new token successfully";
     public static final String GET_USER = "Get user successfully";
     public static final String GET = "Get successfully";

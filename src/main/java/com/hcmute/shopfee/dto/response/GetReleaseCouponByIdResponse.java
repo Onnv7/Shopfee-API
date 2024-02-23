@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.hcmute.shopfee.entity.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
 import lombok.Data;
 
 import java.util.Date;

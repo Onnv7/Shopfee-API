@@ -6,7 +6,7 @@ import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IEmployeeService;
+import com.hcmute.shopfee.service.core.IEmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;

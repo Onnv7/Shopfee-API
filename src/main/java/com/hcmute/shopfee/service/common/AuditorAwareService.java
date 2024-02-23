@@ -1,8 +1,5 @@
 package com.hcmute.shopfee.service.common;
 
-import com.hcmute.shopfee.entity.UserEntity;
-import com.hcmute.shopfee.repository.database.EmployeeRepository;
-import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;

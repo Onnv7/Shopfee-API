@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.elasticsearch;
 
-import com.hcmute.shopfee.model.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;

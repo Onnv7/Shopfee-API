@@ -6,7 +6,7 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IUserService;
+import com.hcmute.shopfee.service.core.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -52,7 +52,7 @@ public class SecurityConstant {
     public static final String[] GET_USER_PATH = {
             GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_PATH,
             GET_ADDRESS_BY_USER_ID_PATH, GET_ADDRESS_DETAILS_BY_ID_PATH,
-            GET_USER_BY_ID_PATH,
+            GET_USER_BY_ID_PATH, GET_AUTH_USER_LOGOUT_PATH
     };
 
     // Only ADMIN =================================================================
@@ -107,7 +107,8 @@ public class SecurityConstant {
     public static final String[] GET_ADMIN_EMPLOYEE_PATH = {
             GET_EMPLOYEE_BY_ID_PATH,
             GET_ORDER_ALL_SHIPPING_PATH,
-            GET_ORDER_ORDER_QUANTITY_BY_STATUS_PATH
+            GET_ORDER_ORDER_QUANTITY_BY_STATUS_PATH,
+            GET_AUTH_EMPLOYEE_LOGOUT_PATH
     };
 
     public static final String[] PUT_ADMIN_EMPLOYEE_PATH = {

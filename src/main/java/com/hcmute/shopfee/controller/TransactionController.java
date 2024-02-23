@@ -5,7 +5,7 @@ import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
 import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.ITransactionService;
+import com.hcmute.shopfee.service.core.ITransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;

@@ -3,16 +3,13 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
-import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IReviewService;
+import com.hcmute.shopfee.service.core.IReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

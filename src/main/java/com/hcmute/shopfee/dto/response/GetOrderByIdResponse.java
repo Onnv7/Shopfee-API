@@ -1,8 +1,8 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.TransactionEntity;
-import com.hcmute.shopfee.entity.order.*;
+import com.hcmute.shopfee.entity.database.TransactionEntity;
+import com.hcmute.shopfee.entity.database.order.*;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;

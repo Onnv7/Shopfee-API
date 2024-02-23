@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.response.GetCategoryByIdResponse;
 import com.hcmute.shopfee.dto.response.GetCategoryListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleCategoryListResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.ICategoryService;
+import com.hcmute.shopfee.service.core.ICategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

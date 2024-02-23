@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.hcmute.shopfee.entity.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
 import lombok.Data;

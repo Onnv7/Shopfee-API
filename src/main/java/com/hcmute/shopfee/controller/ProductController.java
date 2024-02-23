@@ -9,7 +9,7 @@ import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IProductService;
+import com.hcmute.shopfee.service.core.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
-import com.hcmute.shopfee.dto.common.CouponConditionDto;
-import com.hcmute.shopfee.entity.coupon.condition.MinPurchaseConditionEntity;
+import com.hcmute.shopfee.entity.database.coupon.condition.MinPurchaseConditionEntity;
 import com.hcmute.shopfee.enums.MiniPurchaseType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

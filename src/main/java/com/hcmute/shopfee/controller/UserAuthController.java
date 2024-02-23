@@ -1,15 +1,19 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
+import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IUserAuthService;
+import com.hcmute.shopfee.service.core.IUserAuthService;
+import com.hcmute.shopfee.utils.CookieUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +33,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @Slf4j
 public class UserAuthController {
     private final IUserAuthService userAuthService;
+
     @Operation(summary = USER_AUTH_REGISTER_SUM)
     @PostMapping(POST_USER_AUTH_REGISTER_SUB_PATH)
     public ResponseEntity<ResponseAPI> registerUser(@RequestBody @Valid RegisterUserRequest body) {
@@ -44,7 +49,7 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI> userLogin(@RequestBody @Valid LoginRequest body) {
+    public ResponseEntity<ResponseAPI> loginUser(@RequestBody @Valid LoginRequest body) {
         LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -56,9 +61,30 @@ public class UserAuthController {
         HttpHeaders headers = new HttpHeaders();
         // TODO: kiem tra expire coookie
         headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, StatusCode.OK);
 
     }
+
+    @Operation(summary = USER_AUTH_LOGOUT_SUM)
+    @GetMapping(path = GET_AUTH_USER_LOGOUT_SUB_PATH)
+    public ResponseEntity<ResponseAPI> logoutUser(HttpServletRequest request) {
+
+        String refreshToken = CookieUtils.getRefreshToken(request);
+        if (refreshToken == null) {
+            throw new CustomException(ErrorConstant.NOT_FOUND + "refresh token");
+        }
+        userAuthService.logoutUser(refreshToken);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.LOGOUT)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + "; Max-Age=0; Path=/; Secure; HttpOnly");
+        return new ResponseEntity<>(res, headers, StatusCode.OK);
+    }
+
     @Operation(summary = USER_AUTH_RE_SEND_EMAIL_SUM)
     @PostMapping(POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH)
     public ResponseEntity<ResponseAPI> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
@@ -69,6 +95,7 @@ public class UserAuthController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
     @PostMapping(POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
     public ResponseEntity<ResponseAPI> sendCodeToRegister(@RequestBody @Valid SendCodeRequest body) {
@@ -81,6 +108,7 @@ public class UserAuthController {
         return new ResponseEntity<>(res, StatusCode.OK);
 
     }
+
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_GET_PWD_SUM)
     @PostMapping(POST_USER_AUTH_SEND_CODE_TO_GET_PWD_SUB_PATH)
     public ResponseEntity<ResponseAPI> sendCodeToGetPassword(@RequestBody @Valid SendCodeRequest body) {
@@ -93,6 +121,7 @@ public class UserAuthController {
         return new ResponseEntity<>(res, StatusCode.OK);
 
     }
+
     @Operation(summary = USER_AUTH_VERIFY_EMAIL_SUM)
     @PostMapping(POST_USER_AUTH_VERIFY_EMAIL_SUB_PATH)
     public ResponseEntity<ResponseAPI> verifyCodeByEmail(@RequestBody @Valid VerifyEmailRequest body) {
@@ -106,6 +135,7 @@ public class UserAuthController {
         return new ResponseEntity<>(res, StatusCode.OK);
 
     }
+
     @Operation(summary = USER_AUTH_CHANGE_PASSWORD_SUM)
     @PatchMapping(PATCH_USER_AUTH_CHANGE_PASSWORD_SUB_PATH)
     public ResponseEntity<ResponseAPI> changePasswordForgot(@RequestBody @Valid ChangePasswordRequest body) {
@@ -121,6 +151,7 @@ public class UserAuthController {
             throw new RuntimeException(e);
         }
     }
+
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI> refreshToken(@RequestBody @Valid RefreshTokenRequest body) {
@@ -134,6 +165,7 @@ public class UserAuthController {
 
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = USER_CHANGE_PWD_SUM)
     @PatchMapping(path = PATCH_USER_CHANGE_PASSWORD_SUB_PATH)
     public ResponseEntity<ResponseAPI> changePasswordProfile(

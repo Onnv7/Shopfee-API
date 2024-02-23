@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.request.CreateProductMoneyCouponRequest;
 import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.ICouponService;
+import com.hcmute.shopfee.service.core.ICouponService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

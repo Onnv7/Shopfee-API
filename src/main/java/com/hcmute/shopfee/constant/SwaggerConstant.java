@@ -17,6 +17,7 @@ public class SwaggerConstant {
     public static final String AUTH_REGISTER_SUM = "Register new user account with some information";
     public static final String AUTH_SEND_OTP_TO_PHONE_NUMBER_SUM = "Send OTP code to phone number (The function is under maintenance)";
     public static final String AUTH_EMPLOYEE_LOGIN_SUM = "Employee login to get token";
+    public static final String AUTH_EMPLOYEE_LOGOUT_SUM = "Employee logout to clear token";
     public static final String AUTH_REFRESH_EMPLOYEE_TOKEN_SUM = "Create new access token and refresh token for employee";
     public static final String AUTH_EMPLOYEE_REGISTER_SUM = "Register new employee account with some information";
 
@@ -24,6 +25,7 @@ public class SwaggerConstant {
     public static final String USER_AUTH_CONTROLLER_TITLE = "USER AUTH MANAGEMENT";
     public static final String USER_AUTH_REGISTER_SUM = "Register new user account with some information";
     public static final String USER_AUTH_LOGIN_SUM = "User login to get token";
+    public static final String USER_AUTH_LOGOUT_SUM = "User logout to clear token";
     public static final String USER_AUTH_RE_SEND_EMAIL_SUM = "Send email confirmation code a second time or later to update the Confirmation collection";
     public static final String USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM = "Send email confirmation code to register account";
     public static final String USER_AUTH_SEND_CODE_TO_EMAIL_TO_GET_PWD_SUM = "Send email confirmation code to change password";

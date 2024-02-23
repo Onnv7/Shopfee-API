@@ -7,7 +7,7 @@ import com.hcmute.shopfee.dto.request.UpdateAddressRequest;
 import com.hcmute.shopfee.dto.response.GetAddressDetailsByIdResponse;
 import com.hcmute.shopfee.dto.response.GetAddressListByUserIdResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IAddressService;
+import com.hcmute.shopfee.service.core.IAddressService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

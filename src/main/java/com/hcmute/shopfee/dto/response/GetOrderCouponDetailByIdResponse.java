@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
-import com.hcmute.shopfee.entity.coupon.CouponConditionEntity;
-import com.hcmute.shopfee.entity.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
+import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import lombok.Data;
 

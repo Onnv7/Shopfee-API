@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.security.custom.user;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.RoleEntity;
-import com.hcmute.shopfee.entity.UserEntity;
+import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.security.UserPrincipal;
-import com.hcmute.shopfee.service.impl.UserService;
+import com.hcmute.shopfee.service.core.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,9 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component

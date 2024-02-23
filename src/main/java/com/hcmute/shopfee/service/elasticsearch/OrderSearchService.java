@@ -1,12 +1,12 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
-import com.hcmute.shopfee.entity.UserEntity;
-import com.hcmute.shopfee.entity.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.order.OrderItemEntity;
-import com.hcmute.shopfee.entity.product.ProductEntity;
+import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
+import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.model.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

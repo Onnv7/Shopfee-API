@@ -1,7 +1,7 @@
 //package com.hcmute.shopfee.security.oauth;
 //
 //
-//import com.hcmute.shopfee.entity.UserEntity;
+//import com.hcmute.shopfee.entity.database.UserEntity;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.security.authentication.InternalAuthenticationServiceException;
 //import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;

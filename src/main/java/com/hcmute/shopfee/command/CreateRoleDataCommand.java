@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.command;
 
-import com.hcmute.shopfee.entity.RoleEntity;
+import com.hcmute.shopfee.entity.database.RoleEntity;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.repository.database.RoleRepository;
 import lombok.RequiredArgsConstructor;

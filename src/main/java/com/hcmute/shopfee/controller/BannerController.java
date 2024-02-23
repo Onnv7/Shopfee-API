@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.response.GetBannerDetailResponse;
 import com.hcmute.shopfee.dto.response.GetBannerListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IBannerService;
+import com.hcmute.shopfee.service.core.IBannerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

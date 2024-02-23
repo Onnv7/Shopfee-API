@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database.coupon;
 
-import com.hcmute.shopfee.entity.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
 import org.springframework.data.jpa.repository.JpaRepository;

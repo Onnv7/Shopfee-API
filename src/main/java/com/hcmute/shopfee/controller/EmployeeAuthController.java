@@ -11,7 +11,8 @@ import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.ResponseAPI;
-import com.hcmute.shopfee.service.IEmployeeAuthService;
+import com.hcmute.shopfee.service.core.IEmployeeAuthService;
+import com.hcmute.shopfee.utils.CookieUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +35,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @Slf4j
 public class EmployeeAuthController {
     private final IEmployeeAuthService employeeAuthService;
+
     @Operation(summary = AUTH_EMPLOYEE_LOGIN_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH)
     public ResponseEntity<ResponseAPI> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) {
@@ -48,21 +50,39 @@ public class EmployeeAuthController {
 
         // TODO: kiem tra expire coookie
         headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
-
-
         return new ResponseEntity<>(res, headers, StatusCode.OK);
-
     }
+
+    @Operation(summary = AUTH_EMPLOYEE_LOGOUT_SUM)
+    @GetMapping(path = GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH)
+    public ResponseEntity<ResponseAPI> logoutEmployee(HttpServletRequest request) {
+
+        String refreshToken = CookieUtils.getRefreshToken(request);
+        if(refreshToken == null) {
+            throw new CustomException(ErrorConstant.NOT_FOUND + "refresh token");
+        }
+        employeeAuthService.employeeLogout(refreshToken);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.LOGOUT)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + "; Max-Age=0; Path=/; Secure; HttpOnly");
+        return new ResponseEntity<>(res, headers, StatusCode.OK);
+    }
+
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
     @PostMapping(path = POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI> refreshEmployeeToken(
             @RequestBody(required = false) RefreshEmployeeTokenRequest body, HttpServletRequest request
             , @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         System.out.println(request);
-        if (refreshToken == null &&  body == null) {
+        if (refreshToken == null && body == null) {
             throw new CustomException(ErrorConstant.INVALID_TOKEN);
         }
-        RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken( body == null ? refreshToken : body.getRefreshToken());
+        RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken(body == null ? refreshToken : body.getRefreshToken());
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

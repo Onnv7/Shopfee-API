@@ -172,6 +172,8 @@ public class RouterConstant {
     public static final String POST_AUTH_SEND_CODE_TO_REGISTER_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH;
     public static final String POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH = "/login";
     public static final String POST_AUTH_EMPLOYEE_LOGIN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH;
+    public static final String GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH = "/logout";
+    public static final String GET_AUTH_EMPLOYEE_LOGOUT_PATH = EMPLOYEE_AUTH_BASE_PATH + GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH;
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH = "/refresh-token";
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH;
     public static final String POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH = "";
@@ -181,6 +183,8 @@ public class RouterConstant {
     public static final String POST_USER_AUTH_REGISTER_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_REGISTER_SUB_PATH;
     public static final String POST_USER_AUTH_LOGIN_SUB_PATH = "/login";
     public static final String POST_USER_AUTH_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_LOGIN_SUB_PATH;
+    public static final String GET_AUTH_USER_LOGOUT_SUB_PATH = "/logout";
+    public static final String GET_AUTH_USER_LOGOUT_PATH = USER_AUTH_BASE_PATH + GET_AUTH_USER_LOGOUT_SUB_PATH;
     public static final String POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH = "/resend-email";
     public static final String POST_USER_AUTH_RE_SEND_EMAIL_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH;
     public static final String POST_USER_AUTH_SEND_CODE_TO_GET_PWD_SUB_PATH = "/password/send-code";

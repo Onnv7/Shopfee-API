@@ -1,8 +1,8 @@
 package com.hcmute.shopfee.controller;
 
-import com.hcmute.shopfee.entity.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.product.ProductEntity;
-import com.hcmute.shopfee.model.elasticsearch.ProductIndex;
+import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
@@ -11,7 +11,8 @@ import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
-import com.hcmute.shopfee.service.impl.OrderService;
+import com.hcmute.shopfee.service.core.impl.OrderService;
+import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,6 +48,13 @@ public class ToolController {
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
     private final OrderService orderService;
+    private final EmployeeTokenRedisService employeeTokenRedisService;
+    @DeleteMapping(value = "/refresh/{employeeId}")
+    public ResponseEntity<String> deleteRefreshToken(@PathVariable("employeeId") String employeeId) {
+//        orderService.checkOrderCoupon(code);
+        employeeTokenRedisService.deleteAllTokenByEmployeeId(employeeId);
+        return ResponseEntity.status(200).body("Ok fine");
+    }
 
     @GetMapping(value = "/{code}")
     public ResponseEntity<String> ceckCoupon(@PathVariable("code") String code) {

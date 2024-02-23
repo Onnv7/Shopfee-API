@@ -2,8 +2,8 @@ package com.hcmute.shopfee.command;
 
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.EmployeeEntity;
-import com.hcmute.shopfee.entity.RoleEntity;
+import com.hcmute.shopfee.entity.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.database.RoleEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.Role;
