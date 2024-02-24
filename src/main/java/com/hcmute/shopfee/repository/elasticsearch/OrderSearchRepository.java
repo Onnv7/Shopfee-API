@@ -17,7 +17,7 @@ public interface OrderSearchRepository extends ElasticsearchRepository<OrderInde
               {"regexp": {"statusLastEvent": "?1"}}
             ],
             "should": [
-              {"match": {"code": "?0"}},
+              {"match": {"id": "?0"}},
               {"match": {"customerCode": "?0"}},
               {"match": {"email": "?0"}},
               {"match": {"phoneNumber": "?0"}},

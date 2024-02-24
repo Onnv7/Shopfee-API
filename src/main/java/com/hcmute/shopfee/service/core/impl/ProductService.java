@@ -2,9 +2,11 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.RatingSummaryDto;
 import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
 import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.database.product.SizeEntity;
@@ -16,6 +18,7 @@ import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
+import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
@@ -49,6 +52,7 @@ public class ProductService implements IProductService {
     private final CategoryRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductSearchService productSearchService;
+    private final ProductReviewRepository productReviewRepository;
 
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
@@ -124,26 +128,60 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetProductEnabledByIdResponse getProductEnabledById(String id) {
+    public GetProductViewByIdResponse getProductViewById(String id) {
         ProductEntity product = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
-        return modelMapperService.mapClass(product, GetProductEnabledByIdResponse.class);
+        GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
+        RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
+        data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+        return data;
     }
 
     @Override
-    public List<GetProductsByCategoryIdResponse> getProductsByCategoryId(String categoryId) {
-        List<ProductEntity> productList = productRepository.findByCategory_IdAndIsDeletedFalse(categoryId);
-        return modelMapperService.mapList(productList, GetProductsByCategoryIdResponse.class);
-    }
+    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, int page, int size) {
+        GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
+        List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
-    @Override
-    public List<GetAllVisibleProductResponse> getVisibleProductList(int page, int size, String key) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        if (key != null) {
-            return modelMapperService.mapList(productSearchService.searchVisibleProduct(key, page, size), GetAllVisibleProductResponse.class);
+        data.setProductList(productList);
+
+        Page<ProductEntity> productPage = productRepository.findByCategory_IdAndStatusNotAndIsDeletedFalse(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
+        data.setTotalPage(productPage.getTotalPages());
+
+        List<ProductEntity> productEntityList = productPage.getContent();
+        for (ProductEntity entity : productEntityList) {
+            RatingSummaryQueryDto ratingSummary = productReviewRepository.getRatingSummary(entity.getId());
+            productList.add(GetProductsByCategoryIdResponse.ProductCard.fromProductEntity(entity, ratingSummary));
         }
-        Page<ProductEntity> productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
-        return modelMapperService.mapList(productPage.getContent(), GetAllVisibleProductResponse.class);
+        return data;
+    }
+
+    @Override
+    public GetAllVisibleProductResponse getVisibleProductList(int page, int size, String key) {
+        GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
+
+        List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
+        data.setProductList(productList);
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        if (key != null) {
+            Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, page, size);
+            data.setTotalPage(productIndexPage.getTotalPages());
+            List<ProductIndex> productIndexList = productIndexPage.getContent();
+            for (ProductIndex index : productIndexList) {
+                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(index.getId());
+                productList.add(GetAllVisibleProductResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
+            }
+        } else {
+            Page<ProductEntity> productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
+            data.setTotalPage(productPage.getTotalPages());
+            List<ProductEntity> productEntityList = productPage.getContent();
+            for (ProductEntity entity : productEntityList) {
+                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
+                productList.add(GetAllVisibleProductResponse.ProductCard.fromProductEntity(entity, ratingSummaryQueryDto));
+            }
+        }
+        return data;
     }
 
     @Override
@@ -170,7 +208,7 @@ public class ProductService implements IProductService {
     public void deleteProductById(String id) {
         ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
-        if(productRepository.countOrderItem(id) > 0) {
+        if (productRepository.countOrderItem(id) > 0) {
             product.setDeleted(true);
             productRepository.save(product);
             productSearchService.deleteProduct(id);

@@ -21,8 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductSearchService {
     private final ProductSearchRepository productSearchRepository;
-    private final ModelMapperService modelMapperService;
-    private final CloudinaryService cloudinaryService;
 
     public ProductIndex createProduct(ProductEntity data) {
         double price = ProductService.getMinPrice(data.getSizeList());
@@ -30,7 +28,7 @@ public class ProductSearchService {
         ProductIndex dataSearch = ProductIndex.builder()
                 .id(data.getId())
                 .name(data.getName())
-                .thumbnailUrl(cloudinaryService.getThumbnailUrl(data.getImageId()))
+                .thumbnailUrl(data.getThumbnailUrl())
 //                .code(data.getCode())
                 .description(data.getDescription())
                 .status(data.getStatus())
@@ -46,7 +44,7 @@ public class ProductSearchService {
         ProductIndex product = productSearchRepository.findById(data.getId()).orElse(null);
         if (product != null) {
             product.setName(data.getName());
-            product.setThumbnailUrl(cloudinaryService.getThumbnailUrl(data.getImageId()));
+            product.setThumbnailUrl(data.getThumbnailUrl());
             product.setStatus(data.getStatus());
             product.setPrice(data.getPrice());
             product.setDescription(data.getDescription());
@@ -64,10 +62,10 @@ public class ProductSearchService {
         productSearchRepository.save(productIndex);
     }
 
-    public List<ProductIndex> searchVisibleProduct(String key, int page, int size) {
+    public Page<ProductIndex> searchVisibleProduct(String key, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         String textRegex = RegexUtils.generateFilterRegexString(key);
-        return productSearchRepository.searchVisibleProduct(key, textRegex, pageable).getContent();
+        return productSearchRepository.searchVisibleProduct(key, textRegex, pageable);
     }
 
     public Page<ProductIndex> searchProduct(String key, String categoryIdRegex, String productStatusRegex, int page, int size) {

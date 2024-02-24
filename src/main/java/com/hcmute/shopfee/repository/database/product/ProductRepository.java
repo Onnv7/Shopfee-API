@@ -17,7 +17,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Optional<ProductEntity> findByIdAndIsDeletedFalse(String id);
     Optional<ProductEntity> findByIdAndStatusAndIsDeletedFalse(String id, ProductStatus status);
     Optional<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status);
-    List<ProductEntity> findByCategory_IdAndIsDeletedFalse(String categoryId);
+    Page<ProductEntity> findByCategory_IdAndStatusNotAndIsDeletedFalse(String categoryId, ProductStatus status, Pageable pageable);
     Page<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status, Pageable pageable);
     Optional<ProductEntity> findByIdAndCategory_IdAndIsDeletedFalse(String productId, String categoryId);
 

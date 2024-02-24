@@ -30,7 +30,7 @@ public class UserController {
 
     @Operation(summary = USER_GET_ALL_SUM)
     @GetMapping(path = GET_USER_ALL_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getUserList(
+    public ResponseEntity<ResponseAPI<GetAllUserResponse>> getUserList(
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
@@ -38,7 +38,7 @@ public class UserController {
     ) {
         GetAllUserResponse resData = userService.getUserList(page, size);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<GetAllUserResponse> res = ResponseAPI.<GetAllUserResponse>builder()
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
@@ -48,10 +48,10 @@ public class UserController {
 
     @Operation(summary = USER_GET_BY_ID_SUM)
     @GetMapping(path = GET_USER_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getUserProfileById(@PathVariable(USER_ID) String userId) {
+    public ResponseEntity<ResponseAPI<GetUserByIdResponse>> getUserProfileById(@PathVariable(USER_ID) String userId) {
         GetUserByIdResponse resData = userService.getUserProfileById(userId);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<GetUserByIdResponse> res = ResponseAPI.<GetUserByIdResponse>builder()
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
@@ -60,13 +60,13 @@ public class UserController {
 
     @Operation(summary = USER_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_USER_UPDATE_BY_ID_PATH)
-    public ResponseEntity<ResponseAPI> updateUserProfile(
+    public ResponseEntity<ResponseAPI<?>> updateUserProfile(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid UpdateUserRequest body
     ) {
         userService.updateUserProfile(userId, body);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
@@ -75,9 +75,9 @@ public class UserController {
 
     @Operation(summary = USER_CHECK_EXISTED_BY_EMAIL_SUM)
     @GetMapping(path = GET_USER_CHECK_EXISTED_SUB_PATH)
-    public ResponseEntity<ResponseAPI> checkExistedUserByEmail(@RequestParam("email") String email) {
+    public ResponseEntity<ResponseAPI<String>> checkExistedUserByEmail(@RequestParam("email") String email) {
         String result = userService.checkExistedUserByEmail(email);
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<String> res = ResponseAPI.<String>builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.GET)
                 .data(result)

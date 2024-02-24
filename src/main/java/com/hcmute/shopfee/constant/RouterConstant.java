@@ -33,6 +33,8 @@ public class RouterConstant {
     public static final String BANNER_ID = "bannerId";
     public static final String USER_ID_PATH = "/{userId}";
     public static final String USER_ID = "userId";
+    public static final String PRODUCT_REVIEW_ID_PATH = "/{productReviewId}";
+    public static final String PRODUCT_REVIEW_ID = "productReviewId";
     public static final String ADDRESS_ID_PATH = "/{addressId}";
     public static final String ADDRESS_ID = "addressId";
     public static final String EMPLOYEE_ID_PATH = "/{employeeId}";
@@ -69,14 +71,18 @@ public class RouterConstant {
     public static final String GET_ADDRESS_DETAILS_BY_ID_PATH = ADDRESS_BASE_PATH + GET_ADDRESS_DETAILS_BY_ID_SUB_PATH;
 
     // ENDPOINT URL ADDRESS =================================================================
-    public static final String POST_REVIEW_CREATE_SUB_PATH = "" ;
-    public static final String POST_REVIEW_CREATE_PATH = REVIEW_BASE_PATH +  POST_REVIEW_CREATE_SUB_PATH;
+    public static final String POST_REVIEW_CREATE_SUB_PATH = "";
+    public static final String POST_REVIEW_CREATE_PATH = REVIEW_BASE_PATH + POST_REVIEW_CREATE_SUB_PATH;
+    public static final String POST_REVIEW_INTERACT_SUB_PATH = "/product-review" + PRODUCT_REVIEW_ID_PATH;
+    public static final String POST_REVIEW_INTERACT_PATH = REVIEW_BASE_PATH + POST_REVIEW_INTERACT_SUB_PATH;
+    public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH = "/product" + PRODUCT_ID_PATH;
+    public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_PATH = REVIEW_BASE_PATH + GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH;
 
     // ENDPOINT URL PRODUCT =================================================================
     public static final String GET_PRODUCT_DETAILS_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/details";
     public static final String GET_PRODUCT_DETAILS_BY_ID_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_DETAILS_BY_ID_SUB_PATH;
-    public static final String GET_PRODUCT_ENABLED_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/view";
-    public static final String GET_PRODUCT_ENABLED_BY_ID_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_ENABLED_BY_ID_SUB_PATH;
+    public static final String GET_PRODUCT_VIEW_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/view";
+    public static final String GET_PRODUCT_ENABLED_BY_ID_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_VIEW_BY_ID_SUB_PATH;
     public static final String GET_PRODUCT_BY_CATEGORY_ID_SUB_PATH = "/category" + CATEGORY_ID_PATH;
     public static final String GET_PRODUCT_BY_CATEGORY_ID_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_BY_CATEGORY_ID_SUB_PATH;
     public static final String GET_PRODUCT_ALL_VISIBLE_SUB_PATH = "/visible";
@@ -114,18 +120,18 @@ public class RouterConstant {
 
     // ENDPOINT URL CATEGORY =================================================================
 
-    public static final String GET_CATEGORY_BY_SUB_ID_PATH =  CATEGORY_ID_PATH + "/details";
+    public static final String GET_CATEGORY_BY_SUB_ID_PATH = CATEGORY_ID_PATH + "/details";
     public static final String GET_CATEGORY_BY_ID_PATH = CATEGORY_BASE_PATH + GET_CATEGORY_BY_SUB_ID_PATH;
     public static final String GET_CATEGORY_ALL_SUB_PATH = "";
     public static final String GET_CATEGORY_ALL_PATH = CATEGORY_BASE_PATH + GET_CATEGORY_ALL_SUB_PATH;
     public static final String GET_CATEGORY_ALL_WITHOUT_DELETED_SUB_PATH = "/visible";
     public static final String GET_CATEGORY_ALL_WITHOUT_DELETED_PATH = CATEGORY_BASE_PATH + GET_CATEGORY_ALL_WITHOUT_DELETED_SUB_PATH;
-    public static final String PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH =  CATEGORY_ID_PATH;
+    public static final String PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH = CATEGORY_ID_PATH;
     public static final String PUT_CATEGORY_UPDATE_BY_ID_PATH = CATEGORY_BASE_PATH + PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH;
-    public static final String DELETE_CATEGORY_BY_ID_SUB_PATH =  CATEGORY_ID_PATH;
+    public static final String DELETE_CATEGORY_BY_ID_SUB_PATH = CATEGORY_ID_PATH;
     public static final String DELETE_CATEGORY_BY_ID_PATH = CATEGORY_BASE_PATH + DELETE_CATEGORY_BY_ID_SUB_PATH;
     public static final String POST_CATEGORY_CREATE_SUB_PATH = "";
-    public static final String POST_CATEGORY_CREATE_PATH =  CATEGORY_BASE_PATH + POST_CATEGORY_CREATE_SUB_PATH;
+    public static final String POST_CATEGORY_CREATE_PATH = CATEGORY_BASE_PATH + POST_CATEGORY_CREATE_SUB_PATH;
 
     // ENDPOINT URL ORDER =================================================================
     public static final String POST_ORDER_CREATE_SHIPPING_SUB_PATH = "/shipping";
@@ -146,7 +152,7 @@ public class RouterConstant {
     public static final String GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_PATH = ORDER_BASE_PATH + GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH;
     public static final String POST_ORDER_CREATE_REVIEW_SUB_PATH = "/rating" + ORDER_ID_PATH;
     public static final String POST_ORDER_CREATE_REVIEW_PATH = ORDER_BASE_PATH + POST_ORDER_CREATE_REVIEW_SUB_PATH;
-    public static final String GET_ORDER_STATUS_LINE_SUB_PATH = ORDER_ID_PATH + "/status-line" ;
+    public static final String GET_ORDER_STATUS_LINE_SUB_PATH = ORDER_ID_PATH + "/status-line";
     public static final String GET_ORDER_STATUS_LINE_PATH = ORDER_BASE_PATH + GET_ORDER_STATUS_LINE_SUB_PATH;
     public static final String GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH = "/history/{orderStatus}";
     public static final String GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_PATH = ORDER_BASE_PATH + GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH;
@@ -154,7 +160,7 @@ public class RouterConstant {
     public static final String GET_ORDER_ORDER_QUANTITY_BY_STATUS_PATH = ORDER_BASE_PATH + GET_ORDER_ORDER_QUANTITY_BY_STATUS_SUB_PATH;
 
     // ENDPOINT URL TRANSACTION =================================================================
-    public static final String PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH =  TRANSACTION_ID_PATH;
+    public static final String PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH = TRANSACTION_ID_PATH;
     public static final String PATCH_TRANSACTION_UPDATE_BY_ID_PATH = TRANSACTION_BASE_PATH + PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH;
     public static final String PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH = TRANSACTION_ID_PATH + "/complete";
     public static final String PATCH_TRANSACTION_UPDATE_COMPLETE_PATH = TRANSACTION_BASE_PATH + PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH;
@@ -239,15 +245,15 @@ public class RouterConstant {
     public static final String GET_COUPON_RELEASE_LIST_PATH = COUPON_BASE_PATH + GET_COUPON_RELEASE_LIST_SUB_PATH;
     public static final String GET_COUPON_RELEASE_BY_ID_SUB_PATH = COUPON_ID_PATH + "/release";
     public static final String GET_COUPON_RELEASE_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_RELEASE_BY_ID_SUB_PATH;
-    public static final String GET_COUPON_LIST_SUB_PATH =  "";
+    public static final String GET_COUPON_LIST_SUB_PATH = "";
     public static final String GET_COUPON_LIST_PATH = COUPON_BASE_PATH + GET_COUPON_LIST_SUB_PATH;
-    public static final String GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/shipping";
+    public static final String GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH = COUPON_ID_PATH + "/shipping";
     public static final String GET_COUPON_SHIPPING_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH;
-    public static final String GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/order";
+    public static final String GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH = COUPON_ID_PATH + "/order";
     public static final String GET_COUPON_ORDER_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH;
-    public static final String GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/product-gift";
+    public static final String GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH = COUPON_ID_PATH + "/product-gift";
     public static final String GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH;
-    public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH =  COUPON_ID_PATH + "/amount-off-product";
+    public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH = COUPON_ID_PATH + "/amount-off-product";
     public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH;
 
 }

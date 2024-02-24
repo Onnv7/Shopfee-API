@@ -50,12 +50,14 @@ public class SwaggerConstant {
     // For review =================================================================
     public static final String REVIEW_CONTROLLER_TITLE = "REVIEW MANAGEMENT";
     public static final String REVIEW_CREATE_SUM = "Create a new product's review";
+    public static final String REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM = "Interact with product reviews";
+    public static final String REVIEW_GET_PRODUCT_TYPE_SUM = "Get product's review list by product's id";
 
     // For product =================================================================
     public static final String PRODUCT_CONTROLLER_TITLE = "PRODUCT MANAGEMENT";
     public static final String PRODUCT_CREATE_SUM = "Create a new product";
     public static final String PRODUCT_GET_BY_ID_SUM = "Get a product's details by product id";
-    public static final String PRODUCT_GET_ENABLED_BY_ID_SUM = "Get a product enabled by product id";
+    public static final String PRODUCT_GET_VIEW_BY_ID_SUM = "Get a product enabled by product id";
     public static final String PRODUCT_GET_BY_CATEGORY_ID_SUM = "Get products by category id";
     public static final String PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM = "Get all or search products which have enabled";
     public static final String PRODUCT_GET_ALL_SUM = "Get product list or search product list by code, name, description or filter by category id, status and then paging";
@@ -234,4 +236,5 @@ public class SwaggerConstant {
     public static final String COMBINATION_CONDITION_EX = "PRODUCT";
     public static final String TARGET_OBJECT_CONDITION_EX = "PRODUCT";
     public static final String PRODUCT_SIZE_EX = "SMALL";
+    public static final String INTERACTION = "LIKE";
 }

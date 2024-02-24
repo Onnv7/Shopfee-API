@@ -36,10 +36,10 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_REGISTER_SUM)
     @PostMapping(POST_USER_AUTH_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI> registerUser(@RequestBody @Valid RegisterUserRequest body) {
+    public ResponseEntity<ResponseAPI<RegisterResponse>> registerUser(@RequestBody @Valid RegisterUserRequest body) {
         RegisterResponse resDate = userAuthService.registerUser(body);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<RegisterResponse> res = ResponseAPI.<RegisterResponse>builder()
                 .timestamp(new Date())
                 .data(resDate)
                 .message(SuccessConstant.CREATED)
@@ -49,9 +49,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI> loginUser(@RequestBody @Valid LoginRequest body) {
+    public ResponseEntity<ResponseAPI<LoginResponse>> loginUser(@RequestBody @Valid LoginRequest body) {
         LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())
                 .success(true)
                 .message(SuccessConstant.LOGIN)
@@ -67,7 +67,7 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
     @GetMapping(path = GET_AUTH_USER_LOGOUT_SUB_PATH)
-    public ResponseEntity<ResponseAPI> logoutUser(HttpServletRequest request) {
+    public ResponseEntity<ResponseAPI<?>> logoutUser(HttpServletRequest request) {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
         if (refreshToken == null) {
@@ -75,7 +75,7 @@ public class UserAuthController {
         }
         userAuthService.logoutUser(refreshToken);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.LOGOUT)
                 .build();
@@ -87,9 +87,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_RE_SEND_EMAIL_SUM)
     @PostMapping(POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH)
-    public ResponseEntity<ResponseAPI> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
+    public ResponseEntity<ResponseAPI<?>> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
         userAuthService.resendCode(body.getEmail());
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.SEND_CODE_TO_EMAIL)
                 .build();
@@ -98,10 +98,10 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
     @PostMapping(POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI> sendCodeToRegister(@RequestBody @Valid SendCodeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> sendCodeToRegister(@RequestBody @Valid SendCodeRequest body) {
 
         userAuthService.sendCodeToRegister(body.getEmail());
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.SEND_CODE_TO_EMAIL)
                 .build();
@@ -111,10 +111,10 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_GET_PWD_SUM)
     @PostMapping(POST_USER_AUTH_SEND_CODE_TO_GET_PWD_SUB_PATH)
-    public ResponseEntity<ResponseAPI> sendCodeToGetPassword(@RequestBody @Valid SendCodeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> sendCodeToGetPassword(@RequestBody @Valid SendCodeRequest body) {
 
         userAuthService.sendCodeToGetPassword(body.getEmail());
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.SEND_CODE_TO_EMAIL)
                 .build();
@@ -124,11 +124,11 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_VERIFY_EMAIL_SUM)
     @PostMapping(POST_USER_AUTH_VERIFY_EMAIL_SUB_PATH)
-    public ResponseEntity<ResponseAPI> verifyCodeByEmail(@RequestBody @Valid VerifyEmailRequest body) {
+    public ResponseEntity<ResponseAPI<?>> verifyCodeByEmail(@RequestBody @Valid VerifyEmailRequest body) {
 
         log.debug("YOUR CODE: " + body.getCode());
         userAuthService.verifyCodeByEmail(body.getCode(), body.getEmail());
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .message(SuccessConstant.EMAIL_VERIFIED)
                 .timestamp(new Date())
                 .build();
@@ -138,11 +138,11 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_CHANGE_PASSWORD_SUM)
     @PatchMapping(PATCH_USER_AUTH_CHANGE_PASSWORD_SUB_PATH)
-    public ResponseEntity<ResponseAPI> changePasswordForgot(@RequestBody @Valid ChangePasswordRequest body) {
+    public ResponseEntity<ResponseAPI<?>> changePasswordForgot(@RequestBody @Valid ChangePasswordRequest body) {
         try {
             userAuthService.changePasswordForgot(body.getEmail(), body.getPassword());
 
-            ResponseAPI res = ResponseAPI.builder()
+            ResponseAPI<?> res = ResponseAPI.builder()
                     .message(SuccessConstant.UPDATED)
                     .timestamp(new Date())
                     .build();
@@ -154,10 +154,10 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
-    public ResponseEntity<ResponseAPI> refreshToken(@RequestBody @Valid RefreshTokenRequest body) {
+    public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@RequestBody @Valid RefreshTokenRequest body) {
         RefreshTokenResponse data = userAuthService.refreshToken(body.getRefreshToken());
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<RefreshTokenResponse> res = ResponseAPI.<RefreshTokenResponse>builder()
                 .timestamp(new Date())
                 .data(data)
                 .message(SuccessConstant.GET)
@@ -168,12 +168,12 @@ public class UserAuthController {
 
     @Operation(summary = USER_CHANGE_PWD_SUM)
     @PatchMapping(path = PATCH_USER_CHANGE_PASSWORD_SUB_PATH)
-    public ResponseEntity<ResponseAPI> changePasswordProfile(
+    public ResponseEntity<ResponseAPI<?>> changePasswordProfile(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid UpdatePasswordRequest body
     ) {
         userAuthService.changePasswordProfile(userId, body);
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .success(true)
                 .message(SuccessConstant.UPDATED)

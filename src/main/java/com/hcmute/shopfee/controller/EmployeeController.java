@@ -29,7 +29,7 @@ public class EmployeeController {
     private final IEmployeeService employeeService;
     @Operation(summary = EMPLOYEE_GET_ALL_SUM)
     @GetMapping(path = GET_EMPLOYEE_ALL_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getEmployeeList(
+    public ResponseEntity<ResponseAPI<GetAllEmployeeResponse>> getEmployeeList(
             @Parameter(name = "key", description = "Key is employee's username", required = false, example = "nav611")
             @RequestParam(name = "key", required = false) String key,
             @Parameter(name = "page", required = true, example = "1")
@@ -53,7 +53,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) {
         employeeService.updateEmployeeForAdmin(body, id);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -66,7 +66,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_EMPLOYEE_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> deleteEmployeeById(@PathVariable(EMPLOYEE_ID) String id) {
+    public ResponseEntity<ResponseAPI<?>> deleteEmployeeById(@PathVariable(EMPLOYEE_ID) String id) {
         employeeService.deleteEmployeeById(id);
 
         ResponseAPI res = ResponseAPI.builder()

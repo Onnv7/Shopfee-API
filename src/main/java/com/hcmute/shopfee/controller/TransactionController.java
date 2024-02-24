@@ -27,10 +27,10 @@ public class TransactionController {
     @Operation(summary = TRANSACTION_UPDATE_BY_ID_SUM)
     @PatchMapping(path = PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH)
     // sau khi thanh toán (thành công/thất bại) => update transaction
-    public ResponseEntity<ResponseAPI> updateTransaction(@PathVariable(TRANSACTION_ID) String id, HttpServletRequest request) {
+    public ResponseEntity<ResponseAPI<?>> updateTransaction(@PathVariable(TRANSACTION_ID) String id, HttpServletRequest request) {
         transactionService.updateTransaction(id, request);
 
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
@@ -39,9 +39,9 @@ public class TransactionController {
     @Operation(summary = TRANSACTION_UPDATE_SUCCESS_STATUS_BY_ID_SUM)
     @PatchMapping(path = PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH)
     // FIXME: nên để ở order controller: shipper complete => cập nhật trạng thái order + transaction (nếu là cashing)
-    public ResponseEntity<ResponseAPI> completeTransaction(@PathVariable(TRANSACTION_ID) String id) {
+    public ResponseEntity<ResponseAPI<?>> completeTransaction(@PathVariable(TRANSACTION_ID) String id) {
         transactionService.completeTransaction(id);
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
@@ -49,9 +49,9 @@ public class TransactionController {
 
     @Operation(summary = TRANSACTION_GET_REVENUE_BY_TIME_SUM)
     @GetMapping(path = GET_TRANSACTION_REVENUE_BY_TIME_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getRevenueByTime(@RequestParam("time") String time) {
+    public ResponseEntity<ResponseAPI<List<GetRevenueByTimeResponse>>> getRevenueByTime(@RequestParam("time") String time) {
         List<GetRevenueByTimeResponse> newData = transactionService.getRevenueByTime(time);
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<List<GetRevenueByTimeResponse>> res = ResponseAPI.<List<GetRevenueByTimeResponse>>builder()
                 .message(SuccessConstant.GET)
                 .data(newData)
                 .build();
@@ -60,9 +60,9 @@ public class TransactionController {
 
     @Operation(summary = TRANSACTION_GET_REVENUE_CURRENT_DATE_SUM)
     @GetMapping(path = GET_TRANSACTION_REVENUE_CURRENT_DATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getRevenueCurrentDate() {
+    public ResponseEntity<ResponseAPI<GetRevenueCurrentDateResponse>> getRevenueCurrentDate() {
         GetRevenueCurrentDateResponse revenue = transactionService.getRevenueCurrentDate();
-        ResponseAPI res = ResponseAPI.builder()
+        ResponseAPI<GetRevenueCurrentDateResponse> res = ResponseAPI.<GetRevenueCurrentDateResponse>builder()
                 .message(SuccessConstant.GET)
                 .data(revenue)
                 .build();

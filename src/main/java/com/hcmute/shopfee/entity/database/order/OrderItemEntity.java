@@ -2,7 +2,7 @@ package com.hcmute.shopfee.entity.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.database.ProductReviewEntity;
+import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,39 +30,21 @@ public class OrderItemEntity {
     @JsonBackReference
     private ProductEntity product;
 
-//    @Column(name = "quantity", nullable = false)
-//    private int quantity;
-
     @Column(name = "name", nullable = false)
     private String name;
 
-//    @Column(name = "size")
-//    @Enumerated(EnumType.STRING)
-//    private ProductSize size;
-//
-//    @Column(name = "price", nullable = false)
-//    private Long price;
-//
-//    @Column(name = "note")
-//    private String note;
-
-//    @Column(name = "coupon_product_code")
-//    private String couponProductCode;
-//
-//    private Long moneyDiscount;
-//    private ProductGiftEmbedded productGift;
     @ManyToOne
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;
 
     @OneToOne(cascade = {CascadeType.PERSIST})
-    @JoinColumn(name = "product_review_id", nullable = false)
+    @JoinColumn(name = "product_review_id")
     @JsonBackReference
     private ProductReviewEntity productReview;
 
     // =================================================
-    @OneToMany(mappedBy = "orderItem")
+    @OneToMany(mappedBy = "orderItem", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<ItemDetailEntity> itemDetailList;
 

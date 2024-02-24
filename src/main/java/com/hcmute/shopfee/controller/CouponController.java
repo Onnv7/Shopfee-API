@@ -30,7 +30,7 @@ public class CouponController {
     private final ICouponService couponService;
     @Operation(summary = COUPON_CREATE_SHIPPING_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> createShippingCoupon(@RequestBody @Valid CreateShippingCouponRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createShippingCoupon(@RequestBody @Valid CreateShippingCouponRequest body) {
         couponService.createShippingCoupon(body);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -43,7 +43,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_ORDER_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> createOrderCoupon(@RequestBody @Valid CreateOrderCouponRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createOrderCoupon(@RequestBody @Valid CreateOrderCouponRequest body) {
         couponService.createOrderCoupon(body);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -56,7 +56,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> createAmountOffProductCoupon(@RequestBody @Valid CreateProductMoneyCouponRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createAmountOffProductCoupon(@RequestBody @Valid CreateProductMoneyCouponRequest body) {
         couponService.createAmountOffProductCoupon(body);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -69,7 +69,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM)
     @PostMapping(path = POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> createGiftProductCoupon(@RequestBody @Valid CreateBuyXGetYCouponRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createGiftProductCoupon(@RequestBody @Valid CreateBuyXGetYCouponRequest body) {
         couponService.createGiftProductCoupon(body);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -82,7 +82,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_COUPON_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> deleteCouponById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<?>> deleteCouponById(@PathVariable(COUPON_ID) String couponId) {
         couponService.deleteCoupon(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -95,7 +95,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_RELEASE_LIST_SUM)
     @GetMapping(path = GET_COUPON_RELEASE_LIST_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getReleaseCouponList() {
+    public ResponseEntity<ResponseAPI<List<GetReleaseCouponListResponse>>> getReleaseCouponList() {
         List<GetReleaseCouponListResponse> resData = couponService.getReleaseCouponList();
 
         ResponseAPI res = ResponseAPI.builder()
@@ -108,7 +108,7 @@ public class CouponController {
     }
     @Operation(summary = COUPON_GET_RELEASE_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_RELEASE_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getReleaseCouponById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<GetReleaseCouponByIdResponse>> getReleaseCouponById(@PathVariable(COUPON_ID) String couponId) {
         GetReleaseCouponByIdResponse resData = couponService.getReleaseCouponById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -122,7 +122,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_LIST_SUM)
     @GetMapping(path = GET_COUPON_LIST_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getCouponList() {
+    public ResponseEntity<ResponseAPI<List<GetCouponListResponse>>> getCouponList() {
         List<GetCouponListResponse> resData = couponService.getCouponList();
 
         ResponseAPI res = ResponseAPI.builder()
@@ -136,7 +136,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_SHIPPING_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getShippingCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<GetShippingCouponDetailsByIdResponse>> getShippingCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetShippingCouponDetailsByIdResponse resData = couponService.getShippingCouponDetailById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -150,7 +150,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_ORDER_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getOrderCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<GetOrderCouponDetailByIdResponse>> getOrderCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetOrderCouponDetailByIdResponse resData = couponService.getOrderCouponDetailById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -164,7 +164,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_PRODUCT_GIFT_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_PATH)
-    public ResponseEntity<ResponseAPI> getProductGiftCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<GetProductGiftCouponDetailByIdResponse>> getProductGiftCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetProductGiftCouponDetailByIdResponse resData = couponService.getProductGiftCouponDetailById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -178,7 +178,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_PATH)
-    public ResponseEntity<ResponseAPI> getAmountOffProductCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
+    public ResponseEntity<ResponseAPI<GetAmountOffProductCouponDetailByIdResponse>> getAmountOffProductCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetAmountOffProductCouponDetailByIdResponse resData = couponService.getAmountOffProductCouponDetailById(couponId);
 
         ResponseAPI res = ResponseAPI.builder()

@@ -29,7 +29,7 @@ public class GetOrderByIdResponse {
     private List<Product> itemList;
 
     private Transaction transaction;
-    private Review review;
+
     private Date receiveTime;
     private Long shippingDiscount;
     private Long orderDiscount;
@@ -66,11 +66,7 @@ public class GetOrderByIdResponse {
     static class Branch {
         private String address;
     }
-    @Data
-    private static class Review {
-        private int rating;
-        private String content;
-    }
+
     @Data
     private static class Transaction {
         private String id;

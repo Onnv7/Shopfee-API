@@ -31,7 +31,7 @@ public class CategoryController {
     private final ICategoryService categoryService;
     @Operation(summary = CATEGORY_CREATE_SUM)
     @PostMapping(path = POST_CATEGORY_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI> createCategory(@ModelAttribute @Valid CreateCategoryRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createCategory(@ModelAttribute @Valid CreateCategoryRequest body) {
         categoryService.createCategory(body);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -43,7 +43,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_GET_BY_ID_SUM)
     @GetMapping(GET_CATEGORY_BY_SUB_ID_PATH)
-    public ResponseEntity<ResponseAPI> getCategoryById(@PathVariable(CATEGORY_ID) String categoryId) {
+    public ResponseEntity<ResponseAPI<GetCategoryByIdResponse>> getCategoryById(@PathVariable(CATEGORY_ID) String categoryId) {
         GetCategoryByIdResponse resData = categoryService.getCategoryById(categoryId);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -55,7 +55,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_GET_ALL_SUM)
     @GetMapping(path = GET_CATEGORY_ALL_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getCategoryList() {
+    public ResponseEntity<ResponseAPI<List<GetCategoryListResponse>>> getCategoryList() {
         List<GetCategoryListResponse> resData = categoryService.getCategoryList();
 
         ResponseAPI res = ResponseAPI.builder()
@@ -68,7 +68,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_GET_ALL_WITHOUT_DELETED_SUM)
     @GetMapping(path = GET_CATEGORY_ALL_WITHOUT_DELETED_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getAllCategoriesWithoutDeleted() {
+    public ResponseEntity<ResponseAPI<List<GetVisibleCategoryListResponse>>> getAllCategoriesWithoutDeleted() {
         List<GetVisibleCategoryListResponse> resData = categoryService.getVisibleCategoryList();
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -80,7 +80,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI> updateCategory(
+    public ResponseEntity<ResponseAPI<?>> updateCategory(
             @ModelAttribute @Valid UpdateCategoryRequest body,
             @PathVariable(CATEGORY_ID) String id) {
         categoryService.updateCategory(body, id);
@@ -93,7 +93,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_CATEGORY_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> deleteCategoryById(@PathVariable(CATEGORY_ID) String id) {
+    public ResponseEntity<ResponseAPI<?>> deleteCategoryById(@PathVariable(CATEGORY_ID) String id) {
         categoryService.deleteCategoryById(id);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

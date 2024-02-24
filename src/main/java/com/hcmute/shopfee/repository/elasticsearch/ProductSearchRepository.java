@@ -21,7 +21,7 @@ public interface ProductSearchRepository extends ElasticsearchRepository<Product
                "should": [
                  { "match": { "name": "?0 " } },
                  { "match": { "description": "?0" } },
-                 { "regexp": { "code": "?1" } }
+                 { "regexp": { "id": "?1" } }
                ],
                "minimum_should_match": 1
              }
@@ -34,7 +34,7 @@ public interface ProductSearchRepository extends ElasticsearchRepository<Product
             {
                 "bool": {
                    "must": [
-                        { "multi_match": { "query": "?0", "fields": ["name", "description", "code"] }},
+                        { "multi_match": { "query": "?0", "fields": ["name", "description", "id"] }},
                         { "regexp": { "categoryId": "?1" } },
                         { "regexp": { "status": "?2" } },
                         { "match": { "isDeleted": false } }

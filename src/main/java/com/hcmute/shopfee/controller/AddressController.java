@@ -30,7 +30,7 @@ public class AddressController {
     private final IAddressService addressService;
     @Operation(summary = ADDRESS_ADD_ADDRESS_BY_ID_SUM)
     @PostMapping(path = POST_ADDRESS_CREATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> addAddressToUserByUserId(
+    public ResponseEntity<ResponseAPI<?>> addAddressToUserByUserId(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid CreateAddressRequest body) {
         addressService.createAddressToUser(body, userId);
@@ -43,7 +43,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_UPDATE_ADDRESS_BY_ID_SUM)
     @PutMapping(path = PUT_ADDRESS_UPDATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> updateAddressById(
+    public ResponseEntity<ResponseAPI<?>> updateAddressById(
             @PathVariable(ADDRESS_ID) String addressId,
             @RequestBody @Validated UpdateAddressRequest body
     ) {
@@ -57,7 +57,7 @@ public class AddressController {
     }
     @Operation(summary = ADDRESS_DELETE_ADDRESS_BY_ID_SUM)
     @DeleteMapping(path = DELETE_ADDRESS_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> deleteAddressById(@PathVariable(ADDRESS_ID) String addressId) {
+    public ResponseEntity<ResponseAPI<?>> deleteAddressById(@PathVariable(ADDRESS_ID) String addressId) {
         addressService.deleteAddressById(addressId);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -68,7 +68,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_GET_BY_USER_ID_SUM)
     @GetMapping(path = GET_ADDRESS_BY_USER_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getAddressByUserId(@PathVariable(USER_ID) String userId) {
+    public ResponseEntity<ResponseAPI<List<GetAddressListByUserIdResponse>>> getAddressByUserId(@PathVariable(USER_ID) String userId) {
 
         List<GetAddressListByUserIdResponse> resData = addressService.getAddressListByUserId(userId);
         ResponseAPI res = ResponseAPI.builder()
@@ -81,7 +81,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_GET_DETAILS_BY_ID_SUM)
     @GetMapping(path = GET_ADDRESS_DETAILS_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getAddressDetailsById(@PathVariable(ADDRESS_ID) String addressId) {
+    public ResponseEntity<ResponseAPI<GetAddressDetailsByIdResponse>> getAddressDetailsById(@PathVariable(ADDRESS_ID) String addressId) {
         GetAddressDetailsByIdResponse resData = addressService.getAddressDetailById(addressId);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

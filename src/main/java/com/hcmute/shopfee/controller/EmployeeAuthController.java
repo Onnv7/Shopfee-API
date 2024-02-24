@@ -38,7 +38,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_LOGIN_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) {
+    public ResponseEntity<ResponseAPI<EmployeeLoginResponse>> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) {
         EmployeeLoginResponse data = employeeAuthService.attemptEmployeeLogin(body.getUsername(), body.getPassword());
 
         ResponseAPI res = ResponseAPI.builder()
@@ -55,7 +55,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_LOGOUT_SUM)
     @GetMapping(path = GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH)
-    public ResponseEntity<ResponseAPI> logoutEmployee(HttpServletRequest request) {
+    public ResponseEntity<ResponseAPI<?>> logoutEmployee(HttpServletRequest request) {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
         if(refreshToken == null) {
@@ -75,7 +75,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
     @PostMapping(path = POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH)
-    public ResponseEntity<ResponseAPI> refreshEmployeeToken(
+    public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(
             @RequestBody(required = false) RefreshEmployeeTokenRequest body, HttpServletRequest request
             , @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         System.out.println(request);
@@ -101,7 +101,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body) {
         employeeAuthService.registerEmployee(body);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -113,7 +113,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = EMPLOYEE_UPDATE_PASSWORD_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH)
-    public ResponseEntity<ResponseAPI> changePasswordProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid ChangePasswordEmployeeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> changePasswordProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid ChangePasswordEmployeeRequest body) {
         employeeAuthService.changePasswordProfile(body, id);
 
         ResponseAPI res = ResponseAPI.builder()

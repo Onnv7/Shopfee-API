@@ -10,7 +10,11 @@ public class SecurityUtils {
 
     public static String getCurrentUserId() {
         if(SecurityContextHolder.getContext().getAuthentication() != null) {
-            return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            try {
+                return ((UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserId();
+            } catch (ClassCastException e) {
+                return null;
+            }
         }
         return null;
     }

@@ -34,9 +34,10 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @RequiredArgsConstructor
 public class ProductController {
     private final IProductService productService;
+
     @Operation(summary = PRODUCT_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI> createProduct(@ModelAttribute @Valid CreateProductRequest body, @RequestParam("type") ProductType productType) {
+    public ResponseEntity<ResponseAPI<?>> createProduct(@ModelAttribute @Valid CreateProductRequest body, @RequestParam("type") ProductType productType) {
         productService.createProduct(body, body.getImage(), productType);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -48,7 +49,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_BY_ID_SUM)
     @GetMapping(path = GET_PRODUCT_DETAILS_BY_ID_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getProductDetailsById(@PathVariable(PRODUCT_ID) String id) {
+    protected ResponseEntity<ResponseAPI<GetProductByIdResponse>> getProductDetailsById(@PathVariable(PRODUCT_ID) String id) {
         GetProductByIdResponse resData = productService.getProductDetailsById(id);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -59,10 +60,10 @@ public class ProductController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = PRODUCT_GET_ENABLED_BY_ID_SUM)
-    @GetMapping(path = GET_PRODUCT_ENABLED_BY_ID_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getProductEnabledById(@PathVariable(PRODUCT_ID) String id) {
-        GetProductEnabledByIdResponse resData = productService.getProductEnabledById(id);
+    @Operation(summary = PRODUCT_GET_VIEW_BY_ID_SUM)
+    @GetMapping(path = GET_PRODUCT_VIEW_BY_ID_SUB_PATH)
+    protected ResponseEntity<ResponseAPI<GetProductViewByIdResponse>> getProductViewById(@PathVariable(PRODUCT_ID) String id) {
+        GetProductViewByIdResponse resData = productService.getProductViewById(id);
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
                 .timestamp(new Date())
@@ -73,8 +74,14 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_BY_CATEGORY_ID_SUM)
     @GetMapping(path = GET_PRODUCT_BY_CATEGORY_ID_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getProductByCategoryId(@PathVariable(CATEGORY_ID) String categoryId) {
-        List<GetProductsByCategoryIdResponse> products = productService.getProductsByCategoryId(categoryId);
+    protected ResponseEntity<ResponseAPI<GetProductsByCategoryIdResponse>> getProductByCategoryId(
+            @PathVariable(CATEGORY_ID) String categoryId,
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+    ) {
+        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, page, size);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -86,7 +93,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_VISIBLE_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getAllProductsVisible(
+    protected ResponseEntity<ResponseAPI<GetAllVisibleProductResponse>> getAllProductsVisible(
             @Parameter(name = "key", description = "Key is name or description or id", required = false, example = "name or description")
             @RequestParam(name = "key", required = false) String key,
             @Parameter(name = "page", required = true, example = "1")
@@ -94,7 +101,7 @@ public class ProductController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        List<GetAllVisibleProductResponse> resData = productService.getVisibleProductList(page, size, key);
+        GetAllVisibleProductResponse resData = productService.getVisibleProductList(page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -106,7 +113,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_ALL_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getAllProducts(
+    protected ResponseEntity<ResponseAPI<GetProductListResponse>> getAllProducts(
             @Parameter(name = "key", description = "Key is name or description", required = false, example = "name or description")
             @RequestParam(name = "key", required = false) String key,
             @Parameter(name = "page", required = true, example = "1")
@@ -124,9 +131,10 @@ public class ProductController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = PRODUCT_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_PRODUCT_BY_ID_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> deleteProductById(@PathVariable("productId") String id) {
+    protected ResponseEntity<ResponseAPI<?>> deleteProductById(@PathVariable("productId") String id) {
         productService.deleteProductById(id);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -138,7 +146,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_SOME_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_SOME_PRODUCT_BY_ID_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> deleteSomeProductById(@RequestBody @Valid DeleteSomeProductRequest body) {
+    protected ResponseEntity<ResponseAPI<?>> deleteSomeProductById(@RequestBody @Valid DeleteSomeProductRequest body) {
         productService.deleteSomeProductById(body.getProductIdList());
 
         ResponseAPI res = ResponseAPI.builder()
@@ -150,7 +158,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_PRODUCT_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI> updateProductById(
+    public ResponseEntity<ResponseAPI<?>> updateProductById(
             @ModelAttribute @Valid UpdateProductRequest body,
             @PathVariable("productId") String id
     ) {
@@ -164,7 +172,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_TOP_ORDER_QUANTITY_SUM)
     @GetMapping(path = GET_PRODUCT_TOP_QUANTITY_ORDER_SUB_PATH)
-    protected ResponseEntity<ResponseAPI> getTopProductQuantityOrder(
+    protected ResponseEntity<ResponseAPI<List<GetTopProductResponse>>> getTopProductQuantityOrder(
             @Parameter(name = "itemQuantity", required = true, example = "10")
             @PathVariable("itemQuantity") @Min(value = 1, message = "Page must be greater than 0") int itemQuantity
     ) {
@@ -177,9 +185,10 @@ public class ProductController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = PRODUCT_POST_IMPORT_FILE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    protected ResponseEntity<ResponseAPI> createProductFromFile(@RequestParam("file") MultipartFile file) throws IOException {
+    protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file) throws IOException {
         productService.createProductFromFile(file);
 
         ResponseAPI res = ResponseAPI.builder()
