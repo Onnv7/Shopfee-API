@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.Date;
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,7 +51,7 @@ public class CreateAdminCommand implements CommandLineRunner {
                 .status(EmployeeStatus.ACTIVE)
                 .gender(Gender.MALE)
                 .roleList(roleList)
-                .birthDate(new Date(2002, 10, 6))
+                .birthDate(Date.valueOf("2002-11-06"))
                 .build();
         employeeRepository.save(admin);
         log.info("ADMIN IS CREATED");

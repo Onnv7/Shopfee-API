@@ -4,6 +4,8 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
+import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
+import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IEmployeeService;
@@ -27,6 +29,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @RequiredArgsConstructor
 public class EmployeeController {
     private final IEmployeeService employeeService;
+
     @Operation(summary = EMPLOYEE_GET_ALL_SUM)
     @GetMapping(path = GET_EMPLOYEE_ALL_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetAllEmployeeResponse>> getEmployeeList(
@@ -50,6 +53,31 @@ public class EmployeeController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
+    @Operation(summary = EMPLOYEE_GET_PROFILE_BY_ID_SUM)
+    @GetMapping(path = GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetEmployeeProfileByIdResponse>> getEmployeeProfileById(@PathVariable(EMPLOYEE_ID) String employeeId) {
+        GetEmployeeProfileByIdResponse resData = employeeService.getEmployeeProfileById(employeeId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+    @Operation(summary = EMPLOYEE_GET_BY_ID_SUM)
+    @GetMapping(path = GET_EMPLOYEE_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetEmployeeByIdResponse>> getEmployeeById(@PathVariable(EMPLOYEE_ID) String employeeId) {
+        GetEmployeeByIdResponse resData = employeeService.getEmployeeById(employeeId);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)

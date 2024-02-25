@@ -47,25 +47,7 @@ public class TransactionController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = TRANSACTION_GET_REVENUE_BY_TIME_SUM)
-    @GetMapping(path = GET_TRANSACTION_REVENUE_BY_TIME_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<GetRevenueByTimeResponse>>> getRevenueByTime(@RequestParam("time") String time) {
-        List<GetRevenueByTimeResponse> newData = transactionService.getRevenueByTime(time);
-        ResponseAPI<List<GetRevenueByTimeResponse>> res = ResponseAPI.<List<GetRevenueByTimeResponse>>builder()
-                .message(SuccessConstant.GET)
-                .data(newData)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
 
-    @Operation(summary = TRANSACTION_GET_REVENUE_CURRENT_DATE_SUM)
-    @GetMapping(path = GET_TRANSACTION_REVENUE_CURRENT_DATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetRevenueCurrentDateResponse>> getRevenueCurrentDate() {
-        GetRevenueCurrentDateResponse revenue = transactionService.getRevenueCurrentDate();
-        ResponseAPI<GetRevenueCurrentDateResponse> res = ResponseAPI.<GetRevenueCurrentDateResponse>builder()
-                .message(SuccessConstant.GET)
-                .data(revenue)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
+
+
 }

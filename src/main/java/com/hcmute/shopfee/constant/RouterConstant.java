@@ -15,6 +15,7 @@ public class RouterConstant {
     public static final String EMPLOYEE_BASE_PATH = "/api/employee";
     public static final String ORDER_BASE_PATH = "/api/order";
     public static final String TRANSACTION_BASE_PATH = "/api/transaction";
+    public static final String STATISTICS_BASE_PATH = "/api/statistics";
     // ALL PATH=================================================
     public static final String USER_ALL_PATH = USER_BASE_PATH + "/**";
     public static final String AUTH_ALL_PATH = EMPLOYEE_AUTH_BASE_PATH + "/**";
@@ -78,6 +79,14 @@ public class RouterConstant {
     public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH = "/product" + PRODUCT_ID_PATH;
     public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_PATH = REVIEW_BASE_PATH + GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH;
 
+    // ENDPOINT URL STATISTICS =================================================================
+    public static final String GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH = "/revenue/today";
+    public static final String GET_STATISTICS_REVENUE_CURRENT_DATE_PATH = STATISTICS_BASE_PATH + GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH;
+    public static final String GET_STATISTICS_QUANTITY_BY_STAGE_SUB_PATH = "/order-quantity";
+    public static final String GET_STATISTICS_QUANTITY_BY_STAGE_PATH = STATISTICS_BASE_PATH + GET_STATISTICS_QUANTITY_BY_STAGE_SUB_PATH;
+    public static final String GET_STATISTICS_REVENUE_BY_TIME_SUB_PATH = "/chart/revenue";
+    public static final String GET_STATISTICS_REVENUE_BY_TIME_PATH = STATISTICS_BASE_PATH + GET_STATISTICS_REVENUE_BY_TIME_SUB_PATH;
+
     // ENDPOINT URL PRODUCT =================================================================
     public static final String GET_PRODUCT_DETAILS_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/details";
     public static final String GET_PRODUCT_DETAILS_BY_ID_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_DETAILS_BY_ID_SUB_PATH;
@@ -104,9 +113,11 @@ public class RouterConstant {
 
 
     // ENDPOINT URL EMPLOYEE =================================================================
-
     public static final String GET_EMPLOYEE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH;
     public static final String GET_EMPLOYEE_BY_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_BY_ID_SUB_PATH;
+
+    public static final String GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH + "/profile";
+    public static final String GET_EMPLOYEE_PROFILE_BY_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH;
     public static final String GET_EMPLOYEE_ALL_SUB_PATH = "";
     public static final String GET_EMPLOYEE_ALL_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_ALL_SUB_PATH;
     public static final String PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH;
@@ -164,11 +175,6 @@ public class RouterConstant {
     public static final String PATCH_TRANSACTION_UPDATE_BY_ID_PATH = TRANSACTION_BASE_PATH + PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH;
     public static final String PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH = TRANSACTION_ID_PATH + "/complete";
     public static final String PATCH_TRANSACTION_UPDATE_COMPLETE_PATH = TRANSACTION_BASE_PATH + PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH;
-
-    public static final String GET_TRANSACTION_REVENUE_BY_TIME_SUB_PATH = "/revenue";
-    public static final String GET_TRANSACTION_REVENUE_BY_TIME_PATH = TRANSACTION_BASE_PATH + GET_TRANSACTION_REVENUE_BY_TIME_SUB_PATH;
-    public static final String GET_TRANSACTION_REVENUE_CURRENT_DATE_SUB_PATH = "/revenue/today";
-    public static final String GET_TRANSACTION_REVENUE_CURRENT_DATE_PATH = TRANSACTION_BASE_PATH + GET_TRANSACTION_REVENUE_CURRENT_DATE_SUB_PATH;
 
 
     // ENDPOINT URL AUTH =================================================================

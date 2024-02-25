@@ -34,7 +34,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             select count(*)
             from product p
             join order_item oi on p.id = oi.product_id
-            where is_deleted = 0
+            where p.is_deleted = 0
+                and p.id = ?1
             """, nativeQuery = true)
     long countOrderItem(String productId);
 }

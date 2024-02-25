@@ -47,7 +47,7 @@ public class UserEntity {
     private Gender gender;
 
     @Column(name = "birth_date")
-    private Date birthDate;
+    private java.sql.Date birthDate;
 
     @Column(nullable = false)
     private String password;

@@ -3,6 +3,8 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
+import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
+import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
 import com.hcmute.shopfee.entity.database.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.model.CustomException;
@@ -10,6 +12,7 @@ import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.service.core.IEmployeeService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.RegexUtils;
+import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -72,6 +75,21 @@ public class EmployeeService implements IEmployeeService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
         employee.setDeleted(true);
         employeeRepository.save(employee);
+    }
+
+    @Override
+    public GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId) {
+        SecurityUtils.checkUserId(employeeId);
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        return modelMapperService.mapClass(employee, GetEmployeeProfileByIdResponse.class);
+    }
+
+    @Override
+    public GetEmployeeByIdResponse getEmployeeById(String employeeId) {
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        return modelMapperService.mapClass(employee, GetEmployeeByIdResponse.class);
     }
 
 

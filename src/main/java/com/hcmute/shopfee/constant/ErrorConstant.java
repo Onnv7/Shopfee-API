@@ -11,6 +11,7 @@ public class ErrorConstant {
     public static final String CATEGORY_EXISTED = "Category name were existed";
     public static final String CATEGORY_NOT_FOUND = "CATEGORY NOT FOUND";
     public static final String NOT_FOUND = "Not found ";
+    public static final String DATE_INVALID = "Date is invalid ";
     public static final String ACCESS_DENIED = "Access Denied";
     public static final String ACCOUNT_BLOCKED = "Account has been locked";
     public static final String PRODUCT_NOT_FOUND = "PRODUCT NOT FOUND";
@@ -23,7 +24,7 @@ public class ErrorConstant {
     public static final String REQUEST_BODY_INVALID = "Request body is invalid";
     public static final String TOPPING_PRICE_INVALID = "Topping's price is invalid";
     public static final String SIZE_PRODUCT_INVALID = "Size's product is invalid";
-    public static final String CANT_DELETE = "Cant delete";
+    public static final String CANT_DELETE = "Cannot be deleted because this data is related to other data";
     public static final String CONDITION_VALUE_INVALID = "Condition's value is invalid";
     public static final String COUPON_INVALID = "Coupon's value is invalid";
     public static final String COUPON_UNRELEASED = "Coupon is not released";

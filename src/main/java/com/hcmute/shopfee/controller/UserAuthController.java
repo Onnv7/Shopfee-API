@@ -58,9 +58,8 @@ public class UserAuthController {
                 .data(data)
                 .build();
 
-        HttpHeaders headers = new HttpHeaders();
-        // TODO: kiem tra expire coookie
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
+
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
 
     }
@@ -80,8 +79,7 @@ public class UserAuthController {
                 .message(SuccessConstant.LOGOUT)
                 .build();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + "; Max-Age=0; Path=/; Secure; HttpOnly");
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie("", 0L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
@@ -163,7 +161,8 @@ public class UserAuthController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
     @Operation(summary = USER_CHANGE_PWD_SUM)

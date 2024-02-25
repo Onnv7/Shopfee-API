@@ -155,7 +155,7 @@ public class ToolController {
                 .password(passwordEncoder.encode("112233"))
                 .firstName("an")
                 .lastName("nguyen")
-                .birthDate(new Date())
+                .birthDate(java.sql.Date.valueOf("2002-06-11"))
                 .enabled(true)
                 .build();
         userRepository.save(userEntity);
@@ -164,7 +164,7 @@ public class ToolController {
                 .password(passwordEncoder.encode("123456"))
                 .firstName("an")
                 .lastName("nguyen")
-                .birthDate(new Date())
+                .birthDate(java.sql.Date.valueOf("2002-06-12"))
                 .enabled(true)
                 .build();
         userRepository.save(userEntity2);

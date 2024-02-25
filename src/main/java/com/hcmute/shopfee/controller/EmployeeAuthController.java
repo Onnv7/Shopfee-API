@@ -46,10 +46,8 @@ public class EmployeeAuthController {
                 .data(data)
                 .message(SuccessConstant.LOGIN)
                 .build();
-        HttpHeaders headers = new HttpHeaders();
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
 
-        // TODO: kiem tra expire coookie
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
@@ -68,8 +66,7 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.LOGOUT)
                 .build();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + "; Max-Age=0; Path=/; Secure; HttpOnly");
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie("", 0L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
@@ -90,12 +87,8 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.GET_NEW_TOKEN)
                 .build();
 
-        HttpHeaders headers = new HttpHeaders();
 
-
-        // TODO: kiem tra expire coookie
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + data.getRefreshToken() + "; Max-Age=604800; Path=/; Secure; HttpOnly");
-
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 

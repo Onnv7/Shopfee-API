@@ -52,7 +52,7 @@ public class EmployeeEntity {
     private Gender gender;
 
     @Column(name = "birth_date")
-    private Date birthDate;
+    private java.sql.Date birthDate;
 
     @Column(name = "phone_number")
     private String phoneNumber;

@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface OrderEventRepository extends JpaRepository<OrderEventEntity, String> {
 
-    List<OrderEventEntity> findByOrderBill_Id(String orderBillId);
+    List<OrderEventEntity> findByOrderBill_IdOrderByCreatedAtDesc(String orderBillId);
 }

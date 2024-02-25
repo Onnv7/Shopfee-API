@@ -1,8 +1,6 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
 import com.hcmute.shopfee.entity.database.TransactionEntity;
 import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
@@ -12,7 +10,6 @@ import com.hcmute.shopfee.repository.database.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.core.ITransactionService;
-import com.hcmute.shopfee.utils.DateUtils;
 import com.hcmute.shopfee.utils.VNPayUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -68,33 +63,5 @@ public class TransactionService implements ITransactionService {
         trans.setStatus(PaymentStatus.PAID);
         trans.setTotalPaid(totalPaid);
         transactionRepository.save(trans);
-    }
-
-    @Override
-    public List<GetRevenueByTimeResponse> getRevenueByTime(String time) {
-        return null;
-    }
-
-    @Override
-    public GetRevenueCurrentDateResponse getRevenueCurrentDate() {
-        GetRevenueCurrentDateResponse response = new GetRevenueCurrentDateResponse();
-
-        long current = transactionRepository.getRevenueAt(DateUtils.formatYYYYMMDD(new Date()));
-
-        if (current == 0) {
-            response.setRevenue(0);
-            response.setRatio(-100);
-            return response;
-        }
-
-        Date startDatePrev = DateUtils.createDateTimeByToday(0, 0, 0, 0, -1);
-        long prev = transactionRepository.getRevenueAt(DateUtils.formatYYYYMMDD(startDatePrev));
-
-        if (prev == 0) {
-            response.setRevenue(current);
-        }
-        double ratio =(current - prev) / (double) prev * 100.0;
-        response.setRatio(ratio);
-        return response;
     }
 }

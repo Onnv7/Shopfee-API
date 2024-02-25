@@ -100,8 +100,8 @@ public class CategoryService implements ICategoryService {
     @Override
     public void deleteCategoryById(String id) {
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
-        // FIXME: check chỗ này
-        if (!category.getProductList().isEmpty()) {
+
+        if (category.getProductList().isEmpty()) {
             category.setDeleted(true);
             categoryRepository.save(category);
         } else {

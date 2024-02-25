@@ -772,7 +772,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId) {
-        List<OrderEventEntity> orderEventEntityList = orderEventRepository.findByOrderBill_Id(orderId);
+        List<OrderEventEntity> orderEventEntityList = orderEventRepository.findByOrderBill_IdOrderByCreatedAtDesc(orderId);
         List<GetOrderStatusLineResponse> eventList = new ArrayList<>();
         orderEventEntityList.forEach(it -> {
             GetOrderStatusLineResponse event = GetOrderStatusLineResponse.fromOrderEventEntity(it);

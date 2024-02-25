@@ -53,6 +53,12 @@ public class SwaggerConstant {
     public static final String REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM = "Interact with product reviews";
     public static final String REVIEW_GET_PRODUCT_TYPE_SUM = "Get product's review list by product's id";
 
+    // For statistics =================================================================
+    public static final String STATISTICS_CONTROLLER_TITLE = "STATISTICS MANAGEMENT";
+    public static final String STATISTICS_GET_REVENUE_CURRENT_DATE_SUM = "Get revenue of store at current date";
+    public static final String STATISTICS_GET_REVENUE_BY_TIME_SUM = "Get all revenue of store by range time and time unit";
+    public static final String STATISTICS_GET_ORDER_QUANTITY_BY_STAGE_SUM = "Get order's quantity by stage of order bill";
+
     // For product =================================================================
     public static final String PRODUCT_CONTROLLER_TITLE = "PRODUCT MANAGEMENT";
     public static final String PRODUCT_CREATE_SUM = "Create a new product";
@@ -83,8 +89,6 @@ public class SwaggerConstant {
     public static final String TRANSACTION_CONTROLLER_TITLE = "TRANSACTION MANAGEMENT";
     public static final String TRANSACTION_UPDATE_BY_ID_SUM = "Update transaction's information by transaction id after paid/canceled at vnpay page";
     public static final String TRANSACTION_UPDATE_SUCCESS_STATUS_BY_ID_SUM = "Update transaction's status successfully by transaction id";
-    public static final String TRANSACTION_GET_REVENUE_BY_TIME_SUM = "Get all revenue of store by time [day, month, year]";
-    public static final String TRANSACTION_GET_REVENUE_CURRENT_DATE_SUM = "Get revenue of store at current date";
 
 
     // For Order =============================================================
@@ -109,8 +113,8 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUM = "Update employee's new password by employee id for admin";
 
     public static final String EMPLOYEE_DELETE_BY_ID_SUM = "Delete a employee by employee id";
-
-    public static final String EMPLOYEE_GET_BY_ID_SUM = "Get a employee by employee id";
+    public static final String EMPLOYEE_GET_PROFILE_BY_ID_SUM = "Get a employee's profile by employee id";
+    public static final String EMPLOYEE_GET_BY_ID_SUM = "Get a employee's information by employee id";
     public static final String EMPLOYEE_GET_ALL_SUM = "Get all employees";
     public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password for employee by employee id for employee";
 
