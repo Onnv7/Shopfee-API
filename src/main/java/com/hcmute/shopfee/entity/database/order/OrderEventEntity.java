@@ -35,7 +35,7 @@ public class OrderEventEntity {
 //    @Column(name = "time", nullable = false)
 //    private Date time;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
 

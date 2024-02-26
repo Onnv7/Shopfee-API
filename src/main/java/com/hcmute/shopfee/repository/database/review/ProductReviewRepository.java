@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface ProductReviewRepository extends JpaRepository<ProductReviewEntity, String> {
     @Query(value = """
-            select avg(pr.star) as star, count(*) as quantity
+            select COALESCE(avg(pr.star), 0) as star, count(*) as quantity
             from product_review pr\s
             join order_item oi on oi.product_review_id = pr.id\s
             where oi.product_id = ?1

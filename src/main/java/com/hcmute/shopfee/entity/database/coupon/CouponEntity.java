@@ -37,7 +37,7 @@ public class CouponEntity {
     @Column(name = "coupon_type", nullable = false)
     private CouponType couponType;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)

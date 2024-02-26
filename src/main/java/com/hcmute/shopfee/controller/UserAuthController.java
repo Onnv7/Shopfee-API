@@ -44,7 +44,8 @@ public class UserAuthController {
                 .data(resDate)
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(resDate.getRefreshToken(), 604800L);
+        return new ResponseEntity<>(res, headers, StatusCode.CREATED);
     }
 
     @Operation(summary = USER_AUTH_LOGIN_SUM)

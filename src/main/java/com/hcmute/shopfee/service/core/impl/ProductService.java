@@ -69,8 +69,10 @@ public class ProductService implements IProductService {
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
         ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
 
-        List<ToppingEntity> toppingList = ToppingEntity.fromToppingDtoList(body.getToppingList(), productEntity);
-        productEntity.setToppingList(toppingList);
+        if (body.getToppingList() != null) {
+            List<ToppingEntity> toppingList = ToppingEntity.fromToppingDtoList(body.getToppingList(), productEntity);
+            productEntity.setToppingList(toppingList);
+        }
 
         List<SizeEntity> sizeList = SizeEntity.fromToppingDtoList(body.getSizeList(), productEntity);
         productEntity.setSizeList(sizeList);
@@ -95,7 +97,8 @@ public class ProductService implements IProductService {
             originalImage = image.getBytes();
             byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
-            CategoryEntity categoryEntity = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId()).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getCategoryId()));
+            CategoryEntity categoryEntity = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId())
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getCategoryId()));
 
             productEntity.setCategory(categoryEntity);
             HashMap<String, String> imageUploaded = cloudinaryService.uploadFileToFolder(
@@ -143,7 +146,7 @@ public class ProductService implements IProductService {
         List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
         data.setProductList(productList);
-
+        // TODO: nên check category not hidden
         Page<ProductEntity> productPage = productRepository.findByCategory_IdAndStatusNotAndIsDeletedFalse(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
         data.setTotalPage(productPage.getTotalPages());
 
