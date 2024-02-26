@@ -2,6 +2,7 @@ package com.hcmute.shopfee.dto.request;
 
 import com.hcmute.shopfee.dto.common.SizeDto;
 import com.hcmute.shopfee.dto.common.ToppingDto;
+import com.hcmute.shopfee.enums.ProductStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,10 +19,11 @@ public class CreateProductRequest {
     @NotBlank
     private String name;
 
-    @Schema(example = PRODUCT_PRICE_EX)
-    private Long price;
+    @Schema(example = PRODUCT_STATUS_EX)
+    @NotNull
+    private ProductStatus status;
 
-    @Schema(description = NOT_NULL_DES)
+    @Schema()
     @NotNull
     private MultipartFile image;
 
@@ -33,7 +35,7 @@ public class CreateProductRequest {
     @NotBlank
     private String description;
 
-    @Schema(description = OPTIONAL_DES)
+    @Schema()
     private List<ToppingDto> toppingList;
 
     @Schema(example = OBJECT_ID_EX)

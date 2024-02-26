@@ -48,7 +48,7 @@ public class CategoryService implements ICategoryService {
                     .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
                     .imageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
                     .name(body.getName())
-                    .status(CategoryStatus.HIDDEN)
+                    .status(body.getStatus())
                     .isDeleted(false)
                     .build();
             categoryRepository.save(category);
