@@ -18,6 +18,7 @@ public class GetProductReviewListResponse {
     public static class ProductReview {
         private Integer star;
         private String content;
+        private String avatarUrl;
         private String reviewerName;
         private Integer dislikeQuantity;
         private Integer likeQuantity;

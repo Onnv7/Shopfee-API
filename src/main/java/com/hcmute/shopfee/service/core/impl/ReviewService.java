@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
 import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.entity.database.identifier.UserProductReviewInteractionPK;
 import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
@@ -11,6 +12,7 @@ import com.hcmute.shopfee.entity.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
+import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.database.review.UserReviewInteractionRepository;
 import com.hcmute.shopfee.service.core.IReviewService;
@@ -33,13 +35,19 @@ public class ReviewService implements IReviewService {
     private final OrderItemRepository orderItemRepository;
     private final UserReviewInteractionRepository userReviewInteractionRepository;
     private final ProductReviewRepository productReviewRepository;
+    private final UserRepository userRepository;
 
     @Override
     public void createProductReview(CreateReviewRequest body) {
         ProductReviewEntity productReviewEntity = modelMapperService.mapClass(body, ProductReviewEntity.class);
         OrderItemEntity orderItemEntity = orderItemRepository.findById(body.getOrderItemId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getOrderItemId()));
-        SecurityUtils.checkUserId(orderItemEntity.getOrderBill().getUser().getId());
+        String userId = orderItemEntity.getOrderBill().getUser().getId();
+        SecurityUtils.checkUserId(userId);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        user.setCoin(user.getCoin() + 200);
+        userRepository.save(user);
         orderItemEntity.setProductReview(productReviewEntity);
         orderItemRepository.save(orderItemEntity);
     }
@@ -84,6 +92,7 @@ public class ReviewService implements IReviewService {
 
         for(ProductReviewEntity productReviewEntity : productReviewEntityList.getContent()) {
             GetProductReviewListResponse.ProductReview productReview = new GetProductReviewListResponse.ProductReview();
+            productReview.setAvatarUrl(productReviewEntity.getOrderItem().getOrderBill().getUser().getAvatarUrl());
             productReview.setReviewerName(productReviewEntity.getOrderItem().getOrderBill().getUser().getFullName());
             productReview.setStar(productReviewEntity.getStar());
             productReview.setContent(productReviewEntity.getContent());

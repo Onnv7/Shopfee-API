@@ -80,8 +80,8 @@ public class OrderBillEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
-    @Column(name = "update_at")
-    private Date updateAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
     // =================================================
 
     @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})

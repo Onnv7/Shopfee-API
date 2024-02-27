@@ -23,6 +23,9 @@ public class CreateProductRequest {
     @NotNull
     private ProductStatus status;
 
+    @Schema(example = PRODUCT_PRICE_EX)
+    private Long price;
+
     @Schema()
     @NotNull
     private MultipartFile image;

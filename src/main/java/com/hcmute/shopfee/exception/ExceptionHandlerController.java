@@ -38,31 +38,6 @@ public class ExceptionHandlerController {
     private static final List<String> error400= Arrays.asList(
             REGISTERED_EMAIL
     );
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-        ex.printStackTrace();
-        HttpStatus httpStatus =  HttpStatus.INTERNAL_SERVER_ERROR;
-        ErrorResponse res = new ErrorResponse();
-        if(ex instanceof  BadCredentialsException) {
-            res.setMessage(ex.getMessage());
-            httpStatus = HttpStatus.UNAUTHORIZED;
-        } else if(ex instanceof AccessDeniedException) {
-            res.setMessage(ex.getMessage());
-            httpStatus = HttpStatus.FORBIDDEN;
-        } else if(ex instanceof SignatureVerificationException) {
-            res.setMessage(ex.getMessage());
-            httpStatus = HttpStatus.FORBIDDEN;
-//        } else if(ex instanceof ) {
-//            res.setMessage(ex.getMessage());
-//            httpStatus = HttpStatus.FORBIDDEN;
-        } else {
-            res = ErrorResponse.builder()
-                    .message(ex.getMessage())
-                    .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
-                    .build();
-        }
-        return new ResponseEntity<>(res, httpStatus);
-    }
 
 
     @ExceptionHandler(AuthenticationException.class)
@@ -108,5 +83,30 @@ public class ExceptionHandlerController {
                 )
                 .build();
         return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        ex.printStackTrace();
+        HttpStatus httpStatus =  HttpStatus.INTERNAL_SERVER_ERROR;
+        ErrorResponse res = new ErrorResponse();
+        if(ex instanceof  BadCredentialsException) {
+            res.setMessage(ex.getMessage());
+            httpStatus = HttpStatus.UNAUTHORIZED;
+        } else if(ex instanceof AccessDeniedException) {
+            res.setMessage(ex.getMessage());
+            httpStatus = HttpStatus.FORBIDDEN;
+        } else if(ex instanceof SignatureVerificationException) {
+            res.setMessage(ex.getMessage());
+            httpStatus = HttpStatus.FORBIDDEN;
+//        } else if(ex instanceof ) {
+//            res.setMessage(ex.getMessage());
+//            httpStatus = HttpStatus.FORBIDDEN;
+        } else {
+            res = ErrorResponse.builder()
+                    .message(ex.getMessage())
+                    .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
+                    .build();
+        }
+        return new ResponseEntity<>(res, httpStatus);
     }
 }

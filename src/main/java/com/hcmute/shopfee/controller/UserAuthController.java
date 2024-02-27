@@ -84,16 +84,16 @@ public class UserAuthController {
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
-    @Operation(summary = USER_AUTH_RE_SEND_EMAIL_SUM)
-    @PostMapping(POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
-        userAuthService.resendCode(body.getEmail());
-        ResponseAPI<?> res = ResponseAPI.builder()
-                .timestamp(new Date())
-                .message(SuccessConstant.SEND_CODE_TO_EMAIL)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
+//    @Operation(summary = USER_AUTH_RE_SEND_EMAIL_SUM)
+//    @PostMapping(POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH)
+//    public ResponseEntity<ResponseAPI<?>> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
+//        userAuthService.resendCode(body.getEmail());
+//        ResponseAPI<?> res = ResponseAPI.builder()
+//                .timestamp(new Date())
+//                .message(SuccessConstant.SEND_CODE_TO_EMAIL)
+//                .build();
+//        return new ResponseEntity<>(res, StatusCode.OK);
+//    }
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
     @PostMapping(POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
@@ -138,17 +138,13 @@ public class UserAuthController {
     @Operation(summary = USER_AUTH_CHANGE_PASSWORD_SUM)
     @PatchMapping(PATCH_USER_AUTH_CHANGE_PASSWORD_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> changePasswordForgot(@RequestBody @Valid ChangePasswordRequest body) {
-        try {
-            userAuthService.changePasswordForgot(body.getEmail(), body.getPassword());
+        userAuthService.changePasswordForgot(body);
 
-            ResponseAPI<?> res = ResponseAPI.builder()
-                    .message(SuccessConstant.UPDATED)
-                    .timestamp(new Date())
-                    .build();
-            return new ResponseEntity<>(res, StatusCode.OK);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        ResponseAPI<?> res = ResponseAPI.builder()
+                .message(SuccessConstant.UPDATED)
+                .timestamp(new Date())
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)

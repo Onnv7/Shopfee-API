@@ -53,8 +53,8 @@ public class CategoryEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
-    @Column(name = "update_at")
-    private Date updateAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
 // =================================================================
     @OneToMany(mappedBy = "category")

@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.entity.database;
 
+import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -33,6 +34,13 @@ public class ConfirmationEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(nullable = false)
+    private ConfirmationCodeStatus status;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "expire_at")
+    private Date expireAt;
+
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     @Column(name = "created_at")
@@ -40,6 +48,6 @@ public class ConfirmationEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
-    @Column(name = "update_at")
-    private Date updateAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 }

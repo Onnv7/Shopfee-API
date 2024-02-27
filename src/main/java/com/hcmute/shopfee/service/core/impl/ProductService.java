@@ -67,29 +67,37 @@ public class ProductService implements IProductService {
 
     @Override
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
-        ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
+        if(!ImageUtils.isValidImageFile(body.getImage())) {
+            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+        }
+        if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
+            throw new CustomException(ErrorConstant.PARAMETER_INVALID);
+        } else if (productType == ProductType.FOOD) {
+            if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
+                throw new CustomException(ErrorConstant.PARAMETER_INVALID);
+            }
+        }
 
+        ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
         if (body.getToppingList() != null) {
             List<ToppingEntity> toppingList = ToppingEntity.fromToppingDtoList(body.getToppingList(), productEntity);
             productEntity.setToppingList(toppingList);
         }
 
-        List<SizeEntity> sizeList = SizeEntity.fromToppingDtoList(body.getSizeList(), productEntity);
-        productEntity.setSizeList(sizeList);
-
+        if (body.getSizeList() != null) {
+            List<SizeEntity> sizeList = SizeEntity.fromToppingDtoList(body.getSizeList(), productEntity);
+            productEntity.setSizeList(sizeList);
+        }
+        productEntity.setType(productType);
         productEntity.setName(body.getName());
         productEntity.setDescription(body.getDescription());
-        productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
 
         if (productRepository.findByNameAndIsDeletedFalse(productEntity.getName()).orElse(null) != null) {
             throw new CustomException(ErrorConstant.PRODUCT_NAME_EXISTED);
         }
         if (productType == ProductType.FOOD) {
-
+            productEntity.setPrice(body.getPrice());
         } else if (productType == ProductType.BEVERAGE) {
-            if (productEntity.getSizeList().isEmpty()) {
-                throw new CustomException(SIZE_LIST_CANT_EMPTY);
-            }
             productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
         }
         byte[] originalImage = new byte[0];

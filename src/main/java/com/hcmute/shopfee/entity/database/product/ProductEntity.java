@@ -7,6 +7,7 @@ import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.entity.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
+import com.hcmute.shopfee.enums.ProductType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -40,6 +41,9 @@ public class ProductEntity {
 
     @Column(unique = true, nullable = false)
     private String name;
+
+    @Column(name = "type", nullable = false)
+    private ProductType type;
 
     @Column(name = "image_id", unique = true, nullable = false)
     private String imageId;
@@ -79,8 +83,8 @@ public class ProductEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
-    @Column(name = "update_at")
-    private Date updateAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     // =================================================================
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST})

@@ -62,11 +62,11 @@ public class SwaggerConstant {
 
     // For product =================================================================
     public static final String PRODUCT_CONTROLLER_TITLE = "PRODUCT MANAGEMENT";
-    public static final String PRODUCT_CREATE_SUM = "Create a new product";
+    public static final String PRODUCT_CREATE_SUM = "Create a new product (food or beverage)";
     public static final String PRODUCT_GET_BY_ID_SUM = "Get a product's details by product id";
     public static final String PRODUCT_GET_VIEW_BY_ID_SUM = "Get a product enabled by product id";
     public static final String PRODUCT_GET_BY_CATEGORY_ID_SUM = "Get products by category id";
-    public static final String PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM = "Get all or search products which have enabled";
+    public static final String PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM = "Get all or search products by name, description and id";
     public static final String PRODUCT_GET_ALL_SUM = "Get product list or search product list by code, name, description or filter by category id, status and then paging";
     public static final String PRODUCT_DELETE_BY_ID_SUM = "Delete a product by product id";
     public static final String PRODUCT_SOME_DELETE_BY_ID_SUM = "Delete some products by product id";

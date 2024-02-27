@@ -14,6 +14,10 @@ public class ChangePasswordRequest {
     @NotBlank
     private String email;
 
+    @Schema(example = CODE_EX)
+    @NotBlank
+    private String code;
+
     @Schema(example = PASSWORD_EMPLOYEE_EX)
     @NotBlank
     @Size(min = PASSWORD_LENGTH_MIN, max = PASSWORD_LENGTH_MAX)

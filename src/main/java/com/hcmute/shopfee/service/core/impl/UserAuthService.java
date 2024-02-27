@@ -3,6 +3,7 @@ package com.hcmute.shopfee.service.core.impl;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
+import com.hcmute.shopfee.dto.request.ChangePasswordRequest;
 import com.hcmute.shopfee.dto.request.RegisterUserRequest;
 import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
 import com.hcmute.shopfee.dto.response.LoginResponse;
@@ -11,6 +12,7 @@ import com.hcmute.shopfee.dto.response.RegisterResponse;
 import com.hcmute.shopfee.entity.database.ConfirmationEntity;
 import com.hcmute.shopfee.entity.database.RoleEntity;
 import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.kafka.KafkaMessagePublisher;
 import com.hcmute.shopfee.model.CustomException;
@@ -37,6 +39,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,10 +67,16 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public RegisterResponse registerUser(RegisterUserRequest body) {
         UserEntity userEntity = modelMapperService.mapClass(body, UserEntity.class);
-
         if (userRepository.findByEmail(userEntity.getEmail()).orElse(null) != null) {
             throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
         }
+
+        ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
+                .orElseThrow(()-> new CustomException(EMAIL_UNVERIFIED));
+        if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
+            throw new CustomException(EMAIL_UNVERIFIED);
+        }
+        confirmationRepository.delete(confirmation);
 
         RegisterResponse resData = new RegisterResponse();
         modelMapperService.map(userEntity, resData);
@@ -124,17 +134,6 @@ public class UserAuthService implements IUserAuthService {
     }
 
     @Override
-    public void resendCode(String email) {
-        ConfirmationEntity confirmation = confirmationRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
-
-
-        String code = GeneratorUtils.generateRandomCode(6);
-        confirmation.setCode(code);
-        confirmationRepository.save(confirmation);
-        kafkaMessagePublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
-    }
-
-    @Override
     public void sendCodeToRegister(String email) {
         UserEntity user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
@@ -158,19 +157,31 @@ public class UserAuthService implements IUserAuthService {
     public void verifyCodeByEmail(String code, String email) {
         ConfirmationEntity confirmationCollection = confirmationRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
-        if (confirmationCollection != null && code.equals(confirmationCollection.getCode())) {
-            confirmationRepository.deleteById(confirmationCollection.getId());
+        Date currentTime = new Date();
+
+        if (code.equals(confirmationCollection.getCode()) && currentTime.before(confirmationCollection.getExpireAt()) ) {
+            confirmationCollection.setStatus(ConfirmationCodeStatus.USED);
+            confirmationRepository.save(confirmationCollection);
             return;
         }
 
-        throw new CustomException(ErrorConstant.EMAIL_UNVERIFIED);
+        throw new CustomException(ErrorConstant.VERIFY_EMAIL_FAILED);
     }
 
+    @Transactional
     @Override
-    public void changePasswordForgot(String email, String password) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
-        user.setPassword(passwordEncoder.encode(password));
+    public void changePasswordForgot(ChangePasswordRequest body) {
+        UserEntity user = userRepository.findByEmail(body.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getEmail()));
+
+        ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
+                .orElseThrow(()-> new CustomException(EMAIL_UNVERIFIED));
+        if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
+            throw new CustomException(EMAIL_UNVERIFIED);
+        }
+        confirmationRepository.delete(confirmation);
+
+        user.setPassword(passwordEncoder.encode(body.getPassword()));
         userRepository.save(user);
     }
 
@@ -197,7 +208,6 @@ public class UserAuthService implements IUserAuthService {
         userTokenRedisService.createNewUserRefreshToken(newAccessToken, userId);
         userTokenRedisService.updateUsedUserRefreshToken(token);
 
-
         RefreshTokenResponse resData = RefreshTokenResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
@@ -222,14 +232,21 @@ public class UserAuthService implements IUserAuthService {
 
     public void createOrUpdateConfirmationInfo(String email, String code) {
         ConfirmationEntity oldConfirmation = confirmationRepository.findByEmail(email).orElse(null);
+        Date currentDate = new Date();
+        Instant instant = currentDate.toInstant();
+        Instant newInstant = instant.plusSeconds(60);
+        Date newDate = Date.from(newInstant);
         if(oldConfirmation == null) {
             ConfirmationEntity confirmation = ConfirmationEntity.builder()
                     .email(email)
                     .code(code)
+                    .status(ConfirmationCodeStatus.UNUSED)
+                    .expireAt(newDate)
                     .build();
             confirmationRepository.save(confirmation);
         }
         else {
+            oldConfirmation.setExpireAt(newDate);
             oldConfirmation.setCode(code);
             confirmationRepository.save(oldConfirmation);
         }

@@ -12,6 +12,7 @@ import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IUserService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import com.hcmute.shopfee.utils.ImageUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -77,7 +78,11 @@ public class UserService implements IUserService {
 
     @Override
     public void uploadAvatar(UploadUserAvatarRequest body, String userId)  {
+        if(!ImageUtils.isValidImageFile(body.getImage())) {
+            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+        }
         try {
+            SecurityUtils.checkUserId(userId);
             UserEntity user = userRepository.findById(userId)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
 

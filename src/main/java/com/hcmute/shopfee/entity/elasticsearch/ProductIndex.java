@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.elasticsearch;
 
 import com.hcmute.shopfee.enums.ProductStatus;
+import com.hcmute.shopfee.enums.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class ProductIndex {
     private String id;
 //    private String code;
     private String name;
+    private ProductType type;
     private String thumbnailUrl;
     private String description;
     private double price;

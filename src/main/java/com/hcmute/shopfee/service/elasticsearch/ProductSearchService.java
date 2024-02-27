@@ -23,18 +23,17 @@ public class ProductSearchService {
     private final ProductSearchRepository productSearchRepository;
 
     public ProductIndex createProduct(ProductEntity data) {
-        double price = ProductService.getMinPrice(data.getSizeList());
 
         ProductIndex dataSearch = ProductIndex.builder()
                 .id(data.getId())
                 .name(data.getName())
                 .thumbnailUrl(data.getThumbnailUrl())
-//                .code(data.getCode())
                 .description(data.getDescription())
                 .status(data.getStatus())
                 .categoryId(data.getCategory().getId())
+                .type(data.getType())
                 .isDeleted(data.isDeleted())
-                .price(price)
+                .price(data.getPrice())
                 .build();
 
         return productSearchRepository.save(dataSearch);

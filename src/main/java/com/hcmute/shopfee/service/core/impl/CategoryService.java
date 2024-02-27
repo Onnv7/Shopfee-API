@@ -32,6 +32,10 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void createCategory(CreateCategoryRequest body) {
+        if(!ImageUtils.isValidImageFile(body.getImage())) {
+            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+        }
+
         String cgrName = body.getName();
         CategoryEntity existedCategory = categoryRepository.findByIsDeletedFalseAndName(cgrName).orElse(null);
         if (existedCategory != null) {

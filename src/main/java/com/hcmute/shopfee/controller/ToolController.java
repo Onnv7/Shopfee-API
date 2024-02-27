@@ -80,7 +80,18 @@ public class ToolController {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final ProductReviewRepository productReviewRepository;
-
+    @DeleteMapping(value = "/deleteOrderElastisearch")
+    public ResponseEntity<String> deleteOrderElastisearch() {
+//        orderService.checkOrderCoupon(code);
+        orderSearchRepository.deleteAll();
+        return ResponseEntity.status(200).body("Ok fine");
+    }
+    @DeleteMapping(value = "/deleteProductElastisearch")
+    public ResponseEntity<String> deleteProductElastisearch( ) {
+//        orderService.checkOrderCoupon(code);
+        productSearchRepository.deleteAll();
+        return ResponseEntity.status(200).body("Ok fine");
+    }
     @GetMapping(value = "/creatingToTest")
     @Transactional
     public ResponseEntity<String> createMore() {
@@ -145,6 +156,7 @@ public class ToolController {
                 .price(20000L)
                 .name("Pudding 2")
                 .build());
+        product.setType(ProductType.BEVERAGE);
         product.setToppingList(toppingEntityList);
         product.setSizeList(sizeEntityList);
 
@@ -189,7 +201,7 @@ public class ToolController {
                 .totalItemPrice(100000L)
                 .shippingFee(15000L)
                 .totalPayment(115000L)
-                .updateAt(new Date())
+                .updatedAt(new Date())
                 .user(userEntity)
                 .build();
         List<OrderEventEntity> orderEventEntityList = new ArrayList<OrderEventEntity>();
@@ -304,7 +316,7 @@ public class ToolController {
     }
 
 
-    @GetMapping("/sync-product")
+    @GetMapping("/sync-product-elasticsearch")
     public String addElasticSearch() {
         productSearchRepository.deleteAll();
         List<ProductEntity> productList = productRepository.findAll();
@@ -314,7 +326,7 @@ public class ToolController {
         return "okokok";
     }
 
-    @GetMapping("/sync-order")
+    @GetMapping("/sync-order-elasticsearch")
     public String syncOrder() {
         orderSearchRepository.deleteAll();
         List<OrderBillEntity> productList = orderBillRepository.findAll();

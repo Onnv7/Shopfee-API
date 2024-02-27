@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ConfirmationRepository extends JpaRepository<ConfirmationEntity, String> {
     Optional<ConfirmationEntity> findByEmail(String email);
+    Optional<ConfirmationEntity> findByEmailAndCode(String email, String code);
 }

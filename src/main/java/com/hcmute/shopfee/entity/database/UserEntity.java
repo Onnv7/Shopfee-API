@@ -77,8 +77,8 @@ public class UserEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
-    @Column(name = "update_at")
-    private Date updateAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_role",
