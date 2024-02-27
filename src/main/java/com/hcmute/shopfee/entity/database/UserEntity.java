@@ -37,6 +37,12 @@ public class UserEntity {
     @GeneratedValue(generator = "user_id")
     private String id;
 
+    @Column(name = "avatar_id", unique = true)
+    private String avatarId;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
 

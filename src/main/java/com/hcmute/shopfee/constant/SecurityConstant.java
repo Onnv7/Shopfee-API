@@ -41,7 +41,7 @@ public class SecurityConstant {
             POST_REVIEW_INTERACT_PATH
     };
     public static final String[] PATCH_USER_PATH = {
-            PATCH_USER_CHANGE_PASSWORD_PATH
+            PATCH_USER_CHANGE_PASSWORD_PATH, PATCH_USER_UPLOAD_AVATAR_PATH
     };
     public static final String[] PUT_USER_PATH = {
             PUT_ADDRESS_UPDATE_PATH,

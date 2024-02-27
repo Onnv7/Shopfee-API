@@ -32,7 +32,6 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ORDER_BASE_PATH)
-@Validated
 public class OrderController {
     private final IOrderService orderService;
 

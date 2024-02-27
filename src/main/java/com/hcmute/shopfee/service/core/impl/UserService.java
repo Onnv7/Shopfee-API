@@ -1,12 +1,15 @@
 package com.hcmute.shopfee.service.core.impl;
 
+import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
+import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.UserRepository;
+import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IUserService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.SecurityUtils;
@@ -16,7 +19,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +30,7 @@ import java.util.Optional;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final ModelMapperService modelMapperService;
+    private final CloudinaryService cloudinaryService;
 
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -67,5 +73,24 @@ public class UserService implements IUserService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
         return user.getFullName();
+    }
+
+    @Override
+    public void uploadAvatar(UploadUserAvatarRequest body, String userId)  {
+        try {
+            UserEntity user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+
+            byte[] imageBytes = body.getImage().getBytes();
+            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);
+            fileUploaded.get(CloudinaryConstant.URL_PROPERTY);
+
+            user.setAvatarId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID));
+            user.setAvatarUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)));
+
+            userRepository.save(user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

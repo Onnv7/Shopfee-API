@@ -3,6 +3,7 @@ package com.hcmute.shopfee.controller;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
+import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
@@ -13,9 +14,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Date;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
@@ -81,6 +84,17 @@ public class UserController {
                 .timestamp(new Date())
                 .message(SuccessConstant.GET)
                 .data(result)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = USER_UPLOAD_AVATAR_BY_USER_ID_SUM)
+    @PatchMapping(path = PATCH_USER_UPLOAD_AVATAR_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseAPI<String>> uploadAvatar(@PathVariable(USER_ID) String userId, @ModelAttribute @Valid UploadUserAvatarRequest body) {
+        userService.uploadAvatar(body, userId);
+        ResponseAPI<String> res = ResponseAPI.<String>builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }

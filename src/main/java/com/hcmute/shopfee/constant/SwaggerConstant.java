@@ -40,6 +40,7 @@ public class SwaggerConstant {
     public static final String USER_CHANGE_PWD_SUM = "Change password by user id";
     public static final String USER_UPDATE_BY_ID_SUM = "Update user's profile by user id";
     public static final String USER_CHECK_EXISTED_BY_EMAIL_SUM = "Check user existence by email";
+    public static final String USER_UPLOAD_AVATAR_BY_USER_ID_SUM = "Upload user's avatar";
     // For address =================================================================
     public static final String ADDRESS_CONTROLLER_TITLE = "ADDRESS MANAGEMENT";
     public static final String ADDRESS_ADD_ADDRESS_BY_ID_SUM = "Add new address for user";

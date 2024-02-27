@@ -45,7 +45,7 @@ public class AddressController {
     @PutMapping(path = PUT_ADDRESS_UPDATE_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> updateAddressById(
             @PathVariable(ADDRESS_ID) String addressId,
-            @RequestBody @Validated UpdateAddressRequest body
+            @RequestBody @Valid UpdateAddressRequest body
     ) {
         addressService.updateAddressById(body, addressId);
         ResponseAPI res = ResponseAPI.builder()
