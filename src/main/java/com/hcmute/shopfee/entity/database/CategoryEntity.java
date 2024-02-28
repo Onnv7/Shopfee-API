@@ -29,7 +29,7 @@ public class CategoryEntity {
     @GeneratedValue(generator = "category_id")
     private String id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Column(name = "image_id", nullable = false)

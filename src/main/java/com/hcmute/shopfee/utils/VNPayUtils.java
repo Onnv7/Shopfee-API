@@ -160,8 +160,7 @@ public class VNPayUtils {
      * timeId: thoi gian bill duoc tao <p>
      * invoiceCode: ma 8 chu so
     */
-    public static Map<String, Object> refund(HttpServletRequest req, HttpServletResponse resp,
-                                    String timeId, String amount, String invoiceCode, String refundType)
+    public static Map<String, Object> refund(HttpServletRequest req, String timeId, String amount, String invoiceCode, String refundType)
             throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         String vnp_RequestId = VNPayConfig.getRandomNumber(8);

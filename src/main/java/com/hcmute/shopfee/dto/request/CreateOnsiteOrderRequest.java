@@ -58,4 +58,8 @@ public class CreateOnsiteOrderRequest {
     @Schema(example = PRODUCT_PRICE_EX)
     @NotNull
     private Long total;
+
+    @Schema(example = COIN_EX)
+    @NotNull
+    private Long coin;
 }

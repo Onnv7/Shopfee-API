@@ -44,6 +44,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -523,12 +524,15 @@ public class OrderService implements IOrderService {
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        if(user.getCoin() < body.getCoin()) {
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER);
+        }
+
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.SHIPPING);
 
         totalPrice = calculateOrderBill(body.getItemList(), orderBill);
-
 
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
@@ -549,11 +553,9 @@ public class OrderService implements IOrderService {
                 .build());
         orderBill.setOrderEventList(orderEventList);
 
-
         // set chi nhánh xử lý đơn
         BranchEntity branch = getNearestBranches(address);
         orderBill.setBranch(branch);
-
 
         // set tổng hóa đơn và phí ship
         orderBill.setShippingFee(body.getShippingFee());
@@ -567,6 +569,17 @@ public class OrderService implements IOrderService {
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
         totalPrice -= amountReduced;
+
+        if(totalPrice < body.getCoin()) {
+            orderBill.setCoin(totalPrice);
+            totalPrice = 0;
+        } else {
+            totalPrice -= body.getCoin();
+            orderBill.setCoin(body.getCoin());
+        }
+        user.setCoin(orderBill.getCoin());
+        userRepository.save(user);
+
         if (totalPrice != body.getTotal()) {
             throw new CustomException(ErrorConstant.TOTAL_ORDER_INVALID);
         }
@@ -584,7 +597,7 @@ public class OrderService implements IOrderService {
                 .orderId(orderBill.getId())
                 .transactionId(transaction.getId())
                 .build();
-        if (transactionBuilderMap.get(VNP_URL_KEY) != null) {
+        if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
             resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
         }
         return resData;
@@ -608,6 +621,17 @@ public class OrderService implements IOrderService {
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), null, body.getProductCouponCode());
 
         totalPrice -= amountReduced;
+
+        if(totalPrice < body.getCoin()) {
+            orderBill.setCoin(totalPrice);
+            totalPrice = 0;
+        } else {
+            totalPrice -= body.getCoin();
+            orderBill.setCoin(body.getCoin());
+        }
+        user.setCoin(orderBill.getCoin());
+        userRepository.save(user);
+
         if (totalPrice != body.getTotal()) {
             throw new CustomException(ErrorConstant.TOTAL_ORDER_INVALID);
         }
@@ -643,7 +667,7 @@ public class OrderService implements IOrderService {
                 .orderId(orderBill.getId())
                 .transactionId(transaction.getId())
                 .build();
-        if (transactionBuilderMap.get(VNP_URL_KEY) != null) {
+        if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
             resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
         }
         return resData;
@@ -666,8 +690,9 @@ public class OrderService implements IOrderService {
         return resData;
     }
 
+    @Transactional
     @Override
-    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description) {
+    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description, HttpServletRequest request)  {
         OrderBillEntity order = orderBillRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
 
@@ -684,6 +709,15 @@ public class OrderService implements IOrderService {
 
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
+        TransactionEntity transaction = order.getTransaction();
+        if(orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY) {
+//            VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
+            try {
+                VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
+            } catch (IOException e) {
+                throw new CustomException(ErrorConstant.ERROR_REFUND);
+            }
+        }
     }
 
     @Override

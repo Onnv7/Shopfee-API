@@ -42,4 +42,6 @@ public class ErrorConstant {
     public static final String PRODUCT_NAME_EXISTED = "Product name already";
     public static final String PARAMETER_INVALID = "Invalid parameter";
     public static final String IMAGE_INVALID = "Invalid image";
+    public static final String ERROR_REFUND = "Refund error";
+    public static final String INVALID_COIN_NUMBER = "Invalid coin number";
 }

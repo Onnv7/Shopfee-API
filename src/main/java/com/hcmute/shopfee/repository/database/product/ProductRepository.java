@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,7 +15,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Optional<ProductEntity> findByNameAndIsDeletedFalse(String name);
     Optional<ProductEntity> findByIdAndIsDeletedFalse(String id);
     Optional<ProductEntity> findByIdAndStatusAndIsDeletedFalse(String id, ProductStatus status);
-    Optional<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status);
+    Optional<ProductEntity> findByIdAndStatusNotAndIsDeletedFalse(String productId, ProductStatus status);
     Page<ProductEntity> findByCategory_IdAndStatusNotAndIsDeletedFalse(String categoryId, ProductStatus status, Pageable pageable);
     Page<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status, Pageable pageable);
     Optional<ProductEntity> findByIdAndCategory_IdAndIsDeletedFalse(String productId, String categoryId);

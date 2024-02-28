@@ -39,7 +39,7 @@ public class ProductEntity {
     @GeneratedValue(generator = "product_id", strategy = GenerationType.SEQUENCE)
     private String id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Column(name = "type", nullable = false)

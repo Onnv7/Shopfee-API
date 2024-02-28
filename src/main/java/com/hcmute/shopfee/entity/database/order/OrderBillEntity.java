@@ -58,6 +58,9 @@ public class OrderBillEntity {
     @Column(name = "total_item_price", nullable = false)
     private Long totalItemPrice;
 
+    @Column(name = "coin")
+    private Long coin;
+
     @Column(name = "total_payment", nullable = false)
     private Long totalPayment;
 

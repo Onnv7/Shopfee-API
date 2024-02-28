@@ -42,8 +42,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.SIZE_LIST_CANT_EMPTY;
-
 @Service
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
@@ -77,6 +75,9 @@ public class ProductService implements IProductService {
                 throw new CustomException(ErrorConstant.PARAMETER_INVALID);
             }
         }
+        if (productRepository.findByNameAndIsDeletedFalse(body.getName()).orElse(null) != null) {
+            throw new CustomException(ErrorConstant.PRODUCT_NAME_EXISTED);
+        }
 
         ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
         if (body.getToppingList() != null) {
@@ -92,9 +93,8 @@ public class ProductService implements IProductService {
         productEntity.setName(body.getName());
         productEntity.setDescription(body.getDescription());
 
-        if (productRepository.findByNameAndIsDeletedFalse(productEntity.getName()).orElse(null) != null) {
-            throw new CustomException(ErrorConstant.PRODUCT_NAME_EXISTED);
-        }
+
+
         if (productType == ProductType.FOOD) {
             productEntity.setPrice(body.getPrice());
         } else if (productType == ProductType.BEVERAGE) {
@@ -140,7 +140,7 @@ public class ProductService implements IProductService {
 
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
-        ProductEntity product = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN)
+        ProductEntity product = productRepository.findByIdAndStatusNotAndIsDeletedFalse(id, ProductStatus.HIDDEN)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
         GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
         RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());

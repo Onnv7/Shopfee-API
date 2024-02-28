@@ -83,9 +83,9 @@ public class OrderController {
     @PatchMapping(path = PATCH_ORDER_UPDATE_STATUS_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> addNewOrderEvent(
             @PathVariable(ORDER_ID) String id,
-            @RequestBody @Valid UpdateOrderStatusRequest body) {
+            @RequestBody @Valid UpdateOrderStatusRequest body, HttpServletRequest request) {
 
-        orderService.addNewOrderEvent(id, body.getOrderStatus(), body.getDescription());
+        orderService.addNewOrderEvent(id, body.getOrderStatus(), body.getDescription(), request);
 
         ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())

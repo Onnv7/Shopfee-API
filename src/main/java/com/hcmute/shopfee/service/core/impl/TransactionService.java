@@ -46,7 +46,7 @@ public class TransactionService implements ITransactionService {
             transaction.setStatus(PaymentStatus.PAID);
             transaction.setTotalPaid(Long.parseLong(transInfo.get("vnp_Amount").toString()) / 100);
         } else {
-            orderService.addNewOrderEvent(orderBill.getId(), OrderStatus.CANCELED, "You have not completed the full payment amount");
+            orderService.addNewOrderEvent(orderBill.getId(), OrderStatus.CANCELED, "You have not completed the full payment amount", request);
             transaction.setStatus(PaymentStatus.UNPAID);
             transaction.setTotalPaid(0L);
         }

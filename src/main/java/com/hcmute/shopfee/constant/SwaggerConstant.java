@@ -172,6 +172,7 @@ public class SwaggerConstant {
     public static final String PRODUCT_NAME_EX = "Coca cola";
     public static final String PRODUCT_TYPE_EX = "FOOD";
     public static final String PRODUCT_PRICE_EX = "100000";
+    public static final String COIN_EX = "1000";
 
     public static final String PRODUCT_DESCRIPTION_EX = "Coca Cola is made from Pepsi";
 
