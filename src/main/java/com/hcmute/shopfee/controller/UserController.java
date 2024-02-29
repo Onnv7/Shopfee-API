@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @Operation(summary = USER_UPDATE_BY_ID_SUM)
-    @PutMapping(path = PUT_USER_UPDATE_BY_ID_PATH)
+    @PutMapping(path = PUT_USER_UPDATE_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> updateUserProfile(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid UpdateUserRequest body

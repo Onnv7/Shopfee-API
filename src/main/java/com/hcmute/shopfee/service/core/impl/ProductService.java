@@ -92,6 +92,8 @@ public class ProductService implements IProductService {
         productEntity.setType(productType);
         productEntity.setName(body.getName());
         productEntity.setDescription(body.getDescription());
+        productEntity.setStatus(body.getStatus());
+        productEntity.setDeleted(false);
 
 
 
@@ -122,7 +124,6 @@ public class ProductService implements IProductService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        productEntity.setStatus(ProductStatus.HIDDEN);
 //        data.setCode(sequenceService.generateCode(ProductCollection.SEQUENCE_NAME, ProductCollection.PREFIX_CODE, ProductCollection.LENGTH_NUMBER));
 
         ProductEntity dataSaved = productRepository.save(productEntity);
