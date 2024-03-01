@@ -36,7 +36,16 @@ public class ExceptionHandlerController {
             PRODUCT_NOT_FOUND
     );
     private static final List<String> error400= Arrays.asList(
-            REGISTERED_EMAIL
+            REGISTERED_EMAIL, INVALID_COIN_NUMBER, IMAGE_INVALID,
+            PARAMETER_INVALID, PRODUCT_NAME_EXISTED, COUPON_STATUS_UNRELEASED,
+            TOTAL_ORDER_INVALID, COUPON_EXPIRED, COUPON_INVALID, CANT_DELETE, REQUEST_BODY_INVALID,
+            OVER_FIVE_ADDRESS
+    );
+    private static final List<String> error403= Arrays.asList(
+            PRINCIPAL_INVALID, USER_ID_INVALID, ACCOUNT_BLOCKED
+    );
+    private static final List<String> error401= Arrays.asList(
+            INVALID_PASSWORD, STOLEN_TOKEN, INVALID_TOKEN
     );
 
 
@@ -50,19 +59,23 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
     }
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
+    public ResponseEntity<ErrorResponse<?>> handleCustomException(CustomException ex) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         ex.printStackTrace();
         if(error404.contains(ex.getMessage())) {
             httpStatus = StatusCode.NOT_FOUND;
         } else if(error400.contains(ex.getMessage())) {
-            httpStatus = StatusCode.BAD_REQUEST;
+            httpStatus = HttpStatus.BAD_REQUEST;
+        } else if(error401.contains(ex.getMessage())) {
+            httpStatus = HttpStatus.UNAUTHORIZED;
+        }else if(error403.contains(ex.getMessage())) {
+            httpStatus = HttpStatus.FORBIDDEN;
         }
         ErrorResponse res = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
                 .build();
-        return new ResponseEntity<>(res, httpStatus);
+        return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

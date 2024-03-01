@@ -7,7 +7,6 @@ import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 
@@ -22,5 +21,6 @@ public interface IProductService {
     void deleteSomeProductById(List<String> productIdList);
     void updateProductById(UpdateProductRequest body, String id);
     List<GetTopProductResponse> getTopProductQuantityOrder(int quantity);
-    void createProductFromFile(MultipartFile file) throws IOException;
+    void createBeverageFromFile(MultipartFile file);
+    void createCakeFromFile(MultipartFile file);
 }

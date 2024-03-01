@@ -110,8 +110,10 @@ public class RouterConstant {
     public static final String POST_PRODUCT_CREATE_PATH = PRODUCT_BASE_PATH + POST_PRODUCT_CREATE_SUB_PATH;
     public static final String GET_PRODUCT_TOP_QUANTITY_ORDER_SUB_PATH = "/top/{itemQuantity}";
     public static final String GET_PRODUCT_TOP_QUANTITY_ORDER_PATH = PRODUCT_BASE_PATH + GET_PRODUCT_TOP_QUANTITY_ORDER_SUB_PATH;
-    public static final String POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH = "/import";
-    public static final String POST_PRODUCT_CREATE_FROM_SUB_PATH = PRODUCT_BASE_PATH + POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH;
+    public static final String POST_PRODUCT_CREATE_BEVERAGE_FROM_FILE_SUB_PATH = "/beverage/import";
+    public static final String POST_PRODUCT_CREATE_BEVERAGE_FROM_SUB_PATH = PRODUCT_BASE_PATH + POST_PRODUCT_CREATE_BEVERAGE_FROM_FILE_SUB_PATH;
+    public static final String POST_PRODUCT_CREATE_FOOD_FROM_FILE_SUB_PATH = "/food/import";
+    public static final String POST_PRODUCT_CREATE_FOOD_FROM_FILE_PATH = PRODUCT_BASE_PATH + POST_PRODUCT_CREATE_FOOD_FROM_FILE_SUB_PATH;
 
 
     // ENDPOINT URL EMPLOYEE =================================================================

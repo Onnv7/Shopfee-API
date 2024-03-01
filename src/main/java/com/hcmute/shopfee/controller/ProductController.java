@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -186,10 +185,22 @@ public class ProductController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = PRODUCT_POST_IMPORT_FILE_SUM)
-    @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file) throws IOException {
-        productService.createProductFromFile(file);
+    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_BEVERAGE_SUM)
+    @PostMapping(path = POST_PRODUCT_CREATE_BEVERAGE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    protected ResponseEntity<ResponseAPI<?>> createBeverageFromFile(@RequestParam("file") MultipartFile file) {
+        productService.createBeverageFromFile(file);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.CREATED)
+                .timestamp(new Date())
+                .build();
+        return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_FOOD_SUM)
+    @PostMapping(path = POST_PRODUCT_CREATE_FOOD_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    protected ResponseEntity<ResponseAPI<?>> createCakeFromFile(@RequestParam("file") MultipartFile file) {
+        productService.createCakeFromFile(file);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.CREATED)

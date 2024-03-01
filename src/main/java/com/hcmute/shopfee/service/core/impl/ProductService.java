@@ -65,12 +65,12 @@ public class ProductService implements IProductService {
 
     @Override
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
-        if(!ImageUtils.isValidImageFile(body.getImage())) {
+        if (!ImageUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
             throw new CustomException(ErrorConstant.PARAMETER_INVALID);
-        } else if (productType == ProductType.FOOD) {
+        } else if (productType == ProductType.CAKE) {
             if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
                 throw new CustomException(ErrorConstant.PARAMETER_INVALID);
             }
@@ -96,8 +96,7 @@ public class ProductService implements IProductService {
         productEntity.setDeleted(false);
 
 
-
-        if (productType == ProductType.FOOD) {
+        if (productType == ProductType.CAKE) {
             productEntity.setPrice(body.getPrice());
         } else if (productType == ProductType.BEVERAGE) {
             productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
@@ -280,65 +279,72 @@ public class ProductService implements IProductService {
 
     @Override
     public List<GetTopProductResponse> getTopProductQuantityOrder(int quantity) {
-        // TODO: sửa lại get product từ lượt đánh giá
-        // FIXME:
-//        List<GetTopProductResponse> resData = orderService.getTopProductQuantityOrder(quantity);
-//        if (resData.size() < quantity) {
-//            Iterator itr = resData.iterator();
-//            List<ObjectId> excludeId = new ArrayList<>();
-//            while (itr.hasNext()) {
-//                GetAllVisibleProductResponse product = (GetAllVisibleProductResponse) itr.next();
-//                excludeId.add(new ObjectId(product.getId()));
-//            }
-//            resData.addAll(productRepository.getSomeProduct(quantity - resData.size(), excludeId));
-//        }
-        return null;
+        List<GetTopProductResponse> data = new ArrayList<>();
+
+        List<ProductEntity> productEntityList = productRepository.getTopRatingProduct(quantity);
+        for(ProductEntity entity : productEntityList) {
+            RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
+            data.add(GetTopProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
+        }
+
+        return data;
     }
 
     @Override
-    public void createProductFromFile(MultipartFile file) throws IOException {
+    public void createBeverageFromFile(MultipartFile file)  {
         int success = 0;
         List<ProductEntity> productList = new ArrayList<>();
-        InputStream inputStream = file.getInputStream();
-        Workbook workbook = new XSSFWorkbook(inputStream);
+        InputStream inputStream = null;
+        Workbook workbook = null;
+        try {
+            inputStream = file.getInputStream();
+            workbook = new XSSFWorkbook(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Sheet sheet = workbook.getSheetAt(0);
-        int rowIndex = 0;
-        List<ProductEntity> productCollectionList = new ArrayList<>();
+
+        ProductEntity product = null;
+        List<SizeEntity> sizeEntityList = new ArrayList<>();
+        List<ToppingEntity> toppingEntityList = new ArrayList<>();
+        boolean newProductFlag = true;
+
+        // đọc từng hàng
         for (Row row : sheet) {
-            boolean needAddToList = true;
-            if (row.getRowNum() == 0) {
+            int rowIndex = row.getRowNum();
+            if (rowIndex == 0) {
                 continue;
             }
-            ProductEntity product = new ProductEntity();
-            ProductType productType = null;
-            SizeEntity size = new SizeEntity();
-            List<SizeEntity> sizeList = new ArrayList<>();
-            ToppingEntity topping = new ToppingEntity();
-            List<ToppingEntity> toppingList = new ArrayList<>();
-            System.out.println();
+
+            SizeEntity sizeEntity = new SizeEntity();
+            ToppingEntity toppingEntity = new ToppingEntity();
+            if (row.getCell(0).getCellType() == CellType.BLANK) {
+                newProductFlag = false;
+            } else {
+                newProductFlag = true;
+            }
+            if (newProductFlag) {
+                product = new ProductEntity();
+                sizeEntityList = new ArrayList<>();
+                product.setSizeList(sizeEntityList);
+
+                toppingEntityList = new ArrayList<>();
+                product.setToppingList(toppingEntityList);
+            }
+
+            // đọc từng ô
             for (Cell cell : row) {
-                if (cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().trim().isEmpty())) {
+                int colIndex = cell.getColumnIndex();
+                if (cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().isEmpty())) {
                     continue;
                 }
-                switch (cell.getColumnIndex()) {
+                switch (colIndex) {
                     case 0:
-                        ProductEntity checkProduct = productRepository.findByNameAndIsDeletedFalse(cell.getStringCellValue()).orElse(null);
-                        if (checkProduct != null) {
-                            throw new CustomException(ErrorConstant.PRODUCT_NAME_EXISTED);
-                        }
-                        ProductEntity p = productList.stream().filter(it -> it.getName().equals(cell.getStringCellValue())).findFirst().orElse(null);
-                        if (p != null) {
-                            needAddToList = false;
-                            product = p;
-                            sizeList = p.getSizeList();
-                            toppingList = p.getToppingList();
-                        } else {
-                            product.setName(cell.getStringCellValue());
-                        }
+                        product.setName(cell.getStringCellValue());
                         break;
                     case 1:
                         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + cell.getStringCellValue())); // categoryService.getByCode(cell.getStringCellValue());
+                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
                     case 2:
@@ -348,41 +354,100 @@ public class ProductService implements IProductService {
                         product.setDescription(cell.getStringCellValue());
                         break;
                     case 4:
-                        productType = ProductType.valueOf(cell.getStringCellValue());
+                        sizeEntity.setSize(ProductSize.valueOf(cell.getStringCellValue()));
                         break;
                     case 5:
-                        if (productType == ProductType.FOOD) {
-                            product.setPrice((long) cell.getNumericCellValue());
-                        }
+                        sizeEntity.setPrice((long) cell.getNumericCellValue());
+
+                        SizeEntity newEntity = new SizeEntity();
+                        newEntity.setSize(sizeEntity.getSize());
+                        newEntity.setPrice(sizeEntity.getPrice());
+                        newEntity.setProduct(product);
+                        sizeEntityList.add(newEntity);
                         break;
                     case 6:
-                        size.setSize(ProductSize.valueOf(cell.getStringCellValue()));
+                        toppingEntity.setName(cell.getStringCellValue());
+
                         break;
                     case 7:
-                        size.setPrice((long) cell.getNumericCellValue());
-                        sizeList.add(size);
-                        product.setSizeList(sizeList);
+                        toppingEntity.setPrice((long) cell.getNumericCellValue());
+
+                        ToppingEntity newToppingEntity = new ToppingEntity();
+                        newToppingEntity.setProduct(product);
+                        newToppingEntity.setName(toppingEntity.getName());
+                        newToppingEntity.setPrice(toppingEntity.getPrice());
+
+                        toppingEntityList.add(newToppingEntity);
                         break;
-                    case 8:
-                        topping.setName(cell.getStringCellValue());
+
+                }
+            }
+            System.out.println(product);
+            System.out.println("================================================");
+        }
+        try {
+            inputStream.close();
+            workbook.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void createCakeFromFile(MultipartFile file) {
+        int success = 0;
+        List<ProductEntity> productList = new ArrayList<>();
+        InputStream inputStream = null;
+        Workbook workbook = null;
+        try {
+            inputStream = file.getInputStream();
+            workbook = new XSSFWorkbook(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // đọc từng hàng
+        for (Row row : sheet) {
+            int rowIndex = row.getRowNum();
+            if (rowIndex == 0) {
+                continue;
+            }
+            ProductEntity product = new ProductEntity();
+
+            // đọc từng ô
+            for (Cell cell : row) {
+                int colIndex = cell.getColumnIndex();
+                if (cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().isEmpty())) {
+                    continue;
+                }
+                switch (colIndex) {
+                    case 0:
+                        product.setName(cell.getStringCellValue());
                         break;
-                    case 9:
-                        topping.setPrice((long) cell.getNumericCellValue());
-                        toppingList.add(topping);
-                        product.setToppingList(toppingList);
+                    case 1:
+                        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
+                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + cell.getStringCellValue()));
+                        product.setCategory(category);
+                        break;
+                    case 2:
+                        product.setStatus(ProductStatus.valueOf(cell.getStringCellValue()));
+                        break;
+                    case 3:
+                        product.setDescription(cell.getStringCellValue());
+                        break;
+                    case 4:
+                        product.setPrice((long) cell.getNumericCellValue());
                         break;
                 }
-                System.out.println();
             }
-            if (needAddToList) {
-                productList.add(product);
-            }
-
-//                productRepository.save(product);
-            System.out.println();
+            System.out.println(product);
         }
-        System.out.println("================================================");
-        inputStream.close();
-        workbook.close();
+        try {
+            inputStream.close();
+            workbook.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

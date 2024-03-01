@@ -401,6 +401,12 @@ public class OrderService implements IOrderService {
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
 
+        Date currentTime = new Date();
+
+        if(coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
+            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
+        }
+
         coupon.getConditionList().forEach(it -> {
             if (it.getUsageConditionList() != null) {
                 if (!checkUsageCondition(SecurityUtils.getCurrentUserId(), coupon.getCode(), it.getUsageConditionList())) {

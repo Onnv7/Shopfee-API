@@ -28,6 +28,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 public class ProductEntity {
     @Id
@@ -89,14 +90,17 @@ public class ProductEntity {
     // =================================================================
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
+    @ToString.Exclude
     private List<SizeEntity> sizeList;
 
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
+    @ToString.Exclude
     private List<ToppingEntity> toppingList;
 
     @OneToMany(mappedBy = "product")
     @JsonManagedReference
+    @ToString.Exclude
     private List<OrderItemEntity> orderItemList;
 
 

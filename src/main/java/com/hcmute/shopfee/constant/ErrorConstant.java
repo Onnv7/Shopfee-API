@@ -28,6 +28,7 @@ public class ErrorConstant {
     public static final String CANT_DELETE = "Cannot be deleted because this data is related to other data";
     public static final String CONDITION_VALUE_INVALID = "Condition's value is invalid";
     public static final String COUPON_INVALID = "Coupon's value is invalid";
+    public static final String COUPON_EXPIRED = "Coupon is expired";
     public static final String COUPON_UNRELEASED = "Coupon is not released";
     public static final String COUPON_OUT_OF_QUANTITY = "Coupon is out of quantity";
     public static final String COUPON_IS_USED = "One coupon has been used";
