@@ -13,18 +13,23 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
 public class SubjectConditionDto {
-    @Schema(example = TARGET_OBJECT_CONDITION_EX)
-    @NotNull
-    private TargetType type;
+//    @Schema(example = TARGET_OBJECT_CONDITION_EX)
+//    @NotNull
+//    private TargetType type;
 
     @Schema(example = OBJECT_ID_EX)
+    @NotNull
+    private String objectId;
+
+    @Schema(example = COUPON_QUANTITY_EX)
     @NotNull
     private String value;
 
     public static SubjectConditionDto fromSubjectConditionEntity(SubjectConditionEntity entity) {
         SubjectConditionDto data = new SubjectConditionDto();
-        data.setType(entity.getType());
+//        data.setType(entity.getType());
         data.setValue(entity.getValue());
+        data.setObjectId(entity.getObjectId());
         return data;
     }
 

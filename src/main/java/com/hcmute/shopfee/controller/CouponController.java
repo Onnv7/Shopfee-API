@@ -2,10 +2,7 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateBuyXGetYCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateOrderCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateProductMoneyCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.ICouponService;
@@ -163,7 +160,7 @@ public class CouponController {
     }
 
     @Operation(summary = COUPON_GET_PRODUCT_GIFT_BY_ID_SUM)
-    @GetMapping(path = GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_PATH)
+    @GetMapping(path = GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetProductGiftCouponDetailByIdResponse>> getProductGiftCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetProductGiftCouponDetailByIdResponse resData = couponService.getProductGiftCouponDetailById(couponId);
 
@@ -177,7 +174,7 @@ public class CouponController {
     }
 
     @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
-    @GetMapping(path = GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_PATH)
+    @GetMapping(path = GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetAmountOffProductCouponDetailByIdResponse>> getAmountOffProductCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetAmountOffProductCouponDetailByIdResponse resData = couponService.getAmountOffProductCouponDetailById(couponId);
 
@@ -189,5 +186,18 @@ public class CouponController {
 
         return new ResponseEntity<>(res, StatusCode.OK);
     }
-    
+
+    @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
+    @PostMapping(path = POST_COUPON_CHECK_COUPON_LIST_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetCouponListForCartResponse>> getCouponListForCartResponse(@RequestBody @Valid GetCouponListForCartRequest body) {
+        GetCouponListForCartResponse resData = couponService.getCouponListForCartResponse(body);
+
+        ResponseAPI<GetCouponListForCartResponse> res = ResponseAPI.<GetCouponListForCartResponse>builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 }

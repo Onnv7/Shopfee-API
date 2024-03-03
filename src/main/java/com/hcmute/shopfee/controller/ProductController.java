@@ -8,12 +8,14 @@ import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
+import com.hcmute.shopfee.enums.SortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -75,12 +77,24 @@ public class ProductController {
     @GetMapping(path = GET_PRODUCT_BY_CATEGORY_ID_SUB_PATH)
     protected ResponseEntity<ResponseAPI<GetProductsByCategoryIdResponse>> getProductByCategoryId(
             @PathVariable(CATEGORY_ID) String categoryId,
+            @Parameter(name = "min_price", required = false, example = "1")
+            @RequestParam(name = "min_price", required = false) @Min(value = 1, message = "min_price must be greater than 0") Long minPrice,
+
+            @Parameter(name = "max_price", required = false, example = "1")
+            @RequestParam(name = "max_price", required = false) @Min(value = 1, message = "max_price must be greater than 0") Long maxPrice,
+
+            @Parameter(name = "min_star", required = false, example = "0")
+            @RequestParam(name = "min_star", required = false, defaultValue = "0") @Min(value = 0, message = "Page must be greater than or equal 0") @Max(value = 5, message = "min_star must be lower than or equal 5") int minStar,
+
+            @Parameter(name = "sort_type", required = false, example = "PRICE_DESC")
+            @RequestParam(name = "sort_type", required = false) SortType sortType,
+
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, page, size);
+        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, minPrice, maxPrice, minStar, sortType, page, size);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -95,12 +109,25 @@ public class ProductController {
     protected ResponseEntity<ResponseAPI<GetAllVisibleProductResponse>> getAllProductsVisible(
             @Parameter(name = "key", description = "Key is name or description or id", required = false, example = "name or description")
             @RequestParam(name = "key", required = false) String key,
+
+            @Parameter(name = "min_price", required = false, example = "1")
+            @RequestParam(name = "min_price", required = false) @Min(value = 1, message = "min_price must be greater than 0") Long minPrice,
+
+            @Parameter(name = "max_price", required = false, example = "1")
+            @RequestParam(name = "max_price", required = false) @Min(value = 1, message = "max_price must be greater than 0") Long maxPrice,
+
+            @Parameter(name = "min_star", required = false, example = "0")
+            @RequestParam(name = "min_star", required = false, defaultValue = "0") @Min(value = 0, message = "Page must be greater than or equal 0") @Max(value = 5, message = "min_star must be lower than or equal 5") int minStar,
+
+            @Parameter(name = "sort_type", required = false, example = "PRICE_DESC")
+            @RequestParam(name = "sort_type", required = false) SortType sortType,
+
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetAllVisibleProductResponse resData = productService.getVisibleProductList(page, size, key);
+        GetAllVisibleProductResponse resData = productService.getVisibleProductList( minPrice, maxPrice, minStar, sortType, page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)

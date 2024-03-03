@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.database.coupon.condition;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.enums.CombinationType;
+import com.hcmute.shopfee.enums.CouponType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,7 +25,7 @@ public class CombinationConditionEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private CombinationType type;
+    private CouponType type;
 
 
     @ManyToOne

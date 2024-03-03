@@ -74,4 +74,32 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             limit ?1
             """, nativeQuery = true)
     List<ProductEntity> getTopRatingProduct(int limit);
+
+    @Query(value = """
+            select p.id, p.created_at, p.description, p.image_id, p.image_url, p.is_deleted, p.name, p.price, p.status, p.thumbnail_url, p.`type`, p.updated_at, p.category_id
+            from product p\s
+            join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star\s
+            	  from (select *
+            			from product p\s
+            			where p.category_id = ?1 and p.price between ?2 and ?3 and p.status != 'HIDDEN') as product
+            			left join order_item oi on oi.product_id = product.id\s
+            			left join product_review pr on oi.product_review_id = pr.id\s
+            			group by product.id ) as prd on prd.product_id = p.id
+            where prd.star >= ?4
+            """, nativeQuery = true)
+    Page<ProductEntity> getProductByCategoryIdAndFilter(String categoryId, long minPrice, long maxPrice, int minStar, Pageable pageable);
+
+    @Query(value = """
+            select p.id, p.created_at, p.description, p.image_id, p.image_url, p.is_deleted, p.name, p.price, p.status, p.thumbnail_url, p.`type`, p.updated_at, p.category_id
+            from product p
+            join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star
+                  from (select *
+                        from product p
+                        where p.price between ?1 and ?2 and p.status != 'HIDDEN') as product
+                        left join order_item oi on oi.product_id = product.id
+                        left join product_review pr on oi.product_review_id = pr.id
+                        group by product.id ) as prd on prd.product_id = p.id
+            where prd.star >= ?3
+            """, nativeQuery = true)
+    Page<ProductEntity> getAllProductAndFilter(long minPrice, long maxPrice, int minStar, Pageable pageable);
 }

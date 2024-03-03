@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.database.coupon.condition;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.enums.TargetType;
+import com.hcmute.shopfee.enums.UnitObjectType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -22,9 +23,16 @@ public class SubjectConditionEntity {
     @GeneratedValue(generator = "target_object_condition_id")
     private String id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private TargetType type;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "object_type", nullable = false)
+//    private TargetType type;
+
+    @Column(name = "object_id", nullable = false)
+    private String objectId;
+
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "unit", nullable = false)
+//    private UnitObjectType unit;
 
     @Column(name = "value", nullable = false)
     private String value;

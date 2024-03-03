@@ -1,9 +1,6 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.CreateBuyXGetYCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateOrderCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateProductMoneyCouponRequest;
-import com.hcmute.shopfee.dto.request.CreateShippingCouponRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 
 import java.util.List;
@@ -21,4 +18,5 @@ public interface ICouponService {
     GetOrderCouponDetailByIdResponse getOrderCouponDetailById(String couponId);
     GetProductGiftCouponDetailByIdResponse getProductGiftCouponDetailById(String couponId);
     GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId);
+    GetCouponListForCartResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
 }

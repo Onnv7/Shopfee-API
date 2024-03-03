@@ -10,7 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
-@Table(name = "min_purchase_condition")
+@Table(name = "min_purchase_order_condition")
 @Builder
 @Getter
 @Setter
@@ -18,16 +18,16 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class MinPurchaseConditionEntity {
     @Id
-    @GenericGenerator(name = "min_purchase_condition_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "min_purchase_condition_id")
+    @GenericGenerator(name = "min_purchase_order_condition_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "min_purchase_order_condition_id")
     private String id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private MiniPurchaseType type;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "type", nullable = false)
+//    private MiniPurchaseType type;
 
     @Column(name = "value")
-    private Integer value;
+    private Long value;
 
     @OneToOne
     @JoinColumn(name = "coupon_condition_id", nullable = false)

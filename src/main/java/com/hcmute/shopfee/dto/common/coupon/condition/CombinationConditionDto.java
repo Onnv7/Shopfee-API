@@ -2,6 +2,7 @@ package com.hcmute.shopfee.dto.common.coupon.condition;
 
 import com.hcmute.shopfee.entity.database.coupon.condition.CombinationConditionEntity;
 import com.hcmute.shopfee.enums.CombinationType;
+import com.hcmute.shopfee.enums.CouponType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -15,7 +16,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.COMBINATION_CONDITION_
 public class CombinationConditionDto {
     @Schema(example = COMBINATION_CONDITION_EX)
     @NotNull
-    private CombinationType type;
+    private CouponType type;
 
     public static CombinationConditionDto fromCombinationConditionEntity(CombinationConditionEntity entity) {
         CombinationConditionDto data= new CombinationConditionDto();

@@ -14,6 +14,7 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.ProductSize;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
+import com.hcmute.shopfee.enums.SortType;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
@@ -32,6 +33,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -149,13 +151,26 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, int page, int size) {
+    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, int minStar, SortType sortType, int page, int size) {
         GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
         List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
         data.setProductList(productList);
         // TODO: nên check category not hidden
-        Page<ProductEntity> productPage = productRepository.findByCategory_IdAndStatusNotAndIsDeletedFalse(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
+        Page<ProductEntity> productPage = null;
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+        if (minPrice != null && maxPrice != null) {
+            if (sortType == SortType.PRICE_DESC) {
+                pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
+            } else if (sortType == SortType.PRICE_ASC) {
+                pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
+            }
+            productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
+
+        } else {
+            productPage = productRepository.findByCategory_IdAndStatusNotAndIsDeletedFalse(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
+        }
         data.setTotalPage(productPage.getTotalPages());
 
         List<ProductEntity> productEntityList = productPage.getContent();
@@ -167,7 +182,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetAllVisibleProductResponse getVisibleProductList(int page, int size, String key) {
+    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, int minStar, SortType sortType, int page, int size, String key) {
         GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
 
         List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
@@ -184,7 +199,19 @@ public class ProductService implements IProductService {
                 productList.add(GetAllVisibleProductResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
             }
         } else {
-            Page<ProductEntity> productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
+            Page<ProductEntity> productPage = null;
+            if (minPrice != null && maxPrice != null) {
+                if (sortType == SortType.PRICE_DESC) {
+                    pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
+                } else if (sortType == SortType.PRICE_ASC) {
+                    pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
+                }
+
+                productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
+            } else {
+                 productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
+
+            }
             data.setTotalPage(productPage.getTotalPages());
             List<ProductEntity> productEntityList = productPage.getContent();
             for (ProductEntity entity : productEntityList) {
@@ -282,7 +309,7 @@ public class ProductService implements IProductService {
         List<GetTopProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopRatingProduct(quantity);
-        for(ProductEntity entity : productEntityList) {
+        for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
             data.add(GetTopProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
         }
@@ -291,7 +318,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void createBeverageFromFile(MultipartFile file)  {
+    public void createBeverageFromFile(MultipartFile file) {
         int success = 0;
         List<ProductEntity> productList = new ArrayList<>();
         InputStream inputStream = null;

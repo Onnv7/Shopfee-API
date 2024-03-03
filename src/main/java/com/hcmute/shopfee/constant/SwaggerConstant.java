@@ -65,8 +65,8 @@ public class SwaggerConstant {
     public static final String PRODUCT_CREATE_SUM = "Create a new product (food or beverage)";
     public static final String PRODUCT_GET_BY_ID_SUM = "Get a product's details by product id";
     public static final String PRODUCT_GET_VIEW_BY_ID_SUM = "Get a product enabled by product id";
-    public static final String PRODUCT_GET_BY_CATEGORY_ID_SUM = "Get products by category id";
-    public static final String PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM = "Get all or search products by name, description and id";
+    public static final String PRODUCT_GET_BY_CATEGORY_ID_SUM = "Get products by category id and filtering";
+    public static final String PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM = "Get all or search products by name, description and id and filtering";
     public static final String PRODUCT_GET_ALL_SUM = "Get product list or search product list by code, name, description or filter by category id, status and then paging";
     public static final String PRODUCT_DELETE_BY_ID_SUM = "Delete a product by product id";
     public static final String PRODUCT_SOME_DELETE_BY_ID_SUM = "Delete some products by product id";
@@ -173,6 +173,7 @@ public class SwaggerConstant {
     public static final String PRODUCT_NAME_EX = "Coca cola";
     public static final String PRODUCT_TYPE_EX = "FOOD";
     public static final String PRODUCT_PRICE_EX = "100000";
+    public static final String TOTAL_ITEM_PRICE_EX = "200000";
     public static final String COIN_EX = "1000";
 
     public static final String PRODUCT_DESCRIPTION_EX = "Coca Cola is made from Pepsi";

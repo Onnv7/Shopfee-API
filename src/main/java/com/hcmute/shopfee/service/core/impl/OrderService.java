@@ -178,43 +178,22 @@ public class OrderService implements IOrderService {
         return totalPrice;
     }
 
-    private void checkMain(List<CouponEntity> sameCouponList, CouponType couponType) {
-        CombinationType combinationType;
-        if (couponType == CouponType.ORDER) {
-            combinationType = CombinationType.ORDER;
-        } else if (couponType == CouponType.PRODUCT) {
-            combinationType = CombinationType.PRODUCT;
-        } else {
-            combinationType = CombinationType.SHIPPING;
-        }
-
-        sameCouponList.forEach(coupon -> {
-            coupon.getConditionList().forEach(cond -> {
-                List<CombinationConditionEntity> combinationConditionList = cond.getCombinationConditionList();
-                if (combinationConditionList.isEmpty()) {
-                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-                }
-                combinationConditionList.stream().filter(com -> com.getType() == combinationType)
-                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.COUPON_INVALID));
-            });
-        });
-    }
 
 
-    private boolean checkMinPurchaseCondition(MinPurchaseConditionEntity minPurchaseCondition, long totalOrderBill, int itemCount) {
-        if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-            return true;
-        } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-            if (totalOrderBill < minPurchaseCondition.getValue()) {
-                return false;
-            }
-        } else {
-            if (itemCount < minPurchaseCondition.getValue()) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean checkMinPurchaseCondition(MinPurchaseConditionEntity minPurchaseCondition, long totalOrderBill, int itemCount) {
+//        if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
+//            return true;
+//        } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
+//            if (totalOrderBill < minPurchaseCondition.getValue()) {
+//                return false;
+//            }
+//        } else {
+//            if (itemCount < minPurchaseCondition.getValue()) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     private boolean checkUsageCondition(String userId, String couponCode, List<UsageConditionEntity> usageConditionList) {
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
@@ -241,207 +220,205 @@ public class OrderService implements IOrderService {
         return true;
     }
 
+//    private boolean checkCombinationCondition(List<String> couponCodeList) {
+//        List<CouponEntity> couponEntityList = new ArrayList<>();
+//        // tìm và thêm coupon vào list
+//        for (String couponCode : couponCodeList) {
+//            CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
+//                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
+//            couponEntityList.add(couponEntity);
+//        }
+//        CouponType[] types = {CouponType.ORDER, CouponType.PRODUCT, CouponType.SHIPPING};
+//
+//        // tạo mảng thống kê với cột là coupon, hàng là loại coupon có thể combination
+//        int[][] array = new int[3][3];
+//        // thống kê coupon vào mảng trên
+//        for (CouponEntity coupon : couponEntityList) {
+//            CouponType couponType = coupon.getCouponType();
+//            int col = couponType == CouponType.ORDER ? 0 :
+//                    couponType == CouponType.PRODUCT ? 1 : 2;
+//            for (CouponConditionEntity condition : coupon.getConditionList()) {
+//                if (condition.getType() != ConditionType.COMBINATION) {
+//                    continue;
+//                }
+//                List<CombinationConditionEntity> combinationList = condition.getCombinationConditionList();
+//                if (combinationList != null) {
+//                    combinationList.forEach(combination -> {
+//                        CombinationType combinationType = combination.getType();
+//                        int row = combinationType == CombinationType.ORDER ? 0 :
+//                                combinationType == CombinationType.PRODUCT ? 1 : 2;
+//                        array[row][col]++;
+//                    });
+//                }
+//            }
+//        }
+//
+//        // đánh giá thống kê: đường chéo dấu huyền
+//        for (CouponType type : types) {
+//            List<CouponEntity> sameCouponeList = couponEntityList.stream()
+//                    .filter(coupon -> coupon.getCouponType() == type)
+//                    .toList();
+//            if (sameCouponeList.size() <= 1) {
+//                continue;
+//            }
+//            if ((type == CouponType.ORDER && array[0][0] != sameCouponeList.size()) ||
+//                    (type == CouponType.PRODUCT && array[1][1] != sameCouponeList.size()) ||
+//                    (type == CouponType.SHIPPING && array[2][2] != sameCouponeList.size())
+//            ) {
+//                return false;
+//            }
+//
+//        }
+//
+//
+//        List<CouponEntity> orderCouponeList = couponEntityList.stream()
+//                .filter(coupon -> coupon.getCouponType() == CouponType.ORDER)
+//                .toList();
+//        List<CouponEntity> productCouponList = couponEntityList.stream()
+//                .filter(coupon -> coupon.getCouponType() == CouponType.PRODUCT)
+//                .toList();
+//        List<CouponEntity> shippingCouponList = couponEntityList.stream()
+//                .filter(coupon -> coupon.getCouponType() == CouponType.SHIPPING)
+//                .toList();
+//        if (orderCouponeList.size() * productCouponList.size() > 0) {
+//            if (orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
+//                return false;
+//            }
+//        }
+//        if (orderCouponeList.size() * shippingCouponList.size() > 0) {
+//            if (orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
+//                return false;
+//            }
+//        }
+//        if (productCouponList.size() * shippingCouponList.size() > 0) {
+//            if (productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
-    private boolean checkCombinationCondition(List<String> couponCodeList) {
-        List<CouponEntity> couponEntityList = new ArrayList<>();
-        // tìm và thêm coupon vào list
-        for (String couponCode : couponCodeList) {
-            CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
-            couponEntityList.add(couponEntity);
-        }
-        CouponType[] types = {CouponType.ORDER, CouponType.PRODUCT, CouponType.SHIPPING};
+//    private boolean checkSubjectCondition(List<SubjectConditionEntity> conditions, MinPurchaseConditionEntity minPurchaseCondition, List<OrderItemDto> orderItemList) {
+//        for (SubjectConditionEntity condition : conditions) {
+//            if (condition.getType() == TargetType.PRODUCT) {
+//                OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(condition.getValue())).findFirst().orElse(null);
+//                if (item == null) {
+//                    continue;
+//                }
+//                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
+//                    return true;
+//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
+//                    int quantity = 0;
+//                    for (ItemDetailDto detail : item.getItemDetailList()) {
+//                        quantity += detail.getQuantity();
+//                    }
+//                    if (quantity >= minPurchaseCondition.getValue()) {
+//                        return true;
+//                    }
+//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
+//                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
+//                            .orElse(null);
+//                    if (product == null) {
+//                        return false;
+//                    }
+//                    long money = 0;
+//                    for (ItemDetailDto detail : item.getItemDetailList()) {
+//                        money = money + detail.getQuantity() * product.getPrice();
+//                    }
+//                    if (money >= minPurchaseCondition.getValue()) {
+//                        return true;
+//                    }
+//                }
+//            } else if (condition.getType() == TargetType.CATEGORY) {
+//                OrderItemDto item = orderItemList.stream()
+//                        .filter(it -> {
+//                            ProductEntity product = productRepository.findByIdAndIsDeletedFalse(it.getProductId()).orElse(null);
+//                            if (product == null) {
+//                                return false;
+//                            }
+//                            return product.getCategory().getId().equals(condition.getValue());
+//                        }).findFirst()
+//                        .orElse(null);
+//                if (item == null) {
+//                    continue;
+//                }
+//                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
+//                    return true;
+//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
+//                    int quantity = 0;
+//                    for (ItemDetailDto detail : item.getItemDetailList()) {
+//                        quantity += detail.getQuantity();
+//                    }
+//
+//                    if (quantity >= minPurchaseCondition.getValue()) {
+//                        return true;
+//                    }
+//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
+//                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
+//                            .orElse(null);
+//                    if (product == null) {
+//                        return false;
+//                    }
+//                    long money = 0;
+//                    for (ItemDetailDto detail : item.getItemDetailList()) {
+//                        money = money + detail.getQuantity() * product.getPrice();
+//                    }
+//
+//                    if (money >= minPurchaseCondition.getValue()) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//        return true;
+//    }
 
-        // tạo mảng thống kê với cột là coupon, hàng là loại coupon có thể combination
-        int[][] array = new int[3][3];
-        // thống kê coupon vào mảng trên
-        for (CouponEntity coupon : couponEntityList) {
-            CouponType couponType = coupon.getCouponType();
-            int col = couponType == CouponType.ORDER ? 0 :
-                    couponType == CouponType.PRODUCT ? 1 : 2;
-            for (CouponConditionEntity condition : coupon.getConditionList()) {
-                if (condition.getType() != ConditionType.COMBINATION) {
-                    continue;
-                }
-                List<CombinationConditionEntity> combinationList = condition.getCombinationConditionList();
-                if (combinationList != null) {
-                    combinationList.forEach(combination -> {
-                        CombinationType combinationType = combination.getType();
-                        int row = combinationType == CombinationType.ORDER ? 0 :
-                                combinationType == CombinationType.PRODUCT ? 1 : 2;
-                        array[row][col]++;
-                    });
-                }
-            }
-        }
+//    public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, int itemSize) {
+//        CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
+//                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
+//
+//        Date currentTime = new Date();
+//
+//        if(coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
+//            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
+//        }
+//
+//        coupon.getConditionList().forEach(it -> {
+//            if (it.getUsageConditionList() != null) {
+//                if (!checkUsageCondition(SecurityUtils.getCurrentUserId(), coupon.getCode(), it.getUsageConditionList())) {
+//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+//                }
+//            } else if (it.getMinPurchaseCondition() != null && coupon.getCouponType() != CouponType.PRODUCT) {
+//                if (!checkMinPurchaseCondition(it.getMinPurchaseCondition(), total, itemSize)) {
+//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+//                }
+//            } else if (it.getSubjectConditionList() != null && coupon.getCouponType() == CouponType.PRODUCT) {
+//                if (!checkSubjectCondition(it.getSubjectConditionList(), it.getMinPurchaseCondition(), orderItemList)) {
+//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
+//                }
+//            }
+//        });
+//    }
 
-        // đánh giá thống kê: đường chéo dấu huyền
-        for (CouponType type : types) {
-            List<CouponEntity> sameCouponeList = couponEntityList.stream()
-                    .filter(coupon -> coupon.getCouponType() == type)
-                    .toList();
-            if (sameCouponeList.size() <= 1) {
-                continue;
-            }
-            if ((type == CouponType.ORDER && array[0][0] != sameCouponeList.size()) ||
-                    (type == CouponType.PRODUCT && array[1][1] != sameCouponeList.size()) ||
-                    (type == CouponType.SHIPPING && array[2][2] != sameCouponeList.size())
-            ) {
-                return false;
-            }
-
-        }
-
-
-        List<CouponEntity> orderCouponeList = couponEntityList.stream()
-                .filter(coupon -> coupon.getCouponType() == CouponType.ORDER)
-                .toList();
-        List<CouponEntity> productCouponList = couponEntityList.stream()
-                .filter(coupon -> coupon.getCouponType() == CouponType.PRODUCT)
-                .toList();
-        List<CouponEntity> shippingCouponList = couponEntityList.stream()
-                .filter(coupon -> coupon.getCouponType() == CouponType.SHIPPING)
-                .toList();
-        if (orderCouponeList.size() * productCouponList.size() > 0) {
-            if (orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
-                return false;
-            }
-        }
-        if (orderCouponeList.size() * shippingCouponList.size() > 0) {
-            if (orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
-                return false;
-            }
-        }
-        if (productCouponList.size() * shippingCouponList.size() > 0) {
-            if (productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean checkSubjectCondition(List<SubjectConditionEntity> conditions, MinPurchaseConditionEntity minPurchaseCondition, List<OrderItemDto> orderItemList) {
-        for (SubjectConditionEntity condition : conditions) {
-            if (condition.getType() == TargetType.PRODUCT) {
-                OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(condition.getValue())).findFirst().orElse(null);
-                if (item == null) {
-                    continue;
-                }
-                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-                    return true;
-                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-                    int quantity = 0;
-                    for (ItemDetailDto detail : item.getItemDetailList()) {
-                        quantity += detail.getQuantity();
-                    }
-                    if (quantity >= minPurchaseCondition.getValue()) {
-                        return true;
-                    }
-                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
-                            .orElse(null);
-                    if (product == null) {
-                        return false;
-                    }
-                    long money = 0;
-                    for (ItemDetailDto detail : item.getItemDetailList()) {
-                        money = money + detail.getQuantity() * product.getPrice();
-                    }
-                    if (money >= minPurchaseCondition.getValue()) {
-                        return true;
-                    }
-                }
-            } else if (condition.getType() == TargetType.CATEGORY) {
-                OrderItemDto item = orderItemList.stream()
-                        .filter(it -> {
-                            ProductEntity product = productRepository.findByIdAndIsDeletedFalse(it.getProductId()).orElse(null);
-                            if (product == null) {
-                                return false;
-                            }
-                            return product.getCategory().getId().equals(condition.getValue());
-                        }).findFirst()
-                        .orElse(null);
-                if (item == null) {
-                    continue;
-                }
-                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-                    return true;
-                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-                    int quantity = 0;
-                    for (ItemDetailDto detail : item.getItemDetailList()) {
-                        quantity += detail.getQuantity();
-                    }
-
-                    if (quantity >= minPurchaseCondition.getValue()) {
-                        return true;
-                    }
-                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
-                            .orElse(null);
-                    if (product == null) {
-                        return false;
-                    }
-                    long money = 0;
-                    for (ItemDetailDto detail : item.getItemDetailList()) {
-                        money = money + detail.getQuantity() * product.getPrice();
-                    }
-
-                    if (money >= minPurchaseCondition.getValue()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-
-    public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, int itemSize) {
-        CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
-
-        Date currentTime = new Date();
-
-        if(coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
-            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
-        }
-
-        coupon.getConditionList().forEach(it -> {
-            if (it.getUsageConditionList() != null) {
-                if (!checkUsageCondition(SecurityUtils.getCurrentUserId(), coupon.getCode(), it.getUsageConditionList())) {
-                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-                }
-            } else if (it.getMinPurchaseCondition() != null && coupon.getCouponType() != CouponType.PRODUCT) {
-                if (!checkMinPurchaseCondition(it.getMinPurchaseCondition(), total, itemSize)) {
-                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-                }
-            } else if (it.getSubjectConditionList() != null && coupon.getCouponType() == CouponType.PRODUCT) {
-                if (!checkSubjectCondition(it.getSubjectConditionList(), it.getMinPurchaseCondition(), orderItemList)) {
-                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-                }
-            }
-        });
-    }
-
-    public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
-        List<String> couponCodeList = new ArrayList<>();
-        if (orderCouponCode != null) {
-            couponCodeList.add(orderCouponCode);
-            validateCoupon(orderCouponCode, itemList, totalItemPrice, itemList.size());
-        }
-        if (shippingCouponCode != null) {
-            couponCodeList.add(shippingCouponCode);
-            validateCoupon(shippingCouponCode, itemList, totalItemPrice, itemList.size());
-        }
-        if (productCouponCode != null) {
-            couponCodeList.add(productCouponCode);
-            validateCoupon(productCouponCode, itemList, totalItemPrice, itemList.size());
-        }
-        if (!checkCombinationCondition(couponCodeList)) {
-            throw new CustomException(ErrorConstant.COUPON_INVALID);
-        }
-    }
+//    public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
+//        List<String> couponCodeList = new ArrayList<>();
+//        if (orderCouponCode != null) {
+//            couponCodeList.add(orderCouponCode);
+//            validateCoupon(orderCouponCode, itemList, totalItemPrice, itemList.size());
+//        }
+//        if (shippingCouponCode != null) {
+//            couponCodeList.add(shippingCouponCode);
+//            validateCoupon(shippingCouponCode, itemList, totalItemPrice, itemList.size());
+//        }
+//        if (productCouponCode != null) {
+//            couponCodeList.add(productCouponCode);
+//            validateCoupon(productCouponCode, itemList, totalItemPrice, itemList.size());
+//        }
+//        if (!checkCombinationCondition(couponCodeList)) {
+//            throw new CustomException(ErrorConstant.COUPON_INVALID);
+//        }
+//    }
 
 
     private CouponUsedEntity createCouponUsedEntity(String couponCode) {
@@ -571,7 +548,7 @@ public class OrderService implements IOrderService {
         totalPrice += body.getShippingFee();
 
         // xử lý coupon
-        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
+//        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
         totalPrice -= amountReduced;
@@ -623,7 +600,7 @@ public class OrderService implements IOrderService {
         totalPrice = calculateOrderBill(body.getItemList(), orderBill);
         orderBill.setTotalItemPrice(totalPrice);
 
-        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
+//        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), null, body.getProductCouponCode());
 
         totalPrice -= amountReduced;

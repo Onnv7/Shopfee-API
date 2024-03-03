@@ -12,16 +12,16 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.MIN_PURCHASE_TYPE;
 
 @Data
 public class MinPurchaseConditionDto {
-    @Schema(example = MIN_PURCHASE_TYPE)
-    @NotNull
-    private MiniPurchaseType type;
+//    @Schema(example = MIN_PURCHASE_TYPE)
+//    @NotNull
+//    private MiniPurchaseType type;
 
     @Schema(example = INTEGER_VALUE_EX)
-    private Integer value;
+    private Long value;
 
     public static MinPurchaseConditionDto fromMinPurchaseConditionEntity(MinPurchaseConditionEntity entity) {
         MinPurchaseConditionDto data = new MinPurchaseConditionDto();
-        data.setType(entity.getType());
+//        data.setType(entity.getType());
         data.setValue(entity.getValue());
         return data;
     }

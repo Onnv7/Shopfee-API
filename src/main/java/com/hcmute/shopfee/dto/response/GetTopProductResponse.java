@@ -32,11 +32,4 @@ public class GetTopProductResponse {
         return data;
     }
 
-//    public static List<GetTopProductResponse> fromProductEntityList(List<ProductEntity> entityList) {
-//        List<GetTopProductResponse> data = new ArrayList<>();
-//        for (ProductEntity entity : entityList) {
-//            data.add(fromProductEntity(entity));
-//        }
-//        return data;
-//    }
 }
