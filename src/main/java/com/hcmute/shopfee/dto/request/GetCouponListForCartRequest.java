@@ -23,11 +23,11 @@ public class GetCouponListForCartRequest {
     private String shippingFee;
 
     @Schema(example = TOTAL_PAID_EX)
-    @NotBlank
+    @NotNull
     private Long totalPayment;
 
     @Schema(example = TOTAL_ITEM_PRICE_EX)
-    @NotBlank
+    @NotNull
     private Long totalItemPrice;
 
     @Schema(example = INTERACTION)

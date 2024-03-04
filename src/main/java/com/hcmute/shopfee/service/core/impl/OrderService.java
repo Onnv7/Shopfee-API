@@ -27,6 +27,7 @@ import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
+import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.UsageConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -68,6 +69,7 @@ public class OrderService implements IOrderService {
     private final CouponConditionRepository couponConditionRepository;
     private final CategoryRepository categoryRepository;
     private final UsageConditionRepository usageConditionRepository;
+    private final CombinationConditionRepository combinationConditionRepository;
 
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
@@ -180,245 +182,102 @@ public class OrderService implements IOrderService {
 
 
 
-//    private boolean checkMinPurchaseCondition(MinPurchaseConditionEntity minPurchaseCondition, long totalOrderBill, int itemCount) {
-//        if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-//            return true;
-//        } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-//            if (totalOrderBill < minPurchaseCondition.getValue()) {
-//                return false;
-//            }
-//        } else {
-//            if (itemCount < minPurchaseCondition.getValue()) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    private void getCantCombinedCouponTypeList(String orderCouponCode, CouponType typeChecking, List<CouponType> sampleNot) {
+        List<CouponType> sample = Arrays.asList(CouponType.PRODUCT, CouponType.ORDER, CouponType.SHIPPING);
+        List<CouponType> couponTypeCombinedList = combinationConditionRepository.getCombinationConditionByCouponCode(orderCouponCode);
+        sample.forEach(couponType -> {
+            if (!couponTypeCombinedList.contains(couponType) && typeChecking != couponType && !sampleNot.contains(couponType)) {
+                sampleNot.add(couponType);
+            }
+        });
+    }
 
-    private boolean checkUsageCondition(String userId, String couponCode, List<UsageConditionEntity> usageConditionList) {
+    public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, String userId) {
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
 
-        for (UsageConditionEntity usageCondition : usageConditionList) {
-            UsageConditionType type = usageCondition.getType();
-            switch (type) {
-                case QUANTITY -> {
-                    int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
-                    if (usageCondition.getValue() <= usedCount) {
-                        return false;
+        Date currentTime = new Date();
+
+        if (coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
+//            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
+        }
+
+        for (CouponConditionEntity condition : coupon.getConditionList()) {
+            if (condition.getType() == ConditionType.MIN_PURCHASE) {
+                if (total < condition.getMinPurchaseCondition().getValue()) {
+                    // invalid
+                    throw new CustomException(ErrorConstant.COUPON_INVALID + " min purchase condition " + condition.getMinPurchaseCondition().getValue());
+                }
+            } else if (condition.getType() == ConditionType.USAGE) {
+                for (UsageConditionEntity usageCondition : condition.getUsageConditionList()) {
+                    if (usageCondition.getType() == UsageConditionType.QUANTITY) {
+                        int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
+                        if (usedCount >= usageCondition.getValue()) {
+                            // invalid
+                            throw new CustomException(ErrorConstant.COUPON_INVALID + " coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
+                        }
+                    } else if (usageCondition.getType() == UsageConditionType.LIMIT_ONE_FOR_USER) {
+                        CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId()).orElse(null);
+                        if (couponUsed != null) {
+                            // invalid
+                            throw new CustomException(ErrorConstant.COUPON_INVALID + " limit one per an user");
+                        }
                     }
                 }
-                case LIMIT_ONE_FOR_USER -> {
-                    CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId())
-                            .orElse(null);
-                    if (couponUsed != null) {
-                        return false;
+            } else if (condition.getType() == ConditionType.TARGET_OBJECT) {
+
+                List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
+                for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
+                    OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
+                    if (item == null) {
+                        // invalid
+                        throw new CustomException(ErrorConstant.COUPON_INVALID + " not found subject " + subjectConditionEntity.getObjectId() );
+                    } else {
+                        int count = 0;
+                        for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
+                            count += itemDetailDto.getQuantity();
+                        }
+                        if (count < subjectConditionEntity.getValue()) {
+                            // invalid
+                            throw new CustomException(ErrorConstant.COUPON_INVALID + " subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
+                        }
                     }
                 }
             }
         }
-        return true;
     }
 
-//    private boolean checkCombinationCondition(List<String> couponCodeList) {
-//        List<CouponEntity> couponEntityList = new ArrayList<>();
-//        // tìm và thêm coupon vào list
-//        for (String couponCode : couponCodeList) {
-//            CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-//                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
-//            couponEntityList.add(couponEntity);
-//        }
-//        CouponType[] types = {CouponType.ORDER, CouponType.PRODUCT, CouponType.SHIPPING};
-//
-//        // tạo mảng thống kê với cột là coupon, hàng là loại coupon có thể combination
-//        int[][] array = new int[3][3];
-//        // thống kê coupon vào mảng trên
-//        for (CouponEntity coupon : couponEntityList) {
-//            CouponType couponType = coupon.getCouponType();
-//            int col = couponType == CouponType.ORDER ? 0 :
-//                    couponType == CouponType.PRODUCT ? 1 : 2;
-//            for (CouponConditionEntity condition : coupon.getConditionList()) {
-//                if (condition.getType() != ConditionType.COMBINATION) {
-//                    continue;
-//                }
-//                List<CombinationConditionEntity> combinationList = condition.getCombinationConditionList();
-//                if (combinationList != null) {
-//                    combinationList.forEach(combination -> {
-//                        CombinationType combinationType = combination.getType();
-//                        int row = combinationType == CombinationType.ORDER ? 0 :
-//                                combinationType == CombinationType.PRODUCT ? 1 : 2;
-//                        array[row][col]++;
-//                    });
-//                }
-//            }
-//        }
-//
-//        // đánh giá thống kê: đường chéo dấu huyền
-//        for (CouponType type : types) {
-//            List<CouponEntity> sameCouponeList = couponEntityList.stream()
-//                    .filter(coupon -> coupon.getCouponType() == type)
-//                    .toList();
-//            if (sameCouponeList.size() <= 1) {
-//                continue;
-//            }
-//            if ((type == CouponType.ORDER && array[0][0] != sameCouponeList.size()) ||
-//                    (type == CouponType.PRODUCT && array[1][1] != sameCouponeList.size()) ||
-//                    (type == CouponType.SHIPPING && array[2][2] != sameCouponeList.size())
-//            ) {
-//                return false;
-//            }
-//
-//        }
-//
-//
-//        List<CouponEntity> orderCouponeList = couponEntityList.stream()
-//                .filter(coupon -> coupon.getCouponType() == CouponType.ORDER)
-//                .toList();
-//        List<CouponEntity> productCouponList = couponEntityList.stream()
-//                .filter(coupon -> coupon.getCouponType() == CouponType.PRODUCT)
-//                .toList();
-//        List<CouponEntity> shippingCouponList = couponEntityList.stream()
-//                .filter(coupon -> coupon.getCouponType() == CouponType.SHIPPING)
-//                .toList();
-//        if (orderCouponeList.size() * productCouponList.size() > 0) {
-//            if (orderCouponeList.size() != array[1][0] || productCouponList.size() != array[0][1]) {
-//                return false;
-//            }
-//        }
-//        if (orderCouponeList.size() * shippingCouponList.size() > 0) {
-//            if (orderCouponeList.size() != array[2][0] || shippingCouponList.size() != array[0][2]) {
-//                return false;
-//            }
-//        }
-//        if (productCouponList.size() * shippingCouponList.size() > 0) {
-//            if (productCouponList.size() != array[2][1] || shippingCouponList.size() != array[1][2]) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
+    public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
+        String userId = SecurityUtils.getCurrentUserId();
+        List<String> couponCodeList = new ArrayList<>();
+        List<CouponType> cantCombinedCouponTypeList = new ArrayList<>();
+        List<CouponType> couponTypeUsingList = new ArrayList<>();
+        if (orderCouponCode != null) {
+            couponCodeList.add(orderCouponCode);
+            couponTypeUsingList.add(CouponType.ORDER);
+            getCantCombinedCouponTypeList(orderCouponCode, CouponType.ORDER, cantCombinedCouponTypeList);
+            validateCoupon(orderCouponCode, itemList, totalItemPrice, userId);
+        }
+        if (shippingCouponCode != null) {
+            couponCodeList.add(shippingCouponCode);
+            couponTypeUsingList.add(CouponType.SHIPPING);
+            getCantCombinedCouponTypeList(shippingCouponCode, CouponType.SHIPPING, cantCombinedCouponTypeList);
+            validateCoupon(shippingCouponCode, itemList, totalItemPrice, userId);
+        }
+        if (productCouponCode != null) {
+            couponCodeList.add(productCouponCode);
+            couponTypeUsingList.add(CouponType.PRODUCT);
+            validateCoupon(productCouponCode, itemList, totalItemPrice, userId);
+            getCantCombinedCouponTypeList(productCouponCode, CouponType.PRODUCT, cantCombinedCouponTypeList);
+        }
 
-//    private boolean checkSubjectCondition(List<SubjectConditionEntity> conditions, MinPurchaseConditionEntity minPurchaseCondition, List<OrderItemDto> orderItemList) {
-//        for (SubjectConditionEntity condition : conditions) {
-//            if (condition.getType() == TargetType.PRODUCT) {
-//                OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(condition.getValue())).findFirst().orElse(null);
-//                if (item == null) {
-//                    continue;
-//                }
-//                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-//                    return true;
-//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-//                    int quantity = 0;
-//                    for (ItemDetailDto detail : item.getItemDetailList()) {
-//                        quantity += detail.getQuantity();
-//                    }
-//                    if (quantity >= minPurchaseCondition.getValue()) {
-//                        return true;
-//                    }
-//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-//                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
-//                            .orElse(null);
-//                    if (product == null) {
-//                        return false;
-//                    }
-//                    long money = 0;
-//                    for (ItemDetailDto detail : item.getItemDetailList()) {
-//                        money = money + detail.getQuantity() * product.getPrice();
-//                    }
-//                    if (money >= minPurchaseCondition.getValue()) {
-//                        return true;
-//                    }
-//                }
-//            } else if (condition.getType() == TargetType.CATEGORY) {
-//                OrderItemDto item = orderItemList.stream()
-//                        .filter(it -> {
-//                            ProductEntity product = productRepository.findByIdAndIsDeletedFalse(it.getProductId()).orElse(null);
-//                            if (product == null) {
-//                                return false;
-//                            }
-//                            return product.getCategory().getId().equals(condition.getValue());
-//                        }).findFirst()
-//                        .orElse(null);
-//                if (item == null) {
-//                    continue;
-//                }
-//                if (minPurchaseCondition.getType() == MiniPurchaseType.NONE) {
-//                    return true;
-//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.QUANTITY) {
-//                    int quantity = 0;
-//                    for (ItemDetailDto detail : item.getItemDetailList()) {
-//                        quantity += detail.getQuantity();
-//                    }
-//
-//                    if (quantity >= minPurchaseCondition.getValue()) {
-//                        return true;
-//                    }
-//                } else if (minPurchaseCondition.getType() == MiniPurchaseType.MONEY) {
-//                    ProductEntity product = productRepository.findByIdAndIsDeletedFalse(item.getProductId())
-//                            .orElse(null);
-//                    if (product == null) {
-//                        return false;
-//                    }
-//                    long money = 0;
-//                    for (ItemDetailDto detail : item.getItemDetailList()) {
-//                        money = money + detail.getQuantity() * product.getPrice();
-//                    }
-//
-//                    if (money >= minPurchaseCondition.getValue()) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//        return true;
-//    }
-
-//    public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, int itemSize) {
-//        CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-//                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
-//
-//        Date currentTime = new Date();
-//
-//        if(coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
-//            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
-//        }
-//
-//        coupon.getConditionList().forEach(it -> {
-//            if (it.getUsageConditionList() != null) {
-//                if (!checkUsageCondition(SecurityUtils.getCurrentUserId(), coupon.getCode(), it.getUsageConditionList())) {
-//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-//                }
-//            } else if (it.getMinPurchaseCondition() != null && coupon.getCouponType() != CouponType.PRODUCT) {
-//                if (!checkMinPurchaseCondition(it.getMinPurchaseCondition(), total, itemSize)) {
-//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-//                }
-//            } else if (it.getSubjectConditionList() != null && coupon.getCouponType() == CouponType.PRODUCT) {
-//                if (!checkSubjectCondition(it.getSubjectConditionList(), it.getMinPurchaseCondition(), orderItemList)) {
-//                    throw new CustomException(ErrorConstant.COUPON_INVALID);
-//                }
-//            }
-//        });
-//    }
-
-//    public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
-//        List<String> couponCodeList = new ArrayList<>();
-//        if (orderCouponCode != null) {
-//            couponCodeList.add(orderCouponCode);
-//            validateCoupon(orderCouponCode, itemList, totalItemPrice, itemList.size());
-//        }
-//        if (shippingCouponCode != null) {
-//            couponCodeList.add(shippingCouponCode);
-//            validateCoupon(shippingCouponCode, itemList, totalItemPrice, itemList.size());
-//        }
-//        if (productCouponCode != null) {
-//            couponCodeList.add(productCouponCode);
-//            validateCoupon(productCouponCode, itemList, totalItemPrice, itemList.size());
-//        }
-//        if (!checkCombinationCondition(couponCodeList)) {
-//            throw new CustomException(ErrorConstant.COUPON_INVALID);
-//        }
-//    }
+        cantCombinedCouponTypeList.forEach(it -> {
+            if (couponTypeUsingList.contains(it)) {
+                // invalid
+                throw new CustomException(ErrorConstant.COUPON_INVALID + " cant combine coupons");
+            }
+        });
+    }
 
 
     private CouponUsedEntity createCouponUsedEntity(String couponCode) {
@@ -507,7 +366,10 @@ public class OrderService implements IOrderService {
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
-        if(user.getCoin() < body.getCoin()) {
+        if (body.getCoin() == null) {
+            body.setCoin(0L);
+        }
+        if (user.getCoin() < body.getCoin()) {
             throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER);
         }
 
@@ -548,12 +410,12 @@ public class OrderService implements IOrderService {
         totalPrice += body.getShippingFee();
 
         // xử lý coupon
-//        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
+        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
         totalPrice -= amountReduced;
 
-        if(totalPrice < body.getCoin()) {
+        if (totalPrice < body.getCoin()) {
             orderBill.setCoin(totalPrice);
             totalPrice = 0;
         } else {
@@ -593,6 +455,14 @@ public class OrderService implements IOrderService {
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+
+        if (body.getCoin() == null) {
+            body.setCoin(0L);
+        }
+        if (user.getCoin() < body.getCoin()) {
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER);
+        }
+
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.ONSITE);
@@ -605,7 +475,7 @@ public class OrderService implements IOrderService {
 
         totalPrice -= amountReduced;
 
-        if(totalPrice < body.getCoin()) {
+        if (totalPrice < body.getCoin()) {
             orderBill.setCoin(totalPrice);
             totalPrice = 0;
         } else {
@@ -675,7 +545,7 @@ public class OrderService implements IOrderService {
 
     @Transactional
     @Override
-    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description, HttpServletRequest request)  {
+    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description, HttpServletRequest request) {
         OrderBillEntity order = orderBillRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
 
@@ -693,7 +563,7 @@ public class OrderService implements IOrderService {
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
         TransactionEntity transaction = order.getTransaction();
-        if(orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY) {
+        if (orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY) {
 //            VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
             try {
                 VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");

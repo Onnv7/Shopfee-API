@@ -23,7 +23,7 @@ public class SubjectConditionDto {
 
     @Schema(example = COUPON_QUANTITY_EX)
     @NotNull
-    private String value;
+    private Integer value;
 
     public static SubjectConditionDto fromSubjectConditionEntity(SubjectConditionEntity entity) {
         SubjectConditionDto data = new SubjectConditionDto();

@@ -60,6 +60,5 @@ public class CreateOnsiteOrderRequest {
     private Long total;
 
     @Schema(example = COIN_EX)
-    @NotNull
     private Long coin;
 }

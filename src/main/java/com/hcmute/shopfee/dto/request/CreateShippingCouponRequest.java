@@ -3,6 +3,7 @@ package com.hcmute.shopfee.dto.request;
 import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
+import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,10 +34,14 @@ public class CreateShippingCouponRequest {
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
 
-//    @Schema()
-//    @NotNull
-//    private EligibilityCustomerConditionDto applicableCustomerCondition;
+    @Schema(example = COUPON_UNIT_EX)
+    @NotNull
+    private MoneyRewardUnit unitReward;
 
+    @Schema(example = INTEGER_VALUE_EX)
+    // TODO: check lớn hơn 0
+    @NotNull
+    private Integer valueReward;
 
     @Schema(example = DATE_ISO_EX)
     @NotNull

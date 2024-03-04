@@ -35,7 +35,7 @@ public class SubjectConditionEntity {
 //    private UnitObjectType unit;
 
     @Column(name = "value", nullable = false)
-    private String value;
+    private Integer value;
 
     @ManyToOne
     @JoinColumn(name = "coupon_condition_id", nullable = false)
