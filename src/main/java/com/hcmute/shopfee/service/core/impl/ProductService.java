@@ -305,13 +305,26 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<GetTopProductResponse> getTopProductQuantityOrder(int quantity) {
-        List<GetTopProductResponse> data = new ArrayList<>();
+    public List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity) {
+        List<GetTopRatedProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopRatingProduct(quantity);
         for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
-            data.add(GetTopProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
+            data.add(GetTopRatedProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
+        }
+
+        return data;
+    }
+
+    @Override
+    public List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity) {
+        List<GetTopSellingProductResponse> data = new ArrayList<>();
+
+        List<ProductEntity> productEntityList = productRepository.getTopProductBySoldQuantity(quantity);
+        for (ProductEntity entity : productEntityList) {
+            RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
+            data.add(GetTopSellingProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
         }
 
         return data;

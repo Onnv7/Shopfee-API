@@ -21,7 +21,8 @@ public interface IProductService {
     void deleteProductById(String id);
     void deleteSomeProductById(List<String> productIdList);
     void updateProductById(UpdateProductRequest body, String id);
-    List<GetTopProductResponse> getTopProductQuantityOrder(int quantity);
+    List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity);
+    List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity);
     void createBeverageFromFile(MultipartFile file);
     void createCakeFromFile(MultipartFile file);
 }
