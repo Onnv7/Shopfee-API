@@ -24,7 +24,9 @@ public class SwaggerConstant {
     // For user authentication =================================================================
     public static final String USER_AUTH_CONTROLLER_TITLE = "USER AUTH MANAGEMENT";
     public static final String USER_AUTH_REGISTER_SUM = "Register new user account with some information";
+    public static final String USER_AUTH_FIREBASE_REGISTER_SUM = "Register new user account by id token from firebase";
     public static final String USER_AUTH_LOGIN_SUM = "User login to get token";
+    public static final String USER_AUTH_FIREBASE_LOGIN_SUM = "User login with id token from firebase";
     public static final String USER_AUTH_LOGOUT_SUM = "User logout to clear token";
     public static final String USER_AUTH_RE_SEND_EMAIL_SUM = "Send email confirmation code a second time or later to update the Confirmation collection";
     public static final String USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM = "Send email confirmation code to register account";

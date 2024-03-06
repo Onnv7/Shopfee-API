@@ -199,6 +199,8 @@ public class RouterConstant {
     // ENDPOINT URL USER AUTH =================================================================
     public static final String POST_USER_AUTH_REGISTER_SUB_PATH = "/register";
     public static final String POST_USER_AUTH_REGISTER_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_REGISTER_SUB_PATH;
+    public static final String POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH = "/firebase/register";
+    public static final String POST_USER_AUTH_FIREBASE_REGISTER_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH;
     public static final String POST_USER_AUTH_LOGIN_SUB_PATH = "/login";
     public static final String POST_USER_AUTH_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_LOGIN_SUB_PATH;
     public static final String GET_AUTH_USER_LOGOUT_SUB_PATH = "/logout";

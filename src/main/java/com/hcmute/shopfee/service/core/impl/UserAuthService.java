@@ -1,6 +1,9 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
 import com.hcmute.shopfee.dto.request.ChangePasswordRequest;
@@ -28,6 +31,7 @@ import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.redis.UserTokenRedisService;
 import com.hcmute.shopfee.utils.GeneratorUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -100,6 +104,54 @@ public class UserAuthService implements IUserAuthService {
         resData.setUserId(savedUser.getId());
         return resData;
     }
+
+    @Override
+    public RegisterResponse firebaseRegisterUser(HttpServletRequest request) {
+        RegisterResponse resData = new RegisterResponse();
+        String idToken = request.getHeader("Id-token");
+        if(idToken == null) {
+            throw new CustomException(ID_TOKEN_NOT_FOUND);
+        }
+        try {
+            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);
+
+            String displayName = decodedToken.getName();
+            String[] nameParts = displayName.split("\\s+");
+            String firstname = nameParts[0];
+            String lastname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+
+            UserEntity userEntity = UserEntity.builder()
+                    .email(decodedToken.getEmail())
+                    .password(passwordEncoder.encode(decodedToken.getUid()))
+                    .avatarUrl(decodedToken.getPicture())
+                    .firstName(firstname)
+                    .lastName(lastname)
+                    .build();
+
+            Set<RoleEntity> roleList = new HashSet<>();
+            RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + Role.ROLE_USER));
+            roleList.add(userRole);
+            userEntity.setRoleList(roleList);
+            userEntity.setEnabled(true);
+
+            UserEntity savedUser = userRepository.save(userEntity);
+            List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
+
+            var accessToken = jwtService.issueAccessToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
+            var refreshToken = jwtService.issueRefreshToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
+
+            userTokenRedisService.createNewUserRefreshToken(refreshToken, savedUser.getId());
+
+            resData.setAccessToken(accessToken);
+            resData.setRefreshToken(refreshToken);
+            resData.setUserId(savedUser.getId());
+            return resData;
+        } catch (FirebaseAuthException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public LoginResponse userLogin(String email, String password) {

@@ -45,4 +45,6 @@ public class ErrorConstant {
     public static final String IMAGE_INVALID = "Invalid image";
     public static final String ERROR_REFUND = "Refund error";
     public static final String INVALID_COIN_NUMBER = "Invalid coin number";
+
+    public static final String ID_TOKEN_NOT_FOUND = "Not found id token ";
 }

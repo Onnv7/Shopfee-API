@@ -48,9 +48,40 @@ public class UserAuthController {
         return new ResponseEntity<>(res, headers, StatusCode.CREATED);
     }
 
+    @Operation(summary = USER_AUTH_FIREBASE_REGISTER_SUM)
+    @PostMapping(POST_USER_AUTH_FIREBASE_REGISTER_PATH)
+    public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(HttpServletRequest request) {
+        RegisterResponse resDate = userAuthService.firebaseRegisterUser(request);
+
+        ResponseAPI<RegisterResponse> res = ResponseAPI.<RegisterResponse>builder()
+                .timestamp(new Date())
+                .data(resDate)
+                .message(SuccessConstant.CREATED)
+                .build();
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(resDate.getRefreshToken(), 604800L);
+        return new ResponseEntity<>(res, headers, StatusCode.CREATED);
+    }
+
     @Operation(summary = USER_AUTH_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
     public ResponseEntity<ResponseAPI<LoginResponse>> loginUser(@RequestBody @Valid LoginRequest body) {
+        LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
+        ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
+                .timestamp(new Date())
+                .success(true)
+                .message(SuccessConstant.LOGIN)
+                .data(data)
+                .build();
+
+
+        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        return new ResponseEntity<>(res, headers, StatusCode.OK);
+
+    }
+
+    @Operation(summary = USER_AUTH_LOGIN_SUM)
+    @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
+    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(@RequestBody @Valid LoginRequest body) {
         LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
         ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())

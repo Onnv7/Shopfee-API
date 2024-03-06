@@ -6,9 +6,11 @@ import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface IUserAuthService {
     RegisterResponse registerUser(RegisterUserRequest body);
+    RegisterResponse firebaseRegisterUser(HttpServletRequest request);
     LoginResponse userLogin(String email, String password);
     void logoutUser(String refreshToken);
     void sendCodeToRegister(String email);
