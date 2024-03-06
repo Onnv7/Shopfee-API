@@ -203,6 +203,8 @@ public class RouterConstant {
     public static final String POST_USER_AUTH_FIREBASE_REGISTER_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH;
     public static final String POST_USER_AUTH_LOGIN_SUB_PATH = "/login";
     public static final String POST_USER_AUTH_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_LOGIN_SUB_PATH;
+    public static final String POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH = "/firebase/login";
+    public static final String POST_USER_AUTH_FIREBASE_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH;
     public static final String GET_AUTH_USER_LOGOUT_SUB_PATH = "/logout";
     public static final String GET_AUTH_USER_LOGOUT_PATH = USER_AUTH_BASE_PATH + GET_AUTH_USER_LOGOUT_SUB_PATH;
     public static final String POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH = "/resend-email";

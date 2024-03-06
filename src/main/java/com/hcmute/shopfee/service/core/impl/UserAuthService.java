@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -44,10 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
@@ -177,6 +175,32 @@ public class UserAuthService implements IUserAuthService {
 
         userTokenRedisService.createNewUserRefreshToken(refreshToken, principalAuthenticated.getUserId());
         return LoginResponse.builder().accessToken(accessToken).userId(userId).refreshToken(refreshToken).build();
+    }
+
+    @Override
+    public LoginResponse firebaseUserLogin(HttpServletRequest request) {
+        String idToken = request.getHeader("Id-token");
+        if(idToken == null) {
+            throw new CustomException(ID_TOKEN_NOT_FOUND);
+        }
+        try {
+            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);
+            UserEntity user = userRepository.findByEmail(decodedToken.getEmail()).orElse(null);
+            String userId = user.getId();
+            String username = user.getEmail();
+
+            List<String> roles = List.of("ROLE_USER");
+
+            var accessToken = jwtService.issueAccessToken(userId, username, roles);
+            String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
+            userTokenRedisService.createNewUserRefreshToken(refreshToken, userId);
+
+            return LoginResponse.builder().accessToken(accessToken).userId(userId).refreshToken(refreshToken).build();
+
+        } catch (FirebaseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

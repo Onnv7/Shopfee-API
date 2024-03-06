@@ -49,7 +49,7 @@ public class UserAuthController {
     }
 
     @Operation(summary = USER_AUTH_FIREBASE_REGISTER_SUM)
-    @PostMapping(POST_USER_AUTH_FIREBASE_REGISTER_PATH)
+    @PostMapping(POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH)
     public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(HttpServletRequest request) {
         RegisterResponse resDate = userAuthService.firebaseRegisterUser(request);
 
@@ -79,10 +79,10 @@ public class UserAuthController {
 
     }
 
-    @Operation(summary = USER_AUTH_LOGIN_SUM)
-    @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(@RequestBody @Valid LoginRequest body) {
-        LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
+    @Operation(summary = USER_AUTH_FIREBASE_LOGIN_SUM)
+    @PostMapping(POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH)
+    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(HttpServletRequest request) {
+        LoginResponse data = userAuthService.firebaseUserLogin(request);
         ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())
                 .success(true)

@@ -12,6 +12,7 @@ public interface IUserAuthService {
     RegisterResponse registerUser(RegisterUserRequest body);
     RegisterResponse firebaseRegisterUser(HttpServletRequest request);
     LoginResponse userLogin(String email, String password);
+    LoginResponse firebaseUserLogin(HttpServletRequest request);
     void logoutUser(String refreshToken);
     void sendCodeToRegister(String email);
     void sendCodeToGetPassword(String email);
