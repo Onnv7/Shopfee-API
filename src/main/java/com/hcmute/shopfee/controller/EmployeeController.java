@@ -53,6 +53,30 @@ public class EmployeeController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
+    @Operation(summary = EMPLOYEE_GET_BY_BRANCH_ID_SUM)
+    @GetMapping(path = GET_EMPLOYEE_BY_BRANCH_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetAllEmployeeResponse>> getEmployeeListByBranchId(
+            @PathVariable(BRANCH_ID) String branchId,
+            @Parameter(name = "key", description = "Key is employee's username", required = false, example = "nav611")
+            @RequestParam(name = "key", required = false) String key,
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+            @Parameter(name = "status")
+            @RequestParam(name = "status", required = false) EmployeeStatus status
+    ) {
+        GetAllEmployeeResponse resData = employeeService.getEmployeeListByBranchId(branchId, key, page, size, status);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
     @Operation(summary = EMPLOYEE_GET_PROFILE_BY_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetEmployeeProfileByIdResponse>> getEmployeeProfileById(@PathVariable(EMPLOYEE_ID) String employeeId) {
@@ -66,6 +90,7 @@ public class EmployeeController {
 
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = EMPLOYEE_GET_BY_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetEmployeeByIdResponse>> getEmployeeById(@PathVariable(EMPLOYEE_ID) String employeeId) {

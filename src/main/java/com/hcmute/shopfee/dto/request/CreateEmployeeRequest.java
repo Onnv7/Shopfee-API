@@ -4,6 +4,7 @@ import com.hcmute.shopfee.enums.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -38,7 +39,16 @@ public class CreateEmployeeRequest {
     @NotNull
     private Gender gender;
 
+    @Schema(example = PHONE_NUMBER_EX)
+    @Pattern(regexp = PHONE_NUMBER_REGEX)
+    private String phoneNumber;
+
+    @Schema(example = EMAIL_EX)
+    private String email;
+
     @Schema(example = OBJECT_ID_EX)
     @NotBlank
     private String branchId;
+
+
 }

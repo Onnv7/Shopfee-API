@@ -126,6 +126,8 @@ public class RouterConstant {
     public static final String GET_EMPLOYEE_PROFILE_BY_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH;
     public static final String GET_EMPLOYEE_ALL_SUB_PATH = "";
     public static final String GET_EMPLOYEE_ALL_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_ALL_SUB_PATH;
+    public static final String GET_EMPLOYEE_BY_BRANCH_ID_SUB_PATH = "/branch" + BRANCH_ID_PATH;
+    public static final String GET_EMPLOYEE_BY_BRANCH_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_BY_BRANCH_ID_SUB_PATH;
     public static final String PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH;
     public static final String PUT_EMPLOYEE_UPDATE_BY_ID_PATH = EMPLOYEE_BASE_PATH + PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH;
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH + "/update-password";

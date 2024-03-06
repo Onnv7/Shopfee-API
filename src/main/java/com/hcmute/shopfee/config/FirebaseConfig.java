@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 @Configuration
 @Slf4j
@@ -25,7 +26,9 @@ public class FirebaseConfig {
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
 
-            FirebaseApp.initializeApp(options);
+            List<FirebaseApp> firebaseApps = FirebaseApp.getApps();
+            FirebaseApp defaultApp = firebaseApps.isEmpty() ? FirebaseApp.initializeApp(options) : firebaseApps.get(0);
+
             log.info("Connected to Firebase admin...");
 
         }

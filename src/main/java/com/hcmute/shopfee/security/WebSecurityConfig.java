@@ -43,6 +43,7 @@ public class WebSecurityConfig {
     private final String ADMIN = "ADMIN";
     private final String EMPLOYEE = "EMPLOYEE";
     private final String USER = "USER";
+    private final String MANAGER = "MANAGER";
 
 //    @Autowired
 //    private CustomOidcUserService customOidcUserService;
@@ -153,7 +154,8 @@ public class WebSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, POST_ADMIN_PATH).hasRole(ADMIN)
                                 .requestMatchers(HttpMethod.DELETE, DELETE_ADMIN_PATH).hasRole(ADMIN)
 
-
+                                // Only GET_MANAGER_PATH
+                                .requestMatchers(HttpMethod.GET, GET_MANAGER_PATH).hasRole(MANAGER)
 
                                 // ADMIN + EMPLOYEE
                                 .requestMatchers(HttpMethod.GET, GET_ADMIN_EMPLOYEE_PATH).hasAnyRole(ADMIN, EMPLOYEE)
@@ -175,6 +177,14 @@ public class WebSecurityConfig {
                                 .requestMatchers(HttpMethod.GET, GET_ADMIN_EMPLOYEE_USER_PATH).hasAnyRole(ADMIN, EMPLOYEE, USER)
 
 
+                                // ADMIN + EMPLOYEE + MANAGER
+                                .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_EMPLOYEE_PATH).hasAnyRole(ADMIN, MANAGER, EMPLOYEE)
+
+
+                                // ADMIN + MANAGER
+                                .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
+                                .requestMatchers(HttpMethod.PUT, PUT_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
+                                .requestMatchers(HttpMethod.DELETE, DELETE_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
                                 .anyRequest().authenticated()
 
                 );

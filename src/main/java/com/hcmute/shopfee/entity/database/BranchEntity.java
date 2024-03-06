@@ -2,6 +2,7 @@ package com.hcmute.shopfee.entity.database;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
+import com.hcmute.shopfee.enums.BranchStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -9,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
@@ -24,12 +26,15 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class BranchEntity {
     @Id
-    @GenericGenerator(name = "branch_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "branch_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_id")
+    @SequenceGenerator(name = "branch_id", sequenceName = "branch_id", initialValue = 1, allocationSize = 1)
     private String id;
 
     @Column(nullable = false)
     private String province;
+
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
     @Column(nullable = false)
     private String district;
@@ -48,6 +53,15 @@ public class BranchEntity {
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
+
+    @Column(name = "open_time", nullable = false)
+    private Time openTime;
+
+    @Column(name = "close_time", nullable = false)
+    private Time closeTime;
+
+    @Column(name = "close_time", nullable = false)
+    private BranchStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -71,5 +85,9 @@ public class BranchEntity {
 
     public String getFullAddress() {
         return this.getDetail() + " " + this.getWard() + " " + this.getDistrict() + " " + this.getProvince();
+    }
+
+    public String getOpenTimeOfBranch() {
+        return this.getOpenTime() + " - " + this.getCloseTime();
     }
 }

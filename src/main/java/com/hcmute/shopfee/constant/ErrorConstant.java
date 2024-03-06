@@ -47,4 +47,5 @@ public class ErrorConstant {
     public static final String INVALID_COIN_NUMBER = "Invalid coin number";
 
     public static final String ID_TOKEN_NOT_FOUND = "Not found id token ";
+    public static final String FORBIDDEN = "Access is denied";
 }

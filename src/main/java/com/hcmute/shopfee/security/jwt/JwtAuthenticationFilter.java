@@ -44,19 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         catch (RuntimeException   e) {
             e.printStackTrace();
-//            String message = INVALID_TOKEN;
-//            if (e.getClass() == TokenExpiredException.class) {
-//                message = EXPIRED_TOKEN;
-//            }
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            ErrorResponse resData = ErrorResponse.builder()
-//                    .message(message)
-//                    .timestamp(new Date())
-//                    .build();
-//            String jsonResponse = objectMapper.writeValueAsString(resData);
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.setContentType("application/json");
-//            response.getWriter().write(jsonResponse);
             exceptionResolver.resolveException(request, response, null, e);
         }
     }

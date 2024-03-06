@@ -121,6 +121,7 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_GET_PROFILE_BY_ID_SUM = "Get a employee's profile by employee id";
     public static final String EMPLOYEE_GET_BY_ID_SUM = "Get a employee's information by employee id";
     public static final String EMPLOYEE_GET_ALL_SUM = "Get all employees";
+    public static final String EMPLOYEE_GET_BY_BRANCH_ID_SUM = "Get employee list by branch id";
     public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password for employee by employee id for employee";
 
     // For Branch =============================================================

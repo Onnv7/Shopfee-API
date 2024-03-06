@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface IEmployeeService {
     GetAllEmployeeResponse getEmployeeList(String key, int page, int size, EmployeeStatus status);
+    GetAllEmployeeResponse getEmployeeListByBranchId(String branchId, String key, int page, int size, EmployeeStatus status);
     void updateEmployeeForAdmin(UpdateEmployeeRequest data, String id);
     void deleteEmployeeById(String id);
     GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId);

@@ -42,7 +42,8 @@ public class ExceptionHandlerController {
             OVER_FIVE_ADDRESS
     );
     private static final List<String> error403= Arrays.asList(
-            PRINCIPAL_INVALID, USER_ID_INVALID, ACCOUNT_BLOCKED
+            PRINCIPAL_INVALID, USER_ID_INVALID, ACCOUNT_BLOCKED,
+            FORBIDDEN
     );
     private static final List<String> error401= Arrays.asList(
             INVALID_PASSWORD, STOLEN_TOKEN, INVALID_TOKEN

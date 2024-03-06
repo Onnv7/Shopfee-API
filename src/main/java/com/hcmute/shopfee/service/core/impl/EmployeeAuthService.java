@@ -8,11 +8,14 @@ import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.entity.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.database.RoleEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
+import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
+import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.employee.EmployeeUsernamePasswordAuthenticationToken;
 import com.hcmute.shopfee.service.core.IEmployeeAuthService;
@@ -30,7 +33,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
@@ -47,6 +52,8 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public EmployeeLoginResponse attemptEmployeeLogin(String username, String password) {
@@ -115,16 +122,36 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     }
 
     @Override
-    public void registerEmployee(CreateEmployeeRequest body) {
+    public void registerEmployee(CreateEmployeeRequest body, Role roleName) {
+        List<String> roles = SecurityUtils.getRoleList();
+        if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {
+            throw new CustomException(ErrorConstant.FORBIDDEN);
+        }
+
+        if(SecurityUtils.isOnlyRole(roles, Role.ROLE_MANAGER)) {
+            EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
+            if(!manager.getBranch().getId().equals(body.getBranchId())) {
+                throw new CustomException(ErrorConstant.FORBIDDEN);
+            }
+        }
+
         EmployeeEntity data = modelMapperService.mapClass(body, EmployeeEntity.class);
+
         EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(data.getUsername()).orElse(null);
         if (existedEmployee != null) {
             throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
         }
+
+        Set<RoleEntity> employeeRole = new HashSet<>();
+        RoleEntity role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new CustomException(NOT_FOUND + roleName));
+        employeeRole.add(role);
+        data.setRoleList(employeeRole);
+
         BranchEntity branch = branchRepository.findById(body.getBranchId()).orElseThrow(() -> new CustomException(NOT_FOUND + body.getBranchId()));
         data.setBranch(branch);
         data.setPassword(passwordEncoder.encode(data.getPassword()));
-//        data.setCode(sequenceService.generateCode(EmployeeCollection.SEQUENCE_NAME, EmployeeCollection.PREFIX_CODE, EmployeeCollection.LENGTH_NUMBER));
         data.setStatus(EmployeeStatus.ACTIVE);
         employeeRepository.save(data);
     }

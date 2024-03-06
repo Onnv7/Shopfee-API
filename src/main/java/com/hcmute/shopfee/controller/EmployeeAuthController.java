@@ -9,6 +9,7 @@ import com.hcmute.shopfee.dto.request.EmployeeLoginRequest;
 import com.hcmute.shopfee.dto.request.RefreshEmployeeTokenRequest;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
+import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IEmployeeAuthService;
@@ -94,8 +95,8 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body) {
-        employeeAuthService.registerEmployee(body);
+    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") Role role) {
+        employeeAuthService.registerEmployee(body, role);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)

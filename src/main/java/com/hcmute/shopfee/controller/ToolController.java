@@ -49,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -103,6 +104,8 @@ public class ToolController {
                 .longitude(Double.parseDouble(LONGITUDE_EX))
                 .latitude(Double.parseDouble(LATITUDE_EX))
                 .createdAt(new Date())
+                .openTime(Time.valueOf("07:00:00"))
+                .closeTime(Time.valueOf("20:00:00"))
                 .phoneNumber(PHONE_NUMBER_EX)
                 .build();
         branchRepository.save(branchEntity);

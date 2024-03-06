@@ -57,6 +57,8 @@ public class EmployeeEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "email")
+    private String email;
 
 //    private ObjectId branchId;
 
