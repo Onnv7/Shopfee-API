@@ -67,7 +67,8 @@ public class OrderController {
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size) {
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size)
+    {
         List<GetOrderHistoryForEmployeeResponse> resData = new ArrayList<>();
         resData = orderService.getOrderHistoryPageForEmployee(orderStatus, page, size, key);
 

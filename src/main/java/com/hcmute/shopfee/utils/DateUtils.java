@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.utils;
 
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -42,5 +43,9 @@ public class DateUtils {
             return !target.before(startPoint);
         }
         return !target.before(startPoint) && !target.after(endPoint);
+    }
+    public static String getFormatTime(Time time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        return dateFormat.format(time);
     }
 }

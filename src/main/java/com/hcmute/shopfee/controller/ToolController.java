@@ -106,6 +106,10 @@ public class ToolController {
                 .createdAt(new Date())
                 .openTime(Time.valueOf("07:00:00"))
                 .closeTime(Time.valueOf("20:00:00"))
+                .status(BranchStatus.ACTIVE)
+                .imageId("imageId")
+                .imageUrl("imageUrl")
+                .name("HCM Vo Van Ngan")
                 .phoneNumber(PHONE_NUMBER_EX)
                 .build();
         branchRepository.save(branchEntity);

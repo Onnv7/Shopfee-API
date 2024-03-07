@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -28,13 +29,19 @@ public class BranchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_id")
     @SequenceGenerator(name = "branch_id", sequenceName = "branch_id", initialValue = 1, allocationSize = 1)
-    private String id;
+    private Long id;
+
+    @Column(name = "image_id", nullable = false)
+    private String imageId;
+
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl;
+
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column(nullable = false)
     private String province;
-
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
 
     @Column(nullable = false)
     private String district;
@@ -46,10 +53,10 @@ public class BranchEntity {
     private String detail;
 
     @Column(nullable = false)
-    private double longitude;
+    private Double longitude;
 
     @Column(nullable = false)
-    private double latitude;
+    private Double latitude;
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
@@ -60,7 +67,8 @@ public class BranchEntity {
     @Column(name = "close_time", nullable = false)
     private Time closeTime;
 
-    @Column(name = "close_time", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private BranchStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -87,7 +95,10 @@ public class BranchEntity {
         return this.getDetail() + " " + this.getWard() + " " + this.getDistrict() + " " + this.getProvince();
     }
 
-    public String getOpenTimeOfBranch() {
-        return this.getOpenTime() + " - " + this.getCloseTime();
+
+    public String getOperatingTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+
+        return dateFormat.format(this.getOpenTime()) + " - " + dateFormat.format(this.getCloseTime());
     }
 }

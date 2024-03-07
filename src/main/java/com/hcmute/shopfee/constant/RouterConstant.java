@@ -229,6 +229,12 @@ public class RouterConstant {
     public static final String DELETE_BRANCH_UPDATE_PATH = BRANCH_BASE_PATH + DELETE_BRANCH_UPDATE_SUB_PATH;
     public static final String GET_BRANCH_ALL_SUB_PATH = "";
     public static final String GET_BRANCH_ALL_PATH = BRANCH_BASE_PATH + GET_BRANCH_ALL_SUB_PATH;
+    public static final String GET_BRANCH_DETAIL_BY_ID_SUB_PATH = BRANCH_ID_PATH + "/detail";
+    public static final String GET_BRANCH_DETAIL_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_DETAIL_BY_ID_SUB_PATH;
+    public static final String GET_BRANCH_VIEW_BY_ID_SUB_PATH = BRANCH_ID_PATH + "/view";
+    public static final String GET_BRANCH_VIEW_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_VIEW_BY_ID_SUB_PATH;
+    public static final String GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH = "/active";
+    public static final String GET_BRANCH_VIEW_LIST_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH;
 
     // ENDPOINT URL BANNER =================================================================
     public static final String POST_BANNER_CREATE_SUB_PATH = "";

@@ -130,6 +130,9 @@ public class SwaggerConstant {
     public static final String BRANCH_UPDATE_BY_ID_SUM = "Update branch's information by id";
     public static final String BRANCH_DELETE_BY_ID_SUM = "Delete branch's information by id";
     public static final String BRANCH_GET_ALL_SUM = "Get branch list";
+    public static final String BRANCH_GET_DETAIL_BY_ID_SUM = "Get branch's detail by id";
+    public static final String BRANCH_GET_VIEW_BY_ID_SUM = "Get branch's view by id";
+    public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "Get branch list which be active";
 
     // For banner =================================================================
     public static final String BANNER_CONTROLLER_TITLE = "BANNER MANAGEMENT";
@@ -246,7 +249,10 @@ public class SwaggerConstant {
     public static final String INTEGER_VALUE_EX = "15000";
     public static final String USAGE_CONDITION_EX = "QUANTITY";
     public static final String COMBINATION_CONDITION_EX = "PRODUCT";
-    public static final String TARGET_OBJECT_CONDITION_EX = "PRODUCT";
     public static final String PRODUCT_SIZE_EX = "SMALL";
     public static final String INTERACTION = "LIKE";
+    public static final String STORE_NAME_EX = "HCM Linh Trung";
+    public static final String OPEN_TIME_EX = "07:00:00";
+    public static final String CLOSE_TIME_EX = "20:00:00";
+    public static final String BRANCH_STATUS_EX = "INACTIVE";
 }

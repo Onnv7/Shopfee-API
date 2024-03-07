@@ -578,7 +578,7 @@ public class OrderService implements IOrderService {
         String employeeId = SecurityUtils.getCurrentUserId();
 
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
-        String branchId = employeeEntity.getBranch().getId();
+        Long branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
         List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
@@ -596,7 +596,7 @@ public class OrderService implements IOrderService {
         String employeeId = SecurityUtils.getCurrentUserId();
 
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
-        String branchId = employeeEntity.getBranch().getId();
+        Long branchId = employeeEntity.getBranch().getId();
 
 
         Pageable pageable = PageRequest.of(page - 1, size);

@@ -124,6 +124,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Override
     public void registerEmployee(CreateEmployeeRequest body, Role roleName) {
         List<String> roles = SecurityUtils.getRoleList();
+        // manager không thể tạo manager khác
         if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {
             throw new CustomException(ErrorConstant.FORBIDDEN);
         }
@@ -131,10 +132,13 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         if(SecurityUtils.isOnlyRole(roles, Role.ROLE_MANAGER)) {
             EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
+            // manager không được tạo emlpyee cho chi nhánh khác
             if(!manager.getBranch().getId().equals(body.getBranchId())) {
                 throw new CustomException(ErrorConstant.FORBIDDEN);
             }
         }
+
+        // TODO: kiểm tra manager của branch tồn tại chưa
 
         EmployeeEntity data = modelMapperService.mapClass(body, EmployeeEntity.class);
 

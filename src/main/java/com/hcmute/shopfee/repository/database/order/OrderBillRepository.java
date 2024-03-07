@@ -40,7 +40,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             AND DATE(ob.created_at) = CURRENT_DATE
             order by ob.created_at desc
             """, nativeQuery = true)
-    Page<OrderBillEntity> getShippingOrderQueueToday(String orderStatus, String branchId, String orderType, Pageable pageable);
+    Page<OrderBillEntity> getShippingOrderQueueToday(String orderStatus, Long branchId, String orderType, Pageable pageable);
 
 
     @Query(value = """

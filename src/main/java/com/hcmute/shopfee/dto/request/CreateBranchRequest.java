@@ -5,16 +5,25 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.sql.Time;
 
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
 public class CreateBranchRequest {
+    @Schema()
+    @NotNull
+    private MultipartFile image;
 
     @Schema(example = PROVINCE_EX)
     @NotBlank
     private String province;
 
+    @Schema(example = STORE_NAME_EX)
+    @NotBlank
+    private String name;
 
     @Schema(example = DISTRICT_EX)
     @NotBlank
@@ -35,6 +44,15 @@ public class CreateBranchRequest {
     @Schema(example = LATITUDE_EX)
     @NotNull
     private double latitude;
+
+
+    @Schema(example = OPEN_TIME_EX)
+    @NotNull
+    private Time openTime;
+
+    @Schema(example = CLOSE_TIME_EX)
+    @NotNull
+    private Time closeTime;
 
     @Schema(example = PHONE_NUMBER_EX)
     @NotBlank

@@ -4,12 +4,18 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
+import com.hcmute.shopfee.dto.response.GetAllBranchResponse;
+import com.hcmute.shopfee.dto.response.GetBranchDetailByIdResponse;
+import com.hcmute.shopfee.dto.response.GetBranchViewByIdResponse;
+import com.hcmute.shopfee.dto.response.GetBranchViewListResponse;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IBranchService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +35,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_CREATE_SUM)
     @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> createBranch(@RequestBody @Valid CreateBranchRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) {
         branchService.createBranch(body);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -40,7 +46,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_BRANCH_UPDATE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> updateBranchInfoById(@RequestBody @Valid UpdateBranchRequest body, @PathVariable(BRANCH_ID) String branchId) {
+    public ResponseEntity<ResponseAPI<?>> updateBranchInfoById(@ModelAttribute @Valid UpdateBranchRequest body, @PathVariable(BRANCH_ID) String branchId) {
         branchService.updateBranchById(body, branchId);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -62,8 +68,54 @@ public class BranchController {
 
     @Operation(summary = BRANCH_GET_ALL_SUM)
     @GetMapping(path = GET_BRANCH_ALL_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<BranchEntity>>> getAllBranch() {
-        List<BranchEntity> resData = branchService.getBranchList();
+    public ResponseEntity<ResponseAPI<GetAllBranchResponse>> getAllBranch(
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+    ) {
+        GetAllBranchResponse resData = branchService.getBranchList(page, size);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = BRANCH_GET_DETAIL_BY_ID_SUM)
+    @GetMapping(path = GET_BRANCH_DETAIL_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetBranchDetailByIdResponse>> getBranchById(@PathVariable(BRANCH_ID) String branchId) {
+        GetBranchDetailByIdResponse resData = branchService.getBranchDetailById(branchId);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = BRANCH_GET_VIEW_BY_ID_SUM)
+    @GetMapping(path = GET_BRANCH_VIEW_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetBranchViewByIdResponse>> getBranchViewById(@PathVariable(BRANCH_ID) Long branchId) {
+        GetBranchViewByIdResponse resData = branchService.getBranchViewById(branchId);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = BRANCH_GET_VIEW_LIST_BY_ID_SUM)
+    @GetMapping(path = GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetBranchViewListResponse>> getBranchViewList(
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+    ) {
+        GetBranchViewListResponse resData = branchService.getBranchViewList(page, size);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .data(resData)
