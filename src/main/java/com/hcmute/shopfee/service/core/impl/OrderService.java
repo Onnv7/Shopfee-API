@@ -24,6 +24,7 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
@@ -33,6 +34,7 @@ import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
+import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
@@ -66,18 +68,35 @@ public class OrderService implements IOrderService {
     private final OrderEventRepository orderEventRepository;
     private final CouponRepository couponRepository;
     private final CouponUsedRepository couponUsedRepository;
-    private final CouponConditionRepository couponConditionRepository;
-    private final CategoryRepository categoryRepository;
-    private final UsageConditionRepository usageConditionRepository;
+    private final GoongService goongService;
     private final CombinationConditionRepository combinationConditionRepository;
+    private final BranchService branchService;
 
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
-        List<BranchEntity> allBranches = branchRepository.findAll();
+        List<BranchEntity> allBranches = branchRepository.findByStatus(BranchStatus.ACTIVE);
+        List<String> destinationCoordinatesList = branchService.getCoordinatesListFromBranchList(allBranches);
+        String clientCoordinates = address.getLatitude() + "," + address.getLongitude();
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+        int branchListSize = allBranches.size();
+        int minDistance = distanceList.get(0).getValue();
+        int minIndexBranch = 0;
+        for(int i = 0 ; i <branchListSize; i++ ) {
+            if(distanceList.get(i).getValue() > 12000) {
+                continue;
+            }
 
-        allBranches.sort(Comparator.comparingDouble(branch ->
-                CalculateUtils.calculateDistance(address.getLatitude(), address.getLongitude(), branch.getLatitude(), branch.getLongitude())));
-        return allBranches.subList(0, Math.min(1, allBranches.size())).get(0);
+            if(distanceList.get(i).getValue() < minDistance) {
+                minDistance = distanceList.get(i).getValue();
+                minIndexBranch = i;
+            }
+        }
+
+        if(minDistance > 12000) {
+            throw new CustomException(ErrorConstant.NOT_FOUND_BRANCH_FOR_YOUR_LOCATION);
+        }
+
+        return allBranches.get(minIndexBranch);
 
     }
 

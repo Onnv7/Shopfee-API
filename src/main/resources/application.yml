@@ -129,6 +129,10 @@ cloudinary:
   api_key: ${CLOUDINARY_API_KEY}
   api_secret: ${CLOUDINARY_API_SECRET}
 
+# goong
+goong:
+  api_key: ${GOONG_API_KEY}
+
 #  module-name: vna
 #  api-version: 1.0.0
 

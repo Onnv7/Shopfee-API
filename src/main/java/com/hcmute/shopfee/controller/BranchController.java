@@ -10,6 +10,7 @@ import com.hcmute.shopfee.dto.response.GetBranchViewByIdResponse;
 import com.hcmute.shopfee.dto.response.GetBranchViewListResponse;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.model.ResponseAPI;
+import com.hcmute.shopfee.module.goong.Goong;
 import com.hcmute.shopfee.service.core.IBranchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +33,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @RequiredArgsConstructor
 public class BranchController {
     private final IBranchService branchService;
-
+    private final Goong goong;
     @Operation(summary = BRANCH_CREATE_SUM)
     @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) {
@@ -110,12 +111,16 @@ public class BranchController {
     @Operation(summary = BRANCH_GET_VIEW_LIST_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetBranchViewListResponse>> getBranchViewList(
+            @Parameter(name = "lat", required = true, example = "10.8005397")
+            @RequestParam("lat")  Double lat,
+            @Parameter(name = "lon", required = true, example = "106.6393208")
+            @RequestParam("lon")  Double lon,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetBranchViewListResponse resData = branchService.getBranchViewList(page, size);
+        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lon, page, size);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .data(resData)

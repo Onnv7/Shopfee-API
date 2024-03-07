@@ -17,5 +17,5 @@ public interface IBranchService {
     GetAllBranchResponse getBranchList(int page, int size);
     GetBranchDetailByIdResponse getBranchDetailById(String branchId);
     GetBranchViewByIdResponse getBranchViewById(Long branchId);
-    GetBranchViewListResponse getBranchViewList(int page, int size);
+    GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, int page, int size);
 }

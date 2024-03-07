@@ -19,6 +19,7 @@ public class ErrorConstant {
     public static final String OVER_FIVE_ADDRESS = "Do not add more than 5 addresses";
     public static final String ORDER_NOT_COMPLETED = "Order not completed";
     public static final String INVALID_TOKEN = "Token validation failed";
+    public static final String EMPTY_TOKEN = "Empty token";
     public static final String EXPIRED_TOKEN = "Token expired. Please refresh your token.";
     public static final String STOLEN_TOKEN = "Stolen tokens";
     public static final String INVALID_PASSWORD = "INVALID PASSWORD";
@@ -48,4 +49,5 @@ public class ErrorConstant {
 
     public static final String ID_TOKEN_NOT_FOUND = "Not found id token ";
     public static final String FORBIDDEN = "Access is denied";
+    public static final String NOT_FOUND_BRANCH_FOR_YOUR_LOCATION = "Your location is outside the service area";
 }

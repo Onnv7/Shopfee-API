@@ -265,7 +265,6 @@ public class UserAuthService implements IUserAuthService {
     public RefreshTokenResponse refreshToken(String refreshToken) {
         DecodedJWT jwt = jwtService.decodeRefreshToken(refreshToken);
 
-
         String userId = jwt.getSubject().toString();
         UserTokenEntity token = userTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
 

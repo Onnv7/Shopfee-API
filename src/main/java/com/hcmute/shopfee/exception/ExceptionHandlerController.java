@@ -33,7 +33,7 @@ public class ExceptionHandlerController {
             EMPLOYEE_NOT_FOUND,
             NOT_FOUND,
             CATEGORY_NOT_FOUND,
-            PRODUCT_NOT_FOUND
+            PRODUCT_NOT_FOUND, NOT_FOUND_BRANCH_FOR_YOUR_LOCATION
     );
     private static final List<String> error400= Arrays.asList(
             REGISTERED_EMAIL, INVALID_COIN_NUMBER, IMAGE_INVALID,
@@ -46,7 +46,7 @@ public class ExceptionHandlerController {
             FORBIDDEN
     );
     private static final List<String> error401= Arrays.asList(
-            INVALID_PASSWORD, STOLEN_TOKEN, INVALID_TOKEN
+            INVALID_PASSWORD, STOLEN_TOKEN, INVALID_TOKEN, EMPTY_TOKEN
     );
 
 

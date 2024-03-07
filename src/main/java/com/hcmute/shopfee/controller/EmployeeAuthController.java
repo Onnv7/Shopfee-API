@@ -73,14 +73,12 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
     @PostMapping(path = POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(
-            @RequestBody(required = false) RefreshEmployeeTokenRequest body, HttpServletRequest request
-            , @CookieValue(name = "refreshToken", required = false) String refreshToken) {
-        System.out.println(request);
-        if (refreshToken == null && body == null) {
-            throw new CustomException(ErrorConstant.INVALID_TOKEN);
+    public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+
+        if (refreshToken == null) {
+            throw new CustomException(ErrorConstant.EMPTY_TOKEN);
         }
-        RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken(body == null ? refreshToken : body.getRefreshToken());
+        RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken(refreshToken);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

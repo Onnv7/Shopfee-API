@@ -11,8 +11,10 @@ import com.hcmute.shopfee.dto.response.GetBranchViewListResponse;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
+import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IBranchService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.DateUtils;
@@ -24,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +36,7 @@ public class BranchService implements IBranchService {
     private final BranchRepository branchRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
-
+    private final GoongService goongService;
     @Override
     public void createBranch(CreateBranchRequest body) {
         BranchEntity branch = modelMapperService.mapClass(body, BranchEntity.class);
@@ -118,12 +121,27 @@ public class BranchService implements IBranchService {
     }
 
     @Override
-    public GetBranchViewListResponse getBranchViewList(int page, int size) {
+    public GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<BranchEntity> branchPage = branchRepository.findByStatus(BranchStatus.ACTIVE, pageable);
+        List<BranchEntity> branchEntityList = branchPage.getContent();
+        List<String> destinationCoordinatesList = getCoordinatesListFromBranchList(branchEntityList);
+
+        String clientCoordinates = latitude + "," + longitude;
+
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         GetBranchViewListResponse data = new GetBranchViewListResponse();
         data.setTotalPage(branchPage.getTotalPages());
-        data.setBranchList(GetBranchViewListResponse.fromBranchEntityList(branchPage.getContent()));
+        data.setBranchList(GetBranchViewListResponse.fromBranchEntityListAndFilterDistance(branchPage.getContent(), distanceList));
         return data;
+    }
+    public List<String> getCoordinatesListFromBranchList(List<BranchEntity> branchEntityList) {
+        List<String> destinationCoordinatesList = new ArrayList<>();
+        for(BranchEntity branchEntity : branchEntityList) {
+            String locationFormat = "%s,%s";
+            String coordinates = String.format(locationFormat, branchEntity.getLatitude(), branchEntity.getLongitude());
+            destinationCoordinatesList.add(coordinates);
+        }
+        return destinationCoordinatesList;
     }
 }

@@ -180,8 +180,11 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@RequestBody @Valid RefreshTokenRequest body) {
-        RefreshTokenResponse data = userAuthService.refreshToken(body.getRefreshToken());
+    public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null) {
+            throw new CustomException(ErrorConstant.EMPTY_TOKEN);
+        }
+        RefreshTokenResponse data = userAuthService.refreshToken(refreshToken);
 
         ResponseAPI<RefreshTokenResponse> res = ResponseAPI.<RefreshTokenResponse>builder()
                 .timestamp(new Date())
