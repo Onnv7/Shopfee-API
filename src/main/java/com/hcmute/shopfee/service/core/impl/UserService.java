@@ -56,7 +56,7 @@ public class UserService implements IUserService {
     public GetUserByIdResponse getUserProfileById(String userId) {
         SecurityUtils.checkUserId(userId);
         UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         return modelMapperService.mapClass(userEntity, GetUserByIdResponse.class);
     }
 
@@ -64,7 +64,7 @@ public class UserService implements IUserService {
     public void updateUserProfile(String userId, UpdateUserRequest body) {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         modelMapperService.map(body, user);
         userRepository.save(user);
     }
@@ -72,19 +72,19 @@ public class UserService implements IUserService {
     @Override
     public String checkExistedUserByEmail(String email) {
         UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_EMAIL_NOT_FOUND + email));
         return user.getFullName();
     }
 
     @Override
-    public void uploadAvatar(UploadUserAvatarRequest body, String userId)  {
-        if(!ImageUtils.isValidImageFile(body.getImage())) {
+    public void uploadAvatar(UploadUserAvatarRequest body, String userId) {
+        if (!ImageUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         try {
             SecurityUtils.checkUserId(userId);
             UserEntity user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
             byte[] imageBytes = body.getImage().getBytes();
             HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);

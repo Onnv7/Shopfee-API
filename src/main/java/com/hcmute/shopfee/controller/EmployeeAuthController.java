@@ -58,7 +58,7 @@ public class EmployeeAuthController {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
         if(refreshToken == null) {
-            throw new CustomException(ErrorConstant.NOT_FOUND + "refresh token");
+            throw new CustomException(ErrorConstant.NOT_FOUND);
         }
         employeeAuthService.employeeLogout(refreshToken);
 
@@ -76,7 +76,7 @@ public class EmployeeAuthController {
     public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
 
         if (refreshToken == null) {
-            throw new CustomException(ErrorConstant.EMPTY_TOKEN);
+            throw new CustomException(ErrorConstant.UNAUTHORIZED, "Token is null");
         }
         RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken(refreshToken);
 

@@ -30,25 +30,23 @@ public class ExceptionHandlerController {
 
     private static final List<String> error404= Arrays.asList(
             USER_NOT_FOUND,
-            EMPLOYEE_NOT_FOUND,
-            NOT_FOUND,
-            CATEGORY_NOT_FOUND,
-            PRODUCT_NOT_FOUND, NOT_FOUND_BRANCH_FOR_YOUR_LOCATION
+            NOT_FOUND
     );
+    private static final List<String> error409 = Arrays.asList(EXISTED_DATA);
     private static final List<String> error400= Arrays.asList(
-            REGISTERED_EMAIL, INVALID_COIN_NUMBER, IMAGE_INVALID,
-            PARAMETER_INVALID, PRODUCT_NAME_EXISTED, COUPON_STATUS_UNRELEASED,
-            TOTAL_ORDER_INVALID, COUPON_EXPIRED, COUPON_INVALID, CANT_DELETE, REQUEST_BODY_INVALID,
-            OVER_FIVE_ADDRESS
+            CANT_DELETE, IMAGE_INVALID,  DATA_SEND_INVALID,
+            COUPON_INVALID, INVALID_COIN_NUMBER, ORDER_INVALID
+
+
     );
     private static final List<String> error403= Arrays.asList(
-            PRINCIPAL_INVALID, USER_ID_INVALID, ACCOUNT_BLOCKED,
+            PRINCIPAL_INVALID, USER_ID_INVALID,
             FORBIDDEN
     );
     private static final List<String> error401= Arrays.asList(
-            INVALID_PASSWORD, STOLEN_TOKEN, INVALID_TOKEN, EMPTY_TOKEN
+            UNAUTHORIZED
     );
-
+    private static final List<String> error500 = Arrays.asList(VNP_ERROR);
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
@@ -59,10 +57,12 @@ public class ExceptionHandlerController {
                 .build();
         return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
     }
+
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse<?>> handleCustomException(CustomException ex) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         ex.printStackTrace();
+
         if(error404.contains(ex.getMessage())) {
             httpStatus = StatusCode.NOT_FOUND;
         } else if(error400.contains(ex.getMessage())) {
@@ -71,9 +71,13 @@ public class ExceptionHandlerController {
             httpStatus = HttpStatus.UNAUTHORIZED;
         }else if(error403.contains(ex.getMessage())) {
             httpStatus = HttpStatus.FORBIDDEN;
+        } else if(error409.contains(ex.getMessage())) {
+            httpStatus = HttpStatus.CONFLICT;
+        } else if(error500.contains(ex.getMessage())) {
         }
         ErrorResponse res = ErrorResponse.builder()
-                .message(ex.getMessage())
+                .message(ex.getMessage() + " - " + ex.getDetailMessage())
+                .errorCode(ex.getErrorCode())
                 .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
                 .build();
         return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);

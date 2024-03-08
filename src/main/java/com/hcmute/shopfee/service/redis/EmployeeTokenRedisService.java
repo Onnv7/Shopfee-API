@@ -25,14 +25,14 @@ public class EmployeeTokenRedisService {
 
     public void deleteByEmployeeIdAndRefreshToken(String employeeId, String refreshToken) {
         EmployeeTokenEntity entity = employeeTokenRepository.findByEmployeeIdAndRefreshToken(employeeId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
         employeeTokenRepository.delete(entity);
     }
 
 
     public EmployeeTokenEntity getInfoOfRefreshToken(String refreshToken, String employeeId) {
         EmployeeTokenEntity entity = employeeTokenRepository.findByEmployeeIdAndRefreshToken(employeeId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
         return entity;
     }
 

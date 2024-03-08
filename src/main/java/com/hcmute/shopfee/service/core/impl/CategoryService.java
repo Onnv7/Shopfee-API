@@ -39,7 +39,7 @@ public class CategoryService implements ICategoryService {
         String cgrName = body.getName();
         CategoryEntity existedCategory = categoryRepository.findByIsDeletedFalseAndName(cgrName).orElse(null);
         if (existedCategory != null) {
-            throw new CustomException(ErrorConstant.CATEGORY_EXISTED);
+            throw new CustomException(ErrorConstant.EXISTED_DATA, "Category already exists");
         }
         byte[] originalImage = new byte[0];
         try {
@@ -63,7 +63,8 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public GetCategoryByIdResponse getCategoryById(String id) {
-        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         return modelMapperService.mapClass(category, GetCategoryByIdResponse.class);
     }
 
@@ -81,14 +82,19 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void updateCategory(UpdateCategoryRequest body, String id) {
-        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));;
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));;
         if (body.getImage() != null) {
             try {
                 cloudinaryService.deleteImage(category.getImageId());
                 byte[] originalImage = body.getImage().getBytes();
                 byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
-                HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.CATEGORY_PATH, StringUtils.generateFileName(body.getName(), "category"), newImage);
+                HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(
+                        CloudinaryConstant.CATEGORY_PATH,
+                        StringUtils.generateFileName(body.getName(), "category"),
+                        newImage
+                );
 
                 category.setImageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY));
                 category.setImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID));
@@ -103,7 +109,8 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void deleteCategoryById(String id) {
-        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
 
         if (category.getProductList().isEmpty()) {
             category.setDeleted(true);

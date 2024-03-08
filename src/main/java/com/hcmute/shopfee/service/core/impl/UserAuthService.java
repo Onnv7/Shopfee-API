@@ -70,13 +70,13 @@ public class UserAuthService implements IUserAuthService {
     public RegisterResponse registerUser(RegisterUserRequest body) {
         UserEntity userEntity = modelMapperService.mapClass(body, UserEntity.class);
         if (userRepository.findByEmail(userEntity.getEmail()).orElse(null) != null) {
-            throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
+            throw new CustomException(EXISTED_DATA, "Email already registered");
         }
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(()-> new CustomException(EMAIL_UNVERIFIED));
+                .orElseThrow(()-> new CustomException(UNAUTHORIZED, "Email has not been verified"));
         if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
-            throw new CustomException(EMAIL_UNVERIFIED);
+            throw new CustomException(UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
 
@@ -88,7 +88,7 @@ public class UserAuthService implements IUserAuthService {
 //        data.setCode(sequenceService.generateCode(UserCollection.SEQUENCE_NAME, UserCollection.PREFIX_CODE, UserCollection.LENGTH_NUMBER));
 
         Set<RoleEntity> roleList = new HashSet<>();
-        RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + Role.ROLE_USER));
+        RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
         roleList.add(userRole);
         userEntity.setRoleList(roleList);
         userEntity.setEnabled(true);
@@ -108,7 +108,7 @@ public class UserAuthService implements IUserAuthService {
         RegisterResponse resData = new RegisterResponse();
         String idToken = request.getHeader("Id-token");
         if(idToken == null) {
-            throw new CustomException(ID_TOKEN_NOT_FOUND);
+            throw new CustomException(NOT_FOUND, "Id token is null");
         }
         try {
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -128,7 +128,8 @@ public class UserAuthService implements IUserAuthService {
                     .build();
 
             Set<RoleEntity> roleList = new HashSet<>();
-            RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + Role.ROLE_USER));
+            RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
             roleList.add(userRole);
             userEntity.setRoleList(roleList);
             userEntity.setEnabled(true);
@@ -181,7 +182,7 @@ public class UserAuthService implements IUserAuthService {
     public LoginResponse firebaseUserLogin(HttpServletRequest request) {
         String idToken = request.getHeader("Id-token");
         if(idToken == null) {
-            throw new CustomException(ID_TOKEN_NOT_FOUND);
+            throw new CustomException(NOT_FOUND, "Id token is null");
         }
         try {
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
@@ -190,7 +191,7 @@ public class UserAuthService implements IUserAuthService {
             String userId = user.getId();
             String username = user.getEmail();
 
-            List<String> roles = List.of("ROLE_USER");
+            List<String> roles = List.of(Role.ROLE_USER.name());
 
             var accessToken = jwtService.issueAccessToken(userId, username, roles);
             String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
@@ -213,7 +214,7 @@ public class UserAuthService implements IUserAuthService {
     public void sendCodeToRegister(String email) {
         UserEntity user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
-            throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
+            throw new CustomException(EXISTED_DATA, "Email is already registered");
         }
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
@@ -223,7 +224,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void sendCodeToGetPassword(String email) {
         userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "User with email " + email));
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
         kafkaMessagePublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
@@ -232,7 +233,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void verifyCodeByEmail(String code, String email) {
         ConfirmationEntity confirmationCollection = confirmationRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + email));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Confirmation data with email " + email));
         Date currentTime = new Date();
 
         if (code.equals(confirmationCollection.getCode()) && currentTime.before(confirmationCollection.getExpireAt()) ) {
@@ -241,19 +242,19 @@ public class UserAuthService implements IUserAuthService {
             return;
         }
 
-        throw new CustomException(ErrorConstant.VERIFY_EMAIL_FAILED);
+        throw new CustomException(UNAUTHORIZED, "Code is not valid");
     }
 
     @Transactional
     @Override
     public void changePasswordForgot(ChangePasswordRequest body) {
         UserEntity user = userRepository.findByEmail(body.getEmail())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getEmail()));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "User with email " + body.getEmail()));
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(()-> new CustomException(EMAIL_UNVERIFIED));
+                .orElseThrow(()-> new CustomException(UNAUTHORIZED, "Email has not been verified"));
         if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
-            throw new CustomException(EMAIL_UNVERIFIED);
+            throw new CustomException(UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
 
@@ -268,14 +269,14 @@ public class UserAuthService implements IUserAuthService {
         String userId = jwt.getSubject().toString();
         UserTokenEntity token = userTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
         if (token == null) {
-            throw new CustomException(INVALID_TOKEN);
+            throw new CustomException(NOT_FOUND, "There is no token data in the database");
         }
         if (token.isUsed()) {
             userTokenRedisService.deleteAllTokenByUserId(userId);
-            throw new CustomException(STOLEN_TOKEN);
+            throw new CustomException(FORBIDDEN, TOKEN_STOLEN);
         }
         List<String> roles = jwt.getClaim(ROLES_CLAIM_KEY).asList(String.class);
         String newAccessToken = jwtService.issueAccessToken(user.getId(), user.getEmail(), roles);
@@ -293,12 +294,13 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void changePasswordProfile(String userId, UpdatePasswordRequest data) {
         SecurityUtils.checkUserId(userId);
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
 
         boolean isValid = passwordEncoder.matches(data.getOldPassword(), user.getPassword());
 
         if (!isValid) {
-            throw new CustomException(ErrorConstant.INVALID_PASSWORD);
+            throw new CustomException(UNAUTHORIZED, WRONG_PASSWORD);
         }
 
         user.setPassword(passwordEncoder.encode(data.getNewPassword()));

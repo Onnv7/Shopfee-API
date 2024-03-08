@@ -152,7 +152,7 @@ public class CouponService implements ICouponService {
                 .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.COUPON_INVALID);
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
         }
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
@@ -209,7 +209,7 @@ public class CouponService implements ICouponService {
                 .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.COUPON_INVALID);
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
         }
 
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
@@ -279,7 +279,7 @@ public class CouponService implements ICouponService {
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findByIdAndIsDeletedFalse(reward.getProductId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + reward.getProductId()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
                     .productSize(reward.getProductSize())
@@ -342,9 +342,9 @@ public class CouponService implements ICouponService {
     @Override
     public void deleteCoupon(String couponId) {
         CouponEntity couponCollection = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         if (couponCollection.getStatus() == CouponStatus.UNRELEASED) {
-            throw new CustomException(ErrorConstant.COUPON_STATUS_UNRELEASED);
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Actions cannot be performed on the coupon when it is in the UNRELEASED state");
         }
         couponCollection.setDeleted(true);
         couponRepository.save(couponCollection);
@@ -365,7 +365,7 @@ public class CouponService implements ICouponService {
     public GetReleaseCouponByIdResponse getReleaseCouponById(String couponId) {
 
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetReleaseCouponByIdResponse.fromCouponEntity(couponEntity);
     }
 
@@ -383,28 +383,28 @@ public class CouponService implements ICouponService {
     @Override
     public GetShippingCouponDetailsByIdResponse getShippingCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.SHIPPING)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetShippingCouponDetailsByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetOrderCouponDetailByIdResponse getOrderCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.ORDER)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetOrderCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetProductGiftCouponDetailByIdResponse getProductGiftCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.PRODUCT)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetProductGiftCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.PRODUCT)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetAmountOffProductCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
@@ -425,7 +425,7 @@ public class CouponService implements ICouponService {
         if (body.getShippingCouponCode() != null) {
             couponTypeList.add(CouponType.SHIPPING);
             shippingCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getShippingCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getShippingCouponCode()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getShippingCouponCode()));
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getShippingCouponCode());
             for (CouponType item : cantCombinedCouponList) {
                 if (!couponTypeCombinedListOfCoupon.contains(item)) {
@@ -441,7 +441,7 @@ public class CouponService implements ICouponService {
         if (body.getOrderCouponCode() != null) {
             couponTypeList.add(CouponType.ORDER);
             orderCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getOrderCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getOrderCouponCode()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getOrderCouponCode()));
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getOrderCouponCode());
             for (CouponType item : cantCombinedCouponList) {
                 if (!couponTypeCombinedListOfCoupon.contains(item)) {
@@ -456,7 +456,7 @@ public class CouponService implements ICouponService {
         if (body.getProductCouponCode() != null) {
             couponTypeList.add(CouponType.PRODUCT);
             productCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getProductCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getProductCouponCode()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getProductCouponCode()));
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getProductCouponCode());
             for (CouponType item : cantCombinedCouponList) {
                 if (!couponTypeCombinedListOfCoupon.contains(item)) {
@@ -535,7 +535,7 @@ public class CouponService implements ICouponService {
                         if (item == null) {
                             // invalid
                             ProductEntity productEntity = productRepository.findByIdAndIsDeletedFalse(subjectConditionEntity.getObjectId())
-                                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                             couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                             couponCard.setValid(false);
                         } else {
@@ -546,7 +546,7 @@ public class CouponService implements ICouponService {
                             if(count < subjectConditionEntity.getValue()) {
                                 // invalid
                                 ProductEntity productEntity = productRepository.findByIdAndIsDeletedFalse(subjectConditionEntity.getObjectId())
-                                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                 couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                                 couponCard.setValid(false);
                             }

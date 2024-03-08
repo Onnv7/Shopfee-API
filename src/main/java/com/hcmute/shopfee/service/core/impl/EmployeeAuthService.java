@@ -68,7 +68,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(principalAuthenticated.getUsername()).orElse(null);
 
         if (employee.getStatus() == EmployeeStatus.INACTIVE) {
-            throw new CustomException(ErrorConstant.ACCOUNT_BLOCKED);
+            throw new CustomException(ErrorConstant.FORBIDDEN, "Your account is inactive");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -94,17 +94,18 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     public RefreshEmployeeTokenResponse refreshEmployeeToken(String refreshToken) {
         DecodedJWT jwt = jwtService.decodeRefreshToken(refreshToken);
 
-        String userId = jwt.getSubject().toString();
-        EmployeeTokenEntity token = employeeTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
+        String employeeId = jwt.getSubject().toString();
+        EmployeeTokenEntity token = employeeTokenRedisService.getInfoOfRefreshToken(refreshToken, employeeId);
 
-        EmployeeEntity user = employeeRepository.findByIdAndIsDeletedFalse(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        EmployeeEntity user = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
 
         if (token == null) {
-            throw new CustomException(INVALID_TOKEN);
+            throw new CustomException(UNAUTHORIZED, "Token is null");
         }
         if (token.isUsed()) {
-            employeeTokenRedisService.deleteAllTokenByEmployeeId(userId);
-            throw new CustomException(STOLEN_TOKEN);
+            employeeTokenRedisService.deleteAllTokenByEmployeeId(employeeId);
+            throw new CustomException(FORBIDDEN, TOKEN_STOLEN);
         }
 
         List<String> roles = jwt.getClaim(ROLES_CLAIM_KEY).asList(String.class);
@@ -112,7 +113,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         String newAccessToken = jwtService.issueAccessToken(user.getId(), user.getUsername(), roles);
         String newRefreshToken = jwtService.issueRefreshToken(user.getId(), user.getUsername(), roles);
         employeeTokenRedisService.updateUsedEmployeeRefreshToken(token);
-        employeeTokenRedisService.createNewEmployeeRefreshToken(newRefreshToken, userId);
+        employeeTokenRedisService.createNewEmployeeRefreshToken(newRefreshToken, employeeId);
 
         RefreshEmployeeTokenResponse resData = RefreshEmployeeTokenResponse.builder()
                 .accessToken(newAccessToken)
@@ -126,15 +127,15 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         List<String> roles = SecurityUtils.getRoleList();
         // manager không thể tạo manager khác
         if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {
-            throw new CustomException(ErrorConstant.FORBIDDEN);
+            throw new CustomException(ErrorConstant.FORBIDDEN, "Managers cannot create another manager account");
         }
 
         if(SecurityUtils.isOnlyRole(roles, Role.ROLE_MANAGER)) {
             EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             // manager không được tạo emlpyee cho chi nhánh khác
             if(!manager.getBranch().getId().equals(body.getBranchId())) {
-                throw new CustomException(ErrorConstant.FORBIDDEN);
+                throw new CustomException(ErrorConstant.FORBIDDEN, "Managers cannot create an employee account belonging to another branch");
             }
         }
 
@@ -144,16 +145,17 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(data.getUsername()).orElse(null);
         if (existedEmployee != null) {
-            throw new CustomException(ErrorConstant.REGISTERED_EMAIL);
+            throw new CustomException(ErrorConstant.EXISTED_DATA, "Email account registered");
         }
 
         Set<RoleEntity> employeeRole = new HashSet<>();
         RoleEntity role = roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new CustomException(NOT_FOUND + roleName));
+                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name" + roleName));
         employeeRole.add(role);
         data.setRoleList(employeeRole);
 
-        BranchEntity branch = branchRepository.findById(body.getBranchId()).orElseThrow(() -> new CustomException(NOT_FOUND + body.getBranchId()));
+        BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
+                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         data.setBranch(branch);
         data.setPassword(passwordEncoder.encode(data.getPassword()));
         data.setStatus(EmployeeStatus.ACTIVE);
@@ -163,10 +165,10 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Override
     public void changePasswordProfile(ChangePasswordEmployeeRequest data, String emplId) {
         EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(emplId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND + emplId));
+                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
         boolean isValid = passwordEncoder.matches(data.getOldPassword(), employee.getPassword());
         if (!isValid) {
-            throw new CustomException(ErrorConstant.INVALID_PASSWORD);
+            throw new CustomException(ErrorConstant.UNAUTHORIZED, WRONG_PASSWORD);
         }
         employee.setPassword(passwordEncoder.encode(data.getNewPassword()));
         employeeRepository.save(employee);

@@ -73,7 +73,6 @@ public class UserAuthController {
                 .data(data)
                 .build();
 
-
         HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
 
@@ -98,11 +97,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
     @GetMapping(path = GET_AUTH_USER_LOGOUT_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> logoutUser(HttpServletRequest request) {
-
-        String refreshToken = CookieUtils.getRefreshToken(request);
+    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null) {
-            throw new CustomException(ErrorConstant.NOT_FOUND + "refresh token");
+            throw new CustomException(ErrorConstant.NOT_FOUND);
         }
         userAuthService.logoutUser(refreshToken);
 
@@ -114,17 +111,6 @@ public class UserAuthController {
         HttpHeaders headers = CookieUtils.setRefreshTokenCookie("", 0L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
-
-//    @Operation(summary = USER_AUTH_RE_SEND_EMAIL_SUM)
-//    @PostMapping(POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH)
-//    public ResponseEntity<ResponseAPI<?>> resendEmail(@RequestBody @Valid ResendEmailRequest body) {
-//        userAuthService.resendCode(body.getEmail());
-//        ResponseAPI<?> res = ResponseAPI.builder()
-//                .timestamp(new Date())
-//                .message(SuccessConstant.SEND_CODE_TO_EMAIL)
-//                .build();
-//        return new ResponseEntity<>(res, StatusCode.OK);
-//    }
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
     @PostMapping(POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
@@ -182,7 +168,7 @@ public class UserAuthController {
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
         if (refreshToken == null) {
-            throw new CustomException(ErrorConstant.EMPTY_TOKEN);
+            throw new CustomException(ErrorConstant.UNAUTHORIZED, "Token is null");
         }
         RefreshTokenResponse data = userAuthService.refreshToken(refreshToken);
 

@@ -72,14 +72,14 @@ public class ProductService implements IProductService {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
-            throw new CustomException(ErrorConstant.PARAMETER_INVALID);
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
         } else if (productType == ProductType.CAKE) {
             if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
-                throw new CustomException(ErrorConstant.PARAMETER_INVALID);
+                throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
             }
         }
         if (productRepository.findByNameAndIsDeletedFalse(body.getName()).orElse(null) != null) {
-            throw new CustomException(ErrorConstant.PRODUCT_NAME_EXISTED);
+            throw new CustomException(ErrorConstant.EXISTED_DATA, "Product named \"" + body.getName() + "\" already exists");
         }
 
         ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
@@ -110,7 +110,7 @@ public class ProductService implements IProductService {
             byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
             CategoryEntity categoryEntity = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getCategoryId()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
 
             productEntity.setCategory(categoryEntity);
             HashMap<String, String> imageUploaded = cloudinaryService.uploadFileToFolder(
@@ -135,7 +135,7 @@ public class ProductService implements IProductService {
     @Override
     public GetProductByIdResponse getProductDetailsById(String id) {
         ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductByIdResponse result = modelMapperService.mapClass(product, GetProductByIdResponse.class);
         result.setCategoryId(product.getCategory().getId());
         return result;
@@ -144,7 +144,7 @@ public class ProductService implements IProductService {
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
         ProductEntity product = productRepository.findByIdAndStatusNotAndIsDeletedFalse(id, ProductStatus.HIDDEN)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
         RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
         data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
@@ -210,7 +210,7 @@ public class ProductService implements IProductService {
 
                 productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
             } else {
-                 productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
+                productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
 
             }
             data.setTotalPage(productPage.getTotalPages());
@@ -246,7 +246,7 @@ public class ProductService implements IProductService {
     @Override
     public void deleteProductById(String id) {
         ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         if (productRepository.countOrderItem(id) == 0) {
             product.setDeleted(true);
             productRepository.save(product);
@@ -273,7 +273,7 @@ public class ProductService implements IProductService {
     @Override
     public void updateProductById(UpdateProductRequest body, String id) {
         ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
 
         modelMapperService.map(body, product);
 
@@ -298,7 +298,7 @@ public class ProductService implements IProductService {
         product.setPrice(getMinPrice(product.getSizeList()));
 
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND,  ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         product.setCategory(category);
 
         productRepository.save(product);
@@ -385,7 +385,7 @@ public class ProductService implements IProductService {
                         break;
                     case 1:
                         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + cell.getStringCellValue()));
+                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
                     case 2:
@@ -423,8 +423,6 @@ public class ProductService implements IProductService {
 
                 }
             }
-            System.out.println(product);
-            System.out.println("================================================");
         }
         try {
             inputStream.close();
@@ -468,7 +466,7 @@ public class ProductService implements IProductService {
                         break;
                     case 1:
                         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + cell.getStringCellValue()));
+                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
                     case 2:

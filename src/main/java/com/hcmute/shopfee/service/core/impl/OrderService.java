@@ -9,8 +9,6 @@ import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.database.*;
 import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
-import com.hcmute.shopfee.entity.database.coupon.condition.CombinationConditionEntity;
-import com.hcmute.shopfee.entity.database.coupon.condition.MinPurchaseConditionEntity;
 import com.hcmute.shopfee.entity.database.coupon.condition.SubjectConditionEntity;
 import com.hcmute.shopfee.entity.database.coupon.condition.UsageConditionEntity;
 import com.hcmute.shopfee.entity.database.coupon_used.CouponRewardReceivedEntity;
@@ -26,10 +24,8 @@ import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.*;
-import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
-import com.hcmute.shopfee.repository.database.coupon.condition.UsageConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -51,6 +47,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
 import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
 @Service
@@ -93,7 +90,7 @@ public class OrderService implements IOrderService {
         }
 
         if(minDistance > 12000) {
-            throw new CustomException(ErrorConstant.NOT_FOUND_BRANCH_FOR_YOUR_LOCATION);
+            throw new CustomException(ErrorConstant.NOT_FOUND, "Your location is outside the service area");
         }
 
         return allBranches.get(minIndexBranch);
@@ -136,7 +133,7 @@ public class OrderService implements IOrderService {
             OrderItemDto orderItemDto = orderItemList.get(i);
 
             ProductEntity productInfo = productRepository.findByIdAndStatusAndIsDeletedFalse(orderItemDto.getProductId(), ProductStatus.AVAILABLE)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + orderItemDto.getProductId()));
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + orderItemDto.getProductId()));
 
             OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
             item.setProduct(productInfo);
@@ -169,7 +166,7 @@ public class OrderService implements IOrderService {
                     ToppingEntity toppingEntity = toppingList.stream()
                             .filter(topping -> toppingName.equals(topping.getName()))
                             .findFirst()
-                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + toppingName));
+                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Topping with name " + toppingName));
                     itemTopping.setName(toppingName);
                     itemTopping.setPrice(toppingEntity.getPrice());
                     itemTopping.setItemDetail(itemDetailEntity);
@@ -181,7 +178,7 @@ public class OrderService implements IOrderService {
                 // set size
                 SizeEntity sizeItem = sizeList.stream()
                         .filter(it -> it.getSize() == itemDetail.getSize())
-                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + itemDetail.getSize()));
+                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Product's size with id " + itemDetail.getSize()));
                 itemDetailEntity.setPrice(sizeItem.getPrice());
                 itemsDetailEntityList.add(itemDetailEntity);
 
@@ -213,19 +210,19 @@ public class OrderService implements IOrderService {
 
     public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, String userId) {
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Coupon with code " + couponCode));
 
         Date currentTime = new Date();
 
         if (coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
-//            throw new CustomException(ErrorConstant.COUPON_EXPIRED);
+            throw new CustomException(ErrorConstant.COUPON_INVALID, "Coupon is expired");
         }
 
         for (CouponConditionEntity condition : coupon.getConditionList()) {
             if (condition.getType() == ConditionType.MIN_PURCHASE) {
                 if (total < condition.getMinPurchaseCondition().getValue()) {
                     // invalid
-                    throw new CustomException(ErrorConstant.COUPON_INVALID + " min purchase condition " + condition.getMinPurchaseCondition().getValue());
+                    throw new CustomException(ErrorConstant.COUPON_INVALID, "Min purchase condition " + condition.getMinPurchaseCondition().getValue());
                 }
             } else if (condition.getType() == ConditionType.USAGE) {
                 for (UsageConditionEntity usageCondition : condition.getUsageConditionList()) {
@@ -233,13 +230,13 @@ public class OrderService implements IOrderService {
                         int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
                         if (usedCount >= usageCondition.getValue()) {
                             // invalid
-                            throw new CustomException(ErrorConstant.COUPON_INVALID + " coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
+                            throw new CustomException(ErrorConstant.COUPON_INVALID, "Coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
                         }
                     } else if (usageCondition.getType() == UsageConditionType.LIMIT_ONE_FOR_USER) {
                         CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId()).orElse(null);
                         if (couponUsed != null) {
                             // invalid
-                            throw new CustomException(ErrorConstant.COUPON_INVALID + " limit one per an user");
+                            throw new CustomException(ErrorConstant.COUPON_INVALID, "Limit one per an user");
                         }
                     }
                 }
@@ -250,7 +247,7 @@ public class OrderService implements IOrderService {
                     OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
                     if (item == null) {
                         // invalid
-                        throw new CustomException(ErrorConstant.COUPON_INVALID + " not found subject " + subjectConditionEntity.getObjectId() );
+                        throw new CustomException(ErrorConstant.COUPON_INVALID, "Not found subject " + subjectConditionEntity.getObjectId() );
                     } else {
                         int count = 0;
                         for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
@@ -258,7 +255,7 @@ public class OrderService implements IOrderService {
                         }
                         if (count < subjectConditionEntity.getValue()) {
                             // invalid
-                            throw new CustomException(ErrorConstant.COUPON_INVALID + " subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
+                            throw new CustomException(ErrorConstant.COUPON_INVALID, "Subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
                         }
                     }
                 }
@@ -293,7 +290,7 @@ public class OrderService implements IOrderService {
         cantCombinedCouponTypeList.forEach(it -> {
             if (couponTypeUsingList.contains(it)) {
                 // invalid
-                throw new CustomException(ErrorConstant.COUPON_INVALID + " cant combine coupons");
+                throw new CustomException(ErrorConstant.COUPON_INVALID, "Cant combine coupons");
             }
         });
     }
@@ -301,7 +298,7 @@ public class OrderService implements IOrderService {
 
     private CouponUsedEntity createCouponUsedEntity(String couponCode) {
         CouponEntity coupon = couponRepository.findByCodeAndIsDeletedFalse(couponCode)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + couponCode));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Coupon with code " + couponCode));
 
         CouponUsedEntity couponUsed = CouponUsedEntity.builder()
                 .code(couponCode)
@@ -384,12 +381,12 @@ public class OrderService implements IOrderService {
         SecurityUtils.checkUserId(body.getUserId());
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
         if (body.getCoin() == null) {
             body.setCoin(0L);
         }
         if (user.getCoin() < body.getCoin()) {
-            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER);
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -400,7 +397,7 @@ public class OrderService implements IOrderService {
 
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getAddressId()));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ADDRESS_ID_NOT_FOUND + body.getAddressId()));
         ShippingInformationEntity shippingInformation = new ShippingInformationEntity();
         shippingInformation.fromAddressEntity(address);
 
@@ -445,7 +442,7 @@ public class OrderService implements IOrderService {
         userRepository.save(user);
 
         if (totalPrice != body.getTotal()) {
-            throw new CustomException(ErrorConstant.TOTAL_ORDER_INVALID);
+            throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
         orderBill.setTotalPayment(totalPrice);
 
@@ -473,13 +470,13 @@ public class OrderService implements IOrderService {
         SecurityUtils.checkUserId(body.getUserId());
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
 
         if (body.getCoin() == null) {
             body.setCoin(0L);
         }
         if (user.getCoin() < body.getCoin()) {
-            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER);
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -505,7 +502,7 @@ public class OrderService implements IOrderService {
         userRepository.save(user);
 
         if (totalPrice != body.getTotal()) {
-            throw new CustomException(ErrorConstant.TOTAL_ORDER_INVALID);
+            throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
 
         // set giao dịch
@@ -527,7 +524,7 @@ public class OrderService implements IOrderService {
 
         // set chi nhánh đặt hàng
         BranchEntity branch = branchRepository.findById(body.getBranchId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getBranchId()));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         orderBill.setBranch(branch);
 
         // set thời gian nhận hàng
@@ -566,7 +563,7 @@ public class OrderService implements IOrderService {
     @Override
     public void addNewOrderEvent(String id, OrderStatus orderStatus, String description, HttpServletRequest request) {
         OrderBillEntity order = orderBillRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
 
         String clientId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(clientId).orElse(null);
@@ -587,7 +584,7 @@ public class OrderService implements IOrderService {
             try {
                 VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
             } catch (IOException e) {
-                throw new CustomException(ErrorConstant.ERROR_REFUND);
+                throw new CustomException(ErrorConstant.VNP_ERROR, "Refund failed");
             }
         }
     }
@@ -596,11 +593,12 @@ public class OrderService implements IOrderService {
     public List<GetShippingOrderQueueResponse> getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size) {
         String employeeId = SecurityUtils.getCurrentUserId();
 
-        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         Long branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
+        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
 
         List<GetShippingOrderQueueResponse> orderListResponse = new ArrayList<>();
         orderList.forEach(it -> {
@@ -614,7 +612,7 @@ public class OrderService implements IOrderService {
     public List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size) {
         String employeeId = SecurityUtils.getCurrentUserId();
 
-        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         Long branchId = employeeEntity.getBranch().getId();
 
 
@@ -657,7 +655,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public GetOrderByIdResponse getOrderDetailsById(String id) {
-        OrderBillEntity orderBill = orderBillRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        OrderBillEntity orderBill = orderBillRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
         GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
         return order;
     }

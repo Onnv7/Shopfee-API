@@ -95,13 +95,13 @@ public class EmployeeService implements IEmployeeService {
         List<String> roleList = SecurityUtils.getRoleList();
 
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + id));
 
-        if(SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
-            EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(id)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
-            if(!manager.getBranch().getId().equals(employee.getBranch().getId())) {
-                throw new CustomException(ErrorConstant.FORBIDDEN);
+        if (SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
+            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
+            if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
+                throw new CustomException(ErrorConstant.FORBIDDEN, "Manager cannot update an employee account belonging to another branch");
             }
         }
 
@@ -114,13 +114,13 @@ public class EmployeeService implements IEmployeeService {
         List<String> roleList = SecurityUtils.getRoleList();
 
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + id));
 
-        if(SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
-            EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(id)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
-            if(!manager.getBranch().getId().equals(employee.getBranch().getId())) {
-                throw new CustomException(ErrorConstant.FORBIDDEN);
+        if (SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
+            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
+            if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
+                throw new CustomException(ErrorConstant.FORBIDDEN, "Manager cannot delete an employee account belonging to another branch");
             }
         }
         employee.setDeleted(true);
@@ -131,15 +131,15 @@ public class EmployeeService implements IEmployeeService {
     public GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId) {
         SecurityUtils.checkUserId(employeeId);
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         return modelMapperService.mapClass(employee, GetEmployeeProfileByIdResponse.class);
     }
 
     @Override
     public GetEmployeeByIdResponse getEmployeeById(String employeeId) {
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + employeeId));
-        return modelMapperService.mapClass(employee, GetEmployeeByIdResponse.class);
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+        return GetEmployeeByIdResponse.fromEmployeeEntity(employee);
     }
 
 

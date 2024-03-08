@@ -14,6 +14,7 @@ import com.hcmute.shopfee.service.core.IAddressService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -33,11 +34,12 @@ public class AddressService implements IAddressService {
     public AddressEntity createAddressToUser(CreateAddressRequest body, String userId) {
         SecurityUtils.checkUserId(userId);
         AddressEntity data = modelMapperService.mapClass(body, AddressEntity.class);
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, USER_ID_NOT_FOUND + userId));
         data.setUser(user);
 
         if (user.getAddressList().size() >= 5) {
-            throw new CustomException(ErrorConstant.OVER_FIVE_ADDRESS);
+            throw new CustomException(ACTING_INCORRECTLY, "Do not add more than 5 addresses");
         }
         data.setDefault(user.getAddressList().isEmpty());
         return addressRepository.save(data);
@@ -46,7 +48,8 @@ public class AddressService implements IAddressService {
     @Override
     public void updateAddressById(UpdateAddressRequest body, String addressId) {
         AddressEntity data = modelMapperService.mapClass(body, AddressEntity.class);
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new CustomException(NOT_FOUND + addressId));
+        AddressEntity address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
         UserEntity user = address.getUser();
         SecurityUtils.checkUserId(user.getId());
         if (data.isDefault()) {
@@ -64,7 +67,8 @@ public class AddressService implements IAddressService {
 
     @Override
     public void deleteAddressById(String addressId) {
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new CustomException(NOT_FOUND + addressId));
+        AddressEntity address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
 
         UserEntity user = address.getUser();
         SecurityUtils.checkUserId(user.getId());
@@ -75,26 +79,15 @@ public class AddressService implements IAddressService {
     public List<GetAddressListByUserIdResponse> getAddressListByUserId(String userId) {
         SecurityUtils.checkUserId(userId);
 
-        List<GetAddressListByUserIdResponse> list = modelMapperService.mapList(addressRepository.findByUser_Id(userId), GetAddressListByUserIdResponse.class);
-       // TODO: xem chỗ sort làm gì -> có thể chuyển sang sql query
-        Collections.sort(list, new Comparator<GetAddressListByUserIdResponse>() {
-            @Override
-            public int compare(GetAddressListByUserIdResponse address1, GetAddressListByUserIdResponse address2) {
-                if (address1.isDefault() && !address2.isDefault()) {
-                    return -1;
-                } else if (!address1.isDefault() && address2.isDefault()) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        List<GetAddressListByUserIdResponse> list = GetAddressListByUserIdResponse.fromAddressEntityList(
+                addressRepository.findByUser_Id(userId, Sort.by(Sort.Order.desc("is_default")))
+        );
         return list;
     }
 
     @Override
     public GetAddressDetailsByIdResponse getAddressDetailById(String addressId) {
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new CustomException(NOT_FOUND + addressId));
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
         SecurityUtils.checkUserId(address.getUser().getId());
         return modelMapperService.mapClass(address, GetAddressDetailsByIdResponse.class);
     }

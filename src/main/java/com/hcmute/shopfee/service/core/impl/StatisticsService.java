@@ -28,7 +28,7 @@ public class StatisticsService implements IStatisticsService {
     @Override
     public GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit) {
         if(startDate.compareTo(endDate) > 0) {
-            throw new CustomException(ErrorConstant.DATE_INVALID);
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "The start date must be less than the end date");
         }
         GetRevenueByTimeResponse data= new GetRevenueByTimeResponse();
         String formatTime = "%Y-%m-%d";

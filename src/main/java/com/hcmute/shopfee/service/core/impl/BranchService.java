@@ -60,7 +60,8 @@ public class BranchService implements IBranchService {
 
     @Override
     public void updateBranchById(UpdateBranchRequest body, String id) {
-        BranchEntity branch = branchRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        BranchEntity branch = branchRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + id));
         if (body.getImage() != null) {
             byte[] originalImage = new byte[0];
             try {
@@ -84,7 +85,8 @@ public class BranchService implements IBranchService {
     // TODO: branch hiện đăng xóa cứng
     @Override
     public void deleteBranchById(String id) {
-        BranchEntity branch = branchRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        BranchEntity branch = branchRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + id));
         branchRepository.deleteById(id);
         try {
             cloudinaryService.deleteImage(branch.getImageId());
@@ -106,7 +108,7 @@ public class BranchService implements IBranchService {
     @Override
     public GetBranchDetailByIdResponse getBranchDetailById(String branchId) {
         BranchEntity branch = branchRepository.findById(branchId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + branchId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
         GetBranchDetailByIdResponse data = modelMapperService.mapClass(branch, GetBranchDetailByIdResponse.class);
         data.setOpenTime(DateUtils.getFormatTime(branch.getOpenTime()));
         data.setCloseTime(DateUtils.getFormatTime(branch.getCloseTime()));
@@ -116,7 +118,7 @@ public class BranchService implements IBranchService {
     @Override
     public GetBranchViewByIdResponse getBranchViewById(Long branchId) {
         BranchEntity branch = branchRepository.findByIdAndStatus(branchId, BranchStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + branchId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
         return GetBranchViewByIdResponse.fromBranchEntity(branch);
     }
 

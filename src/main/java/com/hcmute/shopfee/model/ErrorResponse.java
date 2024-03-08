@@ -16,8 +16,10 @@ import java.util.Date;
 public class ErrorResponse<T> {
     @Builder.Default
     private Date timestamp = new Date();
-    private boolean success;
+    @Builder.Default
+    private boolean success = false;
     private String message;
+    private String errorCode;
     private T details;
     private String stack;
 }

@@ -30,7 +30,7 @@ public class TransactionService implements ITransactionService {
     @Override
     public void updateTransaction(String id, HttpServletRequest request) {
         TransactionEntity transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Transaction with id " + id));
 
         OrderBillEntity orderBill = transaction.getOrderBill();
         // Goi den VNPay de lay thong tin
@@ -57,7 +57,7 @@ public class TransactionService implements ITransactionService {
     @Override
     public void completeTransaction(String transId) {
         OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + transId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
         TransactionEntity trans = orderBill.getTransaction();
         long totalPaid = orderBill.getTotalItemPrice();
         trans.setStatus(PaymentStatus.PAID);

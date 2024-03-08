@@ -56,7 +56,7 @@ public class ProductSearchService {
     }
 
     public void deleteProduct(String id) {
-        ProductIndex productIndex = productSearchRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        ProductIndex productIndex = productSearchRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         productIndex.setDeleted(true);
         productSearchRepository.save(productIndex);
     }

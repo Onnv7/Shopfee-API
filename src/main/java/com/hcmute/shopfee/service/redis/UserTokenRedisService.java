@@ -28,13 +28,13 @@ public class UserTokenRedisService {
     }
     public void deleteByUserIdAndRefreshToken(String userId, String refreshToken) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
         userTokenRepository.delete(entity);
     }
 
     public UserTokenEntity getInfoOfRefreshToken(String refreshToken, String userId) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
         return entity;
     }
 

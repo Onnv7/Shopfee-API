@@ -36,7 +36,7 @@ public class CloudinaryService {
         try {
             return cloudinary.url().version(cloudinary.api().resource(publicId, null).get("version")).generate(publicId);
         } catch (Exception e) {
-            throw new CustomException(ErrorConstant.NOT_FOUND + publicId);
+            throw new CustomException(ErrorConstant.NOT_FOUND);
         }
     }
 
@@ -50,7 +50,7 @@ public class CloudinaryService {
                     .version(cloudinary.api().resource(publicId, null).get("version"))
                     .generate(publicId);
         } catch (Exception e) {
-            throw new CustomException(ErrorConstant.NOT_FOUND + publicId);
+            throw new CustomException(ErrorConstant.NOT_FOUND);
         }
     }
 

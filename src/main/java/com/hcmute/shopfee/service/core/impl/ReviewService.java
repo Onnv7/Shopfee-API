@@ -41,11 +41,11 @@ public class ReviewService implements IReviewService {
     public void createProductReview(CreateReviewRequest body) {
         ProductReviewEntity productReviewEntity = modelMapperService.mapClass(body, ProductReviewEntity.class);
         OrderItemEntity orderItemEntity = orderItemRepository.findById(body.getOrderItemId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + body.getOrderItemId()));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_ITEM_ID_NOT_FOUND + body.getOrderItemId()));
         String userId = orderItemEntity.getOrderBill().getUser().getId();
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + userId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         user.setCoin(user.getCoin() + 200);
         userRepository.save(user);
         orderItemEntity.setProductReview(productReviewEntity);
@@ -56,7 +56,7 @@ public class ReviewService implements IReviewService {
     public void createProductReviewInteraction(String productReviewId, InteractProductReviewRequest body) {
         SecurityUtils.checkUserId(body.getUserId());
         ProductReviewEntity productReviewEntity = productReviewRepository.findById(productReviewId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + productReviewId));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_REVIEW_ID_NOT_FOUND + productReviewId));
 
         UserReviewInteractionEntity entity = userReviewInteractionRepository.findByUserIdAndProductReviewId(body.getUserId(), productReviewId)
                 .orElse(null);
@@ -68,7 +68,7 @@ public class ReviewService implements IReviewService {
             entity.setProductReview(productReviewEntity);
             userReviewInteractionRepository.save(entity);
         } else {
-            if(entity.getInteraction() == body.getInteraction()) {
+            if (entity.getInteraction() == body.getInteraction()) {
                 userReviewInteractionRepository.delete(entity);
             } else {
                 ReviewInteraction interaction = entity.getInteraction() == ReviewInteraction.DISLIKE ? ReviewInteraction.LIKE : ReviewInteraction.DISLIKE;
@@ -90,7 +90,7 @@ public class ReviewService implements IReviewService {
         Page<ProductReviewEntity> productReviewEntityList = productReviewRepository.getProductReviewByProductId(productId, pageable);
         data.setTotalPage(productReviewEntityList.getTotalPages());
 
-        for(ProductReviewEntity productReviewEntity : productReviewEntityList.getContent()) {
+        for (ProductReviewEntity productReviewEntity : productReviewEntityList.getContent()) {
             GetProductReviewListResponse.ProductReview productReview = new GetProductReviewListResponse.ProductReview();
             productReview.setAvatarUrl(productReviewEntity.getOrderItem().getOrderBill().getUser().getAvatarUrl());
             productReview.setReviewerName(productReviewEntity.getOrderItem().getOrderBill().getUser().getFullName());
@@ -104,12 +104,12 @@ public class ReviewService implements IReviewService {
             List<UserReviewInteractionEntity> userLikeList = userReviewInteractionRepository.findByProductReviewIdAndInteraction(productReviewEntity.getId(), ReviewInteraction.LIKE);
             productReview.setLikeQuantity(userLikeList.size());
 
-            if(userId != null) {
+            if (userId != null) {
                 UserReviewInteractionEntity userDisliked = userDislikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
                 UserReviewInteractionEntity userLiked = userLikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
-                if(userDisliked != null) {
+                if (userDisliked != null) {
                     productReview.setInteraction(ReviewInteraction.DISLIKE);
-                } else if(userLiked != null) {
+                } else if (userLiked != null) {
                     productReview.setInteraction(ReviewInteraction.LIKE);
                 }
             }

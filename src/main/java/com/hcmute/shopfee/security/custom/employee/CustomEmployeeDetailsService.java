@@ -24,7 +24,8 @@ public class CustomEmployeeDetailsService implements UserDetailsService {
     @SneakyThrows
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        EmployeeEntity employee = employeeService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
+        EmployeeEntity employee = employeeService.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
 
 
         List<String> roleNames = employee.getRoleList()

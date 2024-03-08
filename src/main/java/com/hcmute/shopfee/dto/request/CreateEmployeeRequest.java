@@ -48,7 +48,7 @@ public class CreateEmployeeRequest {
 
     @Schema(example = OBJECT_ID_EX)
     @NotBlank
-    private String branchId;
+    private Long branchId;
 
 
 }

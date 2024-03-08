@@ -51,7 +51,8 @@ public class BannerService implements IBannerService {
 
     @Override
     public void updateBannerById(UpdateBannerRequest body, String bannerId) {
-        BannerEntity bannerEntity = bannerRepository.findByIdAndIsDeletedFalse(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
+        BannerEntity bannerEntity = bannerRepository.findByIdAndIsDeletedFalse(bannerId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + bannerId));
         modelMapperService.map(body, bannerEntity);
         if(body.getImage() != null) {
             try {
@@ -75,7 +76,8 @@ public class BannerService implements IBannerService {
 
     @Override
     public void deleteBannerById(String bannerId) {
-        BannerEntity bannerCollection = bannerRepository.findByIdAndIsDeletedFalse(bannerId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + bannerId));
+        BannerEntity bannerCollection = bannerRepository.findByIdAndIsDeletedFalse(bannerId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + bannerId));
         bannerCollection.setDeleted(true);
         bannerRepository.save(bannerCollection);
     }
@@ -93,7 +95,8 @@ public class BannerService implements IBannerService {
 
     @Override
     public GetBannerDetailResponse getBannerDetailsById(String id) {
-        BannerEntity banner = bannerRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + id));
+        BannerEntity banner = bannerRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + id));
 
         return modelMapperService.mapClass(banner, GetBannerDetailResponse.class);
     }
