@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,7 @@ public class BranchController {
     private final IBranchService branchService;
     private final Goong goong;
     @Operation(summary = BRANCH_CREATE_SUM)
-    @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH)
+    @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) {
         branchService.createBranch(body);
         ResponseAPI res = ResponseAPI.builder()
@@ -46,7 +47,7 @@ public class BranchController {
     }
 
     @Operation(summary = BRANCH_UPDATE_BY_ID_SUM)
-    @PutMapping(path = PUT_BRANCH_UPDATE_SUB_PATH)
+    @PutMapping(path = PUT_BRANCH_UPDATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseAPI<?>> updateBranchInfoById(@ModelAttribute @Valid UpdateBranchRequest body, @PathVariable(BRANCH_ID) String branchId) {
         branchService.updateBranchById(body, branchId);
         ResponseAPI res = ResponseAPI.builder()

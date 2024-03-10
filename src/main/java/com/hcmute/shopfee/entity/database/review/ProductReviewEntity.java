@@ -27,7 +27,7 @@ public class ProductReviewEntity {
     @GeneratedValue(generator = "product_review_id")
     private String id;
 
-    @Column(name = "star", nullable = false)
+    @Column(name = "star", nullable = false, columnDefinition = "INT CHECK(star > 0 and star <= 5)")
     private Integer star;
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
