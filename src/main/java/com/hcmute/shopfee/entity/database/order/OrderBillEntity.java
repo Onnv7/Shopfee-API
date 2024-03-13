@@ -87,7 +87,7 @@ public class OrderBillEntity {
     private Date updatedAt;
     // =================================================
 
-    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<OrderEventEntity> orderEventList;
 

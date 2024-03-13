@@ -174,6 +174,7 @@ public class ToolController {
                 .password(passwordEncoder.encode("112233"))
                 .firstName("an")
                 .lastName("nguyen")
+                .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-11"))
                 .enabled(true)
                 .build();
@@ -183,13 +184,14 @@ public class ToolController {
                 .password(passwordEncoder.encode("123456"))
                 .firstName("an")
                 .lastName("nguyen")
+                .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-12"))
                 .enabled(true)
                 .build();
         userRepository.save(userEntity2);
         AddressEntity addressEntity = AddressEntity.builder()
                 .detail("detail address")
-                .phoneNumber("0123456789")
+                .phoneNumber("0123456789") //20.981971,105.864323
                 .note("nothing")
                 .isDefault(true)
                 .latitude(Double.valueOf(LATITUDE_EX))

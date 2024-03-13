@@ -64,7 +64,7 @@ public class UserEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "coin", columnDefinition = "BIGINT DEFAULT 0")
+    @Column(name = "coin", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long coin;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")

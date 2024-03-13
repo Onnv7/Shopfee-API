@@ -30,6 +30,8 @@ import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
+import com.hcmute.shopfee.schedule.SchedulerUtils;
+import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
 import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
@@ -37,6 +39,10 @@ import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +51,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
@@ -52,6 +60,7 @@ import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService implements IOrderService {
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
@@ -69,6 +78,7 @@ public class OrderService implements IOrderService {
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
 
+    private final Scheduler scheduler;
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
         List<BranchEntity> allBranches = branchRepository.findByStatus(BranchStatus.ACTIVE);
@@ -452,7 +462,7 @@ public class OrderService implements IOrderService {
         transaction.setOrderBill(orderBill);
         orderBill.setTransaction(transaction);
 
-        orderBillRepository.save(orderBill);
+        OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -460,6 +470,21 @@ public class OrderService implements IOrderService {
                 .build();
         if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
             resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
+        }
+
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dataSaved.getCreatedAt());
+            calendar.add(Calendar.MINUTE, 30);
+
+
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put(AcceptOrderJob.orderBillId, dataSaved.getId());
+            JobDetail jobDetail = SchedulerUtils.buildJobDetail(AcceptOrderJob.class, data);
+            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (Exception e) {
+            log.error("Schedule error " + e.getMessage());;
         }
         return resData;
     }
@@ -530,7 +555,7 @@ public class OrderService implements IOrderService {
         // set thời gian nhận hàng
         orderBill.setReceiveTime(body.getReceiveTime());
 
-        orderBillRepository.save(orderBill);
+        OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -538,6 +563,21 @@ public class OrderService implements IOrderService {
                 .build();
         if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
             resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
+        }
+
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dataSaved.getCreatedAt());
+            calendar.add(Calendar.MINUTE, 30);
+
+
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put(AcceptOrderJob.orderBillId, dataSaved.getId());
+            JobDetail jobDetail = SchedulerUtils.buildJobDetail(AcceptOrderJob.class, data);
+            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (Exception e) {
+            log.error("Schedule error " + e.getMessage());;
         }
         return resData;
     }

@@ -69,6 +69,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public RegisterResponse registerUser(RegisterUserRequest body) {
         UserEntity userEntity = modelMapperService.mapClass(body, UserEntity.class);
+
         if (userRepository.findByEmail(userEntity.getEmail()).orElse(null) != null) {
             throw new CustomException(EXISTED_DATA, "Email already registered");
         }
@@ -92,6 +93,7 @@ public class UserAuthService implements IUserAuthService {
         roleList.add(userRole);
         userEntity.setRoleList(roleList);
         userEntity.setEnabled(true);
+        userEntity.setCoin(0L);
         UserEntity savedUser = userRepository.save(userEntity);
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
         var accessToken = jwtService.issueAccessToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
@@ -123,6 +125,7 @@ public class UserAuthService implements IUserAuthService {
                     .email(decodedToken.getEmail())
                     .password(passwordEncoder.encode(decodedToken.getUid()))
                     .avatarUrl(decodedToken.getPicture())
+                    .coin(0L)
                     .firstName(firstname)
                     .lastName(lastname)
                     .build();

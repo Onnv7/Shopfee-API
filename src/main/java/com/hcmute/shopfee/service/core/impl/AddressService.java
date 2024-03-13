@@ -1,6 +1,5 @@
 package com.hcmute.shopfee.service.core.impl;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.CreateAddressRequest;
 import com.hcmute.shopfee.dto.request.UpdateAddressRequest;
 import com.hcmute.shopfee.dto.response.GetAddressDetailsByIdResponse;
@@ -14,11 +13,8 @@ import com.hcmute.shopfee.service.core.IAddressService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;
@@ -80,7 +76,7 @@ public class AddressService implements IAddressService {
         SecurityUtils.checkUserId(userId);
 
         List<GetAddressListByUserIdResponse> list = GetAddressListByUserIdResponse.fromAddressEntityList(
-                addressRepository.findByUser_Id(userId, Sort.by(Sort.Order.desc("is_default")))
+                addressRepository.findByUserIdOrderByIsDefaultDesc(userId)
         );
         return list;
     }

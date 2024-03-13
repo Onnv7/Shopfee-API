@@ -8,12 +8,14 @@ spring:
     url: ${SQL_URL:jdbc:mysql://localhost:3306/shopfee}
     username: ${SQL_USERNAME:root}
     password: ${SQL_PASSWORD:0339930201An.}
+
   jpa:
     show-sql: true
     hibernate.ddl-auto: update
     properties.hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
       format_sql: true
+
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
@@ -38,6 +40,16 @@ spring:
             required: true
     verify:
       host: ${VERIFY_EMAIL_HOST}
+  # quartz
+  quartz:
+    jdbc:
+      schema: classpath:sql/schema-mysql.sql
+      comment-prefix:
+        - "#"
+        - "--"
+      initialize-schema: always
+    job-store-type: jdbc
+
   # kafka
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}

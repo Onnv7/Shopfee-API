@@ -211,8 +211,8 @@ public class SwaggerConstant {
     public static final String PRODUCT_NOTE_EX = "This is note";
     public static final String INVOICE_NOTE_EX = "23654128";
     public static final String TOTAL_PAID_EX = "10234";
-    public static final String LONGITUDE_EX = "10234";
-    public static final String LATITUDE_EX = "10234";
+    public static final String LONGITUDE_EX = "105.864323";
+    public static final String LATITUDE_EX = "20.981971";
     public static final String ADDRESS_NOTE_EX = "This is my house";
     public static final String RECIPIENT_NAME_EX = "Luu Bang";
     public static final String ORDER_NOTE_EX = "Quickly";
