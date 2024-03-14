@@ -116,7 +116,7 @@ public class BranchService implements IBranchService {
     }
 
     @Override
-    public GetBranchViewByIdResponse getBranchViewById(Long branchId) {
+    public GetBranchViewByIdResponse getBranchViewById(String branchId) {
         BranchEntity branch = branchRepository.findByIdAndStatus(branchId, BranchStatus.ACTIVE)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
         return GetBranchViewByIdResponse.fromBranchEntity(branch);

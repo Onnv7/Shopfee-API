@@ -14,5 +14,5 @@ import java.util.Optional;
 public interface BranchRepository extends JpaRepository<BranchEntity, String> {
     Page<BranchEntity> findByStatus(BranchStatus status, Pageable pageable);
     List<BranchEntity> findByStatus(BranchStatus status);
-    Optional<BranchEntity> findByIdAndStatus(Long id, BranchStatus status);
+    Optional<BranchEntity> findByIdAndStatus(String id, BranchStatus status);
 }

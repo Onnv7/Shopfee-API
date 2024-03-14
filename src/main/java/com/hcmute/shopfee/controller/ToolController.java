@@ -11,10 +11,8 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.enums.*;
-import com.hcmute.shopfee.repository.database.AddressRepository;
-import com.hcmute.shopfee.repository.database.BranchRepository;
-import com.hcmute.shopfee.repository.database.CategoryRepository;
-import com.hcmute.shopfee.repository.database.UserRepository;
+import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
@@ -52,10 +50,9 @@ import java.io.InputStreamReader;
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @RestController
@@ -81,6 +78,8 @@ public class ToolController {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final ProductReviewRepository productReviewRepository;
+    private final RoleRepository roleRepository;
+
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
 //        orderService.checkOrderCoupon(code);
@@ -168,6 +167,11 @@ public class ToolController {
         product.setSizeList(sizeEntityList);
 
         productRepository.save(product);
+        Set<RoleEntity> userRole = new HashSet<>();
+        RoleEntity role = roleRepository.findByRoleName(Role.ROLE_USER)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
+        userRole.add(role);
+
 
         UserEntity userEntity = UserEntity.builder()
                 .email("nva611@gmail.com")
@@ -177,6 +181,7 @@ public class ToolController {
                 .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-11"))
                 .enabled(true)
+                .roleList(userRole)
                 .build();
         userRepository.save(userEntity);
         UserEntity userEntity2 = UserEntity.builder()
@@ -187,6 +192,7 @@ public class ToolController {
                 .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-12"))
                 .enabled(true)
+                .roleList(userRole)
                 .build();
         userRepository.save(userEntity2);
         AddressEntity addressEntity = AddressEntity.builder()

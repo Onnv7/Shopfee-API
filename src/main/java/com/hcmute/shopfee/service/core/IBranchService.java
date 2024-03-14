@@ -16,6 +16,6 @@ public interface IBranchService {
     void deleteBranchById(String id);
     GetAllBranchResponse getBranchList(int page, int size);
     GetBranchDetailByIdResponse getBranchDetailById(String branchId);
-    GetBranchViewByIdResponse getBranchViewById(Long branchId);
+    GetBranchViewByIdResponse getBranchViewById(String branchId);
     GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, int page, int size);
 }

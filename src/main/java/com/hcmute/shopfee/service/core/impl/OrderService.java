@@ -468,6 +468,7 @@ public class OrderService implements IOrderService {
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
+                .branchId(orderBill.getBranch().getId())
                 .transactionId(transaction.getId())
                 .build();
         if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
@@ -537,6 +538,9 @@ public class OrderService implements IOrderService {
         if (totalPrice != body.getTotal()) {
             throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
+
+        // set total payment
+        orderBill.setTotalPayment(totalPrice);
 
         // set giao dịch
         Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, totalPrice);
@@ -642,9 +646,9 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-//        if (!DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
-//            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant create cancellation demand before 30 minutes");
-//        }
+        if (!DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant create cancellation demand before 30 minutes");
+        }
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
@@ -736,7 +740,7 @@ public class OrderService implements IOrderService {
 
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
-        Long branchId = employeeEntity.getBranch().getId();
+        String branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
         List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
@@ -754,7 +758,7 @@ public class OrderService implements IOrderService {
         String employeeId = SecurityUtils.getCurrentUserId();
 
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
-        Long branchId = employeeEntity.getBranch().getId();
+        String branchId = employeeEntity.getBranch().getId();
 
 
         Pageable pageable = PageRequest.of(page - 1, size);

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class GetBranchViewByIdResponse {
-    private Long id;
+    private String id;
     private String name;
     private String operatingTime;
     private String fullAddress;

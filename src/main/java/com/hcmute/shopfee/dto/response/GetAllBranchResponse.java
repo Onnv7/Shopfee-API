@@ -14,7 +14,7 @@ public class GetAllBranchResponse {
 
     @Data
     public static class BranchInfo {
-        private Long id;
+        private String id;
         private String name;
         private BranchStatus status;
         private String phoneNumber;

@@ -99,7 +99,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_GET_VIEW_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_VIEW_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetBranchViewByIdResponse>> getBranchViewById(@PathVariable(BRANCH_ID) Long branchId) {
+    public ResponseEntity<ResponseAPI<GetBranchViewByIdResponse>> getBranchViewById(@PathVariable(BRANCH_ID) String branchId) {
         GetBranchViewByIdResponse resData = branchService.getBranchViewById(branchId);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

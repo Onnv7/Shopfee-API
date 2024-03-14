@@ -11,5 +11,6 @@ public class CreateOrderResponse {
     private String orderId;
     private String paymentUrl;
     private String transactionId;
+    private String branchId;
 }
 

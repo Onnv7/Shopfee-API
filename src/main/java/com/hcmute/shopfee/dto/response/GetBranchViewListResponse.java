@@ -15,7 +15,7 @@ public class GetBranchViewListResponse {
     private Integer totalPage;
     @Data
     public static class BranchCard {
-        private Long id;
+        private String id;
         private String imageUrl;
         private String name;
         private String fullAddress;

@@ -5,12 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
-@Getter
-@Builder
+@Data
 public class LoginRequest {
     @Schema(example = EMAIL_EX)
     @Email
