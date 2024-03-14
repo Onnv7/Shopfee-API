@@ -15,4 +15,5 @@ public class GetUserByIdResponse {
     private String email;
     private String phoneNumber;
     private String avatarUrl;
+    private Long coin;
 }

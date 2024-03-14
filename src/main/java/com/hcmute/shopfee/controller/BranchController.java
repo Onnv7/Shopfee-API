@@ -114,14 +114,14 @@ public class BranchController {
     public ResponseEntity<ResponseAPI<GetBranchViewListResponse>> getBranchViewList(
             @Parameter(name = "lat", required = true, example = "10.8005397")
             @RequestParam("lat")  Double lat,
-            @Parameter(name = "lon", required = true, example = "106.6393208")
-            @RequestParam("lon")  Double lon,
+            @Parameter(name = "lng", required = true, example = "106.6393208")
+            @RequestParam("lng")  Double lng,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lon, page, size);
+        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lng, page, size);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .data(resData)

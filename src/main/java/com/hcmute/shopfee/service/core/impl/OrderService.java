@@ -148,7 +148,6 @@ public class OrderService implements IOrderService {
             item.setName(productInfo.getName());
 
 
-            long totalPriceToppings = 0;
             item.setName(productInfo.getName());
 
             List<ToppingEntity> toppingList = productInfo.getToppingList();
@@ -158,6 +157,7 @@ public class OrderService implements IOrderService {
             List<ItemDetailEntity> itemsDetailEntityList = new ArrayList<>();
 
             for (ItemDetailDto itemDetail : orderItemDto.getItemDetailList()) {
+                long totalPriceToppings = 0;
                 List<String> toppingNameList = itemDetail.getToppingNameList() != null ? itemDetail.getToppingNameList() : new ArrayList<>();
 
                 // Khởi tạo và set các thuộc tính cơ bản
