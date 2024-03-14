@@ -3,8 +3,7 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
-import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
-import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.database.*;
 import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
@@ -49,10 +48,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
@@ -77,8 +73,10 @@ public class OrderService implements IOrderService {
     private final GoongService goongService;
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
+    private final CancellationDemandRepository cancellationDemandRepository;
 
     private final Scheduler scheduler;
+
     public BranchEntity getNearestBranches(AddressEntity address) {
         // TODO: xem có status thì check status cửa hàng
         List<BranchEntity> allBranches = branchRepository.findByStatus(BranchStatus.ACTIVE);
@@ -88,18 +86,18 @@ public class OrderService implements IOrderService {
         int branchListSize = allBranches.size();
         int minDistance = distanceList.get(0).getValue();
         int minIndexBranch = 0;
-        for(int i = 0 ; i <branchListSize; i++ ) {
-            if(distanceList.get(i).getValue() > 12000) {
+        for (int i = 0; i < branchListSize; i++) {
+            if (distanceList.get(i).getValue() > 12000) {
                 continue;
             }
 
-            if(distanceList.get(i).getValue() < minDistance) {
+            if (distanceList.get(i).getValue() < minDistance) {
                 minDistance = distanceList.get(i).getValue();
                 minIndexBranch = i;
             }
         }
 
-        if(minDistance > 12000) {
+        if (minDistance > 12000) {
             throw new CustomException(ErrorConstant.NOT_FOUND, "Your location is outside the service area");
         }
 
@@ -207,7 +205,6 @@ public class OrderService implements IOrderService {
     }
 
 
-
     private void getCantCombinedCouponTypeList(String orderCouponCode, CouponType typeChecking, List<CouponType> sampleNot) {
         List<CouponType> sample = Arrays.asList(CouponType.PRODUCT, CouponType.ORDER, CouponType.SHIPPING);
         List<CouponType> couponTypeCombinedList = combinationConditionRepository.getCombinationConditionByCouponCode(orderCouponCode);
@@ -257,7 +254,7 @@ public class OrderService implements IOrderService {
                     OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
                     if (item == null) {
                         // invalid
-                        throw new CustomException(ErrorConstant.COUPON_INVALID, "Not found subject " + subjectConditionEntity.getObjectId() );
+                        throw new CustomException(ErrorConstant.COUPON_INVALID, "Not found subject " + subjectConditionEntity.getObjectId());
                     } else {
                         int count = 0;
                         for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
@@ -389,6 +386,11 @@ public class OrderService implements IOrderService {
     @Override
     public CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
+
+        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.BANKING_VNPAY) {
+            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID);
+        }
+
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
@@ -484,7 +486,8 @@ public class OrderService implements IOrderService {
             Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (Exception e) {
-            log.error("Schedule error " + e.getMessage());;
+            log.error("Schedule error " + e.getMessage());
+            ;
         }
         return resData;
     }
@@ -493,6 +496,11 @@ public class OrderService implements IOrderService {
     @Override
     public CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
+
+        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.BANKING_VNPAY) {
+            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID);
+        }
+
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
@@ -577,7 +585,8 @@ public class OrderService implements IOrderService {
             Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (Exception e) {
-            log.error("Schedule error " + e.getMessage());;
+            log.error("Schedule error " + e.getMessage());
+            ;
         }
         return resData;
     }
@@ -601,32 +610,124 @@ public class OrderService implements IOrderService {
 
     @Transactional
     @Override
-    public void addNewOrderEvent(String id, OrderStatus orderStatus, String description, HttpServletRequest request) {
-        OrderBillEntity order = orderBillRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
-
-        String clientId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(clientId).orElse(null);
+    public void insertOrderEventByEmployee(String orderId, OrderStatus orderStatus, String description, HttpServletRequest request) {
+        // TODO: xem coi request co ton tai khong? neu ton tai thi co cho insert event khong
+        OrderBillEntity order = orderBillRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
         order.getOrderEventList().add(OrderEventEntity.builder()
                 .orderStatus(orderStatus)
                 .description(description)
                 .orderBill(order)
-                .isEmployee(user == null)
+                .isEmployee(true)
                 .build()
         );
 
+        TransactionEntity transaction = order.getTransaction();
+        if (orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY && transaction.getStatus() == PaymentStatus.PAID) {
+            UserEntity user = order.getUser();
+            user.setCoin(user.getCoin() + order.getTotalPayment());
+            userRepository.save(user);
+
+            transaction.setStatus(PaymentStatus.REFUNDED);
+            transactionRepository.save(transaction);
+        }
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
-        TransactionEntity transaction = order.getTransaction();
-        if (orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY) {
-//            VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
-            try {
-                VNPayUtils.refund(request, transaction.getTimeCode(), order.getTotalPayment().toString(), transaction.getInvoiceCode(), "02");
-            } catch (IOException e) {
-                throw new CustomException(ErrorConstant.VNP_ERROR, "Refund failed");
-            }
+
+    }
+
+    @Override
+    public void createCancellationRequest(CreateCancellationDemandRequest body, String orderId) {
+        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+
+//        if (!DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
+//            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant create cancellation demand before 30 minutes");
+//        }
+
+        UserEntity user = orderBill.getUser();
+        SecurityUtils.checkUserId(user.getId());
+
+        CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
+                .reason(body.getReason())
+                .status(CancellationRequestStatus.PENDING)
+                .orderBill(orderBill)
+                .build();
+
+        cancellationDemandRepository.save(cancellationRequestEntity);
+    }
+
+    @Override
+    public void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId) {
+        if (body.getStatus() == CancellationRequestStatus.PENDING) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID);
         }
+
+        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+
+        CancellationRequestEntity cancellationRequestEntity = orderBill.getRequestCancellation();
+
+        if (cancellationRequestEntity != null && cancellationRequestEntity.getStatus() != CancellationRequestStatus.PENDING) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The request has already been processed");
+        }
+
+        UserEntity customer = orderBill.getUser();
+        if (cancellationRequestEntity != null) {
+            cancellationRequestEntity.setStatus(body.getStatus());
+            if (body.getStatus() == CancellationRequestStatus.ACCEPTED) {
+                orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                        .description("Customer requests to cancel order")
+                        .isEmployee(true)
+                        .orderBill(orderBill)
+                        .orderStatus(OrderStatus.CANCELED)
+                        .build());
+                if (orderBill.getTransaction().getPaymentType() == PaymentType.BANKING_VNPAY && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+                    customer.setCoin(orderBill.getTotalPayment() + customer.getCoin());
+                    userRepository.save(customer);
+
+                    orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
+                }
+
+            }
+            OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
+            orderSearchService.upsertOrder(updatedOrder);
+        } else {
+            throw new CustomException(ErrorConstant.NOT_FOUND, "Cancellation request is not exist");
+        }
+    }
+
+    @Override
+    public void cancelOrder(String orderId, CancelOrderBillRequest body) {
+        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+
+        if (DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant cancel order after 30 minutes");
+        }
+
+        UserEntity user = orderBill.getUser();
+        SecurityUtils.checkUserId(user.getId());
+
+        orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                .orderStatus(OrderStatus.CANCELED)
+                .description(body.getDescription())
+                .orderBill(orderBill)
+                .isEmployee(false)
+                .build()
+        );
+
+        if (orderBill.getTransaction().getPaymentType() == PaymentType.BANKING_VNPAY && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+            user.setCoin(user.getCoin() + orderBill.getTotalPayment());
+            userRepository.save(user);
+
+            orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
+        }
+
+
+        OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
+        orderSearchService.upsertOrder(updatedOrder);
     }
 
     @Override

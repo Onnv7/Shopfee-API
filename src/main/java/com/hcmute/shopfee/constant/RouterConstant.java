@@ -42,6 +42,8 @@ public class RouterConstant {
     public static final String EMPLOYEE_ID = "employeeId";
     public static final String ORDER_ID_PATH = "/{orderId}";
     public static final String ORDER_ID = "orderId";
+    public static final String CANCELLATION_ID_PATH = "/{cancellationId}";
+    public static final String CANCELLATION_ID = "cancellationId";
     public static final String TRANSACTION_ID_PATH = "/{transId}";
     public static final String TRANSACTION_ID = "transId";
     public static final String BRANCH_ID_PATH = "/{branchId}";
@@ -157,8 +159,14 @@ public class RouterConstant {
     public static final String POST_ORDER_CREATE_SHIPPING_PATH = ORDER_BASE_PATH + POST_ORDER_CREATE_SHIPPING_SUB_PATH;
     public static final String POST_ORDER_CREATE_ONSITE_SUB_PATH = "/onsite";
     public static final String POST_ORDER_CREATE_ONSITE_PATH = ORDER_BASE_PATH + POST_ORDER_CREATE_ONSITE_SUB_PATH;
-    public static final String PATCH_ORDER_UPDATE_STATUS_SUB_PATH = ORDER_ID_PATH + "/by/{maker}";
+    public static final String PATCH_ORDER_UPDATE_STATUS_SUB_PATH = ORDER_ID_PATH + "/employee/event";
     public static final String PATCH_ORDER_UPDATE_STATUS_PATH = ORDER_BASE_PATH + PATCH_ORDER_UPDATE_STATUS_SUB_PATH;
+    public static final String POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH = ORDER_ID_PATH + "/cancellation-request";
+    public static final String POST_ORDER_CREATE_CANCELLATION_REQUEST_PATH = ORDER_BASE_PATH + POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH;
+    public static final String PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH = ORDER_ID_PATH + "/process-cancellation-request";
+    public static final String PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH = ORDER_BASE_PATH + PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH;
+    public static final String PATCH_ORDER_UPDATE_CANCEL_SUB_PATH = ORDER_ID_PATH + "/user/cancel";
+    public static final String PATCH_ORDER_UPDATE_SUB_PATH = ORDER_BASE_PATH + PATCH_ORDER_UPDATE_CANCEL_SUB_PATH;
     public static final String GET_ORDER_ALL_SHIPPING_SUB_PATH = "/shipping";
     public static final String GET_ORDER_ALL_SHIPPING_PATH = ORDER_BASE_PATH + GET_ORDER_ALL_SHIPPING_SUB_PATH;
     public static final String GET_ORDER_ALL_IN_QUEUE_SUB_PATH = "/queue";

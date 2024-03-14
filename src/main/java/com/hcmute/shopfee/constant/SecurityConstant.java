@@ -39,10 +39,11 @@ public class SecurityConstant {
             POST_ADDRESS_CREATE_PATH,
             POST_ORDER_CREATE_REVIEW_PATH,
             POST_ORDER_CREATE_ONSITE_PATH, POST_REVIEW_CREATE_PATH,
-            POST_REVIEW_INTERACT_PATH
+            POST_REVIEW_INTERACT_PATH, POST_ORDER_CREATE_CANCELLATION_REQUEST_PATH
     };
     public static final String[] PATCH_USER_PATH = {
-            PATCH_USER_CHANGE_PASSWORD_PATH, PATCH_USER_UPLOAD_AVATAR_PATH
+            PATCH_USER_CHANGE_PASSWORD_PATH, PATCH_USER_UPLOAD_AVATAR_PATH,
+            PATCH_ORDER_UPDATE_SUB_PATH, PATCH_TRANSACTION_UPDATE_BY_ID_PATH
     };
     public static final String[] PUT_USER_PATH = {
             PUT_ADDRESS_UPDATE_PATH,
@@ -98,7 +99,8 @@ public class SecurityConstant {
 
     public static final String[] PATCH_EMPLOYEE_PATH = {
             PATCH_TRANSACTION_UPDATE_COMPLETE_PATH,
-            PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH
+            PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH, PATCH_ORDER_UPDATE_STATUS_PATH,
+            PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH,
     };
     // Only MANAGER =================================================================
     public static final String[] GET_MANAGER_PATH = {
@@ -141,7 +143,6 @@ public class SecurityConstant {
 
     };
     public static final String[] PATCH_ADMIN_USER_PATH = {
-            PATCH_TRANSACTION_UPDATE_BY_ID_PATH,
 
     };
 
@@ -163,7 +164,7 @@ public class SecurityConstant {
             POST_ORDER_CREATE_SHIPPING_PATH,
     };
     public static final String[] PATCH_EMPLOYEE_USER_PATH = {
-            PATCH_ORDER_UPDATE_STATUS_PATH,
+
     };
     // ADMIN + EMPLOYEE + USER =================================================================
 

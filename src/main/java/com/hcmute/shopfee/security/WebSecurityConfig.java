@@ -127,7 +127,7 @@ public class WebSecurityConfig {
                 .formLogin().disable()
                 .securityMatcher("/**")
                 .authorizeHttpRequests(register -> register
-                                .requestMatchers("/**").permitAll()
+//                                .requestMatchers("/**").permitAll()
 //                        .requestMatchers("/socket.io/**").permitAll()
 //                        .requestMatchers("/socket.io").permitAll()
 

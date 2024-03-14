@@ -99,7 +99,10 @@ public class SwaggerConstant {
     // For Order =============================================================
 
     public static final String ORDER_CONTROLLER_TITLE = "ORDER MANAGEMENT";
-    public static final String ORDER_UPDATE_EVENT_SUM = "Add an order event to the status line";
+    public static final String ORDER_UPDATE_EVENT_SUM = "Insert an order event to the status line";
+    public static final String ORDER_CREATE_CANCELLATION_REQUEST_SUM = "Create an order cancellation request";
+    public static final String ORDER_UPDATE_CANCELLATION_REQUEST_SUM = "Process cancellation requests";
+    public static final String ORDER_UPDATE_CANCEL_EVENT_SUM = "User cancels the placed order";
     public static final String ORDER_CREATE_SHIPPING_SUM = "Create a new shipping order";
     public static final String ORDER_CREATE_ONSITE_SUM = "Create a new onsite order";
     public static final String ORDER_GET_ALL_IN_DAY_SUM = "Get all shipping orders in current day for employee";

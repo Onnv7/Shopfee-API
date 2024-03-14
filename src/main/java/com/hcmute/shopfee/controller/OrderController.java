@@ -2,9 +2,7 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateOnsiteOrderRequest;
-import com.hcmute.shopfee.dto.request.CreateShippingOrderRequest;
-import com.hcmute.shopfee.dto.request.UpdateOrderStatusRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
@@ -18,7 +16,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -82,17 +79,61 @@ public class OrderController {
     }
     @Operation(summary = ORDER_UPDATE_EVENT_SUM)
     @PatchMapping(path = PATCH_ORDER_UPDATE_STATUS_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> addNewOrderEvent(
+    public ResponseEntity<ResponseAPI<?>> insertOrderEventByEmployee(
             @PathVariable(ORDER_ID) String id,
             @RequestBody @Valid UpdateOrderStatusRequest body, HttpServletRequest request) {
 
-        orderService.addNewOrderEvent(id, body.getOrderStatus(), body.getDescription(), request);
+        orderService.insertOrderEventByEmployee(id, body.getOrderStatus(), body.getDescription(), request);
 
         ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = ORDER_UPDATE_CANCEL_EVENT_SUM)
+    @PatchMapping(path = PATCH_ORDER_UPDATE_CANCEL_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> cancelOrder(
+            @PathVariable(ORDER_ID) String id,
+            @RequestBody @Valid CancelOrderBillRequest body) {
+
+        orderService.cancelOrder(id, body);
+
+        ResponseAPI<?> res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+    @Operation(summary = ORDER_CREATE_CANCELLATION_REQUEST_SUM)
+    @PostMapping(path = POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> createCancellationRequest(
+            @PathVariable(ORDER_ID) String orderId,
+            @RequestBody @Valid CreateCancellationDemandRequest body) {
+
+        orderService.createCancellationRequest(body, orderId);
+
+        ResponseAPI<?> res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.CREATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = ORDER_UPDATE_CANCELLATION_REQUEST_SUM)
+    @PatchMapping(path = PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> processCancellationRequest(
+            @PathVariable(ORDER_ID) String orderId,
+            @RequestBody @Valid ProcessCancellationDemandRequest body) {
+
+        orderService.processCancellationRequest(body, orderId);
+
+        ResponseAPI<?> res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 
     @Operation(summary = ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM)

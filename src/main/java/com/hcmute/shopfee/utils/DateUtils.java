@@ -48,4 +48,15 @@ public class DateUtils {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
         return dateFormat.format(time);
     }
+
+    public static boolean isPassed30Minutes(Date createdAt) {
+        // Lấy thời điểm hiện tại
+        Date now = new Date();
+
+        long diffInMilliseconds = now.getTime() - createdAt.getTime();
+        long diffInMinutes = diffInMilliseconds / (60 * 1000);
+
+        // Kiểm tra nếu khoảng thời gian lớn hơn hoặc bằng 30 phút
+        return diffInMinutes > 30;
+    }
 }

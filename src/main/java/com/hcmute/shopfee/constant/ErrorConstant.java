@@ -14,7 +14,7 @@ public class ErrorConstant {
     public static final String INVALID_COIN_NUMBER = "Invalid coin number";
     public static final String VNP_ERROR = "VNPay error";
 
-    // =================================================
+    // message details =================================================
     public static final String USER_ID_NOT_FOUND = "User with id ";
     public static final String USER_TOKEN_NOT_FOUND = "User's token with user's id ";
     public static final String EMPLOYEE_TOKEN_NOT_FOUND = "Employee's token with employee's id ";
@@ -32,8 +32,9 @@ public class ErrorConstant {
     public static final String PRODUCT_REVIEW_ID_NOT_FOUND = "Product review with id ";
     public static final String TOKEN_STOLEN = "Tokens have been stolen";
     public static final String WRONG_PASSWORD = "Password is wrong";
+    public static final String VNPAY_MONEY_INVALID = "Invalid payment amount";
 
-    // =================================================
+    // others error =================================================
 
     public static final String USER_NOT_FOUND = "User not found";
     public static final String REQUEST_BODY_INVALID = "Request body is invalid";

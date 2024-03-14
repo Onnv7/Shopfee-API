@@ -35,7 +35,7 @@ public class ExceptionHandlerController {
     private static final List<String> error409 = Arrays.asList(EXISTED_DATA);
     private static final List<String> error400= Arrays.asList(
             CANT_DELETE, IMAGE_INVALID,  DATA_SEND_INVALID,
-            COUPON_INVALID, INVALID_COIN_NUMBER, ORDER_INVALID
+            COUPON_INVALID, INVALID_COIN_NUMBER, ORDER_INVALID, ACTING_INCORRECTLY
 
 
     );
@@ -75,8 +75,9 @@ public class ExceptionHandlerController {
             httpStatus = HttpStatus.CONFLICT;
         } else if(error500.contains(ex.getMessage())) {
         }
+        String messageDetails = ex.getDetailMessage() == null ? "" : " - " + ex.getDetailMessage();
         ErrorResponse res = ErrorResponse.builder()
-                .message(ex.getMessage() + " - " + ex.getDetailMessage())
+                .message(ex.getMessage() + messageDetails)
                 .errorCode(ex.getErrorCode())
                 .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
                 .build();

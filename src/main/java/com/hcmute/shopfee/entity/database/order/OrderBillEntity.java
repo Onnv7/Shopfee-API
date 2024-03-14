@@ -4,6 +4,7 @@ package com.hcmute.shopfee.entity.database.order;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.database.BranchEntity;
+import com.hcmute.shopfee.entity.database.CancellationRequestEntity;
 import com.hcmute.shopfee.entity.database.TransactionEntity;
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.entity.database.coupon_used.CouponUsedEntity;
@@ -41,7 +42,7 @@ public class OrderBillEntity {
     @GeneratedValue(generator = "order_bill_id")
     private String id;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private UserEntity user;
@@ -103,7 +104,11 @@ public class OrderBillEntity {
     @JsonManagedReference
     private ShippingInformationEntity shippingInformation;
 
-    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
+    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private TransactionEntity transaction;
+
+    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.MERGE})
+    @JsonManagedReference
+    private CancellationRequestEntity requestCancellation;
 }
