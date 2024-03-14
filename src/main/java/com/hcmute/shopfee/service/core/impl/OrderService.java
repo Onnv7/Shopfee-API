@@ -615,9 +615,19 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public void insertOrderEventByEmployee(String orderId, OrderStatus orderStatus, String description, HttpServletRequest request) {
-        // TODO: xem coi request co ton tai khong? neu ton tai thi co cho insert event khong
+        List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING, OrderStatus.SUCCEED, OrderStatus.CANCELED);
+
+        if(!validOrderStatus.contains(orderStatus)) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order status is not valid");
+        }
+
+
         OrderBillEntity order = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+
+        if(order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
+        }
 
         order.getOrderEventList().add(OrderEventEntity.builder()
                 .orderStatus(orderStatus)
@@ -660,6 +670,15 @@ public class OrderService implements IOrderService {
                 .build();
 
         cancellationDemandRepository.save(cancellationRequestEntity);
+
+        orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                .description("Customer creates a request to cancel the order")
+                .isEmployee(false)
+                .orderBill(orderBill)
+                .orderStatus(OrderStatus.CANCELLATION_REQUEST)
+                .build());
+
+        orderBillRepository.save(orderBill);
     }
 
     @Override
@@ -682,6 +701,13 @@ public class OrderService implements IOrderService {
             cancellationRequestEntity.setStatus(body.getStatus());
             if (body.getStatus() == CancellationRequestStatus.ACCEPTED) {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                        .description("Employee agreed to cancel the order")
+                        .isEmployee(true)
+                        .orderBill(orderBill)
+                        .orderStatus(OrderStatus.CANCELLATION_REQUEST_ACCEPTED)
+                        .build());
+
+                orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .description("Customer requests to cancel order")
                         .isEmployee(true)
                         .orderBill(orderBill)
@@ -694,6 +720,13 @@ public class OrderService implements IOrderService {
                     orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
                 }
 
+            } else {
+                orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                        .description("Employee refused the request to cancel the order")
+                        .isEmployee(true)
+                        .orderBill(orderBill)
+                        .orderStatus(OrderStatus.CANCELLATION_REQUEST_REFUSED)
+                        .build());
             }
             OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
             orderSearchService.upsertOrder(updatedOrder);
