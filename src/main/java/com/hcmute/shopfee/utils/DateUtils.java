@@ -27,7 +27,10 @@ public class DateUtils {
     public static String formatYYYYMMDD(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return  sdf.format(date);
-
+    }
+    public static String formatHHmm(Time time) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        return dateFormat.format(time);
     }
     public static Date createDateTimeByToday(int hour, int minute, int second, int millisecond, int numberDate) {
         Calendar calendar = Calendar.getInstance();

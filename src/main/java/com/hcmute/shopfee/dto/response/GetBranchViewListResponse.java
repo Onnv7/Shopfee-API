@@ -1,10 +1,14 @@
 package com.hcmute.shopfee.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
+import com.hcmute.shopfee.utils.DateUtils;
 import lombok.Data;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.hcmute.shopfee.dto.response.GetBranchViewListResponse.BranchCard.fromBranchEntity;
@@ -22,7 +26,13 @@ public class GetBranchViewListResponse {
         private Double longitude;
         private Double latitude;
         private String distance;
+        @JsonIgnore
+        private int distanceValue;
+        private String openTime;
+        private String closeTime;
+
         static BranchCard fromBranchEntity(BranchEntity entity) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
             BranchCard data = new BranchCard();
             data.setId(entity.getId());
             data.setImageUrl(entity.getImageUrl());
@@ -30,6 +40,8 @@ public class GetBranchViewListResponse {
             data.setFullAddress(entity.getFullAddress());
             data.setLongitude(entity.getLongitude());
             data.setLatitude(entity.getLatitude());
+            data.setOpenTime(DateUtils.formatHHmm(entity.getOpenTime()));
+            data.setCloseTime(DateUtils.formatHHmm(entity.getCloseTime()));
             return data;
         }
 
@@ -43,9 +55,10 @@ public class GetBranchViewListResponse {
                 continue;
             }
             card.setDistance(distanceList.get(i).getText());
+            card.setDistanceValue(distanceList.get(i).getValue());
             data.add(card);
         }
-
+        data.sort(Comparator.comparingInt(BranchCard::getDistanceValue));
         return data;
     }
 }

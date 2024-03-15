@@ -119,9 +119,11 @@ public class BranchController {
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+            @Parameter(name = "key", description = "Key is name, address", required = false, example = "vo van ngan")
+            @RequestParam(name = "key", required = false) String key
     ) {
-        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lng, page, size);
+        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lng, key, page, size);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .data(resData)

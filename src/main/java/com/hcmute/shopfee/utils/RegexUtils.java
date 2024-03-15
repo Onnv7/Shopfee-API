@@ -4,4 +4,7 @@ public class RegexUtils {
         filter = filter.toLowerCase();
         return ".*" + filter + ".*";
     }
+    public static String generateStringLikeSql(String filter) {
+        return "%" + filter + "%";
+    }
 }

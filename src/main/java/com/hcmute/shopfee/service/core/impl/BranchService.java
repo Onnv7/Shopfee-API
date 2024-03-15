@@ -18,6 +18,7 @@ import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IBranchService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.DateUtils;
+import com.hcmute.shopfee.utils.RegexUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -123,9 +124,16 @@ public class BranchService implements IBranchService {
     }
 
     @Override
-    public GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, int page, int size) {
+    public GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, String key, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<BranchEntity> branchPage = branchRepository.findByStatus(BranchStatus.ACTIVE, pageable);
+        Page<BranchEntity> branchPage = null;
+
+        if(key != null) {
+            branchPage = branchRepository.getBranchByStatusAndKey(BranchStatus.ACTIVE.name(), key, pageable);
+        } else {
+            branchPage = branchRepository.findByStatus(BranchStatus.ACTIVE, pageable);
+        }
+
         List<BranchEntity> branchEntityList = branchPage.getContent();
         List<String> destinationCoordinatesList = getCoordinatesListFromBranchList(branchEntityList);
 

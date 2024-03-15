@@ -135,7 +135,7 @@ public class SwaggerConstant {
     public static final String BRANCH_GET_ALL_SUM = "Get branch list";
     public static final String BRANCH_GET_DETAIL_BY_ID_SUM = "Get branch's detail by id";
     public static final String BRANCH_GET_VIEW_BY_ID_SUM = "Get branch's view by id";
-    public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "Get branch list which be active";
+    public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "List of branches operating within 12km";
 
     // For banner =================================================================
     public static final String BANNER_CONTROLLER_TITLE = "BANNER MANAGEMENT";

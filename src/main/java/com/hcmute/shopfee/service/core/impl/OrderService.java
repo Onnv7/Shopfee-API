@@ -617,7 +617,7 @@ public class OrderService implements IOrderService {
     public void insertOrderEventByEmployee(String orderId, OrderStatus orderStatus, String description, HttpServletRequest request) {
         List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING, OrderStatus.SUCCEED, OrderStatus.CANCELED);
 
-        if(!validOrderStatus.contains(orderStatus)) {
+        if (!validOrderStatus.contains(orderStatus)) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order status is not valid");
         }
 
@@ -625,7 +625,7 @@ public class OrderService implements IOrderService {
         OrderBillEntity order = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if(order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
+        if (order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
         }
 
@@ -656,9 +656,10 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (!DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant create cancellation demand before 30 minutes");
+        if (!(orderBill.getOrderEventList() != null && orderBill.getOrderEventList().size() == 2 && orderBill.getOrderEventList().get(1).getOrderStatus() == OrderStatus.ACCEPTED)) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cannot create cancellation request when order status is not \"ACCEPTED\"");
         }
+
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
