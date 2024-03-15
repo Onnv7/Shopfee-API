@@ -185,10 +185,26 @@ public class OrderController {
     @Operation(summary = ORDER_GET_DETAILS_BY_ID_SUM)
     @GetMapping(path = GET_ORDER_DETAILS_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetOrderByIdResponse>> getOrderDetailsById(@PathVariable(ORDER_ID) String id) {
-        GetOrderByIdResponse savedData = orderService.getOrderDetailsById(id);
+        GetOrderByIdResponse resData = orderService.getOrderDetailsById(id);
         ResponseAPI<GetOrderByIdResponse> res = ResponseAPI.<GetOrderByIdResponse>builder()
                 .timestamp(new Date())
-                .data(savedData)
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+    @Operation(summary = ORDER_GET_SHIPPING_FEE_SUM)
+    @GetMapping(path = GET_ORDER_SHIPPING_FEE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetShippingFeeResponse>> getShippingFee(
+            @Parameter(name = "lat", required = true, example = "10.8005397")
+            @RequestParam("lat")  Double lat,
+            @Parameter(name = "lng", required = true, example = "106.6393208")
+            @RequestParam("lng")  Double lng
+    ) {
+        GetShippingFeeResponse resData = orderService.getShippingFee(lat, lng);
+        ResponseAPI<GetShippingFeeResponse> res = ResponseAPI.<GetShippingFeeResponse>builder()
+                .timestamp(new Date())
+                .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);

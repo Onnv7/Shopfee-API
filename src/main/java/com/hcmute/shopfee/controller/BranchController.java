@@ -4,10 +4,7 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
-import com.hcmute.shopfee.dto.response.GetAllBranchResponse;
-import com.hcmute.shopfee.dto.response.GetBranchDetailByIdResponse;
-import com.hcmute.shopfee.dto.response.GetBranchViewByIdResponse;
-import com.hcmute.shopfee.dto.response.GetBranchViewListResponse;
+import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.module.goong.Goong;
@@ -22,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
@@ -85,6 +83,25 @@ public class BranchController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
+    @Operation(summary = BRANCH_GET_BRANCH_NEAREST_SUM)
+    @GetMapping(path = GET_BRANCH_NEAREST_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetBranchNearestResponse>> getBranchNearest(
+            @Parameter(name = "lat", required = true, example = "10.8005397")
+            @RequestParam("lat")  Double lat,
+            @Parameter(name = "lng", required = true, example = "106.6393208")
+            @RequestParam("lng")  Double lng,
+            @Parameter(name = "time", required = true, example = "07:00:00", description = "Time for customer receives the order")
+            @RequestParam("time") Time time
+    ) {
+        GetBranchNearestResponse resData = branchService.getBranchNearest(lat, lng, time);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
     @Operation(summary = BRANCH_GET_DETAIL_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_DETAIL_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetBranchDetailByIdResponse>> getBranchById(@PathVariable(BRANCH_ID) String branchId) {
@@ -112,6 +129,8 @@ public class BranchController {
     @Operation(summary = BRANCH_GET_VIEW_LIST_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetBranchViewListResponse>> getBranchViewList(
+            @Parameter(name = "all", description = "Get all or filter", required = false, example = "false")
+            @RequestParam(name = "all", required = false, defaultValue = "false") boolean all,
             @Parameter(name = "lat", required = true, example = "10.8005397")
             @RequestParam("lat")  Double lat,
             @Parameter(name = "lng", required = true, example = "106.6393208")
@@ -123,7 +142,7 @@ public class BranchController {
             @Parameter(name = "key", description = "Key is name, address", required = false, example = "vo van ngan")
             @RequestParam(name = "key", required = false) String key
     ) {
-        GetBranchViewListResponse resData = branchService.getBranchViewList(lat, lng, key, page, size);
+        GetBranchViewListResponse resData = branchService.getBranchViewList(all, lat, lng, key, page, size);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .data(resData)

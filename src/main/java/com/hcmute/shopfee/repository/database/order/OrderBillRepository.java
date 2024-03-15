@@ -44,7 +44,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
 
 
     @Query(value = """
-            select  ob.id, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total, ob.updated_at, ob.branch_id, ob.user_id
+            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id\s
             from order_bill AS ob
             join (
             	select *

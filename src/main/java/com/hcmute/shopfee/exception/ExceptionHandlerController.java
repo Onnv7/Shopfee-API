@@ -46,7 +46,7 @@ public class ExceptionHandlerController {
     private static final List<String> error401= Arrays.asList(
             UNAUTHORIZED
     );
-    private static final List<String> error500 = Arrays.asList(VNP_ERROR);
+    private static final List<String> error500 = Arrays.asList(VNP_ERROR, SERVER_ERROR);
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {

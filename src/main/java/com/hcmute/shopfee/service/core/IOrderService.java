@@ -19,6 +19,7 @@ public interface IOrderService {
     List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size);
     GetOrderListResponse getOrderListForAdmin(int page, int size, String key, OrderStatus status);
     GetOrderByIdResponse getOrderDetailsById(String id);
+    GetShippingFeeResponse getShippingFee(Double lat, Double lng);
     List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStatus orderStatus, int page, int size);
     List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId);
     GetOrderQuantityByStatusResponse getOrderQuantityByStatusAtCurrentDate(OrderStatus orderStatus);

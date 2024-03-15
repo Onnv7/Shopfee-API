@@ -4,10 +4,7 @@ import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
-import com.hcmute.shopfee.dto.response.GetAllBranchResponse;
-import com.hcmute.shopfee.dto.response.GetBranchDetailByIdResponse;
-import com.hcmute.shopfee.dto.response.GetBranchViewByIdResponse;
-import com.hcmute.shopfee.dto.response.GetBranchViewListResponse;
+import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import com.hcmute.shopfee.model.CustomException;
@@ -18,7 +15,7 @@ import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IBranchService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.DateUtils;
-import com.hcmute.shopfee.utils.RegexUtils;
+import com.hcmute.shopfee.utils.LocationUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,9 +24,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.Time;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +38,42 @@ public class BranchService implements IBranchService {
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
     private final GoongService goongService;
+
+    public BranchEntity getNearestBranchAndValidateTime(Double lat, Double lng, Time timeToCheck) {
+        // TODO: xem có status thì check status cửa hàng
+        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
+        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
+        String clientCoordinates = lat + "," + lng;
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+        int branchListSize = branchEntityList.size();
+        if(branchListSize == 0) {
+            throw new CustomException(ErrorConstant.NOT_FOUND, "There are no active branches");
+        }
+        BranchEntity nearestBranch = branchEntityList.get(0);
+        int minDistance = distanceList.get(0).getValue();
+
+        for (int i = 0; i < branchListSize; i++) {
+            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+                continue;
+            }
+
+            if (timeToCheck.after(branchEntityList.get(i).getCloseTime()) || timeToCheck.before(branchEntityList.get(i).getOpenTime())) {
+                continue;
+            }
+            if (distanceList.get(i).getValue() < minDistance) {
+                nearestBranch = branchEntityList.get(i);
+                minDistance = distanceList.get(i).getValue();
+            }
+        }
+
+        if (minDistance > OPERATING_RANGE_DISTANCE || timeToCheck.after(nearestBranch.getCloseTime()) || timeToCheck.before(nearestBranch.getOpenTime())) {
+            throw new CustomException(ErrorConstant.NOT_FOUND, "Can't find a branch that can serve your current location and time");
+        }
+
+        return nearestBranch;
+
+    }
+
     @Override
     public void createBranch(CreateBranchRequest body) {
         BranchEntity branch = modelMapperService.mapClass(body, BranchEntity.class);
@@ -107,6 +143,13 @@ public class BranchService implements IBranchService {
     }
 
     @Override
+    public GetBranchNearestResponse getBranchNearest(Double latitude, Double longitude, Time time) {
+        BranchEntity branchEntity = getNearestBranchAndValidateTime(latitude, longitude, time);
+
+        return GetBranchNearestResponse.fromBranchEntity(branchEntity);
+    }
+
+    @Override
     public GetBranchDetailByIdResponse getBranchDetailById(String branchId) {
         BranchEntity branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
@@ -124,34 +167,26 @@ public class BranchService implements IBranchService {
     }
 
     @Override
-    public GetBranchViewListResponse getBranchViewList(Double latitude, Double longitude, String key, int page, int size) {
+    public GetBranchViewListResponse getBranchViewList(boolean isGetAll, Double latitude, Double longitude, String key, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<BranchEntity> branchPage = null;
 
-        if(key != null) {
+        if (key != null) {
             branchPage = branchRepository.getBranchByStatusAndKey(BranchStatus.ACTIVE.name(), key, pageable);
         } else {
             branchPage = branchRepository.findByStatus(BranchStatus.ACTIVE, pageable);
         }
 
         List<BranchEntity> branchEntityList = branchPage.getContent();
-        List<String> destinationCoordinatesList = getCoordinatesListFromBranchList(branchEntityList);
+        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
 
         String clientCoordinates = latitude + "," + longitude;
 
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         GetBranchViewListResponse data = new GetBranchViewListResponse();
         data.setTotalPage(branchPage.getTotalPages());
-        data.setBranchList(GetBranchViewListResponse.fromBranchEntityListAndFilterDistance(branchPage.getContent(), distanceList));
+        data.setBranchList(GetBranchViewListResponse.fromBranchEntityListAndFilterDistance(isGetAll, branchPage.getContent(), distanceList));
         return data;
     }
-    public List<String> getCoordinatesListFromBranchList(List<BranchEntity> branchEntityList) {
-        List<String> destinationCoordinatesList = new ArrayList<>();
-        for(BranchEntity branchEntity : branchEntityList) {
-            String locationFormat = "%s,%s";
-            String coordinates = String.format(locationFormat, branchEntity.getLatitude(), branchEntity.getLongitude());
-            destinationCoordinatesList.add(coordinates);
-        }
-        return destinationCoordinatesList;
-    }
+
 }

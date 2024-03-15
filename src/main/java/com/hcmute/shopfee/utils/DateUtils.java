@@ -3,6 +3,7 @@ package com.hcmute.shopfee.utils;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -61,5 +62,9 @@ public class DateUtils {
 
         // Kiểm tra nếu khoảng thời gian lớn hơn hoặc bằng 30 phút
         return diffInMinutes > 30;
+    }
+    public static Time getCurrentTime(ZoneId zone) {
+        LocalTime localTime = LocalTime.now(zone);
+        return Time.valueOf(localTime);
     }
 }

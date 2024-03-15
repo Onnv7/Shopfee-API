@@ -49,9 +49,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Time;
+import java.time.ZoneId;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
 import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
 @Service
@@ -74,36 +77,9 @@ public class OrderService implements IOrderService {
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
     private final CancellationDemandRepository cancellationDemandRepository;
-
     private final Scheduler scheduler;
 
-    public BranchEntity getNearestBranches(AddressEntity address) {
-        // TODO: xem có status thì check status cửa hàng
-        List<BranchEntity> allBranches = branchRepository.findByStatus(BranchStatus.ACTIVE);
-        List<String> destinationCoordinatesList = branchService.getCoordinatesListFromBranchList(allBranches);
-        String clientCoordinates = address.getLatitude() + "," + address.getLongitude();
-        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
-        int branchListSize = allBranches.size();
-        int minDistance = distanceList.get(0).getValue();
-        int minIndexBranch = 0;
-        for (int i = 0; i < branchListSize; i++) {
-            if (distanceList.get(i).getValue() > 12000) {
-                continue;
-            }
 
-            if (distanceList.get(i).getValue() < minDistance) {
-                minDistance = distanceList.get(i).getValue();
-                minIndexBranch = i;
-            }
-        }
-
-        if (minDistance > 12000) {
-            throw new CustomException(ErrorConstant.NOT_FOUND, "Your location is outside the service area");
-        }
-
-        return allBranches.get(minIndexBranch);
-
-    }
 
     private Map<String, Object> buildTransaction(PaymentType paymentType, HttpServletRequest request, long totalPrice) {
         TransactionEntity transData = new TransactionEntity();
@@ -427,7 +403,8 @@ public class OrderService implements IOrderService {
         orderBill.setOrderEventList(orderEventList);
 
         // set chi nhánh xử lý đơn
-        BranchEntity branch = getNearestBranches(address);
+        Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
+        BranchEntity branch = branchService.getNearestBranchAndValidateTime(address.getLatitude(), address.getLongitude(), currentTime);
         orderBill.setBranch(branch);
 
         // set tổng hóa đơn và phí ship
@@ -837,6 +814,38 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
         GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
         return order;
+    }
+
+    @Override
+    public GetShippingFeeResponse getShippingFee(Double lat, Double lng) {
+        GetShippingFeeResponse data = new GetShippingFeeResponse();
+        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
+        String clientCoordinates = lat + "," + lng;
+        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+        int branchSize = branchEntityList.size();
+
+
+        int minDistance = distanceList.get(0).getValue();
+        int minIndexBranch = 0;
+        for(int i = 0; i < branchSize; i ++) {
+            if(distanceList.get(i).getValue() < OPERATING_RANGE_DISTANCE) {
+                continue;
+            }
+            if (distanceList.get(i).getValue() < minDistance) {
+                minDistance = distanceList.get(i).getValue();
+                minIndexBranch = i;
+            }
+        }
+        if (minDistance > OPERATING_RANGE_DISTANCE) {
+            throw new CustomException(ErrorConstant.NOT_FOUND, "Your location is outside the service area");
+        }
+
+        Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
+        BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
+        // TODO: tính tien ship tu ben thu 3
+        data.setShippingFee(12000L);
+        return data;
     }
 
     @Override

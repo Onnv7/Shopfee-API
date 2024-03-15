@@ -45,7 +45,7 @@ public class BannerService implements IBannerService {
             throw new RuntimeException(e);
         }
         banner.setDeleted(false);
-        banner.setStatus(BannerStatus.HIDDEN);
+        banner.setStatus(BannerStatus.VISIBLE);
         bannerRepository.save(banner);
     }
 

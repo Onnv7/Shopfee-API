@@ -13,6 +13,7 @@ public class ErrorConstant {
     public static final String ORDER_INVALID = "Order is invalid";
     public static final String INVALID_COIN_NUMBER = "Invalid coin number";
     public static final String VNP_ERROR = "VNPay error";
+    public static final String SERVER_ERROR = "Server error";
 
     // message details =================================================
     public static final String USER_ID_NOT_FOUND = "User with id ";

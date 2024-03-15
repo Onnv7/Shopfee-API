@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.database.BranchEntity;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.utils.DateUtils;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
 import static com.hcmute.shopfee.dto.response.GetBranchViewListResponse.BranchCard.fromBranchEntity;
 
 @Data
@@ -18,6 +20,7 @@ public class GetBranchViewListResponse {
     private List<BranchCard> branchList;
     private Integer totalPage;
     @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class BranchCard {
         private String id;
         private String imageUrl;
@@ -26,6 +29,7 @@ public class GetBranchViewListResponse {
         private Double longitude;
         private Double latitude;
         private String distance;
+        private Boolean canServe;
         @JsonIgnore
         private int distanceValue;
         private String openTime;
@@ -46,13 +50,17 @@ public class GetBranchViewListResponse {
         }
 
     }
-    public static List<BranchCard> fromBranchEntityListAndFilterDistance(List<BranchEntity> entityList, List<DistanceMatrixResponse.Row.Element.Distance> distanceList) {
+    public static List<BranchCard> fromBranchEntityListAndFilterDistance(boolean isGetAll, List<BranchEntity> entityList, List<DistanceMatrixResponse.Row.Element.Distance> distanceList) {
         List<BranchCard> data = new ArrayList<>();
         int size = entityList.size();
         for(int i=0; i<size; i++) {
             BranchCard card = fromBranchEntity(entityList.get(i));
-            if(distanceList.get(i).getValue() > 12000) {
+            if(!isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
                 continue;
+            } else if(isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+                card.setCanServe(false);
+            } else if(isGetAll && distanceList.get(i).getValue() <= OPERATING_RANGE_DISTANCE) {
+                card.setCanServe(true);
             }
             card.setDistance(distanceList.get(i).getText());
             card.setDistanceValue(distanceList.get(i).getValue());

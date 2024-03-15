@@ -175,6 +175,8 @@ public class RouterConstant {
     public static final String GET_ORDER_LIST_PATH = ORDER_BASE_PATH + GET_ORDER_LIST_SUB_PATH;
     public static final String GET_ORDER_DETAILS_BY_ID_SUB_PATH = ORDER_ID_PATH + "/details";
     public static final String GET_ORDER_DETAILS_BY_ID_PATH = ORDER_BASE_PATH + GET_ORDER_DETAILS_BY_ID_SUB_PATH;
+    public static final String GET_ORDER_SHIPPING_FEE_SUB_PATH = "/shipping-fee";
+    public static final String GET_ORDER_SHIPPING_FEE_PATH = ORDER_BASE_PATH + GET_ORDER_SHIPPING_FEE_SUB_PATH;
     public static final String GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH = "/history/user" + USER_ID_PATH;
     public static final String GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_PATH = ORDER_BASE_PATH + GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH;
     public static final String POST_ORDER_CREATE_REVIEW_SUB_PATH = "/rating" + ORDER_ID_PATH;
@@ -237,6 +239,8 @@ public class RouterConstant {
     public static final String DELETE_BRANCH_UPDATE_PATH = BRANCH_BASE_PATH + DELETE_BRANCH_UPDATE_SUB_PATH;
     public static final String GET_BRANCH_ALL_SUB_PATH = "";
     public static final String GET_BRANCH_ALL_PATH = BRANCH_BASE_PATH + GET_BRANCH_ALL_SUB_PATH;
+    public static final String GET_BRANCH_NEAREST_SUB_PATH = "/nearest";
+    public static final String GET_BRANCH_NEAREST_PATH = BRANCH_BASE_PATH + GET_BRANCH_NEAREST_SUB_PATH;
     public static final String GET_BRANCH_DETAIL_BY_ID_SUB_PATH = BRANCH_ID_PATH + "/detail";
     public static final String GET_BRANCH_DETAIL_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_DETAIL_BY_ID_SUB_PATH;
     public static final String GET_BRANCH_VIEW_BY_ID_SUB_PATH = BRANCH_ID_PATH + "/view";

@@ -108,8 +108,8 @@ public class SwaggerConstant {
     public static final String ORDER_GET_ALL_IN_DAY_SUM = "Get all shipping orders in current day for employee";
     public static final String ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM = "Get all orders for employee by type and status of order in current day";
     public static final String ORDER_GET_DETAILS_BY_ID_SUM = "Get a details order by order id";
+    public static final String ORDER_GET_SHIPPING_FEE_SUM = "Get shipping fee information";
     public static final String ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM = "Get orders history by user id and order status";
-    public static final String ORDER_CREATE_REVIEW_SUM = "Create review for order by order id";
     public static final String ORDER_GET_STATUS_LINE_SUM = "Get order status line by order id";
     public static final String ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM = "Get all order history for employee by page and size or search by code, customerName, customerCode, phoneNumber, recipientName";
     public static final String ORDER_GET_ORDER_QUANTITY_BY_STATUS_SUM = "Get order's quantity by status at today";
@@ -133,6 +133,7 @@ public class SwaggerConstant {
     public static final String BRANCH_UPDATE_BY_ID_SUM = "Update branch's information by id";
     public static final String BRANCH_DELETE_BY_ID_SUM = "Delete branch's information by id";
     public static final String BRANCH_GET_ALL_SUM = "Get branch list";
+    public static final String BRANCH_GET_BRANCH_NEAREST_SUM = "Find the nearest branch that can serve customers";
     public static final String BRANCH_GET_DETAIL_BY_ID_SUM = "Get branch's detail by id";
     public static final String BRANCH_GET_VIEW_BY_ID_SUM = "Get branch's view by id";
     public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "List of branches operating within 12km";

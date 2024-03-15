@@ -119,7 +119,6 @@ public class WebSecurityConfig {
         // set route sẽ ăn từ trên xuống (ưu tiên cái đầu tiên)
 
         http
-
                 .cors(Customizer.withDefaults())
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
