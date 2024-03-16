@@ -11,10 +11,12 @@ import com.hcmute.shopfee.module.goong.Goong;
 import com.hcmute.shopfee.service.core.IBranchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -90,7 +92,7 @@ public class BranchController {
             @RequestParam("lat")  Double lat,
             @Parameter(name = "lng", required = true, example = "106.6393208")
             @RequestParam("lng")  Double lng,
-            @Parameter(name = "time", required = true, example = "07:00:00", description = "Time for customer receives the order")
+            @Parameter(name = "time", required = true, example = "07:00:00", description = "Time for customer receives the order",  schema = @Schema(type = "string"))
             @RequestParam("time") Time time
     ) {
         GetBranchNearestResponse resData = branchService.getBranchNearest(lat, lng, time);

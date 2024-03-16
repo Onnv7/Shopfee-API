@@ -10,7 +10,6 @@ import java.util.Date;
 @Data
 public class GetAllOrderHistoryByUserIdResponse {
     private String id;
-//    private String code;
     private Long total;
     private int productQuantity;
     private OrderType orderType;

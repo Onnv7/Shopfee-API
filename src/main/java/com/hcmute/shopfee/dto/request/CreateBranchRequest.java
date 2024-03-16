@@ -45,7 +45,6 @@ public class CreateBranchRequest {
     @NotNull
     private double latitude;
 
-
     @Schema(example = OPEN_TIME_EX)
     @NotNull
     private Time openTime;
