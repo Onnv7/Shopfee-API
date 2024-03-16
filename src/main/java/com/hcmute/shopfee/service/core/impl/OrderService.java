@@ -849,10 +849,24 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStatus orderStatus, int page, int size) {
+    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStaging orderStaging, int page, int size) {
         SecurityUtils.checkUserId(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatus.name(), userId, pageable).getContent();
+        List<String> orderStatusList = new ArrayList<>();
+        if(orderStaging == OrderStaging.WAITING) {
+            orderStatusList.add(OrderStatus.CREATED.name());
+        } else if(orderStaging == OrderStaging.IN_PROCESS) {
+            List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.DELIVERING.name(),
+                    OrderStatus.CANCELLATION_REQUEST.name(), OrderStatus.CANCELLATION_REQUEST_ACCEPTED.name(),
+                    OrderStatus.CANCELLATION_REQUEST_REFUSED.name());
+            orderStatusList.addAll(statusesToAdd);
+        } else if(orderStaging == OrderStaging.SUCCEED) {
+            orderStatusList.add(OrderStatus.SUCCEED.name());
+        } else if(orderStaging == OrderStaging.CANCELED) {
+            orderStatusList.add(OrderStatus.CANCELED.name());
+        }
+        List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
+
         List<GetAllOrderHistoryByUserIdResponse> response = new ArrayList<>();
         orderList.forEach(it -> {
             GetAllOrderHistoryByUserIdResponse order = GetAllOrderHistoryByUserIdResponse.fromOrderBillEntity(it);

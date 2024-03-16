@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.enums.OrderStaging;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.model.ResponseAPI;
@@ -214,14 +215,14 @@ public class OrderController {
     @GetMapping(path = GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH)
     public ResponseEntity<ResponseAPI<List<GetAllOrderHistoryByUserIdResponse>>> getOrdersHistoryByUserId(
             @PathVariable("userId") String id,
-            @RequestParam("orderStatus") OrderStatus orderStatus,
+            @RequestParam("order_staging") OrderStaging orderStaging,
             @Parameter(name = "page", required = true, example = "1")
             @Min(value = 1, message = "Page must be greater than 0")
             @RequestParam("page") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        List<GetAllOrderHistoryByUserIdResponse> savedData = orderService.getOrdersHistoryByUserId(id, orderStatus, page, size);
+        List<GetAllOrderHistoryByUserIdResponse> savedData = orderService.getOrdersHistoryByUserId(id, orderStaging, page, size);
         ResponseAPI<List<GetAllOrderHistoryByUserIdResponse>> res = ResponseAPI.<List<GetAllOrderHistoryByUserIdResponse>>builder()
                 .timestamp(new Date())
                 .data(savedData)

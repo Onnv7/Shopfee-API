@@ -25,8 +25,8 @@ public class GetAllOrderHistoryByUserIdResponse {
         response.setProductQuantity(entity.getOrderItemList().size());
         response.setOrderType(entity.getOrderType());
         response.setProductName(entity.getOrderItemList().get(0).getName());
-        response.setStatusLastEvent(entity.getOrderEventList().get(eventLastIndex).getOrderStatus());
-        response.setTimeLastEvent(entity.getOrderEventList().get(eventLastIndex).getCreatedAt());
+        response.setStatusLastEvent(entity.getOrderEventList().get(0).getOrderStatus());
+        response.setTimeLastEvent(entity.getOrderEventList().get(0).getCreatedAt());
         return response;
     }
 

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -56,17 +57,17 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Page<OrderBillEntity> getOrderList(String orderStatusRegex, Pageable pageable);
 
     @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id\s
+            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id
             from order_bill ob
-            join (
-            	select *
-            	from order_event
-            	where order_event.order_status = ?1
-            ) as oe on ob.id = oe.order_bill_id
+            join(select order_bill_id,  MAX(created_at) as created_at
+                 from order_event
+                 group by order_bill_id) as last_event on ob.id = last_event.order_bill_id
+            join order_event oe on last_event.created_at = oe.created_at
             where ob.user_id = ?2
+            and oe.order_status in ?1
             order by ob.created_at desc
             """, nativeQuery = true)
-    Page<OrderBillEntity> getOrderListByUserIdAndStatus(String orderStatus, String userId, Pageable pageable);
+    Page<OrderBillEntity> getOrderListByUserIdAndStatus(List<String> orderStatusList, String userId, Pageable pageable);
 
     @Query(value = """
             SELECT COUNT(DISTINCT ob.id)

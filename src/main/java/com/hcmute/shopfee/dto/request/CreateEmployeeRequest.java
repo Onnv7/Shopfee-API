@@ -48,6 +48,6 @@ public class CreateEmployeeRequest {
 
     @Schema(example = OBJECT_ID_EX)
     @NotNull
-    private Long branchId;
+    private String branchId;
 
 }
