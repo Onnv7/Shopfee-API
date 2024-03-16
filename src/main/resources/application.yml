@@ -145,6 +145,10 @@ cloudinary:
 goong:
   api_key: ${GOONG_API_KEY}
 
+# ahamove:
+ahamove:
+  api_key: ${AHAMOVE_API_KEY}
+  token: ${AHAMOVE_TOKEN}
 #  module-name: vna
 #  api-version: 1.0.0
 

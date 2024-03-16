@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class GetShippingFeeResponse {
-    private Long shippingFee;
+    private int shippingFee;
 }

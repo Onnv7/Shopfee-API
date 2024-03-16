@@ -21,6 +21,7 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee.response.EstimateOrderFeeResponse;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
@@ -31,6 +32,7 @@ import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
+import com.hcmute.shopfee.service.common.AhamoveService;
 import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
@@ -78,6 +80,7 @@ public class OrderService implements IOrderService {
     private final BranchService branchService;
     private final CancellationDemandRepository cancellationDemandRepository;
     private final Scheduler scheduler;
+    private final AhamoveService ahamoveService;
 
 
 
@@ -826,25 +829,13 @@ public class OrderService implements IOrderService {
         int branchSize = branchEntityList.size();
 
 
-        int minDistance = distanceList.get(0).getValue();
-        int minIndexBranch = 0;
-        for(int i = 0; i < branchSize; i ++) {
-            if(distanceList.get(i).getValue() < OPERATING_RANGE_DISTANCE) {
-                continue;
-            }
-            if (distanceList.get(i).getValue() < minDistance) {
-                minDistance = distanceList.get(i).getValue();
-                minIndexBranch = i;
-            }
-        }
-        if (minDistance > OPERATING_RANGE_DISTANCE) {
-            throw new CustomException(ErrorConstant.NOT_FOUND, "Your location is outside the service area");
-        }
 
         Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
         BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
         // TODO: tính tien ship tu ben thu 3
-        data.setShippingFee(12000L);
+
+        int shippingFee = ahamoveService.getShippingFee(lat, lng, branchEntity.getLatitude(), branchEntity.getLongitude());
+        data.setShippingFee(shippingFee);
         return data;
     }
 

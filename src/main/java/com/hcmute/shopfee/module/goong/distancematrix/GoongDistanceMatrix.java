@@ -13,9 +13,9 @@ import org.springframework.web.client.RestTemplate;
 
 
 public class GoongDistanceMatrix {
-    private String endpointUrl = "https://rsapi.goong.io/DistanceMatrix?origins=%s&destinations=%s&vehicle=%s&api_key=%s";
+    private final String endpointUrl = "https://rsapi.goong.io/DistanceMatrix?origins=%s&destinations=%s&vehicle=%s&api_key=%s";
 
-    private Goong goong;
+    private final Goong goong;
 
     public GoongDistanceMatrix(Goong goong) {
         this.goong = goong;
