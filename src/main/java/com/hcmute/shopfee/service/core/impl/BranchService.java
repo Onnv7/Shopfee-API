@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Time;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,7 +48,7 @@ public class BranchService implements IBranchService {
         String clientCoordinates = lat + "," + lng;
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         int branchListSize = branchEntityList.size();
-        if(branchListSize == 0) {
+        if (branchListSize == 0) {
             throw new CustomException(ErrorConstant.NOT_FOUND, "There are no active branches");
         }
         BranchEntity nearestBranch = branchEntityList.get(0);
@@ -176,15 +178,21 @@ public class BranchService implements IBranchService {
         } else {
             branchPage = branchRepository.findByStatus(BranchStatus.ACTIVE, pageable);
         }
+        GetBranchViewListResponse data = new GetBranchViewListResponse();
+        data.setTotalPage(branchPage.getTotalPages());
 
         List<BranchEntity> branchEntityList = branchPage.getContent();
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
 
+        if (branchEntityList.isEmpty()){
+            data.setBranchList(new ArrayList<>());
+            return data;
+        }
+
         String clientCoordinates = latitude + "," + longitude;
 
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
-        GetBranchViewListResponse data = new GetBranchViewListResponse();
-        data.setTotalPage(branchPage.getTotalPages());
+
         data.setBranchList(GetBranchViewListResponse.fromBranchEntityListAndFilterDistance(isGetAll, branchPage.getContent(), distanceList));
         return data;
     }

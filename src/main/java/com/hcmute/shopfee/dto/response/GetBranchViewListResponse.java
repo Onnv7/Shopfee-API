@@ -55,12 +55,11 @@ public class GetBranchViewListResponse {
         int size = entityList.size();
         for(int i=0; i<size; i++) {
             BranchCard card = fromBranchEntity(entityList.get(i));
+            // if all = false => filter 12km
             if(!isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
                 continue;
-            } else if(isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
-                card.setCanServe(false);
-            } else if(isGetAll && distanceList.get(i).getValue() <= OPERATING_RANGE_DISTANCE) {
-                card.setCanServe(true);
+            } else if(isGetAll) {
+                card.setCanServe(distanceList.get(i).getValue() <= OPERATING_RANGE_DISTANCE);
             }
             card.setDistance(distanceList.get(i).getText());
             card.setDistanceValue(distanceList.get(i).getValue());

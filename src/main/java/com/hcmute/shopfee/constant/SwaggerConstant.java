@@ -136,7 +136,7 @@ public class SwaggerConstant {
     public static final String BRANCH_GET_BRANCH_NEAREST_SUM = "Find the nearest branch that can serve customers";
     public static final String BRANCH_GET_DETAIL_BY_ID_SUM = "Get branch's detail by id";
     public static final String BRANCH_GET_VIEW_BY_ID_SUM = "Get branch's view by id";
-    public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "List of branches operating within 12km";
+    public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "List of branches operating within 12km if 'all' variable is true then get all without filtering 12km";
 
     // For banner =================================================================
     public static final String BANNER_CONTROLLER_TITLE = "BANNER MANAGEMENT";
@@ -221,7 +221,7 @@ public class SwaggerConstant {
     public static final String RECIPIENT_NAME_EX = "Luu Bang";
     public static final String ORDER_NOTE_EX = "Quickly";
     public static final String PAYMENT_STATUS_EX = "PAID";
-    public static final String PAYMENT_TYPE_EX = "BANKING_VNPAY";
+    public static final String PAYMENT_TYPE_EX = "VNPAY";
     public static final String REVIEW_DES_EX = "Good service";
     public static final String BOOLEAN_EX = "false";
     public static final String PRODUCT_STATUS_EX = "HIDDEN";
