@@ -19,7 +19,7 @@ public class GetAllOrderHistoryByUserIdResponse {
 
     public static GetAllOrderHistoryByUserIdResponse fromOrderBillEntity(OrderBillEntity entity) {
         GetAllOrderHistoryByUserIdResponse response = new GetAllOrderHistoryByUserIdResponse();
-        int eventLastIndex = entity.getOrderEventList().size() - 1;
+
         response.setId(entity.getId());
         response.setTotal(entity.getTotalItemPrice());
         response.setProductQuantity(entity.getOrderItemList().size());

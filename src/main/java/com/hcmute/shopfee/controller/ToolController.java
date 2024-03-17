@@ -9,9 +9,14 @@ import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
-import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
+import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
+import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
+import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
+import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
+import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -20,33 +25,29 @@ import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import com.hcmute.shopfee.service.common.VNPayService;
+import com.hcmute.shopfee.service.common.ZaloPayService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.utils.HandleFileUtils;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.admin.TransactionState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -79,6 +80,8 @@ public class ToolController {
     private final AddressRepository addressRepository;
     private final ProductReviewRepository productReviewRepository;
     private final RoleRepository roleRepository;
+    private final VNPayService vnPayService;
+    private final ZaloPayService zaloPayService;
 
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
@@ -86,12 +89,14 @@ public class ToolController {
         orderSearchRepository.deleteAll();
         return ResponseEntity.status(200).body("Ok fine");
     }
+
     @DeleteMapping(value = "/deleteProductElastisearch")
-    public ResponseEntity<String> deleteProductElastisearch( ) {
+    public ResponseEntity<String> deleteProductElastisearch() {
 //        orderService.checkOrderCoupon(code);
         productSearchRepository.deleteAll();
         return ResponseEntity.status(200).body("Ok fine");
     }
+
     @GetMapping(value = "/creatingToTest")
     @Transactional
     public ResponseEntity<String> createMore() {
@@ -137,7 +142,7 @@ public class ToolController {
         sizeEntityList.add(SizeEntity.builder()
                 .size(ProductSize.SMALL)
                 .price(50000L)
-                        .product(product)
+                .product(product)
                 .build());
 
         sizeEntityList.add(SizeEntity.builder()
@@ -153,9 +158,9 @@ public class ToolController {
                 .build());
         List<ToppingEntity> toppingEntityList = new ArrayList<ToppingEntity>();
         toppingEntityList.add(ToppingEntity.builder()
-                        .product(product)
-                        .price(15000L)
-                        .name("Pudding")
+                .product(product)
+                .price(15000L)
+                .name("Pudding")
                 .build());
         toppingEntityList.add(ToppingEntity.builder()
                 .product(product)
@@ -221,12 +226,12 @@ public class ToolController {
                 .build();
         List<OrderEventEntity> orderEventEntityList = new ArrayList<OrderEventEntity>();
         orderEventEntityList.add(OrderEventEntity.builder()
-                        .createdAt(new Date())
-                        .isEmployee(false)
-                        .description("Create order successfully")
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.CREATED)
-                        .createdBy("U00000001")
+                .createdAt(new Date())
+                .isEmployee(false)
+                .description("Create order successfully")
+                .orderBill(orderBill)
+                .orderStatus(OrderStatus.CREATED)
+                .createdBy("U00000001")
                 .build());
         orderBill.setOrderEventList(orderEventEntityList);
 
@@ -234,7 +239,7 @@ public class ToolController {
                 .createdAt(new Date())
                 .status(PaymentStatus.UNPAID)
                 .totalPaid(0L)
-                .paymentType(PaymentType.BANKING_VNPAY)
+                .paymentType(PaymentType.VNPAY)
                 .orderBill(orderBill)
                 .build();
         orderBill.setTransaction(transactionEntity);
@@ -332,7 +337,7 @@ public class ToolController {
 
 
     @GetMapping("/sync-product-elasticsearch")
-    public String addElasticSearch() {
+    public String syncProductElasticSearch() {
         productSearchRepository.deleteAll();
         List<ProductEntity> productList = productRepository.findAll();
         for (ProductEntity item : productList) {
@@ -346,18 +351,39 @@ public class ToolController {
         orderSearchRepository.deleteAll();
         List<OrderBillEntity> productList = orderBillRepository.findAll();
         for (OrderBillEntity item : productList) {
-            orderBillRepository.save(item);
+            orderSearchService.createOrder(item);
         }
         return "okokok";
     }
 
-    @GetMapping("/product")
-    public List<ProductIndex> searchProduct(
-            @Parameter(name = "key", description = "Key is order's id, customer name or phone number", required = false, example = "65439a55e9818f43f8b8e02c")
-            @RequestParam("key") String key) {
-        Pageable page = PageRequest.of(0, 3);
-//        List<ProductIndex> lst = productSearchRepository.searchVisibleProduct(key, page).getContent();
-//        return lst;
-        return null;
+    @GetMapping("/test-create-url-vnpay")
+    public PreTransactionInfo searchProduct(
+
+            HttpServletRequest request) throws UnsupportedEncodingException {
+
+        return vnPayService.createUrlPayment(request, 50000, "odkasok");
+    }
+
+    @PostMapping("/test-create-url-zalopay")
+    public CreateOrderZaloPayResponse createZaloPay(@RequestBody CreateOrderZaloPayRequest request) throws IOException {
+
+        return zaloPayService.createOrderTest(request);
+    }
+
+    @PostMapping("/test-get-order-zalopay")
+    public GetOrderZaloPayResponse createZaloPay(@RequestBody GetOrderZaloPayRequest request) throws IOException, URISyntaxException {
+
+        return zaloPayService.getOrderTest(request);
+    }
+
+    @GetMapping("/test-get-info-vnpay")
+    public TransactionInfoQuery searchProduct(
+
+            HttpServletRequest request,
+            @RequestParam("txnref") String txnref,
+            @RequestParam("transId") String transId
+    ) throws UnsupportedEncodingException {
+
+        return vnPayService.getTransactionInfoTest(txnref, transId, request);
     }
 }

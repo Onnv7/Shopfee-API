@@ -12,7 +12,7 @@ public interface IOrderService {
     CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request);
     CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request);
     List<GetOrderHistoryForEmployeeResponse> getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key);
-    void insertOrderEventByEmployee(String id, OrderStatus orderStatus, String description, HttpServletRequest request);
+    void insertOrderEventByEmployee(String id, UpdateOrderStatusRequest body, HttpServletRequest request);
     void createCancellationRequest(CreateCancellationDemandRequest body, String orderId);
     void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId);
     void cancelOrder(String orderId, CancelOrderBillRequest body) ;

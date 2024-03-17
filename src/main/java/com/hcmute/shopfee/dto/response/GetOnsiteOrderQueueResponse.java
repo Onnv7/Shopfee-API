@@ -22,7 +22,7 @@ public class GetOnsiteOrderQueueResponse {
     public static GetOnsiteOrderQueueResponse fromOrderBillEntity(OrderBillEntity orderBillEntity) {
 
         GetOnsiteOrderQueueResponse response = new GetOnsiteOrderQueueResponse();
-        int sizeEvent = orderBillEntity.getOrderEventList().size() - 1;
+
         response.setId(orderBillEntity.getId());
         response.setPhoneNumber(orderBillEntity.getUser().getPhoneNumber());
         response.setCustomerName(orderBillEntity.getUser().getFullName());
@@ -31,8 +31,8 @@ public class GetOnsiteOrderQueueResponse {
         response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
         response.setReceiveTime(orderBillEntity.getReceiveTime());
         response.setTotal(orderBillEntity.getTotalItemPrice());
-        response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getOrderStatus());
-        response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getCreatedAt());
+        response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());
+        response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(0).getCreatedAt());
         return response;
     }
 }

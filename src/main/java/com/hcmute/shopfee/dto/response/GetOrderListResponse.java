@@ -24,13 +24,13 @@ public class GetOrderListResponse {
 
         public static Order fromOrderBillEntity(OrderBillEntity orderBillEntity) {
             Order order = new Order();
-            int eventLastIndex = orderBillEntity.getOrderEventList().size() - 1;
+
             order.setId(orderBillEntity.getId());
             order.setCreatedAt(orderBillEntity.getCreatedAt());
             order.setOrderType(orderBillEntity.getOrderType());
             order.setCustomerName(orderBillEntity.getUser().getFullName());
-            order.setTotal(orderBillEntity.getTotalItemPrice());
-            order.setStatusLastEvent(orderBillEntity.getOrderEventList().get(eventLastIndex).getOrderStatus());
+            order.setTotal(orderBillEntity.getTotalPayment());
+            order.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());
             return order;
         }
     }

@@ -12,9 +12,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 public class EstimateOrderFee {
+    public EstimateOrderFee() {
+    }
+
+    private Ahamove ahamove;
+    public EstimateOrderFee(Ahamove ahamove) {
+        this.ahamove = ahamove;
+    }
+
     private static final String endpointUrl = "https://apistg.ahamove.com/v1/order/estimated_fee";
-    public static EstimateOrderFeeResponse getEstimateOrderFee(Double latOrigin, Double lngOrigin, Double latDestination, Double lngDestination) {
-        String token = Ahamove.getAhamoveToken();
+    public EstimateOrderFeeResponse getEstimateOrderFee(Double latOrigin, Double lngOrigin, Double latDestination, Double lngDestination) {
+        String token = ahamove.getAhamoveToken();
         RestTemplate restTemplate = new RestTemplate();
 
         // Định dạng body data

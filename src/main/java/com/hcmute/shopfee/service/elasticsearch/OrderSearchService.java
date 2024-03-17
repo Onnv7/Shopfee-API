@@ -28,7 +28,6 @@ public class OrderSearchService {
         List<OrderItemEntity> orderItemList = orderBillEntity.getOrderItemList();
         ProductEntity product = orderItemList.get(0).getProduct();
 
-        int lastIndexEvent = orderBillEntity.getOrderEventList().size() - 1;
         String recipientName = orderBillEntity.getShippingInformation() != null ? orderBillEntity.getShippingInformation().getRecipientName() : user.getFullName();
         String phoneNumberReceiver = orderBillEntity.getShippingInformation() != null ? orderBillEntity.getShippingInformation().getPhoneNumber() : user.getPhoneNumber();
         OrderIndex orderIndex = OrderIndex.builder()
@@ -44,7 +43,7 @@ public class OrderSearchService {
                 .productQuantity(orderItemList.size())
                 .productThumbnail(product.getThumbnailUrl())
                 .customerCode(user.getId())
-                .timeLastEvent(orderBillEntity.getOrderEventList().get(lastIndexEvent).getCreatedAt())
+                .timeLastEvent(orderBillEntity.getOrderEventList().get(0).getCreatedAt())
                 .createdAt(orderBillEntity.getCreatedAt())
                 .email(user.getEmail())
                 .build();
@@ -56,8 +55,8 @@ public class OrderSearchService {
         List<OrderItemEntity> orderItemList = orderBillEntity.getOrderItemList();
         ProductEntity product = orderItemList.get(0).getProduct();
         OrderIndex order = orderSearchRepository.findById(orderBillEntity.getId()).orElse(null);
-        int lastIndexEvent = orderBillEntity.getOrderEventList().size() - 1;
-        OrderEventEntity lastStatus = orderBillEntity.getOrderEventList().get(lastIndexEvent);
+
+        OrderEventEntity lastStatus = orderBillEntity.getOrderEventList().get(0);
         if (order != null) {
             order.setCustomerName(user.getFullName());
             order.setRecipientName(orderBillEntity.getShippingInformation().getRecipientName());

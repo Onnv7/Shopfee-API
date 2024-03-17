@@ -7,20 +7,21 @@ import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
+import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
+import com.hcmute.shopfee.service.common.VNPayService;
+import com.hcmute.shopfee.service.common.ZaloPayService;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.core.ITransactionService;
 import com.hcmute.shopfee.utils.SecurityUtils;
-import com.hcmute.shopfee.utils.VNPayUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,8 @@ public class TransactionService implements ITransactionService {
     private final TransactionRepository transactionRepository;
     private final IOrderService orderService;
     private final OrderBillRepository orderBillRepository;
+    private final VNPayService vnPayService;
+    private final ZaloPayService zaloPayService;
 
     @Transactional
     @Override
@@ -41,31 +44,43 @@ public class TransactionService implements ITransactionService {
         SecurityUtils.checkUserId(user.getId());
 
         // Goi den VNPay de lay thong tin
-        Map<String, Object> transInfo = null;
-        try {
-            transInfo = VNPayUtils.getTransactionInfo(transaction.getInvoiceCode(), transaction.getTimeCode(), request);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(transaction.getPaymentType() == PaymentType.VNPAY) {
+            TransactionInfoQuery transInfo = null;
+            transInfo = vnPayService.getTransactionInfoTest(transaction.getInvoiceCode(), transaction.getTimeCode(), request);;
+
+            // nếu giao dịch vnpay thành công
+            if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalItemPrice() * 100))) {
+                transaction.setStatus(PaymentStatus.PAID);
+                transaction.setTotalPaid(Long.parseLong(transInfo.getAmount().toString()) / 100);
+            } else {
+                orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                        .orderStatus(OrderStatus.CANCELED)
+                        .description("Payment via VNPay failed")
+                        .orderBill(orderBill)
+                        .isEmployee(false)
+                        .build());
+                orderBillRepository.save(orderBill);
+                transaction.setStatus(PaymentStatus.REFUNDED);
+                transaction.setTotalPaid(0L);
+            }
+        } else if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
+            GetOrderZaloPayResponse transResult = zaloPayService.getOrder(transaction.getInvoiceCode());
+            if(transResult.getReturnCode() == 1) {
+                transaction.setStatus(PaymentStatus.PAID);
+                transaction.setTotalPaid((long) transResult.getAmount());
+            } else if(transResult.getReturnCode() == 2) {
+                orderBill.getOrderEventList().add(OrderEventEntity.builder()
+                        .orderStatus(OrderStatus.CANCELED)
+                        .description("Payment via ZaloPay failed")
+                        .orderBill(orderBill)
+                        .isEmployee(false)
+                        .build());
+                orderBillRepository.save(orderBill);
+                transaction.setStatus(PaymentStatus.REFUNDED);
+                transaction.setTotalPaid(0L);
+            }
         }
 
-        // nếu giao dịch vnpay thành công
-        if (transInfo.get("vnp_TransactionStatus").equals("00") && transInfo.get("vnp_Amount").equals(String.valueOf(orderBill.getTotalItemPrice() * 100))) {
-            transaction.setStatus(PaymentStatus.PAID);
-            transaction.setTotalPaid(Long.parseLong(transInfo.get("vnp_Amount").toString()) / 100);
-        } else {
-            orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                    .orderStatus(OrderStatus.CANCELED)
-                    .description("Payment failed")
-                    .orderBill(orderBill)
-                    .isEmployee(false)
-                    .build());
-
-            user.setCoin(user.getCoin() + orderBill.getTotalPayment());
-            orderBillRepository.save(orderBill);
-
-            transaction.setStatus(PaymentStatus.REFUNDED);
-            transaction.setTotalPaid(0L);
-        }
         // Cập nhật kết quả từ vnpay vào database
         transactionRepository.save(transaction);
     }

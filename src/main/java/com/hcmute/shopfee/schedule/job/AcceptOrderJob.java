@@ -27,7 +27,6 @@ public class AcceptOrderJob extends QuartzJobBean {
     private final AuditorAwareService auditorAwareService;
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        List<OrderEventEntity> orderEventList = orderEventRepository.findByOrderBill_IdOrderByCreatedAtDesc(context.getJobDetail().getJobDataMap().getString("orderBillId"));
         OrderBillEntity orderBill = orderBillRepository.findById(context.getJobDetail().getJobDataMap().getString(orderBillId))
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + context.getJobDetail().getJobDataMap().getString("orderBillId")));
         List<OrderEventEntity> orderEvent = orderBill.getOrderEventList();

@@ -20,7 +20,8 @@ public class GoongService {
             branchLocations.append(branch).append("|");
         }
         branchLocations = new StringBuilder(branchLocations.substring(0, branchLocations.length() - 1));
-        DistanceMatrixResponse result = goong.getDistanceMatrix().getDistanceMatrix(clientLocation, branchLocations.toString(), vehicle);
+
+        DistanceMatrixResponse result = goong.getDistanceMatrix(clientLocation, branchLocations.toString(), vehicle);
         List<DistanceMatrixResponse.Row.Element.Distance> resultList = new ArrayList<>();
         Arrays.stream(result.getRows()[0].getElements()).forEach(e -> {
             resultList.add(e.getDistance());

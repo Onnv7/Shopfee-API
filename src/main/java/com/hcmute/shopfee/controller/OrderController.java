@@ -84,7 +84,7 @@ public class OrderController {
             @PathVariable(ORDER_ID) String id,
             @RequestBody @Valid UpdateOrderStatusRequest body, HttpServletRequest request) {
 
-        orderService.insertOrderEventByEmployee(id, body.getOrderStatus(), body.getDescription(), request);
+        orderService.insertOrderEventByEmployee(id, body, request);
 
         ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())

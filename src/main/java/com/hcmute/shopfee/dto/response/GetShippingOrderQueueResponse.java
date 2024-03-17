@@ -20,15 +20,15 @@ public class GetShippingOrderQueueResponse {
     private Date timeLastEvent;
     public static GetShippingOrderQueueResponse fromOrderBillEntity(OrderBillEntity orderBillEntity) {
         GetShippingOrderQueueResponse response = new GetShippingOrderQueueResponse();
-        int sizeEvent = orderBillEntity.getOrderEventList().size() - 1;
+
         response.setId(orderBillEntity.getId());
         response.setPhoneNumber(orderBillEntity.getUser().getPhoneNumber());
         response.setCustomerName(orderBillEntity.getUser().getFullName());
         response.setProductName(orderBillEntity.getOrderItemList().get(0).getName());
         response.setProductQuantity(orderBillEntity.getOrderItemList().get(0).getItemDetailList().get(0).getQuantity());
         response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
-        response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getCreatedAt());
-        response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(sizeEvent).getOrderStatus());
+        response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(0).getCreatedAt());
+        response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());
         response.setTotal(orderBillEntity.getTotalItemPrice());
         return response;
     }

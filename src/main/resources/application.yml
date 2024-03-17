@@ -152,6 +152,18 @@ ahamove:
 #  module-name: vna
 #  api-version: 1.0.0
 
+# vnpay
+vnpay:
+  secret_key: ${VNPAY_SECRET_KEY}
+  tmn_code: ${VNPAY_TMN_CODE}
+
+# zalopay
+zalo_pay:
+  app_id: ${ZALO_PAY_APP_ID}
+  key1: ${ZALO_PAY_KEY_1}
+  key2: ${ZALO_PAY_KEY_2}
+
+
 app:
   username_admin: ${APP_USERNAME_ADMIN}
   password_admin: ${APP_PASSWORD_ADMIN}

@@ -21,8 +21,9 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
-import com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee.response.EstimateOrderFeeResponse;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
+import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
+import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
@@ -32,10 +33,8 @@ import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
-import com.hcmute.shopfee.service.common.AhamoveService;
-import com.hcmute.shopfee.service.common.GoongService;
+import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
-import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,13 +49,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Time;
 import java.time.ZoneId;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
-import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
 import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
 @Service
@@ -81,10 +78,11 @@ public class OrderService implements IOrderService {
     private final CancellationDemandRepository cancellationDemandRepository;
     private final Scheduler scheduler;
     private final AhamoveService ahamoveService;
+    private final VNPayService vnPayService;
+    private final ZaloPayService zaloPayService;
 
 
-
-    private Map<String, Object> buildTransaction(PaymentType paymentType, HttpServletRequest request, long totalPrice) {
+    private Map<String, Object> buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
         Map<String, Object> result = new HashMap<>();
         if (paymentType == PaymentType.CASHING) {
@@ -92,21 +90,25 @@ public class OrderService implements IOrderService {
                     .status(PaymentStatus.UNPAID)
                     .totalPaid(0L)
                     .paymentType(PaymentType.CASHING).build();
-        } else if (paymentType == PaymentType.BANKING_VNPAY) {
-            Map<String, String> paymentData = null;
-            try {
-                paymentData = VNPayUtils.createUrlPayment(request, totalPrice, "Shipping Order Info");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+        } else if (paymentType == PaymentType.VNPAY) {
+            PreTransactionInfo paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
             transData = TransactionEntity.builder()
-                    .invoiceCode(paymentData.get(VNP_TXN_REF_KEY))
-                    .timeCode(paymentData.get(VNP_CREATE_DATE_KEY))
+                    .invoiceCode(paymentData.getVnpTxnRef())
+                    .timeCode(paymentData.getVnpCreateDate())
                     .status(PaymentStatus.UNPAID)
-                    .paymentType(PaymentType.BANKING_VNPAY)
+                    .paymentType(PaymentType.VNPAY)
                     .totalPaid(0L)
                     .build();
-            result.put(VNP_URL_KEY, paymentData.get(VNP_URL_KEY));
+            result.put(VNP_URL_KEY, paymentData.getVnpUrl());
+        } else if (paymentType == PaymentType.ZALOPAY) {
+            CreateOrderZaloPayResponse paymentData = zaloPayService.createOrder(orderBill.getTotalPayment(), orderBill.getId());
+            transData = TransactionEntity.builder()
+                    .invoiceCode(paymentData.getInvoiceCode())
+                    .status(PaymentStatus.UNPAID)
+                    .paymentType(PaymentType.ZALOPAY)
+                    .totalPaid(0L)
+                    .build();
+            result.put(VNP_URL_KEY, paymentData.getOrderUrl());
         }
         result.put("transaction", transData);
         return result;
@@ -366,8 +368,8 @@ public class OrderService implements IOrderService {
     public CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
 
-        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.BANKING_VNPAY) {
-            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID);
+        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY) {
+            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "vnpay does not support bill payments under 10,000đ");
         }
 
         long totalPrice = 0L;
@@ -437,14 +439,14 @@ public class OrderService implements IOrderService {
             throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
         orderBill.setTotalPayment(totalPrice);
-
+        orderBill = orderBillRepository.save(orderBill);
         // set giao dịch
-        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, totalPrice);
+        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, orderBill);
         TransactionEntity transaction = (TransactionEntity) transactionBuilderMap.get("transaction");
         transaction.setOrderBill(orderBill);
         orderBill.setTransaction(transaction);
 
-        OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
+        OrderBillEntity dataSaved2 = orderBillRepository.save(orderBill);
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -457,12 +459,12 @@ public class OrderService implements IOrderService {
 
         try {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dataSaved.getCreatedAt());
+            calendar.setTime(dataSaved2.getCreatedAt());
             calendar.add(Calendar.MINUTE, 30);
 
 
             Map<String, Object> data = new HashMap<String, Object>();
-            data.put(AcceptOrderJob.orderBillId, dataSaved.getId());
+            data.put(AcceptOrderJob.orderBillId, dataSaved2.getId());
             JobDetail jobDetail = SchedulerUtils.buildJobDetail(AcceptOrderJob.class, data);
             Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
             scheduler.scheduleJob(jobDetail, trigger);
@@ -478,8 +480,8 @@ public class OrderService implements IOrderService {
     public CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
 
-        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.BANKING_VNPAY) {
-            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID);
+        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY) {
+            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "vnpay does not support bill payments under 10,000đ");
         }
 
         long totalPrice = 0L;
@@ -521,9 +523,10 @@ public class OrderService implements IOrderService {
 
         // set total payment
         orderBill.setTotalPayment(totalPrice);
+        orderBill = orderBillRepository.save(orderBill);
 
         // set giao dịch
-        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, totalPrice);
+        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, orderBill);
 //        transaction = transactionRepository.save(transaction);
         TransactionEntity transaction = (TransactionEntity) transactionBuilderMap.get("transaction");
         transaction.setOrderBill(orderBill);
@@ -594,10 +597,10 @@ public class OrderService implements IOrderService {
 
     @Transactional
     @Override
-    public void insertOrderEventByEmployee(String orderId, OrderStatus orderStatus, String description, HttpServletRequest request) {
+    public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
         List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING, OrderStatus.SUCCEED, OrderStatus.CANCELED);
 
-        if (!validOrderStatus.contains(orderStatus)) {
+        if (!validOrderStatus.contains(body.getOrderStatus())) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order status is not valid");
         }
 
@@ -610,19 +613,18 @@ public class OrderService implements IOrderService {
         }
 
         order.getOrderEventList().add(OrderEventEntity.builder()
-                .orderStatus(orderStatus)
-                .description(description)
+                .orderStatus(body.getOrderStatus())
+                .description(body.getDescription())
                 .orderBill(order)
                 .isEmployee(true)
                 .build()
         );
 
         TransactionEntity transaction = order.getTransaction();
-        if (orderStatus == OrderStatus.CANCELED && transaction.getPaymentType() == PaymentType.BANKING_VNPAY && transaction.getStatus() == PaymentStatus.PAID) {
+        if (body.getOrderStatus() == OrderStatus.CANCELED && transaction.getStatus() == PaymentStatus.PAID) {
             UserEntity user = order.getUser();
             user.setCoin(user.getCoin() + order.getTotalPayment());
             userRepository.save(user);
-
             transaction.setStatus(PaymentStatus.REFUNDED);
             transactionRepository.save(transaction);
         }
@@ -694,7 +696,7 @@ public class OrderService implements IOrderService {
                         .orderBill(orderBill)
                         .orderStatus(OrderStatus.CANCELED)
                         .build());
-                if (orderBill.getTransaction().getPaymentType() == PaymentType.BANKING_VNPAY && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+                if (orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
                     customer.setCoin(orderBill.getTotalPayment() + customer.getCoin());
                     userRepository.save(customer);
 
@@ -736,10 +738,9 @@ public class OrderService implements IOrderService {
                 .build()
         );
 
-        if (orderBill.getTransaction().getPaymentType() == PaymentType.BANKING_VNPAY && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+        if (orderBill.getTransaction().getPaymentType() != PaymentType.CASHING && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
             user.setCoin(user.getCoin() + orderBill.getTotalPayment());
             userRepository.save(user);
-
             orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
         }
 
@@ -829,7 +830,6 @@ public class OrderService implements IOrderService {
         int branchSize = branchEntityList.size();
 
 
-
         Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
         BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
         // TODO: tính tien ship tu ben thu 3
@@ -844,16 +844,16 @@ public class OrderService implements IOrderService {
         SecurityUtils.checkUserId(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
         List<String> orderStatusList = new ArrayList<>();
-        if(orderStaging == OrderStaging.WAITING) {
+        if (orderStaging == OrderStaging.WAITING) {
             orderStatusList.add(OrderStatus.CREATED.name());
-        } else if(orderStaging == OrderStaging.IN_PROCESS) {
+        } else if (orderStaging == OrderStaging.IN_PROCESS) {
             List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.DELIVERING.name(),
                     OrderStatus.CANCELLATION_REQUEST.name(), OrderStatus.CANCELLATION_REQUEST_ACCEPTED.name(),
                     OrderStatus.CANCELLATION_REQUEST_REFUSED.name());
             orderStatusList.addAll(statusesToAdd);
-        } else if(orderStaging == OrderStaging.SUCCEED) {
+        } else if (orderStaging == OrderStaging.SUCCEED) {
             orderStatusList.add(OrderStatus.SUCCEED.name());
-        } else if(orderStaging == OrderStaging.CANCELED) {
+        } else if (orderStaging == OrderStaging.CANCELED) {
             orderStatusList.add(OrderStatus.CANCELED.name());
         }
         List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
