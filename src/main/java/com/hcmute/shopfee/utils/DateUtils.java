@@ -2,10 +2,12 @@ package com.hcmute.shopfee.utils;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -66,5 +68,9 @@ public class DateUtils {
     public static Time getCurrentTime(ZoneId zone) {
         LocalTime localTime = LocalTime.now(zone);
         return Time.valueOf(localTime);
+    }
+
+    public static Instant after(Instant original, int timeValue, ChronoUnit unit) {
+        return original.plus(timeValue, unit);
     }
 }

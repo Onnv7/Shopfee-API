@@ -25,6 +25,7 @@ public class ErrorConstant {
     public static final String BANNER_ID_NOT_FOUND = "Banner with id ";
     public static final String BRANCH_ID_NOT_FOUND = "Branch with id ";
     public static final String CATEGORY_ID_NOT_FOUND = "Category with id ";
+    public static final String TRANSACTION_ID_NOT_FOUND = "Transaction with id ";
     public static final String COUPON_ID_NOT_FOUND = "Coupon with id ";
     public static final String COUPON_CODE_NOT_FOUND = "Coupon with code ";
     public static final String PRODUCT_ID_NOT_FOUND = "Product with id ";

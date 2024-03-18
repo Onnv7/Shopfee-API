@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.database.TransactionEntity;
+import com.hcmute.shopfee.entity.database.order.TransactionEntity;
 import com.hcmute.shopfee.entity.database.order.*;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
@@ -22,6 +22,7 @@ public class GetOrderByIdResponse {
     private Long totalPayment;
     private Long shippingFee;
     private Long totalItemPrice;
+    private Long coin;
     private OrderType orderType;
     private ShippingInformation shippingInformation;
 
@@ -33,7 +34,6 @@ public class GetOrderByIdResponse {
     private Date receiveTime;
     private Long shippingDiscount;
     private Long orderDiscount;
-
 //    private Branch branch;
     private String branchAddress;
 
@@ -42,7 +42,7 @@ public class GetOrderByIdResponse {
         GetOrderByIdResponse order = new GetOrderByIdResponse();
         order.setId(entity.getId());
         order.setNote(entity.getNote());
-
+        order.setCoin(entity.getCoin());
         order.setTotalPayment(entity.getTotalPayment());
         order.setShippingFee(entity.getShippingFee());
         order.setTotalItemPrice(entity.getTotalItemPrice());
@@ -73,6 +73,7 @@ public class GetOrderByIdResponse {
         private PaymentStatus status;
         private PaymentType paymentType;
         private Long totalPaid;
+        private String paymentUrl;
 
         public static Transaction fromTransactionEntity(TransactionEntity entity) {
             Transaction transaction = new Transaction();
@@ -80,6 +81,7 @@ public class GetOrderByIdResponse {
             transaction.setStatus(entity.getStatus());
             transaction.setPaymentType(entity.getPaymentType());
             transaction.setTotalPaid(entity.getTotalPaid());
+            transaction.setPaymentUrl(entity.getPaymentUrl());
             return transaction;
         }
     }

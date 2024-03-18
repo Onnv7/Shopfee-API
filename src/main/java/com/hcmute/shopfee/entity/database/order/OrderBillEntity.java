@@ -4,8 +4,6 @@ package com.hcmute.shopfee.entity.database.order;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.database.BranchEntity;
-import com.hcmute.shopfee.entity.database.CancellationRequestEntity;
-import com.hcmute.shopfee.entity.database.TransactionEntity;
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.entity.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.database.identifier.StringPrefixedSequenceGenerator;

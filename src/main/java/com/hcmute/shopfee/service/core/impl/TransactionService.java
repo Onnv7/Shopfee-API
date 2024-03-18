@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.database.TransactionEntity;
+import com.hcmute.shopfee.entity.database.order.TransactionEntity;
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
@@ -45,8 +45,7 @@ public class TransactionService implements ITransactionService {
 
         // Goi den VNPay de lay thong tin
         if(transaction.getPaymentType() == PaymentType.VNPAY) {
-            TransactionInfoQuery transInfo = null;
-            transInfo = vnPayService.getTransactionInfoTest(transaction.getInvoiceCode(), transaction.getTimeCode(), request);;
+            TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getInvoiceCode(), transaction.getTimeCode(), request);;
 
             // nếu giao dịch vnpay thành công
             if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalItemPrice() * 100))) {

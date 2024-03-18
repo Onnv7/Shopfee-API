@@ -2,7 +2,7 @@ package com.hcmute.shopfee.service.core;
 
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.enums.OrderStaging;
+import com.hcmute.shopfee.enums.OrderPhasesStatus;
 import com.hcmute.shopfee.enums.OrderStatus;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,7 +21,7 @@ public interface IOrderService {
     GetOrderListResponse getOrderListForAdmin(int page, int size, String key, OrderStatus status);
     GetOrderByIdResponse getOrderDetailsById(String id);
     GetShippingFeeResponse getShippingFee(Double lat, Double lng);
-    List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStaging orderStaging, int page, int size);
+    List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size);
     List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId);
     GetOrderQuantityByStatusResponse getOrderQuantityByStatusAtCurrentDate(OrderStatus orderStatus);
 }

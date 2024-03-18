@@ -41,7 +41,7 @@ public class Refund {
         String vnp_TransactionType = refundType ;
         String vnp_TxnRef = invoiceCode;
         String vnp_Amount = String.valueOf(Integer.parseInt(amount)*100);
-        String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
+        String vnp_OrderInfo = "OrderId:" + vnp_TxnRef;
         String vnp_TransactionNo = "";
         String vnp_TransactionDate = timeId ;
         String vnp_CreateBy = "ADMIN";

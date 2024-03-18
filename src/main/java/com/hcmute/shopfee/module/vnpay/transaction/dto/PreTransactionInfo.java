@@ -11,4 +11,5 @@ public class PreTransactionInfo {
     private String vnpCreateDate;
     @JsonProperty("vnp_TxnRef")
     private String vnpTxnRef;
+    private String ipAddress;
 }

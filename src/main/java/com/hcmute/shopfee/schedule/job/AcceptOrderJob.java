@@ -3,7 +3,10 @@ package com.hcmute.shopfee.schedule.job;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.database.order.TransactionEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
+import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -13,37 +16,42 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 
 
 @RequiredArgsConstructor
 public class AcceptOrderJob extends QuartzJobBean {
-    public static final String orderBillId = "orderBillId";
+    public static final String ORDER_BILL_ID = "orderBillId";
     private final OrderEventRepository orderEventRepository;
     private final OrderBillRepository orderBillRepository;
     private final AuditorAwareService auditorAwareService;
     @Override
-    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        OrderBillEntity orderBill = orderBillRepository.findById(context.getJobDetail().getJobDataMap().getString(orderBillId))
+    protected void executeInternal(JobExecutionContext context) {
+        OrderBillEntity orderBill = orderBillRepository.findById(context.getJobDetail().getJobDataMap().getString(ORDER_BILL_ID))
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + context.getJobDetail().getJobDataMap().getString("orderBillId")));
         List<OrderEventEntity> orderEvent = orderBill.getOrderEventList();
         if(orderEvent != null && orderBill.getOrderEventList().get(0).getOrderStatus() == OrderStatus.CREATED) {
-            OrderEventEntity newEvent = OrderEventEntity.builder()
-                    .orderBill(orderBill)
-                    .orderStatus(OrderStatus.ACCEPTED)
-                    .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
-                    .description("The order has been automatically accepted")
-                    .isEmployee(false)
-                    .build();
-            orderBill.getOrderEventList().add(newEvent);
-            try {
-                orderBillRepository.save(orderBill);
-            } catch (Exception e) {
-                System.out.println(e);
+            TransactionEntity transaction = orderBill.getTransaction();
+            OrderEventEntity newEvent;
+            if(transaction.getPaymentType() != PaymentType.CASHING && transaction.getStatus() == PaymentStatus.UNPAID) {
+                newEvent = OrderEventEntity.builder()
+                        .orderBill(orderBill)
+                        .orderStatus(OrderStatus.CANCELED)
+                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
+                        .description("The order has been canceled due to unpaid payment")
+                        .isEmployee(true)
+                        .build();
+            } else {
+                newEvent = OrderEventEntity.builder()
+                        .orderBill(orderBill)
+                        .orderStatus(OrderStatus.ACCEPTED)
+                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
+                        .description("The order has been automatically accepted")
+                        .isEmployee(true)
+                        .build();
             }
+            orderBill.getOrderEventList().add(newEvent);
+                orderBillRepository.save(orderBill);
         }
     }
 }

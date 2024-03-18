@@ -1,10 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.entity.database.*;
-import com.hcmute.shopfee.entity.database.order.ItemDetailEntity;
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
+import com.hcmute.shopfee.entity.database.order.*;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.database.product.ToppingEntity;
@@ -37,6 +34,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -83,6 +81,8 @@ public class ToolController {
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
 
+    @Autowired
+    private Environment environment;
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
 //        orderService.checkOrderCoupon(code);
@@ -376,14 +376,31 @@ public class ToolController {
         return zaloPayService.getOrderTest(request);
     }
 
-    @GetMapping("/test-get-info-vnpay")
+    @GetMapping("/test-get-info-vnpay-ip-address")
     public TransactionInfoQuery searchProduct(
 
             HttpServletRequest request,
             @RequestParam("txnref") String txnref,
-            @RequestParam("transId") String transId
+            @RequestParam("transId") String transId,
+            @RequestParam("ip") String ip
     ) throws UnsupportedEncodingException {
 
-        return vnPayService.getTransactionInfoTest(txnref, transId, request);
+        return vnPayService.getTransactionInfoTest(txnref, transId, ip);
+    }
+
+    @GetMapping("/test-cloudinary-thumbnail")
+    public String cloudinary(@RequestParam("id") String id) throws UnsupportedEncodingException {
+
+        System.out.println(new Date());
+        String data = cloudinaryService.getThumbnailUrl(id);
+        System.out.println(new Date());
+        return data;
+    }
+
+    @GetMapping("/getIpAddressServer")
+    public String getIpAddressServer(HttpServletRequest request) throws UnsupportedEncodingException {
+
+        String serverIpAddress = environment.getProperty("local.server.ip");
+        return "Server IP Address: " + serverIpAddress;
     }
 }

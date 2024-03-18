@@ -79,6 +79,7 @@ public class VNPayTransaction {
         result.setVnpTxnRef(vnp_TxnRef);
         result.setVnpCreateDate(vnp_CreateDate);
         result.setVnpUrl(paymentUrl);
+        result.setIpAddress(vnp_IpAddr);
         return result;
     }
 

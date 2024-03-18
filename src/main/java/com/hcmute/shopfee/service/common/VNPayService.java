@@ -23,10 +23,24 @@ public class VNPayService {
         }
     }
 
-    public TransactionInfoQuery getTransactionInfoTest(String txnref, String transId, HttpServletRequest request) {
+    public TransactionInfoQuery getTransactionInfo(String invoiceCode, String timeCode, HttpServletRequest request) {
         try {
-            return vnPay.getTransactionInfo(txnref, transId, request);
-        }  catch (IOException e) {
+            String ipAddress = "";
+            if (request == null) {
+                ipAddress = "127.0.0.1";
+            } else {
+                ipAddress = vnPay.getIpAddress(request);
+            }
+            return vnPay.getTransactionInfo(invoiceCode, timeCode, ipAddress);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public TransactionInfoQuery getTransactionInfoTest(String invoiceCode, String timeCode, String ip) {
+        try {
+            return vnPay.getTransactionInfoTest(invoiceCode, timeCode, ip);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

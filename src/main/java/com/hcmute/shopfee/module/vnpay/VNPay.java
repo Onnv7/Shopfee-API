@@ -45,8 +45,12 @@ public class VNPay {
         return vnPayTransaction.createUrlPayment(request, amount, orderInfo);
     }
 
-    public TransactionInfoQuery getTransactionInfo(String txnref, String transId, HttpServletRequest request) throws IOException {
-        return queryDr.getTransactionInfo(txnref, transId, request);
+    public TransactionInfoQuery getTransactionInfo(String txnref, String transId, String ipAddress) throws IOException {
+        return queryDr.getTransactionInfo(txnref, transId, ipAddress);
+    }
+
+    public TransactionInfoQuery getTransactionInfoTest(String txnref, String transId, String request) throws IOException {
+        return queryDr.getTransactionInfoTest(txnref, transId, request);
     }
 
     public String getRandomNumber(int len) {

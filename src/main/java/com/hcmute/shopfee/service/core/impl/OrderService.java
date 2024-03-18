@@ -33,6 +33,7 @@ import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
+import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
@@ -50,11 +51,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
+import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
-import static com.hcmute.shopfee.constant.VNPayConstant.*;
 
 @Service
 @RequiredArgsConstructor
@@ -80,11 +82,12 @@ public class OrderService implements IOrderService {
     private final AhamoveService ahamoveService;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
+    private final SchedulerService schedulerService;
 
 
-    private Map<String, Object> buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
+    private void buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
-        Map<String, Object> result = new HashMap<>();
+
         if (paymentType == PaymentType.CASHING) {
             transData = TransactionEntity.builder()
                     .status(PaymentStatus.UNPAID)
@@ -98,20 +101,19 @@ public class OrderService implements IOrderService {
                     .status(PaymentStatus.UNPAID)
                     .paymentType(PaymentType.VNPAY)
                     .totalPaid(0L)
+                    .paymentUrl(paymentData.getVnpUrl())
                     .build();
-            result.put(VNP_URL_KEY, paymentData.getVnpUrl());
         } else if (paymentType == PaymentType.ZALOPAY) {
             CreateOrderZaloPayResponse paymentData = zaloPayService.createOrder(orderBill.getTotalPayment(), orderBill.getId());
             transData = TransactionEntity.builder()
                     .invoiceCode(paymentData.getInvoiceCode())
                     .status(PaymentStatus.UNPAID)
+                    .paymentUrl(paymentData.getOrderUrl())
                     .paymentType(PaymentType.ZALOPAY)
                     .totalPaid(0L)
                     .build();
-            result.put(VNP_URL_KEY, paymentData.getOrderUrl());
         }
-        result.put("transaction", transData);
-        return result;
+        orderBill.setTransaction(transData);
     }
 
     private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill) {
@@ -425,14 +427,16 @@ public class OrderService implements IOrderService {
 
         totalPrice -= amountReduced;
 
-        if (totalPrice < body.getCoin()) {
+        if (totalPrice <= body.getCoin()) {
             orderBill.setCoin(totalPrice);
             totalPrice = 0;
         } else {
             totalPrice -= body.getCoin();
             orderBill.setCoin(body.getCoin());
         }
-        user.setCoin(orderBill.getCoin());
+
+        // cập nhật lại xu cho user
+        user.setCoin(user.getCoin() - orderBill.getCoin());
         userRepository.save(user);
 
         if (totalPrice != body.getTotal()) {
@@ -441,10 +445,9 @@ public class OrderService implements IOrderService {
         orderBill.setTotalPayment(totalPrice);
         orderBill = orderBillRepository.save(orderBill);
         // set giao dịch
-        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, orderBill);
-        TransactionEntity transaction = (TransactionEntity) transactionBuilderMap.get("transaction");
+        buildTransaction(body.getPaymentType(), request, orderBill);
+        TransactionEntity transaction = orderBill.getTransaction();
         transaction.setOrderBill(orderBill);
-        orderBill.setTransaction(transaction);
 
         OrderBillEntity dataSaved2 = orderBillRepository.save(orderBill);
 
@@ -453,25 +456,27 @@ public class OrderService implements IOrderService {
                 .branchId(orderBill.getBranch().getId())
                 .transactionId(transaction.getId())
                 .build();
-        if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
-            resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
+        if (transaction.getPaymentUrl() != null && totalPrice > 0) {
+            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
+            resData.setPaymentUrl(transaction.getPaymentUrl());
+            Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
+            if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
+            } else if(transaction.getPaymentType() == PaymentType.VNPAY) {
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 16, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.SECONDS);
+            }
+            checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
+            checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
+            schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
-        try {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dataSaved2.getCreatedAt());
-            calendar.add(Calendar.MINUTE, 30);
+        Instant orderAcceptanceScheduleTime = DateUtils.after(dataSaved2.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
+        Map<String, Object> orderAcceptanceScheduleData = new HashMap<String, Object>();
+        orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved2.getId());
+        schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
 
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put(AcceptOrderJob.orderBillId, dataSaved2.getId());
-            JobDetail jobDetail = SchedulerUtils.buildJobDetail(AcceptOrderJob.class, data);
-            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
-            scheduler.scheduleJob(jobDetail, trigger);
-        } catch (Exception e) {
-            log.error("Schedule error " + e.getMessage());
-            ;
-        }
         return resData;
     }
 
@@ -507,14 +512,16 @@ public class OrderService implements IOrderService {
 
         totalPrice -= amountReduced;
 
-        if (totalPrice < body.getCoin()) {
+        if (totalPrice <= body.getCoin()) {
             orderBill.setCoin(totalPrice);
             totalPrice = 0;
         } else {
             totalPrice -= body.getCoin();
             orderBill.setCoin(body.getCoin());
         }
-        user.setCoin(orderBill.getCoin());
+
+        // cập nhật lại xu cho user
+        user.setCoin(user.getCoin() - orderBill.getCoin());
         userRepository.save(user);
 
         if (totalPrice != body.getTotal()) {
@@ -526,11 +533,10 @@ public class OrderService implements IOrderService {
         orderBill = orderBillRepository.save(orderBill);
 
         // set giao dịch
-        Map<String, Object> transactionBuilderMap = buildTransaction(body.getPaymentType(), request, orderBill);
-//        transaction = transactionRepository.save(transaction);
-        TransactionEntity transaction = (TransactionEntity) transactionBuilderMap.get("transaction");
+        buildTransaction(body.getPaymentType(), request, orderBill);
+        TransactionEntity transaction = orderBill.getTransaction();
         transaction.setOrderBill(orderBill);
-        orderBill.setTransaction(transaction);
+
 
         // set sự kiện đơn hàng
         List<OrderEventEntity> orderEventList = new ArrayList<>();
@@ -556,25 +562,17 @@ public class OrderService implements IOrderService {
                 .orderId(orderBill.getId())
                 .transactionId(transaction.getId())
                 .build();
-        if (transactionBuilderMap.get(VNP_URL_KEY) != null && totalPrice > 0) {
-            resData.setPaymentUrl(transactionBuilderMap.get(VNP_URL_KEY).toString());
+        if (transaction.getPaymentUrl() != null && totalPrice > 0) {
+            resData.setPaymentUrl(transaction.getPaymentUrl());
+
         }
 
-        try {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(dataSaved.getCreatedAt());
-            calendar.add(Calendar.MINUTE, 30);
+        Instant newIn = DateUtils.after(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
+        Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
+        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved.getId());
+        schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
 
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put(AcceptOrderJob.orderBillId, dataSaved.getId());
-            JobDetail jobDetail = SchedulerUtils.buildJobDetail(AcceptOrderJob.class, data);
-            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, Date.from(calendar.toInstant()));
-            scheduler.scheduleJob(jobDetail, trigger);
-        } catch (Exception e) {
-            log.error("Schedule error " + e.getMessage());
-            ;
-        }
         return resData;
     }
 
@@ -815,7 +813,8 @@ public class OrderService implements IOrderService {
 
     @Override
     public GetOrderByIdResponse getOrderDetailsById(String id) {
-        OrderBillEntity orderBill = orderBillRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
+        OrderBillEntity orderBill = orderBillRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
         GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
         return order;
     }
@@ -840,20 +839,20 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderStaging orderStaging, int page, int size) {
+    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size) {
         SecurityUtils.checkUserId(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
         List<String> orderStatusList = new ArrayList<>();
-        if (orderStaging == OrderStaging.WAITING) {
+        if (orderPhasesStatus == OrderPhasesStatus.WAITING) {
             orderStatusList.add(OrderStatus.CREATED.name());
-        } else if (orderStaging == OrderStaging.IN_PROCESS) {
+        } else if (orderPhasesStatus == OrderPhasesStatus.IN_PROCESS) {
             List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.DELIVERING.name(),
                     OrderStatus.CANCELLATION_REQUEST.name(), OrderStatus.CANCELLATION_REQUEST_ACCEPTED.name(),
                     OrderStatus.CANCELLATION_REQUEST_REFUSED.name());
             orderStatusList.addAll(statusesToAdd);
-        } else if (orderStaging == OrderStaging.SUCCEED) {
+        } else if (orderPhasesStatus == OrderPhasesStatus.SUCCEED) {
             orderStatusList.add(OrderStatus.SUCCEED.name());
-        } else if (orderStaging == OrderStaging.CANCELED) {
+        } else if (orderPhasesStatus == OrderPhasesStatus.CANCELED) {
             orderStatusList.add(OrderStatus.CANCELED.name());
         }
         List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
