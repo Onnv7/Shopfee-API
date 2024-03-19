@@ -118,6 +118,7 @@ public class SwaggerConstant {
     // For Employee =============================================================
     public static final String EMPLOYEE_CONTROLLER_TITLE = "EMPLOYEE MANAGEMENT";
     public static final String EMPLOYEE_UPDATE_BY_ID_SUM = "Update employee's information by employee id";
+    public static final String EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM = "Update employee's profile by employee id";
     public static final String EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUM = "Update employee's new password by employee id for admin";
 
     public static final String EMPLOYEE_DELETE_BY_ID_SUM = "Delete a employee by employee id";

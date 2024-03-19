@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
@@ -105,6 +106,15 @@ public class EmployeeService implements IEmployeeService {
             }
         }
 
+        modelMapperService.mapNotNull(data, employee);
+        employeeRepository.save(employee);
+    }
+
+    @Override
+    public void updateEmployeeProfile(UpdateEmployeeProfileRequest data, String id) {
+        SecurityUtils.checkUserId(id);
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + id));
         modelMapperService.mapNotNull(data, employee);
         employeeRepository.save(employee);
     }

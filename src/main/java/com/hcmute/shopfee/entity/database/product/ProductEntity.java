@@ -46,7 +46,7 @@ public class ProductEntity {
     @Column(name = "type", nullable = false)
     private ProductType type;
 
-    @Column(name = "image_id", unique = true, nullable = false)
+    @Column(name = "image_id", nullable = false)
     private String imageId;
 
     @Column(name = "image_url", nullable = false)

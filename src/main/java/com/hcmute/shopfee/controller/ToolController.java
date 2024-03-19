@@ -83,6 +83,8 @@ public class ToolController {
 
     @Autowired
     private Environment environment;
+    private final EmployeeRepository employeeRepository;
+
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
 //        orderService.checkOrderCoupon(code);
@@ -210,8 +212,16 @@ public class ToolController {
                 .recipientName("NVA")
                 .user(userEntity)
                 .build();
-
         addressRepository.save(addressEntity);
+        EmployeeEntity employee = EmployeeEntity.builder()
+                .username("employee")
+                .password(passwordEncoder.encode("123456"))
+                .firstName("an")
+                .lastName("nguyen")
+                .status(EmployeeStatus.ACTIVE)
+                .isDeleted(false)
+                .build();
+        employeeRepository.save(employee);
 
         OrderBillEntity orderBill = OrderBillEntity.builder()
                 .createdAt(new Date())

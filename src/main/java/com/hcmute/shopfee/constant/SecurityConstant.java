@@ -99,7 +99,7 @@ public class SecurityConstant {
     public static final String[] PATCH_EMPLOYEE_PATH = {
             PATCH_TRANSACTION_UPDATE_COMPLETE_PATH,
             PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH, PATCH_ORDER_UPDATE_STATUS_PATH,
-            PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH,
+            PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH, PATCH_EMPLOYEE_PROFILE_BY_ID_PATH
     };
     // Only MANAGER =================================================================
     public static final String[] GET_MANAGER_PATH = {

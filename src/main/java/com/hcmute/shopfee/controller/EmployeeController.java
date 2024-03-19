@@ -2,6 +2,7 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
+import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
@@ -108,6 +109,19 @@ public class EmployeeController {
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) {
         employeeService.updateEmployeeForAdmin(body, id);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+//                .data(resData)
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM)
+    @PatchMapping(path = PATCH_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> updateEmployeeProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeProfileRequest body) {
+        employeeService.updateEmployeeProfile(body, id);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
 //                .data(resData)
