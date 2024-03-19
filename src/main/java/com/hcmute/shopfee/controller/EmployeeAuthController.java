@@ -58,7 +58,7 @@ public class EmployeeAuthController {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
         if(refreshToken == null) {
-            throw new CustomException(ErrorConstant.NOT_FOUND);
+            throw new CustomException(ErrorConstant.NOT_FOUND, "Token is null");
         }
         employeeAuthService.employeeLogout(refreshToken);
 

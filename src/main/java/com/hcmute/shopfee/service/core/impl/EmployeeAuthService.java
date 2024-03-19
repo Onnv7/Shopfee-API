@@ -164,7 +164,8 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
     @Override
     public void changePasswordProfile(ChangePasswordEmployeeRequest data, String emplId) {
-        EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(emplId)
+        SecurityUtils.checkUserId(emplId);
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(emplId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
         boolean isValid = passwordEncoder.matches(data.getOldPassword(), employee.getPassword());
         if (!isValid) {

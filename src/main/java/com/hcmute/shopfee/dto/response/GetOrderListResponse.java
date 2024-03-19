@@ -5,6 +5,7 @@ import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,5 +34,12 @@ public class GetOrderListResponse {
             order.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());
             return order;
         }
+    }
+    public static  List<Order> fromOrderBillEntityList(List<OrderBillEntity> orderBillEntityList){
+        List<Order> data = new ArrayList<>();
+        for(OrderBillEntity orderBillEntity : orderBillEntityList) {
+            data.add(Order.fromOrderBillEntity(orderBillEntity));
+        }
+        return data;
     }
 }

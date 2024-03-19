@@ -17,49 +17,53 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Optional<OrderBillEntity> findByTransaction_Id(String transactionId);
 
     @Query(value = """
-            select ob.id, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total, ob.updated_at, ob.branch_id, ob.user_id
+            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id
             from order_bill ob
             join (
-            	select *
-            	from order_event
-            	where order_event.order_status = ?1
-            ) as oe on ob.id = oe.order_bill_id
+            	select order_bill_id, MAX(created_at) as created_at
+             	from order_event
+             	group by order_bill_id
+            ) as last_event on ob.id = last_event.order_bill_id
+            join order_event oe on last_event.created_at = oe.created_at
+            where oe.order_status = ?1
             order by ob.created_at desc
             """, nativeQuery = true)
     Page<OrderBillEntity> getOrderBillByLastStatus(String status, Pageable pageable) ;
 
     @Query(value = """
-            select ob.id, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total, ob.updated_at, ob.branch_id, ob.user_id
+            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id
             from order_bill ob
             join (
-            	select *
-            	from order_event
-            	where order_event.order_status = ?1
-            ) as oe on ob.id = oe.order_bill_id
-            where ob.branch_id = ?2
+            	select order_bill_id, MAX(created_at) as created_at
+             	from order_event
+             	group by order_bill_id
+            ) as last_event on ob.id = last_event.order_bill_id
+            join order_event oe on last_event.created_at = oe.created_at
+            where oe.order_status = ?1
+            and ob.branch_id = ?2
             and ob.order_type = ?3
             AND DATE(ob.created_at) = CURRENT_DATE
             order by ob.created_at desc
             """, nativeQuery = true)
-    Page<OrderBillEntity> getShippingOrderQueueToday(String orderStatus, String branchId, String orderType, Pageable pageable);
+    Page<OrderBillEntity> getOrderQueueToday(String orderStatus, String branchId, String orderType, Pageable pageable);
 
-
-    @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id\s
-            from order_bill AS ob
-            join (
-            	select *
-            	from order_event
-            	where order_event.order_status regexp ?1
-            ) as oe on ob.id = oe.order_bill_id
-            order by ob.created_at desc
-            """, nativeQuery = true)
-    Page<OrderBillEntity> getOrderList(String orderStatusRegex, Pageable pageable);
 
     @Query(value = """
             select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id
             from order_bill ob
-            join(select order_bill_id,  MAX(created_at) as created_at
+            join(select order_bill_id, MAX(created_at) as created_at
+                 from order_event
+                 group by order_bill_id) as last_event on ob.id = last_event.order_bill_id
+            join order_event oe on last_event.created_at = oe.created_at
+            where (oe.order_status = ?1 or ?1 = '')
+            order by ob.created_at desc
+            """, nativeQuery = true)
+    Page<OrderBillEntity> getOrderListForAdmin(String orderStatus, Pageable pageable);
+
+    @Query(value = """
+            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.receive_time, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id
+            from order_bill ob
+            join(select order_bill_id, MAX(created_at) as created_at
                  from order_event
                  group by order_bill_id) as last_event on ob.id = last_event.order_bill_id
             join order_event oe on last_event.created_at = oe.created_at

@@ -58,7 +58,7 @@ public class OrderController {
     }
     @Operation(summary = ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM)
     @GetMapping(path = GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<GetOrderHistoryForEmployeeResponse>>> getOrderHistoryPageForEmployee(
+    public ResponseEntity<ResponseAPI<GetOrderHistoryForEmployeeResponse>> getOrderHistoryPageForEmployee(
             @PathVariable("orderStatus") OrderStatus orderStatus,
             @Parameter(name = "key", description = "Key is order's code, customerCode, email, phoneNumber, phoneNumberReceiver", required = false, example = "U00000001")
             @RequestParam(name = "key", required = false) String key,
@@ -67,10 +67,9 @@ public class OrderController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size)
     {
-        List<GetOrderHistoryForEmployeeResponse> resData = new ArrayList<>();
-        resData = orderService.getOrderHistoryPageForEmployee(orderStatus, page, size, key);
+        GetOrderHistoryForEmployeeResponse resData = orderService.getOrderHistoryPageForEmployee(orderStatus, page, size, key);
 
-        ResponseAPI<List<GetOrderHistoryForEmployeeResponse>> res = ResponseAPI.<List<GetOrderHistoryForEmployeeResponse>>builder()
+        ResponseAPI<GetOrderHistoryForEmployeeResponse> res = ResponseAPI.<GetOrderHistoryForEmployeeResponse>builder()
                 .timestamp(new Date())
                 .data(resData)
                 .message(SuccessConstant.GET)

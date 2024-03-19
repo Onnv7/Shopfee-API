@@ -31,7 +31,6 @@ import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
-import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
 import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
 import com.hcmute.shopfee.service.common.*;
@@ -41,9 +40,7 @@ import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.JobDetail;
 import org.quartz.Scheduler;
-import org.quartz.Trigger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -450,19 +447,21 @@ public class OrderService implements IOrderService {
         transaction.setOrderBill(orderBill);
 
         OrderBillEntity dataSaved2 = orderBillRepository.save(orderBill);
+        transaction = dataSaved2.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
                 .branchId(orderBill.getBranch().getId())
                 .transactionId(transaction.getId())
                 .build();
+        // set schedule for paymet
         if (transaction.getPaymentUrl() != null && totalPrice > 0) {
             Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             resData.setPaymentUrl(transaction.getPaymentUrl());
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
-            if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
+            if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
                 checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
-            } else if(transaction.getPaymentType() == PaymentType.VNPAY) {
+            } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
                 checkTransactionTime = DateUtils.after(checkTransactionTime, 16, ChronoUnit.MINUTES);
                 checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.SECONDS);
             }
@@ -473,6 +472,7 @@ public class OrderService implements IOrderService {
 
         Instant orderAcceptanceScheduleTime = DateUtils.after(dataSaved2.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
+        // set schedule for accept order
         Map<String, Object> orderAcceptanceScheduleData = new HashMap<String, Object>();
         orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved2.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
@@ -557,6 +557,7 @@ public class OrderService implements IOrderService {
         orderBill.setReceiveTime(body.getReceiveTime());
 
         OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
+        transaction = dataSaved.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -577,20 +578,22 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<GetOrderHistoryForEmployeeResponse> getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key) {
+    public GetOrderHistoryForEmployeeResponse getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key) {
         String statusRegex = RegexUtils.generateFilterRegexString(orderStatus != null ? orderStatus.toString() : "");
-        if (key != null) {
-            List<OrderIndex> orderList = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex).getContent();
-            return modelMapperService.mapList(orderList, GetOrderHistoryForEmployeeResponse.class);
-        }
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getOrderBillByLastStatus(orderStatus.name(), pageable).getContent();
-        List<GetOrderHistoryForEmployeeResponse> resData = new ArrayList<>();
-        orderList.forEach(it -> {
-            GetOrderHistoryForEmployeeResponse orderResponse = GetOrderHistoryForEmployeeResponse.fromOrderBillEntity(it);
-            resData.add(orderResponse);
-        });
-        return resData;
+        GetOrderHistoryForEmployeeResponse data = new GetOrderHistoryForEmployeeResponse();
+
+        if (key != null) {
+            Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
+            data.setTotalPage(orderPage.getTotalPages());
+            data.setOrderList(modelMapperService.mapList(orderPage.getContent(), GetOrderHistoryForEmployeeResponse.OrderInfo.class));
+            return data;
+        }
+
+        Page<OrderBillEntity> orderList = orderBillRepository.getOrderBillByLastStatus(orderStatus.name(), pageable);
+        data.setTotalPage(orderList.getTotalPages());
+        data.setOrderList(GetOrderHistoryForEmployeeResponse.fromOrderBillEntityList(orderList.getContent()));
+        return data;
     }
 
     @Transactional
@@ -756,7 +759,7 @@ public class OrderService implements IOrderService {
         String branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
+        List<OrderBillEntity> orderList = orderBillRepository.getOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
 
         List<GetShippingOrderQueueResponse> orderListResponse = new ArrayList<>();
         orderList.forEach(it -> {
@@ -770,12 +773,13 @@ public class OrderService implements IOrderService {
     public List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size) {
         String employeeId = SecurityUtils.getCurrentUserId();
 
-        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         String branchId = employeeEntity.getBranch().getId();
 
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getShippingOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.ONSITE.name(), pageable).getContent();
+        List<OrderBillEntity> orderList = orderBillRepository.getOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.ONSITE.name(), pageable).getContent();
 
         List<GetOnsiteOrderQueueResponse> orderListResponse = new ArrayList<>();
         orderList.forEach(it -> {
@@ -790,24 +794,20 @@ public class OrderService implements IOrderService {
 
         Pageable pageable = PageRequest.of(page - 1, size);
         String statusRegex = RegexUtils.generateFilterRegexString(status != null ? status.toString() : "");
+
         if (key != null) {
             Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
-
             GetOrderListResponse resultPage = new GetOrderListResponse();
             resultPage.setTotalPage(orderPage.getTotalPages());
             resultPage.setOrderList(modelMapperService.mapList(orderPage.getContent(), GetOrderListResponse.Order.class));
             return resultPage;
         }
-        Page<OrderBillEntity> orderBillPage = orderBillRepository.getOrderList(statusRegex, pageable);
+
+        Page<OrderBillEntity> orderBillPage = orderBillRepository.getOrderListForAdmin(status == null ? "" : status.name(), pageable);
         GetOrderListResponse dataResponse = new GetOrderListResponse();
         dataResponse.setTotalPage(orderBillPage.getTotalPages());
 
-        List<GetOrderListResponse.Order> orderList = new ArrayList<>();
-        orderBillPage.getContent().forEach(it -> {
-            GetOrderListResponse.Order orderResponse = GetOrderListResponse.Order.fromOrderBillEntity(it);
-            orderList.add(orderResponse);
-        });
-        dataResponse.setOrderList(orderList);
+        dataResponse.setOrderList(GetOrderListResponse.fromOrderBillEntityList(orderBillPage.getContent()));
         return dataResponse;
     }
 
