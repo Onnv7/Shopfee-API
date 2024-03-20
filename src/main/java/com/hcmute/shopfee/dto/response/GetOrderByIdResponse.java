@@ -7,6 +7,7 @@ import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.ProductSize;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class GetOrderByIdResponse {
     private String id;
-//    private String code;
+    //    private String code;
     private String note;
     private Long totalPayment;
     private Long shippingFee;
@@ -34,8 +35,8 @@ public class GetOrderByIdResponse {
     private Date receiveTime;
     private Long shippingDiscount;
     private Long orderDiscount;
-//    private Branch branch;
-    private String branchAddress;
+    private Branch branch;
+//    private String branchAddress;
 
     public static GetOrderByIdResponse fromOrderBillEntity(OrderBillEntity entity) {
         // TODO: viết set cho private Review review;
@@ -59,11 +60,17 @@ public class GetOrderByIdResponse {
         order.setTransaction(Transaction.fromTransactionEntity(entity.getTransaction()));
         order.setReceiveTime(entity.getReceiveTime());
         order.setShippingFee(entity.getShippingFee());
-        order.setBranchAddress(entity.getBranch().getFullAddress());
+        order.setBranch(Branch.builder()
+                .address(entity.getBranch().getFullAddress())
+                .id(entity.getBranch().getId())
+                .build());
         return order;
     }
+
     @Data
+    @Builder
     static class Branch {
+        private String id;
         private String address;
     }
 
@@ -95,7 +102,7 @@ public class GetOrderByIdResponse {
         private String recipientName;
         private String phoneNumber;
 
-        public static ShippingInformation fromShippingInformationEntity(ShippingInformationEntity entity){
+        public static ShippingInformation fromShippingInformationEntity(ShippingInformationEntity entity) {
             ShippingInformation shipping = new ShippingInformation();
             shipping.setDetail(entity.getDetail());
             shipping.setLatitude(entity.getLatitude());
@@ -106,7 +113,7 @@ public class GetOrderByIdResponse {
             return shipping;
         }
     }
-    
+
     @Data
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     public static class Product {
@@ -125,13 +132,13 @@ public class GetOrderByIdResponse {
             private String note;
 
             public static ItemDetail fromItemDetailEntity(ItemDetailEntity entity) {
-                ItemDetail data= new ItemDetail();
+                ItemDetail data = new ItemDetail();
                 data.setPrice(entity.getPrice());
                 data.setNote(entity.getNote());
                 data.setSize(entity.getSize());
                 data.setQuantity(entity.getQuantity());
                 List<Topping> toppingList = new ArrayList<>();
-                for (ItemToppingEntity topping: entity.getItemToppingList()) {
+                for (ItemToppingEntity topping : entity.getItemToppingList()) {
                     Topping toppingData = new Topping();
                     toppingData.setName(topping.getName());
                     toppingData.setPrice(topping.getPrice());
@@ -143,7 +150,7 @@ public class GetOrderByIdResponse {
 
             public static List<ItemDetail> fromItemDetailEntityList(List<ItemDetailEntity> entityList) {
                 List<ItemDetail> data = new ArrayList<>();
-                for(ItemDetailEntity entity: entityList) {
+                for (ItemDetailEntity entity : entityList) {
                     data.add(fromItemDetailEntity(entity));
                 }
                 return data;
