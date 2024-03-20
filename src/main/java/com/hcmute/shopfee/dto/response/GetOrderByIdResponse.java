@@ -25,14 +25,12 @@ public class GetOrderByIdResponse {
     private Long totalItemPrice;
     private Long coin;
     private OrderType orderType;
-    private ShippingInformation shippingInformation;
-
+    private ReceiverInformation receiverInformation;
     private Date createdAt;
     private List<Product> itemList;
 
     private Transaction transaction;
 
-    private Date receiveTime;
     private Long shippingDiscount;
     private Long orderDiscount;
     private Branch branch;
@@ -47,9 +45,9 @@ public class GetOrderByIdResponse {
         order.setTotalPayment(entity.getTotalPayment());
         order.setShippingFee(entity.getShippingFee());
         order.setTotalItemPrice(entity.getTotalItemPrice());
+        order.setReceiverInformation(entity.getShippingInformation() != null ? ReceiverInformation.fromReceiverInformationEntity(entity.getShippingInformation()) : null);
 
         order.setOrderType(entity.getOrderType());
-        order.setShippingInformation(entity.getShippingInformation() != null ? ShippingInformation.fromShippingInformationEntity(entity.getShippingInformation()) : null);
         order.setCreatedAt(entity.getCreatedAt());
         List<Product> itemList = new ArrayList<>();
         entity.getOrderItemList().forEach(it -> {
@@ -58,7 +56,7 @@ public class GetOrderByIdResponse {
         });
         order.setItemList(itemList);
         order.setTransaction(Transaction.fromTransactionEntity(entity.getTransaction()));
-        order.setReceiveTime(entity.getReceiveTime());
+
         order.setShippingFee(entity.getShippingFee());
         order.setBranch(Branch.builder()
                 .address(entity.getBranch().getFullAddress())
@@ -67,6 +65,13 @@ public class GetOrderByIdResponse {
         return order;
     }
 
+    @Data
+    @Builder
+    private static class ReceiverInfo {
+        private String receiverName;
+        private Date receiveTime;
+        private String phoneNumber;
+    }
     @Data
     @Builder
     static class Branch {
@@ -94,22 +99,27 @@ public class GetOrderByIdResponse {
     }
 
     @Data
-    private static class ShippingInformation {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private static class ReceiverInformation {
+        private String userId;
         private String detail;
         private Double longitude;
         private Double latitude;
         private String note;
         private String recipientName;
         private String phoneNumber;
+        private Date receiveTime;
 
-        public static ShippingInformation fromShippingInformationEntity(ShippingInformationEntity entity) {
-            ShippingInformation shipping = new ShippingInformation();
-            shipping.setDetail(entity.getDetail());
+        public static ReceiverInformation fromReceiverInformationEntity(ReceiverInformationEntity entity) {
+            ReceiverInformation shipping = new ReceiverInformation();
+            shipping.setUserId(entity.getOrderBill().getUser().getId());
+            shipping.setDetail(entity.getAddress());
             shipping.setLatitude(entity.getLatitude());
             shipping.setLongitude(entity.getLongitude());
             shipping.setNote(entity.getNote());
             shipping.setRecipientName(entity.getRecipientName());
             shipping.setPhoneNumber(entity.getPhoneNumber());
+            shipping.setReceiveTime(entity.getReceiveTime());
             return shipping;
         }
     }

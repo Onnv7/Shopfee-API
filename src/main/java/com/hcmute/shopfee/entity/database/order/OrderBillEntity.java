@@ -72,8 +72,8 @@ public class OrderBillEntity {
     @JsonBackReference
     private BranchEntity branch;
 
-    @Column(name = "receive_time")
-    private Date receiveTime;
+//    @Column(name = "receive_time")
+//    private Date receiveTime;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -101,7 +101,7 @@ public class OrderBillEntity {
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private ShippingInformationEntity shippingInformation;
+    private ReceiverInformationEntity shippingInformation;
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

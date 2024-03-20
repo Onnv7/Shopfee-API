@@ -35,7 +35,7 @@ public class GetOrderQueueResponse {
             response.setProductName(orderBillEntity.getOrderItemList().get(0).getName());
             response.setProductQuantity(orderBillEntity.getOrderItemList().get(0).getItemDetailList().get(0).getQuantity());
             response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getImage().getThumbnailUrl());
-            response.setReceiveTime(orderBillEntity.getReceiveTime());
+            response.setReceiveTime(orderBillEntity.getShippingInformation().getReceiveTime());
             response.setTimeLastEvent(orderBillEntity.getOrderEventList().get(0).getCreatedAt());
             response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());
             response.setTotal(orderBillEntity.getTotalItemPrice());

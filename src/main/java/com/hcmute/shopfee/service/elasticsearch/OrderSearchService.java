@@ -28,15 +28,13 @@ public class OrderSearchService {
         List<OrderItemEntity> orderItemList = orderBillEntity.getOrderItemList();
         ProductEntity product = orderItemList.get(0).getProduct();
 
-        String recipientName = orderBillEntity.getShippingInformation() != null ? orderBillEntity.getShippingInformation().getRecipientName() : user.getFullName();
-        String phoneNumberReceiver = orderBillEntity.getShippingInformation() != null ? orderBillEntity.getShippingInformation().getPhoneNumber() : user.getPhoneNumber();
-        OrderIndex orderIndex = OrderIndex.builder()
+       OrderIndex orderIndex = OrderIndex.builder()
                 .id(orderBillEntity.getId())
 //                .code(orderBillEntity.getCode())
                 .customerName(user.getFullName())
-                .recipientName(recipientName)
+                .recipientName(orderBillEntity.getShippingInformation().getRecipientName())
                 .phoneNumber(user.getPhoneNumber())
-                .phoneNumberReceiver(phoneNumberReceiver)
+                .phoneNumberReceiver(orderBillEntity.getShippingInformation().getPhoneNumber())
                 .orderType(orderBillEntity.getOrderType())
                 .statusLastEvent(OrderStatus.CREATED)
                 .total(orderBillEntity.getTotalItemPrice())

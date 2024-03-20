@@ -390,7 +390,7 @@ public class OrderService implements IOrderService {
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ADDRESS_ID_NOT_FOUND + body.getAddressId()));
-        ShippingInformationEntity shippingInformation = new ShippingInformationEntity();
+        ReceiverInformationEntity shippingInformation = new ReceiverInformationEntity();
         shippingInformation.fromAddressEntity(address);
 
         shippingInformation.setOrderBill(orderBill);
@@ -447,6 +447,7 @@ public class OrderService implements IOrderService {
         transaction.setOrderBill(orderBill);
 
         OrderBillEntity dataSaved2 = orderBillRepository.save(orderBill);
+        orderSearchService.upsertOrder(dataSaved2);
         transaction = dataSaved2.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
@@ -553,10 +554,18 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         orderBill.setBranch(branch);
 
-        // set thời gian nhận hàng
-        orderBill.setReceiveTime(body.getReceiveTime());
+
+        // set thong tin nhan hang
+        orderBill.setShippingInformation(ReceiverInformationEntity.builder()
+                .phoneNumber(user.getPhoneNumber())
+                .receiveTime(body.getReceiveTime())
+                .recipientName(user.getFullName())
+                .orderBill(orderBill)
+                .build());
+
 
         OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
+        orderSearchService.upsertOrder(dataSaved);
         transaction = dataSaved.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
@@ -565,7 +574,6 @@ public class OrderService implements IOrderService {
                 .build();
         if (transaction.getPaymentUrl() != null && totalPrice > 0) {
             resData.setPaymentUrl(transaction.getPaymentUrl());
-
         }
 
         Instant newIn = DateUtils.after(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
@@ -662,7 +670,8 @@ public class OrderService implements IOrderService {
                 .orderStatus(OrderStatus.CANCELLATION_REQUEST)
                 .build());
 
-        orderBillRepository.save(orderBill);
+        orderBill = orderBillRepository.save(orderBill);
+        orderSearchService.upsertOrder(orderBill);
     }
 
     @Override

@@ -6,28 +6,30 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.Date;
+
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
-@Table(name = "shipping_information")
+@Table(name = "receiver_information")
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShippingInformationEntity {
+public class ReceiverInformationEntity {
     @Id
-    @GenericGenerator(name = "shipping_information_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "shipping_information_id")
+    @GenericGenerator(name = "receiver_information_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "receiver_information_id")
     private String id;
 
-    @Column(name = "detail", nullable = false)
-    private String detail;
+    @Column(name = "address")
+    private String address;
 
-    @Column(name = "longitude", nullable = false)
+    @Column(name = "longitude")
     private Double longitude;
 
-    @Column(name = "latitude", nullable = false)
+    @Column(name = "latitude")
     private Double latitude;
 
     @Column(name = "note")
@@ -35,6 +37,9 @@ public class ShippingInformationEntity {
 
     @Column(name = "recipient_name", nullable = false)
     private String recipientName;
+
+    @Column(name = "receive_time")
+    private Date receiveTime;
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
@@ -47,7 +52,7 @@ public class ShippingInformationEntity {
 
     public void fromAddressEntity(AddressEntity address) {
         this.setNote(address.getNote());
-        this.setDetail(address.getDetail());
+        this.setAddress(address.getDetail());
         this.setLongitude(address.getLongitude());
         this.setLatitude(address.getLatitude());
         this.setPhoneNumber(address.getPhoneNumber());
