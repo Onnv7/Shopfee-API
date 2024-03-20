@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -55,9 +54,9 @@ public class AlbumService implements IAlbumService {
         GetAllImageResponse data = new GetAllImageResponse();
         Page<AlbumEntity> albumPage;
         if(type == null) {
-            albumPage = albumRepository.findAll(pageable);
+            albumPage = albumRepository.findByCloudinaryImageIdIsNotNull(pageable);
         } else {
-            albumPage = albumRepository.findByType(type, pageable);
+            albumPage = albumRepository.findByCloudinaryImageIdIsNotNullAndType(type, pageable);
         }
         data.setTotalPage(albumPage.getTotalPages());
         data.setImageList(GetAllImageResponse.fromAlbumEntityList(albumPage.getContent()));

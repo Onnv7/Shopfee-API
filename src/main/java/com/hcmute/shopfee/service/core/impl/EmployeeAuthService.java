@@ -83,7 +83,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         return EmployeeLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .branchId(employee.getBranch().getId())
+                .branchId(employee.getBranch() != null ? employee.getBranch().getId() : null)
                 .employeeId(principalAuthenticated.getUserId())
                 .build();
 
@@ -150,7 +150,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(data.getUsername()).orElse(null);
         if (existedEmployee != null) {
-            throw new CustomException(ErrorConstant.EXISTED_DATA, "Email account registered");
+            throw new CustomException(ErrorConstant.EXISTED_DATA, "Username account registered");
         }
 
         Set<RoleEntity> employeeRole = new HashSet<>();

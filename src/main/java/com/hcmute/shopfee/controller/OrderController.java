@@ -138,7 +138,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM)
     @GetMapping(path = GET_ORDER_ALL_IN_QUEUE_SUB_PATH)
-    public ResponseEntity<ResponseAPI> getOrderQueueToday(
+    public ResponseEntity<ResponseAPI<GetOrderQueueResponse>> getOrderQueueToday(
             @RequestParam("orderType") OrderType orderType,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
@@ -146,8 +146,7 @@ public class OrderController {
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
             @RequestParam("orderStatus") OrderStatus orderStatus
     ) {
-
-        List<?> dataRes = new ArrayList<>();
+        GetOrderQueueResponse dataRes = new GetOrderQueueResponse();
         if(orderType == OrderType.ONSITE) {
             dataRes = orderService.getOnsiteOrderQueueToday(orderStatus, page, size);
         } else if(orderType == OrderType.SHIPPING) {

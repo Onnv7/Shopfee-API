@@ -39,12 +39,17 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
              	group by order_bill_id
             ) as last_event on ob.id = last_event.order_bill_id
             join order_event oe on last_event.created_at = oe.created_at
+            join (
+            	select *
+            	from `transaction` t\s
+            	where t.status = 'PAID'
+            ) as trans on trans.order_bill_id = ob.id\s
             where oe.order_status = ?1
             and ob.branch_id = ?2
             and ob.order_type = ?3
             AND DATE(ob.created_at) = CURRENT_DATE
             order by ob.created_at desc
-            """, nativeQuery = true)
+                        """, nativeQuery = true)
     Page<OrderBillEntity> getOrderQueueToday(String orderStatus, String branchId, String orderType, Pageable pageable);
 
 

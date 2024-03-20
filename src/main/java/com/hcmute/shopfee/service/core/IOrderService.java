@@ -16,8 +16,8 @@ public interface IOrderService {
     void createCancellationRequest(CreateCancellationDemandRequest body, String orderId);
     void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId);
     void cancelOrder(String orderId, CancelOrderBillRequest body) ;
-    List<GetShippingOrderQueueResponse> getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size);
-    List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size);
+    GetOrderQueueResponse getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size);
+    GetOrderQueueResponse getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size);
     GetOrderListResponse getOrderListForAdmin(int page, int size, String key, OrderStatus status);
     GetOrderByIdResponse getOrderDetailsById(String id);
     GetShippingFeeResponse getShippingFee(Double lat, Double lng);

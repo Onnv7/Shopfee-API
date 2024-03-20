@@ -12,12 +12,10 @@ import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.database.product.ToppingEntity;
-import com.hcmute.shopfee.enums.ProductSize;
-import com.hcmute.shopfee.enums.ProductStatus;
-import com.hcmute.shopfee.enums.ProductType;
-import com.hcmute.shopfee.enums.ProductSortType;
+import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
+import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
@@ -54,6 +52,7 @@ public class ProductService implements IProductService {
     private final CloudinaryService cloudinaryService;
     private final ProductSearchService productSearchService;
     private final ProductReviewRepository productReviewRepository;
+    private final AlbumRepository albumRepository;
 
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
@@ -256,6 +255,9 @@ public class ProductService implements IProductService {
 
         if (productRepository.countOrderItem(id) == 0) {
             productRepository.delete(product);
+            if (product.getImage().getCloudinaryImageId() == null) {
+                albumRepository.delete(product.getImage());
+            }
             productSearchService.deleteProduct(id);
         } else {
             throw new CustomException(ErrorConstant.CANT_DELETE);
@@ -309,7 +311,7 @@ public class ProductService implements IProductService {
         product.setPrice(getMinPrice(product.getSizeList()));
 
         CategoryEntity category = categoryRepository.findById(body.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND,  ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         product.setCategory(category);
 
         productRepository.save(product);
@@ -344,8 +346,6 @@ public class ProductService implements IProductService {
 
     @Override
     public void createBeverageFromFile(MultipartFile file) {
-        int success = 0;
-        List<ProductEntity> productList = new ArrayList<>();
         InputStream inputStream = null;
         Workbook workbook = null;
         try {
@@ -360,7 +360,7 @@ public class ProductService implements IProductService {
         List<SizeEntity> sizeEntityList = new ArrayList<>();
         List<ToppingEntity> toppingEntityList = new ArrayList<>();
         boolean newProductFlag = true;
-
+        List<ProductEntity> productEntityList = new ArrayList<>();
         // đọc từng hàng
         for (Row row : sheet) {
             int rowIndex = row.getRowNum();
@@ -375,8 +375,16 @@ public class ProductService implements IProductService {
             } else {
                 newProductFlag = true;
             }
+
             if (newProductFlag) {
+                if (product != null) {
+                    product.setPrice(getMinPrice(product.getSizeList()));
+                    System.out.println("Saving product " + product.toString());
+                    ProductEntity productSaved = productRepository.save(product);
+                    productSearchService.createProduct(productSaved);
+                }
                 product = new ProductEntity();
+                product.setType(ProductType.BEVERAGE);
                 sizeEntityList = new ArrayList<>();
                 product.setSizeList(sizeEntityList);
 
@@ -406,9 +414,23 @@ public class ProductService implements IProductService {
                         product.setDescription(cell.getStringCellValue());
                         break;
                     case 4:
-                        sizeEntity.setSize(ProductSize.valueOf(cell.getStringCellValue()));
+                        String imageUrl = cell.getStringCellValue();
+                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl).orElse(null);
+                        if (image != null) {
+                            product.setImage(image);
+                        } else {
+                            AlbumEntity newImage = AlbumEntity.builder()
+                                    .product(product)
+                                    .type(AlbumType.PRODUCT)
+                                    .imageUrl(imageUrl)
+                                    .build();
+                            product.setImage(newImage);
+                        }
                         break;
                     case 5:
+                        sizeEntity.setSize(ProductSize.valueOf(cell.getStringCellValue()));
+                        break;
+                    case 6:
                         sizeEntity.setPrice((long) cell.getNumericCellValue());
 
                         SizeEntity newEntity = new SizeEntity();
@@ -417,24 +439,30 @@ public class ProductService implements IProductService {
                         newEntity.setProduct(product);
                         sizeEntityList.add(newEntity);
                         break;
-                    case 6:
+                    case 7:
                         toppingEntity.setName(cell.getStringCellValue());
 
                         break;
-                    case 7:
+                    case 8:
                         toppingEntity.setPrice((long) cell.getNumericCellValue());
 
                         ToppingEntity newToppingEntity = new ToppingEntity();
                         newToppingEntity.setProduct(product);
                         newToppingEntity.setName(toppingEntity.getName());
                         newToppingEntity.setPrice(toppingEntity.getPrice());
-
                         toppingEntityList.add(newToppingEntity);
                         break;
-
                 }
             }
+            System.out.println(product);
         }
+        if (product != null) {
+            product.setPrice(getMinPrice(product.getSizeList()));
+            System.out.println("Saving product " + product.toString());
+            ProductEntity productSaved = productRepository.save(product);
+            productSearchService.createProduct(productSaved);
+        }
+
         try {
             inputStream.close();
             workbook.close();
@@ -460,10 +488,11 @@ public class ProductService implements IProductService {
         // đọc từng hàng
         for (Row row : sheet) {
             int rowIndex = row.getRowNum();
-            if (rowIndex == 0) {
+            if (rowIndex == 0 || row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
                 continue;
             }
             ProductEntity product = new ProductEntity();
+            product.setType(ProductType.CAKE);
 
             // đọc từng ô
             for (Cell cell : row) {
@@ -489,9 +518,25 @@ public class ProductService implements IProductService {
                     case 4:
                         product.setPrice((long) cell.getNumericCellValue());
                         break;
+                    case 5:
+                        String imageUrl = cell.getStringCellValue();
+                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl).orElse(null);
+                        if (image != null) {
+                            product.setImage(image);
+                        } else {
+                            AlbumEntity newImage = AlbumEntity.builder()
+                                    .product(product)
+                                    .type(AlbumType.PRODUCT)
+                                    .imageUrl(imageUrl)
+                                    .build();
+                            product.setImage(newImage);
+                        }
+                        break;
                 }
             }
-            System.out.println(product);
+            System.out.println("Saving product " + product);
+            ProductEntity productSaved = productRepository.save(product);
+            productSearchService.createProduct(productSaved);
         }
         try {
             inputStream.close();

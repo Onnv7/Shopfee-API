@@ -751,42 +751,39 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<GetShippingOrderQueueResponse> getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size) {
+    public GetOrderQueueResponse getShippingOrderQueueToday(OrderStatus orderStatus, int page, int size) {
         String employeeId = SecurityUtils.getCurrentUserId();
-
+        GetOrderQueueResponse data = new GetOrderQueueResponse();
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         String branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable).getContent();
+        Page<OrderBillEntity> orderPage = orderBillRepository.getOrderQueueToday(orderStatus.name(), branchId, OrderType.SHIPPING.name(), pageable);
 
-        List<GetShippingOrderQueueResponse> orderListResponse = new ArrayList<>();
-        orderList.forEach(it -> {
-            GetShippingOrderQueueResponse orderResponse = GetShippingOrderQueueResponse.fromOrderBillEntity(it);
-            orderListResponse.add(orderResponse);
-        });
-        return orderListResponse;
+        data.setTotalPage(orderPage.getTotalPages());
+        data.setOrderList(GetOrderQueueResponse.fromOrderBillEntityList(orderPage.getContent()));
+
+        return data;
     }
 
     @Override
-    public List<GetOnsiteOrderQueueResponse> getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size) {
+    public GetOrderQueueResponse getOnsiteOrderQueueToday(OrderStatus orderStatus, int page, int size) {
         String employeeId = SecurityUtils.getCurrentUserId();
 
+        GetOrderQueueResponse data = new GetOrderQueueResponse();
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         String branchId = employeeEntity.getBranch().getId();
 
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        List<OrderBillEntity> orderList = orderBillRepository.getOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.ONSITE.name(), pageable).getContent();
+        Page<OrderBillEntity> orderPage = orderBillRepository.getOrderQueueToday(orderStatus.name().toString(), branchId, OrderType.ONSITE.name(), pageable);
 
-        List<GetOnsiteOrderQueueResponse> orderListResponse = new ArrayList<>();
-        orderList.forEach(it -> {
-            GetOnsiteOrderQueueResponse orderResponse = GetOnsiteOrderQueueResponse.fromOrderBillEntity(it);
-            orderListResponse.add(orderResponse);
-        });
-        return orderListResponse;
+        data.setTotalPage(orderPage.getTotalPages());
+        data.setOrderList(GetOrderQueueResponse.fromOrderBillEntityList(orderPage.getContent()));
+
+        return data;
     }
 
     @Override

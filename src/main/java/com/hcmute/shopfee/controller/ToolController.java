@@ -224,6 +224,7 @@ public class ToolController {
                 .firstName("an")
                 .lastName("nguyen")
                 .status(EmployeeStatus.ACTIVE)
+                .branch(branchEntity)
                 .isDeleted(false)
                 .build();
         employeeRepository.save(employee);

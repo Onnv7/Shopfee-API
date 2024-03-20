@@ -47,7 +47,7 @@ public class ProductEntity {
     @Column(name = "type", nullable = false)
     private ProductType type;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 1000)")
     private Long price;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})

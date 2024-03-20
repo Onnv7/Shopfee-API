@@ -12,6 +12,7 @@ import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.enums.CategoryStatus;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.service.core.ICategoryService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
@@ -31,6 +32,7 @@ public class CategoryService implements ICategoryService {
     private final CategoryRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
     private final ModelMapperService modelMapperService;
+    private final AlbumRepository albumRepository;
 
     @Override
     public void createCategory(CreateCategoryRequest body) {
@@ -124,6 +126,7 @@ public class CategoryService implements ICategoryService {
 
         if (category.getProductList().isEmpty()) {
             categoryRepository.delete(category);
+            albumRepository.delete(category.getImage());
         } else {
             throw new CustomException(ErrorConstant.CANT_DELETE);
         }

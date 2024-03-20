@@ -227,22 +227,14 @@ public class ProductController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_BEVERAGE_SUM)
-    @PostMapping(path = POST_PRODUCT_CREATE_BEVERAGE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    protected ResponseEntity<ResponseAPI<?>> createBeverageFromFile(@RequestParam("file") MultipartFile file) {
-        productService.createBeverageFromFile(file);
-
-        ResponseAPI res = ResponseAPI.builder()
-                .message(SuccessConstant.CREATED)
-                .timestamp(new Date())
-                .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
-    }
-
-    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_FOOD_SUM)
-    @PostMapping(path = POST_PRODUCT_CREATE_FOOD_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    protected ResponseEntity<ResponseAPI<?>> createCakeFromFile(@RequestParam("file") MultipartFile file) {
-        productService.createCakeFromFile(file);
+    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_SUM)
+    @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file, @RequestParam("product_type") ProductType productType) {
+        if(productType == ProductType.BEVERAGE) {
+            productService.createBeverageFromFile(file);
+        } else if(productType == ProductType.CAKE) {
+            productService.createCakeFromFile(file);
+        }
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.CREATED)

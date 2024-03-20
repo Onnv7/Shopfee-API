@@ -81,7 +81,7 @@ public class SwaggerConstant {
     public static final String PRODUCT_UPDATE_BY_ID_SUM = "Update product's information by product id";
     public static final String PRODUCT_GET_TOP_RATED_PRODUCTS_SUM = "Get top rated products";
     public static final String PRODUCT_GET_TOP_SELLING_PRODUCTS_SUM = "Get top selling products";
-    public static final String PRODUCT_POST_IMPORT_FILE_TO_CREATE_BEVERAGE_SUM = "Create beverages from imported file";
+    public static final String PRODUCT_POST_IMPORT_FILE_TO_CREATE_SUM = "Create product from imported file";
     public static final String PRODUCT_POST_IMPORT_FILE_TO_CREATE_FOOD_SUM = "Create foods from imported file";
 
     // For category =================================================================

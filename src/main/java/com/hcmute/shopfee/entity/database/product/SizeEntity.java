@@ -29,7 +29,7 @@ public class SizeEntity {
     @Enumerated(EnumType.STRING)
     private ProductSize size;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 1000)")
     private Long price;
 
     @ManyToOne

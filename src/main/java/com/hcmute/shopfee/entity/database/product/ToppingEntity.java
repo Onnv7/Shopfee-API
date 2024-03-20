@@ -27,7 +27,7 @@ public class ToppingEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 1000)")
     private Long price;
 
     @ManyToOne

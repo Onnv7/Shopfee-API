@@ -48,7 +48,7 @@ public class TransactionService implements ITransactionService {
             TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getInvoiceCode(), transaction.getTimeCode(), request);;
 
             // nếu giao dịch vnpay thành công
-            if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalItemPrice() * 100))) {
+            if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount() != null && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalPayment() * 100))) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(transInfo.getAmount().toString()) / 100);
             } else {
@@ -64,7 +64,8 @@ public class TransactionService implements ITransactionService {
             }
         } else if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
             GetOrderZaloPayResponse transResult = zaloPayService.getOrder(transaction.getInvoiceCode());
-            if(transResult.getReturnCode() == 1) {
+
+            if(transResult.getReturnCode() == 1 && transResult.getAmount() == orderBill.getTotalPayment()) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) transResult.getAmount());
             } else if(transResult.getReturnCode() == 2) {
