@@ -50,6 +50,11 @@ public class SwaggerConstant {
     public static final String ADDRESS_DELETE_ADDRESS_BY_ID_SUM = "Delete address by address id";
     public static final String ADDRESS_GET_BY_USER_ID_SUM = "Get all addresses by user id";
     public static final String ADDRESS_GET_DETAILS_BY_ID_SUM = "Get an address details by id";
+    // For address =================================================================
+    public static final String ALBUM_CONTROLLER_TITLE = "ALBUM MANAGEMENT";
+    public static final String ALBUM_UPLOAD_IMAGE_SUM = "Upload a new image to album";
+    public static final String ALBUM_GET_ALL_SUM = "Get all images from album";
+    public static final String ALBUM_DELETE_BY_ID_SUM = "Delete image by id";
     // For review =================================================================
     public static final String REVIEW_CONTROLLER_TITLE = "REVIEW MANAGEMENT";
     public static final String REVIEW_CREATE_SUM = "Create a new product's review";
@@ -260,4 +265,5 @@ public class SwaggerConstant {
     public static final String OPEN_TIME_EX = "07:00:00";
     public static final String CLOSE_TIME_EX = "20:00:00";
     public static final String BRANCH_STATUS_EX = "INACTIVE";
+    public static final String ALBUM_TYPE_EX = "PRODUCT";
 }

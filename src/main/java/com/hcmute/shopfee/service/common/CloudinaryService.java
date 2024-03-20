@@ -20,11 +20,6 @@ import static com.hcmute.shopfee.constant.CloudinaryConstant.*;
 public class CloudinaryService {
     private final Cloudinary cloudinary;
 
-    // TODO: co the xoas
-    public String uploadFile() throws IOException {
-        cloudinary.url();
-        return "a";
-    }
 
     public void updateImage(String publicId) throws Exception {
         cloudinary.api().update(publicId,

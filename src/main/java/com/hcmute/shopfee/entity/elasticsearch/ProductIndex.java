@@ -29,5 +29,4 @@ public class ProductIndex {
     private double price;
     private ProductStatus status;
     private String categoryId;
-    private boolean isDeleted;
 }

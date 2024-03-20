@@ -80,7 +80,12 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         String refreshToken = jwtService.issueRefreshToken(principalAuthenticated.getUserId(), principalAuthenticated.getUsername(), roles);
 
         employeeTokenRedisService.createNewEmployeeRefreshToken(refreshToken, principalAuthenticated.getUserId());
-        return EmployeeLoginResponse.builder().accessToken(accessToken).refreshToken(refreshToken).employeeId(principalAuthenticated.getUserId()).build();
+        return EmployeeLoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .branchId(employee.getBranch().getId())
+                .employeeId(principalAuthenticated.getUserId())
+                .build();
 
     }
 

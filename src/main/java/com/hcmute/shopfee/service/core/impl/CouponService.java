@@ -278,7 +278,7 @@ public class CouponService implements ICouponService {
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
-            ProductEntity product = productRepository.findByIdAndIsDeletedFalse(reward.getProductId())
+            ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
@@ -534,7 +534,7 @@ public class CouponService implements ICouponService {
                         OrderItemDto item = body.getOrderItemList().stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
                         if (item == null) {
                             // invalid
-                            ProductEntity productEntity = productRepository.findByIdAndIsDeletedFalse(subjectConditionEntity.getObjectId())
+                            ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
                                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                             couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                             couponCard.setValid(false);
@@ -545,7 +545,7 @@ public class CouponService implements ICouponService {
                             }
                             if(count < subjectConditionEntity.getValue()) {
                                 // invalid
-                                ProductEntity productEntity = productRepository.findByIdAndIsDeletedFalse(subjectConditionEntity.getObjectId())
+                                ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
                                         .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                 couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                                 couponCard.setValid(false);

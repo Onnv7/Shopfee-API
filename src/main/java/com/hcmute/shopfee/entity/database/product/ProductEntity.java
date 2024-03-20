@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.database.AlbumEntity;
 import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.entity.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
@@ -46,18 +47,13 @@ public class ProductEntity {
     @Column(name = "type", nullable = false)
     private ProductType type;
 
-    @Column(name = "image_id", nullable = false)
-    private String imageId;
-
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
-
-    @Column(name = "thumbnail_url", nullable = false)
-    private String thumbnailUrl;
-
     @Column(name = "price", nullable = false)
     private Long price;
 
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "image_id")
+    @JsonBackReference
+    private AlbumEntity image;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
@@ -73,10 +69,6 @@ public class ProductEntity {
     @Column(name = "status", nullable = false, columnDefinition = "varchar(255) default 'HIDDEN'")
     private ProductStatus status;
 
-
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private boolean isDeleted;
-
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     @Column(name = "created_at")
@@ -88,12 +80,12 @@ public class ProductEntity {
     private Date updatedAt;
 
     // =================================================================
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JsonManagedReference
     @ToString.Exclude
     private List<SizeEntity> sizeList;
 
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JsonManagedReference
     @ToString.Exclude
     private List<ToppingEntity> toppingList;
@@ -102,7 +94,6 @@ public class ProductEntity {
     @JsonManagedReference
     @ToString.Exclude
     private List<OrderItemEntity> orderItemList;
-
 
 
 }

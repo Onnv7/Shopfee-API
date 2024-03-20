@@ -119,11 +119,14 @@ public class ToolController {
                 .phoneNumber(PHONE_NUMBER_EX)
                 .build();
         branchRepository.save(branchEntity);
+        AlbumEntity image = AlbumEntity.builder()
+                .type(AlbumType.CATEGORY)
+                .cloudinaryImageId("fileUploaded.get(CloudinaryConstant.PUBLIC_ID)")
+                .imageUrl("fileUploaded.get(CloudinaryConstant.URL_PROPERTY)")
+                .build();
 
         CategoryEntity category = CategoryEntity.builder()
-                .imageId("123")
-                .imageUrl("url")
-                .isDeleted(false)
+                .image(image)
                 .status(CategoryStatus.VISIBLE)
                 .name("category1")
                 .build();
@@ -134,12 +137,14 @@ public class ToolController {
                 .createdAt(new Date())
                 .description("description")
                 .price(50000L)
-                .imageId("imageId")
-                .imageUrl("imageUrl")
+                .image(AlbumEntity.builder()
+                        .type(AlbumType.PRODUCT)
+                        .cloudinaryImageId("cloudinaryImageId")
+                        .imageUrl("imageUrl")
+                        .thumbnailUrl("thumbnailUrl")
+                        .build())
                 .status(ProductStatus.AVAILABLE)
-                .isDeleted(false)
                 .name("Product")
-                .thumbnailUrl("thumbnailUrl")
                 .build();
         sizeEntityList.add(SizeEntity.builder()
                 .size(ProductSize.SMALL)

@@ -13,19 +13,16 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, String> {
-    Optional<ProductEntity> findByNameAndIsDeletedFalse(String name);
-    Optional<ProductEntity> findByIdAndIsDeletedFalse(String id);
-    Optional<ProductEntity> findByIdAndStatusAndIsDeletedFalse(String id, ProductStatus status);
-    Optional<ProductEntity> findByIdAndStatusNotAndIsDeletedFalse(String productId, ProductStatus status);
-    Page<ProductEntity> findByCategory_IdAndStatusNotAndIsDeletedFalse(String categoryId, ProductStatus status, Pageable pageable);
-    Page<ProductEntity> findByStatusNotAndIsDeletedFalse(ProductStatus status, Pageable pageable);
-    Optional<ProductEntity> findByIdAndCategory_IdAndIsDeletedFalse(String productId, String categoryId);
+    Optional<ProductEntity> findByName(String name);
+    Optional<ProductEntity> findByIdAndStatus(String id, ProductStatus status);
+    Optional<ProductEntity> findByIdAndStatusNot(String productId, ProductStatus status);
+    Page<ProductEntity> findByCategory_IdAndStatusNot(String categoryId, ProductStatus status, Pageable pageable);
+    Page<ProductEntity> findByStatusNot(ProductStatus status, Pageable pageable);
 
     @Query(value = """
             select *
             from product p
-            where is_deleted = 0
-            	and category_id regexp ?1
+            where category_id regexp ?1
             	and status regexp ?2
             """, nativeQuery = true)
     Page<ProductEntity> getProductList(String categoryIdRegex, String productStatusRegex, Pageable pageable);
@@ -34,8 +31,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             select count(*)
             from product p
             join order_item oi on p.id = oi.product_id
-            where p.is_deleted = 0
-                and p.id = ?1
+            where p.id = ?1
             """, nativeQuery = true)
     long countOrderItem(String productId);
 
@@ -59,7 +55,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     List<ProductEntity> getTopProductBySoldQuantity(int limit);
 
     @Query(value = """
-            select p.id, p.created_at, p.description, p.image_id, p.image_url, p.is_deleted, p.name, p.price, p.status, p.thumbnail_url, p.`type`, p.updated_at, p.category_id
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
             from product p\s
             left join (
             	select p.id, avg(pr.star) as star, count(*) as quantity
@@ -76,7 +72,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     List<ProductEntity> getTopRatingProduct(int limit);
 
     @Query(value = """
-            select p.id, p.created_at, p.description, p.image_id, p.image_url, p.is_deleted, p.name, p.price, p.status, p.thumbnail_url, p.`type`, p.updated_at, p.category_id
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
             from product p\s
             join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star\s
             	  from (select *
@@ -90,7 +86,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Page<ProductEntity> getProductByCategoryIdAndFilter(String categoryId, long minPrice, long maxPrice, int minStar, Pageable pageable);
 
     @Query(value = """
-            select p.id, p.created_at, p.description, p.image_id, p.image_url, p.is_deleted, p.name, p.price, p.status, p.thumbnail_url, p.`type`, p.updated_at, p.category_id
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
             from product p
             join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star
                   from (select *

@@ -27,7 +27,7 @@ public class UpdateProductRequest implements Serializable {
 
 
     // example = PRODUCT_SIZE_EX,
-    @Schema(description = NOT_EMPTY_DES)
+    @Schema()
     @NotEmpty
     private List<SizeDto> sizeList;
 
@@ -35,7 +35,7 @@ public class UpdateProductRequest implements Serializable {
     @NotBlank
     private String description;
 
-    @Schema(description = OPTIONAL_DES)
+    @Schema()
     private List<ToppingDto> toppingList;
 
     @Schema(example = OBJECT_ID_EX)

@@ -22,7 +22,7 @@ public class CreateOnsiteOrderRequest {
     @NotBlank
     private String userId;
 
-    @Schema(description = NOT_EMPTY_DES)
+    @Schema()
     @NotEmpty
     private List<OrderItemDto> itemList;
 

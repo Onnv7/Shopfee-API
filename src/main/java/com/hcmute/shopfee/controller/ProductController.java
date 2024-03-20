@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
-import com.hcmute.shopfee.enums.SortType;
+import com.hcmute.shopfee.enums.ProductSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,14 +87,14 @@ public class ProductController {
             @RequestParam(name = "min_star", required = false, defaultValue = "0") @Min(value = 0, message = "Page must be greater than or equal 0") @Max(value = 5, message = "min_star must be lower than or equal 5") int minStar,
 
             @Parameter(name = "sort_type", required = false, example = "PRICE_DESC")
-            @RequestParam(name = "sort_type", required = false) SortType sortType,
+            @RequestParam(name = "sort_type", required = false) ProductSortType productSortType,
 
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, minPrice, maxPrice, minStar, sortType, page, size);
+        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, minPrice, maxPrice, minStar, productSortType, page, size);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -120,14 +120,14 @@ public class ProductController {
             @RequestParam(name = "min_star", required = false, defaultValue = "0") @Min(value = 0, message = "Page must be greater than or equal 0") @Max(value = 5, message = "min_star must be lower than or equal 5") int minStar,
 
             @Parameter(name = "sort_type", required = false, example = "PRICE_DESC")
-            @RequestParam(name = "sort_type", required = false) SortType sortType,
+            @RequestParam(name = "sort_type", required = false) ProductSortType productSortType,
 
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetAllVisibleProductResponse resData = productService.getVisibleProductList( minPrice, maxPrice, minStar, sortType, page, size, key);
+        GetAllVisibleProductResponse resData = productService.getVisibleProductList( minPrice, maxPrice, minStar, productSortType, page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)

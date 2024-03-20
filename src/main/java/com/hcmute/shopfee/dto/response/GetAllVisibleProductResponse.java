@@ -30,7 +30,7 @@ public class GetAllVisibleProductResponse {
             data.setName(entity.getName());
             data.setDescription(entity.getDescription());
             data.setPrice(entity.getPrice());
-            data.setThumbnailUrl(entity.getThumbnailUrl());
+            data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
             data.setStatus(entity.getStatus());
             data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
             return data;

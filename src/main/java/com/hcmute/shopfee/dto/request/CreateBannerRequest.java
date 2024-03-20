@@ -14,7 +14,7 @@ public class CreateBannerRequest {
     @NotBlank
     private String name;
 
-    @Schema(description = NOT_NULL_DES)
+    @Schema()
     @NotNull
     private MultipartFile image;
 }

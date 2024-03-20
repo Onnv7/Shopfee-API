@@ -7,8 +7,9 @@ import lombok.Data;
 @Data
 @Builder
 public class EmployeeLoginResponse {
-    private final String employeeId;
-    private final String accessToken;
+    private String employeeId;
+    private String branchId;
+    private String accessToken;
     @JsonIgnore
-    private final String refreshToken;
+    private String refreshToken;
 }

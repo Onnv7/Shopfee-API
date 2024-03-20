@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.enums;
 
-public enum SortType {
+public enum ProductSortType {
     PRICE_DESC,
     PRICE_ASC
 }

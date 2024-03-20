@@ -28,7 +28,7 @@ public class GetOnsiteOrderQueueResponse {
         response.setCustomerName(orderBillEntity.getUser().getFullName());
         response.setProductName(orderBillEntity.getOrderItemList().get(0).getName());
         response.setProductQuantity(orderBillEntity.getOrderItemList().get(0).getItemDetailList().get(0).getQuantity());
-        response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getThumbnailUrl());
+        response.setProductThumbnailUrl(orderBillEntity.getOrderItemList().get(0).getProduct().getImage().getThumbnailUrl());
         response.setReceiveTime(orderBillEntity.getReceiveTime());
         response.setTotal(orderBillEntity.getTotalItemPrice());
         response.setStatusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus());

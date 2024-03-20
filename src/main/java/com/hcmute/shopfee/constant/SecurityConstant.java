@@ -61,7 +61,7 @@ public class SecurityConstant {
     public static final String[] GET_ADMIN_PATH = {
             GET_EMPLOYEE_ALL_PATH,
             GET_BRANCH_ALL_PATH, GET_BANNER_LIST_PATH, GET_BANNER_DETAILS_BY_ID_PATH,
-            GET_ORDER_LIST_PATH, GET_BRANCH_DETAIL_BY_ID_PATH
+            GET_ORDER_LIST_PATH, GET_BRANCH_DETAIL_BY_ID_PATH, GET_ALBUM_GET_ALL_IMAGE_PATH
 
     };
     public static final String[] PUT_ADMIN_PATH = {
@@ -78,6 +78,7 @@ public class SecurityConstant {
             POST_COUPON_CREATE_SHIPPING_TYPE_PATH, POST_COUPON_CREATE_BUY_GET_TYPE_PATH,
             POST_PRODUCT_CREATE_BEVERAGE_FROM_SUB_PATH, POST_COUPON_CREATE_ORDER_TYPE_PATH,
             POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_PATH, POST_PRODUCT_CREATE_FOOD_FROM_FILE_PATH,
+            POST_ALBUM_UPLOAD_IMAGE_PATH
     };
     public static final String[] PATCH_ADMIN_PATH = {
     };
@@ -86,7 +87,7 @@ public class SecurityConstant {
             DELETE_PRODUCT_BY_ID_PATH,
             DELETE_CATEGORY_BY_ID_PATH, DELETE_BRANCH_UPDATE_PATH,
             DELETE_SOME_PRODUCT_BY_ID_PATH, DELETE_BANNER_BY_ID_PATH,
-            DELETE_COUPON_BY_ID_PATH
+            DELETE_COUPON_BY_ID_PATH, DELETE_ALBUM_BY_ID_PATH
     };
 
     // Only EMPLOYEE =================================================================

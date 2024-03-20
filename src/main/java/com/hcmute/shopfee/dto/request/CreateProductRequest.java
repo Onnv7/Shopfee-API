@@ -30,7 +30,7 @@ public class CreateProductRequest {
     @NotNull
     private MultipartFile image;
 
-    @Schema(description = NOT_EMPTY_DES)
+    @Schema()
 //    @NotEmpty
     private List<SizeDto> sizeList;
 

@@ -21,7 +21,7 @@ public class GetTopSellingProductResponse {
         data.setId(entity.getId());
         data.setName(entity.getName());
         data.setPrice(entity.getPrice());
-        data.setThumbnailUrl(entity.getThumbnailUrl());
+        data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
         data.setStatus(entity.getStatus());
         data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
         return data;

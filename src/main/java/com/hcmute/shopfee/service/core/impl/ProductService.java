@@ -7,6 +7,7 @@ import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
+import com.hcmute.shopfee.entity.database.AlbumEntity;
 import com.hcmute.shopfee.entity.database.CategoryEntity;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.database.product.SizeEntity;
@@ -14,7 +15,7 @@ import com.hcmute.shopfee.entity.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.ProductSize;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
-import com.hcmute.shopfee.enums.SortType;
+import com.hcmute.shopfee.enums.ProductSortType;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
@@ -26,7 +27,6 @@ import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.utils.ImageUtils;
 import com.hcmute.shopfee.utils.RegexUtils;
-import com.hcmute.shopfee.utils.SecurityUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
@@ -78,7 +78,7 @@ public class ProductService implements IProductService {
                 throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
             }
         }
-        if (productRepository.findByNameAndIsDeletedFalse(body.getName()).orElse(null) != null) {
+        if (productRepository.findByName(body.getName()).orElse(null) != null) {
             throw new CustomException(ErrorConstant.EXISTED_DATA, "Product named \"" + body.getName() + "\" already exists");
         }
 
@@ -96,8 +96,6 @@ public class ProductService implements IProductService {
         productEntity.setName(body.getName());
         productEntity.setDescription(body.getDescription());
         productEntity.setStatus(body.getStatus());
-        productEntity.setDeleted(false);
-
 
         if (productType == ProductType.CAKE) {
             productEntity.setPrice(body.getPrice());
@@ -109,7 +107,7 @@ public class ProductService implements IProductService {
             originalImage = image.getBytes();
             byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
-            CategoryEntity categoryEntity = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId())
+            CategoryEntity categoryEntity = categoryRepository.findById(body.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
 
             productEntity.setCategory(categoryEntity);
@@ -119,9 +117,12 @@ public class ProductService implements IProductService {
                     newImage
             );
 
-            productEntity.setImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID));
-            productEntity.setImageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY));
-            productEntity.setThumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.get(CloudinaryConstant.PUBLIC_ID)));
+            AlbumEntity productImage = AlbumEntity.builder()
+                    .imageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                    .cloudinaryImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID))
+                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.get(CloudinaryConstant.PUBLIC_ID)))
+                    .build();
+            productEntity.setImage(productImage);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -134,25 +135,30 @@ public class ProductService implements IProductService {
 
     @Override
     public GetProductByIdResponse getProductDetailsById(String id) {
-        ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
+        ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductByIdResponse result = modelMapperService.mapClass(product, GetProductByIdResponse.class);
+        result.setImageUrl(product.getImage().getImageUrl());
         result.setCategoryId(product.getCategory().getId());
         return result;
     }
 
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
-        ProductEntity product = productRepository.findByIdAndStatusNotAndIsDeletedFalse(id, ProductStatus.HIDDEN)
+        ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
+
+        data.setImageUrl(product.getImage().getImageUrl());
+
         RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
         data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+
         return data;
     }
 
     @Override
-    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, int minStar, SortType sortType, int page, int size) {
+    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, int minStar, ProductSortType productSortType, int page, int size) {
         GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
         List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
@@ -162,15 +168,15 @@ public class ProductService implements IProductService {
 
         Pageable pageable = PageRequest.of(page - 1, size);
         if (minPrice != null && maxPrice != null) {
-            if (sortType == SortType.PRICE_DESC) {
+            if (productSortType == ProductSortType.PRICE_DESC) {
                 pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
-            } else if (sortType == SortType.PRICE_ASC) {
+            } else if (productSortType == ProductSortType.PRICE_ASC) {
                 pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
             }
             productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
 
         } else {
-            productPage = productRepository.findByCategory_IdAndStatusNotAndIsDeletedFalse(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
+            productPage = productRepository.findByCategory_IdAndStatusNot(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
         }
         data.setTotalPage(productPage.getTotalPages());
 
@@ -183,7 +189,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, int minStar, SortType sortType, int page, int size, String key) {
+    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, int minStar, ProductSortType productSortType, int page, int size, String key) {
         GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
 
         List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
@@ -202,15 +208,15 @@ public class ProductService implements IProductService {
         } else {
             Page<ProductEntity> productPage = null;
             if (minPrice != null && maxPrice != null) {
-                if (sortType == SortType.PRICE_DESC) {
+                if (productSortType == ProductSortType.PRICE_DESC) {
                     pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
-                } else if (sortType == SortType.PRICE_ASC) {
+                } else if (productSortType == ProductSortType.PRICE_ASC) {
                     pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
                 }
 
                 productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
             } else {
-                productPage = productRepository.findByStatusNotAndIsDeletedFalse(ProductStatus.HIDDEN, pageable);
+                productPage = productRepository.findByStatusNot(ProductStatus.HIDDEN, pageable);
 
             }
             data.setTotalPage(productPage.getTotalPages());
@@ -232,7 +238,7 @@ public class ProductService implements IProductService {
             Page<ProductEntity> productPage = productRepository.getProductList(categoryIdRegex, productStatusRegex, pageable);
             GetProductListResponse productList = new GetProductListResponse();
             productList.setTotalPage(productPage.getTotalPages());
-            productList.setProductList(modelMapperService.mapList(productPage.getContent(), GetProductListResponse.Product.class));
+            productList.setProductList(GetProductListResponse.fromProductEntityList(productPage.getContent()));
             return productList;
         } else {
             Page<ProductIndex> productPage = productSearchService.searchProduct(key, categoryIdRegex, productStatusRegex, page, size);
@@ -245,11 +251,11 @@ public class ProductService implements IProductService {
 
     @Override
     public void deleteProductById(String id) {
-        ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
+        ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+
         if (productRepository.countOrderItem(id) == 0) {
-            product.setDeleted(true);
-            productRepository.save(product);
+            productRepository.delete(product);
             productSearchService.deleteProduct(id);
         } else {
             throw new CustomException(ErrorConstant.CANT_DELETE);
@@ -272,24 +278,29 @@ public class ProductService implements IProductService {
     @Transactional
     @Override
     public void updateProductById(UpdateProductRequest body, String id) {
-        ProductEntity product = productRepository.findByIdAndIsDeletedFalse(id)
+        ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
 
         modelMapperService.map(body, product);
 
         if (body.getImage() != null) {
             try {
-                cloudinaryService.deleteImage(product.getImageId());
+//                if(product.getImage().getCloudinaryImageId() != null) {
+//                    cloudinaryService.deleteImage(product.getImage().getCloudinaryImageId());
+//                }
 
                 byte[] originalImage = body.getImage().getBytes();
 
                 byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
                 HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
                         StringUtils.generateFileName(body.getName(), "product"), newImage);
-                product.setImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID));
-                product.setImageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY));
-                product.setThumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)));
 
+                AlbumEntity productImage = AlbumEntity.builder()
+                        .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                        .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
+                        .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)))
+                        .build();
+                product.setImage(productImage);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -297,7 +308,7 @@ public class ProductService implements IProductService {
 
         product.setPrice(getMinPrice(product.getSizeList()));
 
-        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(body.getCategoryId())
+        CategoryEntity category = categoryRepository.findById(body.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND,  ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         product.setCategory(category);
 
@@ -384,7 +395,7 @@ public class ProductService implements IProductService {
                         product.setName(cell.getStringCellValue());
                         break;
                     case 1:
-                        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
+                        CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
                                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
@@ -465,7 +476,7 @@ public class ProductService implements IProductService {
                         product.setName(cell.getStringCellValue());
                         break;
                     case 1:
-                        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(cell.getStringCellValue())
+                        CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
                                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;

@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.entity.database;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.CategoryStatus;
@@ -32,19 +33,15 @@ public class CategoryEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "image_id", nullable = false)
-    private String imageId;
-
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "image_id")
+    @JsonBackReference
+    private AlbumEntity image;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "varchar(255) default 'HIDDEN'")
     private CategoryStatus status = CategoryStatus.HIDDEN;
 
-
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private boolean isDeleted = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

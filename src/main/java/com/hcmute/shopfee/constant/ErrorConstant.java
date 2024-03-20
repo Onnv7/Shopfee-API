@@ -35,6 +35,7 @@ public class ErrorConstant {
     public static final String TOKEN_STOLEN = "Tokens have been stolen";
     public static final String WRONG_PASSWORD = "Password is wrong";
     public static final String VNPAY_MONEY_INVALID = "Invalid payment amount";
+    public static final String ALBUM_ID_INVALID = "Image with id ";
 
     // others error =================================================
 

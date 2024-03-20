@@ -27,12 +27,11 @@ public class ProductSearchService {
         ProductIndex dataSearch = ProductIndex.builder()
                 .id(data.getId())
                 .name(data.getName())
-                .thumbnailUrl(data.getThumbnailUrl())
+                .thumbnailUrl(data.getImage().getThumbnailUrl())
                 .description(data.getDescription())
                 .status(data.getStatus())
                 .categoryId(data.getCategory().getId())
                 .type(data.getType())
-                .isDeleted(data.isDeleted())
                 .price(data.getPrice())
                 .build();
 
@@ -43,11 +42,10 @@ public class ProductSearchService {
         ProductIndex product = productSearchRepository.findById(data.getId()).orElse(null);
         if (product != null) {
             product.setName(data.getName());
-            product.setThumbnailUrl(data.getThumbnailUrl());
+            product.setThumbnailUrl(data.getImage().getThumbnailUrl());
             product.setStatus(data.getStatus());
             product.setPrice(data.getPrice());
             product.setDescription(data.getDescription());
-            product.setDeleted(data.isDeleted());
             product.setCategoryId(data.getCategory().getId());
             productSearchRepository.save(product);
         } else {
@@ -56,9 +54,9 @@ public class ProductSearchService {
     }
 
     public void deleteProduct(String id) {
-        ProductIndex productIndex = productSearchRepository.findById(id).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
-        productIndex.setDeleted(true);
-        productSearchRepository.save(productIndex);
+        ProductIndex productIndex = productSearchRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+        productSearchRepository.delete(productIndex);
     }
 
     public Page<ProductIndex> searchVisibleProduct(String key, int page, int size) {

@@ -4,6 +4,7 @@ public class RouterConstant {
     // =================================================
     public static final String USER_BASE_PATH = "/api/user";
     public static final String ADDRESS_BASE_PATH = "/api/address";
+    public static final String ALBUM_BASE_PATH = "/api/album";
     public static final String REVIEW_BASE_PATH = "/api/review";
     public static final String BRANCH_BASE_PATH = "/api/branch";
     public static final String EMPLOYEE_AUTH_BASE_PATH = "/api/auth/employee";
@@ -38,6 +39,8 @@ public class RouterConstant {
     public static final String PRODUCT_REVIEW_ID = "productReviewId";
     public static final String ADDRESS_ID_PATH = "/{addressId}";
     public static final String ADDRESS_ID = "addressId";
+    public static final String ALBUM_ID_PATH = "/{albumId}";
+    public static final String ALBUM_ID = "albumId";
     public static final String EMPLOYEE_ID_PATH = "/{employeeId}";
     public static final String EMPLOYEE_ID = "employeeId";
     public static final String ORDER_ID_PATH = "/{orderId}";
@@ -74,8 +77,15 @@ public class RouterConstant {
     public static final String GET_ADDRESS_BY_USER_ID_PATH = ADDRESS_BASE_PATH + GET_ADDRESS_BY_USER_ID_SUB_PATH;
     public static final String GET_ADDRESS_DETAILS_BY_ID_SUB_PATH = ADDRESS_ID_PATH;
     public static final String GET_ADDRESS_DETAILS_BY_ID_PATH = ADDRESS_BASE_PATH + GET_ADDRESS_DETAILS_BY_ID_SUB_PATH;
+    // ENDPOINT URL ALBUM =================================================================
+    public static final String POST_ALBUM_UPLOAD_IMAGE_SUB_PATH = "";
+    public static final String POST_ALBUM_UPLOAD_IMAGE_PATH = ALBUM_BASE_PATH + POST_ALBUM_UPLOAD_IMAGE_SUB_PATH;
+    public static final String GET_ALBUM_GET_ALL_IMAGE_SUB_PATH = "";
+    public static final String GET_ALBUM_GET_ALL_IMAGE_PATH = ALBUM_BASE_PATH + GET_ALBUM_GET_ALL_IMAGE_SUB_PATH;
+    public static final String DELETE_ALBUM_BY_ID_SUB_PATH = ALBUM_ID_PATH;
+    public static final String DELETE_ALBUM_BY_ID_PATH = ALBUM_BASE_PATH + DELETE_ALBUM_BY_ID_SUB_PATH;
 
-    // ENDPOINT URL ADDRESS =================================================================
+    // ENDPOINT URL REVIEW =================================================================
     public static final String POST_REVIEW_CREATE_SUB_PATH = "";
     public static final String POST_REVIEW_CREATE_PATH = REVIEW_BASE_PATH + POST_REVIEW_CREATE_SUB_PATH;
     public static final String POST_REVIEW_INTERACT_SUB_PATH = "/product-review" + PRODUCT_REVIEW_ID_PATH;
