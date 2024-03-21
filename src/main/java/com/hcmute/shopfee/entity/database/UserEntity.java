@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.Gender;
+import com.hcmute.shopfee.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Parameter;
@@ -67,8 +68,9 @@ public class UserEntity {
     @Column(name = "coin", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long coin;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
-    private boolean enabled;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

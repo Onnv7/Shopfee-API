@@ -142,6 +142,7 @@ public class SwaggerConstant {
     public static final String BRANCH_GET_BRANCH_NEAREST_SUM = "Find the nearest branch that can serve customers";
     public static final String BRANCH_GET_DETAIL_BY_ID_SUM = "Get branch's detail by id";
     public static final String BRANCH_GET_VIEW_BY_ID_SUM = "Get branch's view by id";
+    public static final String BRANCH_GET_CHECKING_MANAGER_SUM = "Check the existence of the store manager";
     public static final String BRANCH_GET_VIEW_LIST_BY_ID_SUM = "List of branches operating within 12km if 'all' variable is true then get all without filtering 12km";
 
     // For banner =================================================================

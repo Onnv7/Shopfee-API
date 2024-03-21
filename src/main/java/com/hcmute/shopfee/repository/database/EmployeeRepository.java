@@ -49,4 +49,17 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
             and username regexp ?2
             """, nativeQuery = true)
     Page<EmployeeEntity> searchEmployeeByBranchId(String branchId, String key, String status, Pageable pageable);
+
+    @Query(value = """
+            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            from branch b\s
+            join (
+            	select *
+            	from employee e\s
+            	join employee_role er on e.id = er.employee_id\s
+            	where er.role_id = ?2 and e.status = 'ACTIVE'
+            ) as e on e.branch_id = b.id\s
+            where b.id = ?1
+            """, nativeQuery = true)
+    Optional<EmployeeEntity> getEmployeeOfBranchWithRole(String branchId, String roleId);
 }

@@ -6,6 +6,8 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
+import com.hcmute.shopfee.enums.EmployeeStatus;
+import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,12 +36,16 @@ public class UserController {
     @Operation(summary = USER_GET_ALL_SUM)
     @GetMapping(path = GET_USER_ALL_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetAllUserResponse>> getUserList(
+            @Parameter(name = "key", description = "Key is user's id, phone number, email", required = false, example = "nav611")
+            @RequestParam(name = "key", required = false) String key,
+            @Parameter(name = "status")
+            @RequestParam(name = "status", required = false) UserStatus status,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetAllUserResponse resData = userService.getUserList(page, size);
+        GetAllUserResponse resData = userService.getUserList(key, status, page, size);
 
         ResponseAPI<GetAllUserResponse> res = ResponseAPI.<GetAllUserResponse>builder()
                 .message(SuccessConstant.GET)

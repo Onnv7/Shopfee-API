@@ -61,7 +61,8 @@ public class SecurityConstant {
     public static final String[] GET_ADMIN_PATH = {
             GET_EMPLOYEE_ALL_PATH,
             GET_BRANCH_ALL_PATH, GET_BANNER_LIST_PATH, GET_BANNER_DETAILS_BY_ID_PATH,
-            GET_ORDER_LIST_PATH, GET_BRANCH_DETAIL_BY_ID_PATH, GET_ALBUM_GET_ALL_IMAGE_PATH
+            GET_ORDER_LIST_PATH, GET_BRANCH_DETAIL_BY_ID_PATH, GET_ALBUM_GET_ALL_IMAGE_PATH,
+            GET_BRANCH_CHECKING_MANAGER_PATH
 
     };
     public static final String[] PUT_ADMIN_PATH = {

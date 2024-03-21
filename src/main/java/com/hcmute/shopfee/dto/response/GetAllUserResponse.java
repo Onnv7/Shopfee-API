@@ -2,6 +2,7 @@ package com.hcmute.shopfee.dto.response;
 
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.enums.Gender;
+import com.hcmute.shopfee.enums.UserStatus;
 import lombok.Data;
 
 import java.util.Date;
@@ -20,8 +21,7 @@ public class GetAllUserResponse {
         private Date birthDate;
         private String email;
         private String phoneNumber;
-
-        private Boolean enabled;
+        private UserStatus status;
 //    private Date updatedAt;
 
         public static UserInfo fromUserEntity(UserEntity entity) {
@@ -33,7 +33,7 @@ public class GetAllUserResponse {
             response.setBirthDate(entity.getBirthDate());
             response.setEmail(entity.getEmail());
             response.setPhoneNumber(entity.getPhoneNumber());
-            response.setEnabled(entity.isEnabled());
+            response.setStatus(entity.getStatus());
             return response;
         }
     }

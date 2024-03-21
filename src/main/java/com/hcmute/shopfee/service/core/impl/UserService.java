@@ -7,6 +7,7 @@ import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
 import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
@@ -38,9 +39,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public GetAllUserResponse getUserList(int page, int size) {
+    public GetAllUserResponse getUserList(String key, UserStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<UserEntity> userPage = userRepository.findAll(pageable);
+        Page<UserEntity> userPage = userRepository.getUserWithFilterAndKey(key == null ? "" : key, status == null ? "" : status.name(), pageable);
         GetAllUserResponse response = new GetAllUserResponse();
         List<GetAllUserResponse.UserInfo> userList = new ArrayList<>();
         userPage.getContent().forEach(it -> {

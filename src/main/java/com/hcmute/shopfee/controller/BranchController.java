@@ -128,6 +128,18 @@ public class BranchController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
+//    @Operation(summary = BRANCH_GET_CHECKING_MANAGER_SUM)
+//    @GetMapping(path = GET_BRANCH_CHECKING_MANAGER_SUB_PATH)
+//    public ResponseEntity<ResponseAPI<GetBranchViewByIdResponse>> checkingManagerOfBranch(@PathVariable(BRANCH_ID) String branchId) {
+//        GetBranchViewByIdResponse resData = branchService.getBranchViewById(branchId);
+//        ResponseAPI res = ResponseAPI.builder()
+//                .timestamp(new Date())
+//                .data(resData)
+//                .message(SuccessConstant.GET)
+//                .build();
+//        return new ResponseEntity<>(res, StatusCode.OK);
+//    }
+
     @Operation(summary = BRANCH_GET_VIEW_LIST_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetBranchViewListResponse>> getBranchViewList(

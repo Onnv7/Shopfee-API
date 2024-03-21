@@ -146,9 +146,9 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         // TODO: kiểm tra manager của branch tồn tại chưa
 
-        EmployeeEntity data = modelMapperService.mapClass(body, EmployeeEntity.class);
+        EmployeeEntity employeeData = modelMapperService.mapClass(body, EmployeeEntity.class);
 
-        EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(data.getUsername()).orElse(null);
+        EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(employeeData.getUsername()).orElse(null);
         if (existedEmployee != null) {
             throw new CustomException(ErrorConstant.EXISTED_DATA, "Username account registered");
         }
@@ -157,14 +157,15 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         RoleEntity role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name" + roleName));
         employeeRole.add(role);
-        data.setRoleList(employeeRole);
+        employeeData.setRoleList(employeeRole);
 
         BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
                 .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
-        data.setBranch(branch);
-        data.setPassword(passwordEncoder.encode(data.getPassword()));
-        data.setStatus(EmployeeStatus.ACTIVE);
-        employeeRepository.save(data);
+
+        employeeData.setBranch(branch);
+        employeeData.setPassword(passwordEncoder.encode(employeeData.getPassword()));
+        employeeData.setStatus(EmployeeStatus.ACTIVE);
+        employeeRepository.save(employeeData);
     }
 
     @Override

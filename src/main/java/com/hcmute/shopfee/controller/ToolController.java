@@ -192,7 +192,7 @@ public class ToolController {
                 .lastName("nguyen")
                 .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-11"))
-                .enabled(true)
+                .status(UserStatus.ACTIVE)
                 .roleList(userRole)
                 .build();
         userRepository.save(userEntity);
@@ -203,7 +203,7 @@ public class ToolController {
                 .lastName("nguyen")
                 .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-12"))
-                .enabled(true)
+                .status(UserStatus.ACTIVE)
                 .roleList(userRole)
                 .build();
         userRepository.save(userEntity2);
@@ -218,11 +218,17 @@ public class ToolController {
                 .user(userEntity)
                 .build();
         addressRepository.save(addressEntity);
+
+        Set<RoleEntity> employeeRoleList = new HashSet<>();
+        RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_EMPLOYEE)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
+        employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()
                 .username("employee")
                 .password(passwordEncoder.encode("123456"))
                 .firstName("an")
                 .lastName("nguyen")
+                .roleList(employeeRoleList)
                 .status(EmployeeStatus.ACTIVE)
                 .branch(branchEntity)
                 .isDeleted(false)

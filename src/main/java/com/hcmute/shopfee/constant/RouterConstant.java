@@ -257,6 +257,8 @@ public class RouterConstant {
     public static final String GET_BRANCH_DETAIL_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_DETAIL_BY_ID_SUB_PATH;
     public static final String GET_BRANCH_VIEW_BY_ID_SUB_PATH = BRANCH_ID_PATH + "/view";
     public static final String GET_BRANCH_VIEW_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_VIEW_BY_ID_SUB_PATH;
+    public static final String GET_BRANCH_CHECKING_MANAGER_SUB_PATH = BRANCH_ID_PATH + "/checking-manager";
+    public static final String GET_BRANCH_CHECKING_MANAGER_PATH = BRANCH_BASE_PATH + GET_BRANCH_CHECKING_MANAGER_SUB_PATH;
     public static final String GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH = "/active";
     public static final String GET_BRANCH_VIEW_LIST_BY_ID_PATH = BRANCH_BASE_PATH + GET_BRANCH_VIEW_LIST_BY_ID_SUB_PATH;
 

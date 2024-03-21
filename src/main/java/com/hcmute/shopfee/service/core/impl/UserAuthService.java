@@ -18,6 +18,7 @@ import com.hcmute.shopfee.entity.database.RoleEntity;
 import com.hcmute.shopfee.entity.database.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import com.hcmute.shopfee.enums.Role;
+import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.kafka.KafkaMessagePublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
@@ -92,7 +93,7 @@ public class UserAuthService implements IUserAuthService {
         RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
         roleList.add(userRole);
         userEntity.setRoleList(roleList);
-        userEntity.setEnabled(true);
+        userEntity.setStatus(UserStatus.ACTIVE);
         userEntity.setCoin(0L);
         UserEntity savedUser = userRepository.save(userEntity);
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
@@ -135,7 +136,7 @@ public class UserAuthService implements IUserAuthService {
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
             roleList.add(userRole);
             userEntity.setRoleList(roleList);
-            userEntity.setEnabled(true);
+            userEntity.setStatus(UserStatus.ACTIVE);
 
             UserEntity savedUser = userRepository.save(userEntity);
             List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
