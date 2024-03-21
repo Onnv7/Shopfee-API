@@ -12,6 +12,7 @@ import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IAlbumService;
 import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +34,10 @@ public class AlbumService implements IAlbumService {
         if(!ImageUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
+        String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
+        String fileName = StringUtils.generateFileName("", "album");
         try {
-            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH, "album", body.getImage().getBytes());
+            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(pathCloudinary, fileName, body.getImage().getBytes());
             AlbumEntity album = AlbumEntity.builder()
                     .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
                     .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
