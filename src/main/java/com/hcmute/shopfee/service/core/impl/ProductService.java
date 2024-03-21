@@ -118,6 +118,7 @@ public class ProductService implements IProductService {
 
             AlbumEntity productImage = AlbumEntity.builder()
                     .imageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                    .type(AlbumType.PRODUCT)
                     .cloudinaryImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID))
                     .thumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.get(CloudinaryConstant.PUBLIC_ID)))
                     .build();

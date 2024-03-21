@@ -45,7 +45,7 @@ public class CategoryService implements ICategoryService {
         if (existedCategory != null) {
             throw new CustomException(ErrorConstant.EXISTED_DATA, "Category already exists");
         }
-        byte[] originalImage = new byte[0];
+        byte[] originalImage;
         try {
             originalImage = body.getImage().getBytes();
             byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
@@ -71,31 +71,27 @@ public class CategoryService implements ICategoryService {
     public GetCategoryByIdResponse getCategoryById(String id) {
         CategoryEntity category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
-        return modelMapperService.mapClass(category, GetCategoryByIdResponse.class);
+        return GetCategoryByIdResponse.fromCategoryEntity(category);
     }
 
     @Override
     public List<GetCategoryListResponse> getCategoryList() {
         List<CategoryEntity> categoryList = categoryRepository.findAll();
-        return modelMapperService.mapList(categoryList, GetCategoryListResponse.class);
+        return GetCategoryListResponse.fromCategoryEntityList(categoryList);
     }
 
     @Override
     public List<GetVisibleCategoryListResponse> getVisibleCategoryList() {
         List<CategoryEntity> categoryList = categoryRepository.findByStatus(CategoryStatus.VISIBLE);
-        return modelMapperService.mapList(categoryList, GetVisibleCategoryListResponse.class);
+        return GetVisibleCategoryListResponse.fromCategoryEntityList(categoryList);
     }
 
     @Override
     public void updateCategory(UpdateCategoryRequest body, String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));;
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         if (body.getImage() != null) {
             try {
-//                String imageCloudinaryId = category.getImage().getCloudinaryImageId();
-//                if(imageCloudinaryId != null) {
-//                    cloudinaryService.deleteImage(imageCloudinaryId);
-//                }
                 byte[] originalImage = body.getImage().getBytes();
                 byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
