@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
@@ -31,6 +32,7 @@ public class TransactionController {
         transactionService.updateTransaction(id, request);
 
         ResponseAPI<?> res = ResponseAPI.builder()
+                .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
@@ -42,6 +44,7 @@ public class TransactionController {
     public ResponseEntity<ResponseAPI<?>> completeTransaction(@PathVariable(TRANSACTION_ID) String id) {
         transactionService.completeTransaction(id);
         ResponseAPI<?> res = ResponseAPI.builder()
+                .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
