@@ -647,7 +647,7 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (!(orderBill.getOrderEventList() != null && orderBill.getOrderEventList().size() == 2 && orderBill.getOrderEventList().get(1).getOrderStatus() == OrderStatus.ACCEPTED)) {
+        if (orderBill.getOrderEventList() != null && orderBill.getOrderEventList().size() == 2 && orderBill.getOrderEventList().get(1).getOrderStatus() == OrderStatus.ACCEPTED) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cannot create cancellation request when order status is not \"ACCEPTED\"");
         }
 

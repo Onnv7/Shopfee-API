@@ -42,7 +42,8 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             join (
             	select *
             	from `transaction` t\s
-            	where t.status = 'PAID'
+            	where (t.status = 'PAID' and t.payment_type != 'CASHING')
+            	or (t.status = 'UNPAID' and t.payment_type = 'CASHING')
             ) as trans on trans.order_bill_id = ob.id\s
             where oe.order_status = ?1
             and ob.branch_id = ?2
