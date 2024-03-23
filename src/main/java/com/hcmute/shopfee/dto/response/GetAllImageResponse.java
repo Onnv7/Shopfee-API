@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.hcmute.shopfee.entity.database.AlbumEntity;
-import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import lombok.Data;
 
 import java.util.ArrayList;

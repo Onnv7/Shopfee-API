@@ -1,8 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.database.order.TransactionEntity;
-import com.hcmute.shopfee.entity.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -45,7 +44,7 @@ public class GetOrderByIdResponse {
         order.setTotalPayment(entity.getTotalPayment());
         order.setShippingFee(entity.getShippingFee());
         order.setTotalItemPrice(entity.getTotalItemPrice());
-        order.setReceiverInformation(entity.getShippingInformation() != null ? ReceiverInformation.fromReceiverInformationEntity(entity.getShippingInformation()) : null);
+        order.setReceiverInformation(entity.getReceiverInformation() != null ? ReceiverInformation.fromReceiverInformationEntity(entity.getReceiverInformation()) : null);
 
         order.setOrderType(entity.getOrderType());
         order.setCreatedAt(entity.getCreatedAt());

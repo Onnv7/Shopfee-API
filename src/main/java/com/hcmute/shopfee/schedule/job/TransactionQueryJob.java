@@ -1,9 +1,9 @@
 package com.hcmute.shopfee.schedule.job;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.database.order.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 @RequiredArgsConstructor

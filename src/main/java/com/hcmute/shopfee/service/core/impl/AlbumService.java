@@ -4,7 +4,7 @@ import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.UploadImageRequest;
 import com.hcmute.shopfee.dto.response.GetAllImageResponse;
-import com.hcmute.shopfee.entity.database.AlbumEntity;
+import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.model.CustomException;

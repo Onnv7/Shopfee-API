@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.repository.database.review;
 
-import com.hcmute.shopfee.entity.database.identifier.UserProductReviewInteractionPK;
-import com.hcmute.shopfee.entity.database.review.UserReviewInteractionEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
+import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

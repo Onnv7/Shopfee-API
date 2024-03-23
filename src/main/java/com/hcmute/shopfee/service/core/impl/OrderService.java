@@ -6,18 +6,22 @@ import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.database.*;
-import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
-import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
-import com.hcmute.shopfee.entity.database.coupon.condition.SubjectConditionEntity;
-import com.hcmute.shopfee.entity.database.coupon.condition.UsageConditionEntity;
-import com.hcmute.shopfee.entity.database.coupon_used.CouponRewardReceivedEntity;
-import com.hcmute.shopfee.entity.database.coupon_used.CouponUsedEntity;
-import com.hcmute.shopfee.entity.database.coupon_used.reward.MoneyRewardReceivedEntity;
-import com.hcmute.shopfee.entity.database.coupon_used.reward.ProductRewardReceivedEntity;
-import com.hcmute.shopfee.entity.database.order.*;
-import com.hcmute.shopfee.entity.database.product.ProductEntity;
-import com.hcmute.shopfee.entity.database.product.SizeEntity;
-import com.hcmute.shopfee.entity.database.product.ToppingEntity;
+import com.hcmute.shopfee.entity.sql.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.MoneyRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
@@ -394,7 +398,7 @@ public class OrderService implements IOrderService {
         shippingInformation.fromAddressEntity(address);
 
         shippingInformation.setOrderBill(orderBill);
-        orderBill.setShippingInformation(shippingInformation);
+        orderBill.setReceiverInformation(shippingInformation);
 
         // set sự kiện đơn hàng
         List<OrderEventEntity> orderEventList = new ArrayList<>();
@@ -556,7 +560,7 @@ public class OrderService implements IOrderService {
 
 
         // set thong tin nhan hang
-        orderBill.setShippingInformation(ReceiverInformationEntity.builder()
+        orderBill.setReceiverInformation(ReceiverInformationEntity.builder()
                 .phoneNumber(user.getPhoneNumber())
                 .receiveTime(body.getReceiveTime())
                 .recipientName(user.getFullName())
@@ -620,7 +624,10 @@ public class OrderService implements IOrderService {
         if (order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
         }
-
+        if(order.getTransaction().getPaymentType() != PaymentType.CASHING &&
+                order.getTransaction().getStatus() == PaymentStatus.UNPAID) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Orders must be paid online before acceptance");
+        }
         order.getOrderEventList().add(OrderEventEntity.builder()
                 .orderStatus(body.getOrderStatus())
                 .description(body.getDescription())
@@ -674,6 +681,7 @@ public class OrderService implements IOrderService {
         orderSearchService.upsertOrder(orderBill);
     }
 
+    @Transactional
     @Override
     public void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId) {
         if (body.getStatus() == CancellationRequestStatus.PENDING) {
@@ -700,12 +708,7 @@ public class OrderService implements IOrderService {
                         .orderStatus(OrderStatus.CANCELLATION_REQUEST_ACCEPTED)
                         .build());
 
-                orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                        .description("Customer requests to cancel order")
-                        .isEmployee(true)
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.CANCELED)
-                        .build());
+
                 if (orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
                     customer.setCoin(orderBill.getTotalPayment() + customer.getCoin());
                     userRepository.save(customer);
@@ -733,9 +736,10 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (DateUtils.isPassed30Minutes(orderBill.getCreatedAt())) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant cancel order after 30 minutes");
+        if (orderBill.getOrderEventList().get(0).getOrderStatus() != OrderStatus.CREATED) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant cancel order");
         }
+
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());

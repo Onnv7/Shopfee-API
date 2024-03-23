@@ -2,7 +2,7 @@ package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.utils.DateUtils;
 import lombok.Data;

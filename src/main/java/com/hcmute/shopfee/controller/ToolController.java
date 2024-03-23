@@ -1,11 +1,12 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.entity.database.*;
-import com.hcmute.shopfee.entity.database.order.*;
-import com.hcmute.shopfee.entity.database.product.ProductEntity;
-import com.hcmute.shopfee.entity.database.product.SizeEntity;
-import com.hcmute.shopfee.entity.database.product.ToppingEntity;
-import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
+import com.hcmute.shopfee.entity.sql.database.*;
+import com.hcmute.shopfee.entity.sql.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
+import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
@@ -246,6 +247,17 @@ public class ToolController {
                 .updatedAt(new Date())
                 .user(userEntity)
                 .build();
+
+        ReceiverInformationEntity receiverInformation = ReceiverInformationEntity.builder()
+                .address("sadasdasd")
+                .latitude(2312423.4)
+                .longitude(2312423.3)
+                .phoneNumber("0432342343")
+                .recipientName("An nguyen")
+                .orderBill(orderBill)
+                .build();
+        orderBill.setReceiverInformation(receiverInformation);
+
         List<OrderEventEntity> orderEventEntityList = new ArrayList<OrderEventEntity>();
         orderEventEntityList.add(OrderEventEntity.builder()
                 .createdAt(new Date())

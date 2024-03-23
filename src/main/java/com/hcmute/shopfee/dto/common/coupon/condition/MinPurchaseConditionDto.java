@@ -1,13 +1,10 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
-import com.hcmute.shopfee.entity.database.coupon.condition.MinPurchaseConditionEntity;
-import com.hcmute.shopfee.enums.MiniPurchaseType;
+import com.hcmute.shopfee.entity.sql.database.coupon.condition.MinPurchaseConditionEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import static com.hcmute.shopfee.constant.SwaggerConstant.INTEGER_VALUE_EX;
-import static com.hcmute.shopfee.constant.SwaggerConstant.MIN_PURCHASE_TYPE;
 
 
 @Data

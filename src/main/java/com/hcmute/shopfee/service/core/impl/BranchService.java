@@ -5,7 +5,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.entity.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
@@ -25,9 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Time;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 

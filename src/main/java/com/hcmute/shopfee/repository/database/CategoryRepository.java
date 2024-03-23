@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database;
 
-import com.hcmute.shopfee.entity.database.CategoryEntity;
+import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.enums.CategoryStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.security.custom.user;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.service.core.impl.UserService;
 import lombok.RequiredArgsConstructor;

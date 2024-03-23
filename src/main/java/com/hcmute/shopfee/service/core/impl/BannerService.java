@@ -7,7 +7,7 @@ import com.hcmute.shopfee.dto.request.UpdateBannerRequest;
 import com.hcmute.shopfee.dto.response.GetBannerDetailResponse;
 import com.hcmute.shopfee.dto.response.GetBannerListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
-import com.hcmute.shopfee.entity.database.BannerEntity;
+import com.hcmute.shopfee.entity.sql.database.BannerEntity;
 import com.hcmute.shopfee.enums.BannerStatus;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.BannerRepository;

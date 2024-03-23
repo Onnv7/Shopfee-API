@@ -1,10 +1,10 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
-import com.hcmute.shopfee.entity.database.UserEntity;
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.database.order.OrderItemEntity;
-import com.hcmute.shopfee.entity.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
@@ -32,9 +32,9 @@ public class OrderSearchService {
                 .id(orderBillEntity.getId())
 //                .code(orderBillEntity.getCode())
                 .customerName(user.getFullName())
-                .recipientName(orderBillEntity.getShippingInformation().getRecipientName())
+                .recipientName(orderBillEntity.getReceiverInformation().getRecipientName())
                 .phoneNumber(user.getPhoneNumber())
-                .phoneNumberReceiver(orderBillEntity.getShippingInformation().getPhoneNumber())
+                .phoneNumberReceiver(orderBillEntity.getReceiverInformation().getPhoneNumber())
                 .orderType(orderBillEntity.getOrderType())
                 .statusLastEvent(OrderStatus.CREATED)
                 .total(orderBillEntity.getTotalItemPrice())
@@ -57,8 +57,8 @@ public class OrderSearchService {
         OrderEventEntity lastStatus = orderBillEntity.getOrderEventList().get(0);
         if (order != null) {
             order.setCustomerName(user.getFullName());
-            order.setRecipientName(orderBillEntity.getShippingInformation().getRecipientName());
-            order.setPhoneNumber(orderBillEntity.getShippingInformation().getPhoneNumber());
+            order.setRecipientName(orderBillEntity.getReceiverInformation().getRecipientName());
+            order.setPhoneNumber(orderBillEntity.getReceiverInformation().getPhoneNumber());
             order.setOrderType(orderBillEntity.getOrderType());
             order.setStatusLastEvent(lastStatus.getOrderStatus());
             order.setTotal(orderBillEntity.getTotalItemPrice());

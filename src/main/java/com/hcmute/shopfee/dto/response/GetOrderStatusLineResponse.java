@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import lombok.Data;
 

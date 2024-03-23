@@ -1,21 +1,16 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
-import com.hcmute.shopfee.service.common.CloudinaryService;
-import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.service.core.impl.ProductService;
 import com.hcmute.shopfee.utils.RegexUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

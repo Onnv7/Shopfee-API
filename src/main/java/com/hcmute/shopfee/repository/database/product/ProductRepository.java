@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database.product;
 
-import com.hcmute.shopfee.entity.database.product.ProductEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

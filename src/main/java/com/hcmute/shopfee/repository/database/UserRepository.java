@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database;
 
-import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

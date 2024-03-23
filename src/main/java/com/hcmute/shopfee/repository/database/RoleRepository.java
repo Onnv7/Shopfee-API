@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database;
 
-import com.hcmute.shopfee.entity.database.RoleEntity;
+import com.hcmute.shopfee.entity.sql.database.RoleEntity;
 import com.hcmute.shopfee.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

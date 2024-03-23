@@ -1,14 +1,12 @@
 package com.hcmute.shopfee.repository.database.review;
 
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
-import com.hcmute.shopfee.entity.database.review.ProductReviewEntity;
+import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface ProductReviewRepository extends JpaRepository<ProductReviewEntity, String> {

@@ -6,7 +6,7 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
-import com.hcmute.shopfee.entity.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.UserRepository;

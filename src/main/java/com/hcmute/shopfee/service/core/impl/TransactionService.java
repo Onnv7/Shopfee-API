@@ -1,10 +1,10 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.database.order.TransactionEntity;
-import com.hcmute.shopfee.entity.database.UserEntity;
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;

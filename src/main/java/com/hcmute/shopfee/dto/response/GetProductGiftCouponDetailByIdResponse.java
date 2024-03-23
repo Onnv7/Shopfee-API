@@ -5,8 +5,8 @@ import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.SubjectConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
-import com.hcmute.shopfee.entity.database.coupon.CouponConditionEntity;
-import com.hcmute.shopfee.entity.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import lombok.Data;
 

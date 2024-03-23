@@ -2,7 +2,7 @@ package com.hcmute.shopfee.repository.database;
 
 import com.hcmute.shopfee.dto.sql.GetRevenueQueryDto;
 import com.hcmute.shopfee.dto.sql.RevenueStatisticsQueryDto;
-import com.hcmute.shopfee.entity.database.order.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

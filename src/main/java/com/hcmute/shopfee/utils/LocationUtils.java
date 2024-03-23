@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.utils;
 
-import com.hcmute.shopfee.entity.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database.coupon.condition;
 
-import com.hcmute.shopfee.entity.database.coupon.condition.CombinationConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.condition.CombinationConditionEntity;
 import com.hcmute.shopfee.enums.CouponType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

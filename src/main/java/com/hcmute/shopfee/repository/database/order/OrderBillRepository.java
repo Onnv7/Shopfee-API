@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.repository.database.order;
 
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
-import com.hcmute.shopfee.entity.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.AddressEntity;
 import lombok.Data;
 
 import java.util.ArrayList;

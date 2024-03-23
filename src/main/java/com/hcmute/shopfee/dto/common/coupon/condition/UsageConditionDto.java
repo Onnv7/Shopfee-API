@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
-import com.hcmute.shopfee.entity.database.coupon.condition.UsageConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
 import com.hcmute.shopfee.enums.UsageConditionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

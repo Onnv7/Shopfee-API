@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.security.custom.employee;
 
-import com.hcmute.shopfee.entity.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.service.core.impl.EmployeeService;
 import lombok.RequiredArgsConstructor;

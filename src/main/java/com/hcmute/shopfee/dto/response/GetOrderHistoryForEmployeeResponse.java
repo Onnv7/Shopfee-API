@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 
-import com.hcmute.shopfee.entity.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
 import lombok.Data;
@@ -34,7 +34,7 @@ public class GetOrderHistoryForEmployeeResponse {
 
             orderResponse.setId(entity.getId());
             orderResponse.setCustomerName(entity.getUser().getFullName());
-            orderResponse.setPhoneNumber(entity.getShippingInformation().getPhoneNumber());
+            orderResponse.setPhoneNumber(entity.getReceiverInformation().getPhoneNumber());
             orderResponse.setProductQuantity(entity.getOrderItemList().size());
             orderResponse.setProductName(entity.getOrderItemList().get(0).getName());
             orderResponse.setProductThumbnailUrl(entity.getOrderItemList().get(0).getProduct().getImage().getThumbnailUrl());
