@@ -2,11 +2,11 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
+import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
-import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IUserService;
@@ -20,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Date;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
@@ -98,6 +97,16 @@ public class UserController {
     @PatchMapping(path = PATCH_USER_UPLOAD_AVATAR_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseAPI<String>> uploadAvatar(@PathVariable(USER_ID) String userId, @ModelAttribute @Valid UploadUserAvatarRequest body) {
         userService.uploadAvatar(body, userId);
+        ResponseAPI<String> res = ResponseAPI.<String>builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+    @Operation(summary = USER_ADD_PHONE_NUMBER_SUM)
+    @PatchMapping(path = PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH)
+    public ResponseEntity<ResponseAPI<String>> updatePhoneNumber(@PathVariable(USER_ID) String userId, @RequestBody @Valid AddPhoneNumberRequest body) {
+        userService.addPhoneNumberToUser(body, userId);
         ResponseAPI<String> res = ResponseAPI.<String>builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)

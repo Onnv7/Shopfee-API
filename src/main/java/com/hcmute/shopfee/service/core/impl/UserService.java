@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
@@ -98,5 +99,18 @@ public class UserService implements IUserService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void addPhoneNumberToUser(AddPhoneNumberRequest body, String userId) {
+        SecurityUtils.checkUserId(userId);
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+
+        if(user.getPhoneNumber() != null) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The user already has a phone number");
+        }
+        user.setPhoneNumber(body.getPhoneNumber());
+        userRepository.save(user);
     }
 }

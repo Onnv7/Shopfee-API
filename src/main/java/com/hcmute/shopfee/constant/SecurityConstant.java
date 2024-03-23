@@ -42,7 +42,8 @@ public class SecurityConstant {
     };
     public static final String[] PATCH_USER_PATH = {
             PATCH_USER_CHANGE_PASSWORD_PATH, PATCH_USER_UPLOAD_AVATAR_PATH,
-            PATCH_ORDER_UPDATE_SUB_PATH, PATCH_TRANSACTION_UPDATE_BY_ID_PATH
+            PATCH_ORDER_UPDATE_SUB_PATH, PATCH_TRANSACTION_UPDATE_BY_ID_PATH,
+            PATCH_USER_ADD_PHONE_NUMBER_PATH
     };
     public static final String[] PUT_USER_PATH = {
             PUT_ADDRESS_UPDATE_PATH,

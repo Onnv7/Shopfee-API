@@ -65,6 +65,8 @@ public class RouterConstant {
     public static final String GET_USER_CHECK_EXISTED_PATH = USER_BASE_PATH + GET_USER_CHECK_EXISTED_SUB_PATH;
     public static final String PATCH_USER_UPLOAD_AVATAR_SUB_PATH = USER_ID_PATH + "/upload/avatar";
     public static final String PATCH_USER_UPLOAD_AVATAR_PATH = USER_BASE_PATH + PATCH_USER_UPLOAD_AVATAR_SUB_PATH;
+    public static final String PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH = USER_ID_PATH + "/add-phone-number";
+    public static final String PATCH_USER_ADD_PHONE_NUMBER_PATH = USER_BASE_PATH + PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH;
 
     // ENDPOINT URL ADDRESS =================================================================
     public static final String POST_ADDRESS_CREATE_SUB_PATH = "/user" + USER_ID_PATH;

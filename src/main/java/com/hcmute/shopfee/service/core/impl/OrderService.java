@@ -560,9 +560,9 @@ public class OrderService implements IOrderService {
 
         // set thong tin nhan hang
         orderBill.setReceiverInformation(ReceiverInformationEntity.builder()
-                .phoneNumber(user.getPhoneNumber())
+                .phoneNumber(body.getPhoneNumber())
                 .receiveTime(body.getReceiveTime())
-                .recipientName(user.getFullName())
+                .recipientName(body.getRecipientName())
                 .orderBill(orderBill)
                 .build());
 
