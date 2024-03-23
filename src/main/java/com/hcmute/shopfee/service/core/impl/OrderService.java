@@ -5,7 +5,6 @@ import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.entity.database.*;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
