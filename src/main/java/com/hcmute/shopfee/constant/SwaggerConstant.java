@@ -114,6 +114,7 @@ public class SwaggerConstant {
     public static final String ORDER_GET_ALL_IN_DAY_SUM = "Get all shipping orders in current day for employee";
     public static final String ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM = "Get all orders for employee by type and status of order in current day";
     public static final String ORDER_GET_DETAILS_BY_ID_SUM = "Get a details order by order id";
+    public static final String ORDER_GET_ORDER_ITEM_REVIEW_SUM = "Get order item and review by order bill id";
     public static final String ORDER_GET_SHIPPING_FEE_SUM = "Get shipping fee information";
     public static final String ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM = "Get orders history by user id and order status";
     public static final String ORDER_GET_STATUS_LINE_SUM = "Get order status line by order id";

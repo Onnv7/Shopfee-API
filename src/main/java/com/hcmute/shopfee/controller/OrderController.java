@@ -192,6 +192,19 @@ public class OrderController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
+    @Operation(summary = ORDER_GET_ORDER_ITEM_REVIEW_SUM)
+    @GetMapping(path = GET_ORDER_ITEM_REVIEW_SUB_PATH)
+    public ResponseEntity<ResponseAPI<List<GetOrderItemAndReviewResponse>>> getOrderItemAndReview(@PathVariable(ORDER_ID) String id) {
+        List<GetOrderItemAndReviewResponse> resData = orderService.getOrderItemAndReviewByOrderBillId(id);
+        ResponseAPI<List<GetOrderItemAndReviewResponse>> res = ResponseAPI.<List<GetOrderItemAndReviewResponse>>builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
     @Operation(summary = ORDER_GET_SHIPPING_FEE_SUM)
     @GetMapping(path = GET_ORDER_SHIPPING_FEE_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetShippingFeeResponse>> getShippingFee(

@@ -33,6 +33,12 @@ public class OrderItemEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "thumbnail_url", nullable = false)
+    private String thumbnailUrl;
+
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl;
+
     @ManyToOne
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference

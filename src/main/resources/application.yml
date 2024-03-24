@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${SQL_URL:jdbc:mysql://localhost:3306/shopfee}
     username: ${SQL_USERNAME:root}
-    password: ${SQL_PASSWORD:0339930201An.}
+    password: ${SQL_PASSWORD:hcmute}
 
   jpa:
     show-sql: true

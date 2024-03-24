@@ -62,6 +62,7 @@ import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService implements IOrderService {
+    private final OrderItemRepository orderItemRepository;
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
     private final UserRepository userRepository;
@@ -129,7 +130,8 @@ public class OrderService implements IOrderService {
             OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
             item.setProduct(productInfo);
             item.setName(productInfo.getName());
-
+            item.setImageUrl(productInfo.getImage().getImageUrl());
+            item.setThumbnailUrl(productInfo.getImage().getThumbnailUrl());
 
             item.setName(productInfo.getName());
 
@@ -826,6 +828,12 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
         GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
         return order;
+    }
+
+    @Override
+    public List<GetOrderItemAndReviewResponse> getOrderItemAndReviewByOrderBillId(String orderBillId) {
+        List<OrderItemEntity> orderItemEntityList = orderItemRepository.findByOrderBill_Id(orderBillId);
+        return GetOrderItemAndReviewResponse.fromOrderItemEntityList(orderItemEntityList);
     }
 
     @Override

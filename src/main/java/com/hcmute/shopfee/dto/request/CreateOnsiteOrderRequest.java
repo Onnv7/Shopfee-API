@@ -61,5 +61,6 @@ public class CreateOnsiteOrderRequest {
 
     @Schema(example = PHONE_NUMBER_EX)
     @Pattern(regexp = PHONE_NUMBER_REGEX)
+    @NotBlank
     private String phoneNumber;
 }

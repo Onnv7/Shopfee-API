@@ -33,6 +33,7 @@ public class GetOrderByIdResponse {
     private Long shippingDiscount;
     private Long orderDiscount;
     private Branch branch;
+    private Boolean needReview;
 //    private String branchAddress;
 
     public static GetOrderByIdResponse fromOrderBillEntity(OrderBillEntity entity) {
@@ -48,11 +49,20 @@ public class GetOrderByIdResponse {
 
         order.setOrderType(entity.getOrderType());
         order.setCreatedAt(entity.getCreatedAt());
+
         List<Product> itemList = new ArrayList<>();
-        entity.getOrderItemList().forEach(it -> {
-            Product product = Product.fromOrderItemEntity(it);
+
+        for (OrderItemEntity item : entity.getOrderItemList()) {
+            Product product = Product.fromOrderItemEntity(item);
             itemList.add(product);
-        });
+
+            if(item.getProductReview() == null) {
+                order.setNeedReview(true);
+            }
+        }
+        if(order.getNeedReview() == null) {
+            order.setNeedReview(false);
+        }
         order.setItemList(itemList);
         order.setTransaction(Transaction.fromTransactionEntity(entity.getTransaction()));
 

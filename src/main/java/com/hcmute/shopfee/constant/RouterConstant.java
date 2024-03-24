@@ -189,6 +189,8 @@ public class RouterConstant {
     public static final String GET_ORDER_LIST_PATH = ORDER_BASE_PATH + GET_ORDER_LIST_SUB_PATH;
     public static final String GET_ORDER_DETAILS_BY_ID_SUB_PATH = ORDER_ID_PATH + "/details";
     public static final String GET_ORDER_DETAILS_BY_ID_PATH = ORDER_BASE_PATH + GET_ORDER_DETAILS_BY_ID_SUB_PATH;
+    public static final String GET_ORDER_ITEM_REVIEW_SUB_PATH = ORDER_ID_PATH + "/order-item";
+    public static final String GET_ORDER_ITEM_REVIEW_PATH = ORDER_BASE_PATH + GET_ORDER_ITEM_REVIEW_SUB_PATH;
     public static final String GET_ORDER_SHIPPING_FEE_SUB_PATH = "/shipping-fee";
     public static final String GET_ORDER_SHIPPING_FEE_PATH = ORDER_BASE_PATH + GET_ORDER_SHIPPING_FEE_SUB_PATH;
     public static final String GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH = "/history/user" + USER_ID_PATH;
