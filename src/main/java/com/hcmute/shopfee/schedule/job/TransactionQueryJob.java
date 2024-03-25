@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
+import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -12,6 +13,7 @@ import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
+import com.hcmute.shopfee.service.common.AuditorAwareService;
 import com.hcmute.shopfee.service.common.VNPayService;
 import com.hcmute.shopfee.service.common.ZaloPayService;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +30,16 @@ public class TransactionQueryJob extends QuartzJobBean {
     private final VNPayService vnPayService;
     private final TransactionRepository transactionRepository;
     private final OrderBillRepository orderBillRepository;
+    private final AuditorAwareService auditorAwareService;
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         JobDataMap data = context.getJobDetail().getJobDataMap();
         TransactionEntity transaction = transactionRepository.findById(data.getString(TRANSACTION_ID)).
                 orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.TRANSACTION_ID_NOT_FOUND + data.getString(TRANSACTION_ID)));
+
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-            GetOrderZaloPayResponse zaloResult = zaloPayService.getOrder(transaction.getInvoiceCode());
+            GetOrderZaloPayResponse zaloResult = zaloPayService.getOrderTransactionInformation(transaction.getInvoiceCode());
             if (zaloResult.getReturnCode() == 1) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
@@ -48,7 +52,8 @@ public class TransactionQueryJob extends QuartzJobBean {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .orderStatus(OrderStatus.CANCELED)
                         .description("Payment failed, order canceled")
-                        .isEmployee(true)
+                        .actor(ActorType.AUTOMATIC)
+                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
                         .orderBill(orderBill)
                         .build());
                 orderBillRepository.save(orderBill);

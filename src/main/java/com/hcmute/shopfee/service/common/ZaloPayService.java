@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 public class ZaloPayService {
     private final ZaloPay zaloPay;
 
-    public CreateOrderZaloPayResponse createOrder(Long amount, String orderId)  {
+    public CreateOrderZaloPayResponse createOrderTransaction(Long amount, String orderId)  {
         CreateOrderZaloPayRequest request = new CreateOrderZaloPayRequest();
         request.setAmount(amount);
         request.setOrderId(orderId);
@@ -28,7 +28,7 @@ public class ZaloPayService {
         }
     }
 
-    public GetOrderZaloPayResponse getOrder(String zaloTransId) {
+    public GetOrderZaloPayResponse getOrderTransactionInformation(String zaloTransId) {
         GetOrderZaloPayRequest body = new GetOrderZaloPayRequest();
         body.setAppTransId(zaloTransId);
         try {

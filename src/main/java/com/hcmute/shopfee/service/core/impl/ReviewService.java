@@ -1,16 +1,20 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
 import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
+import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
@@ -36,6 +40,7 @@ public class ReviewService implements IReviewService {
     private final UserReviewInteractionRepository userReviewInteractionRepository;
     private final ProductReviewRepository productReviewRepository;
     private final UserRepository userRepository;
+    private final CoinHistoryRepository coinHistoryRepository;
 
     @Override
     public void createProductReview(CreateReviewRequest body) {
@@ -48,6 +53,15 @@ public class ReviewService implements IReviewService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         user.setCoin(user.getCoin() + 200);
         userRepository.save(user);
+
+        CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                .coin(200L)
+                .actor(ActorType.AUTOMATIC)
+                .user(user)
+                .description(ShopfeeConstant.REVIEW_COIN)
+                .build();
+        coinHistoryRepository.save(coinHistory);
+
         orderItemEntity.setProductReview(productReviewEntity);
         orderItemRepository.save(orderItemEntity);
     }

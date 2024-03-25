@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
+import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -38,7 +39,7 @@ public class AcceptOrderJob extends QuartzJobBean {
                         .orderStatus(OrderStatus.CANCELED)
                         .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
                         .description("The order has been canceled due to unpaid payment")
-                        .isEmployee(true)
+                        .actor(ActorType.AUTOMATIC)
                         .build();
             } else {
                 newEvent = OrderEventEntity.builder()
@@ -46,7 +47,7 @@ public class AcceptOrderJob extends QuartzJobBean {
                         .orderStatus(OrderStatus.ACCEPTED)
                         .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
                         .description("The order has been automatically accepted")
-                        .isEmployee(true)
+                        .actor(ActorType.AUTOMATIC)
                         .build();
             }
             orderBill.getOrderEventList().add(newEvent);

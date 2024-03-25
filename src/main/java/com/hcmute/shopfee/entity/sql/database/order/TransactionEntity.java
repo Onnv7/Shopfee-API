@@ -50,6 +50,9 @@ public class TransactionEntity {
     @Column(name = "payment_type", nullable = false)
     private PaymentType paymentType;
 
+    @Column(name = "is_refunded")
+    private boolean isRefunded;
+
     @Column(name = "total_paid", nullable = false)
     private Long totalPaid;
 

@@ -2,6 +2,7 @@ package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.sql.listener.OrderEventListener;
+import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,8 +41,9 @@ public class OrderEventEntity {
     private String description;
 
 
-    @Column(name = "is_employee", nullable = false)
-    private boolean isEmployee;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "actor", nullable = false)
+    private ActorType actor;
 
     @CreatedBy
     @Column(name = "created_by", nullable = false)

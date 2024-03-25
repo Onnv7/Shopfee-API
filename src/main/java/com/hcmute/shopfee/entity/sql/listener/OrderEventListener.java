@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.listener;
 
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
+import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.service.common.AuditorAwareService;
@@ -28,7 +29,7 @@ public class OrderEventListener {
                     .orderBill(orderEvent.getOrderBill())
                     .description("The order has been cancelled")
                     .orderStatus(OrderStatus.CANCELED)
-                    .isEmployee(true)
+                    .actor(ActorType.AUTOMATIC)
                     .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
                     .build();
 //            throw new RuntimeException();

@@ -1,14 +1,12 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.entity.sql.database.AddressEntity;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
@@ -62,6 +60,7 @@ import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService implements IOrderService {
+    private final CoinHistoryRepository coinHistoryRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
@@ -105,7 +104,7 @@ public class OrderService implements IOrderService {
                     .paymentUrl(paymentData.getVnpUrl())
                     .build();
         } else if (paymentType == PaymentType.ZALOPAY) {
-            CreateOrderZaloPayResponse paymentData = zaloPayService.createOrder(orderBill.getTotalPayment(), orderBill.getId());
+            CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment(), orderBill.getId());
             transData = TransactionEntity.builder()
                     .invoiceCode(paymentData.getInvoiceCode())
                     .status(PaymentStatus.UNPAID)
@@ -372,9 +371,12 @@ public class OrderService implements IOrderService {
     public CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
 
-        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY) {
-            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "vnpay does not support bill payments under 10,000đ");
+        if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
+                || (body.getTotal() < 2000 && body.getPaymentType() == PaymentType.ZALOPAY)
+        ) {
+            throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "Online payment of such amount is not supported");
         }
+
 
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
@@ -382,7 +384,8 @@ public class OrderService implements IOrderService {
         if (body.getCoin() == null) {
             body.setCoin(0L);
         }
-        if (user.getCoin() < body.getCoin()) {
+        long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
+        if (user.getCoin() < deductCoin) {
             throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
         }
 
@@ -407,7 +410,7 @@ public class OrderService implements IOrderService {
                 .orderStatus(OrderStatus.CREATED)
                 .description("Order created successfully")
                 .orderBill(orderBill)
-                .isEmployee(false)
+                .actor(ActorType.USER)
                 .build());
         orderBill.setOrderEventList(orderEventList);
 
@@ -429,12 +432,19 @@ public class OrderService implements IOrderService {
 
         totalPrice -= amountReduced;
 
-        if (totalPrice <= body.getCoin()) {
+        CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                .actor(ActorType.USER)
+                .user(user)
+                .build();
+
+        if (totalPrice <= deductCoin && deductCoin != 0) {
+            coinHistory.setCoin(-totalPrice);
             orderBill.setCoin(totalPrice);
             totalPrice = 0;
-        } else {
-            totalPrice -= body.getCoin();
-            orderBill.setCoin(body.getCoin());
+        } else if (deductCoin != 0) {
+            coinHistory.setCoin(-deductCoin);
+            totalPrice -= deductCoin;
+            orderBill.setCoin(deductCoin);
         }
 
         // cập nhật lại xu cho user
@@ -446,6 +456,13 @@ public class OrderService implements IOrderService {
         }
         orderBill.setTotalPayment(totalPrice);
         orderBill = orderBillRepository.save(orderBill);
+
+        // save coin history
+        if (deductCoin != 0) {
+            coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
+            coinHistoryRepository.save(coinHistory);
+        }
+
         // set giao dịch
         buildTransaction(body.getPaymentType(), request, orderBill);
         TransactionEntity transaction = orderBill.getTransaction();
@@ -460,11 +477,12 @@ public class OrderService implements IOrderService {
                 .branchId(orderBill.getBranch().getId())
                 .transactionId(transaction.getId())
                 .build();
-        // set schedule for paymet
+        // set schedule for payment
         if (transaction.getPaymentUrl() != null && totalPrice > 0) {
-            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             resData.setPaymentUrl(transaction.getPaymentUrl());
+            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
+
             if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
                 checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
             } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
@@ -491,18 +509,18 @@ public class OrderService implements IOrderService {
     public CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
 
-        if (body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY) {
+        if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
+                || (body.getTotal() < 2000 && body.getPaymentType() == PaymentType.ZALOPAY)) {
             throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "vnpay does not support bill payments under 10,000đ");
         }
 
         long totalPrice = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
+        long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
 
-        if (body.getCoin() == null) {
-            body.setCoin(0L);
-        }
-        if (user.getCoin() < body.getCoin()) {
+
+        if (user.getCoin() < deductCoin) {
             throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
         }
 
@@ -518,10 +536,19 @@ public class OrderService implements IOrderService {
 
         totalPrice -= amountReduced;
 
-        if (totalPrice <= body.getCoin()) {
-            orderBill.setCoin(totalPrice);
+        CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                .actor(ActorType.USER)
+                .user(user)
+                .build();
+
+        if (totalPrice <= deductCoin && deductCoin != 0) {
+            orderBill.setCoin(-totalPrice);
             totalPrice = 0;
-        } else {
+            coinHistory.setCoin(totalPrice);
+
+            coinHistoryRepository.save(coinHistory);
+        } else if (deductCoin != 0) {
+            orderBill.setCoin(-deductCoin);
             totalPrice -= body.getCoin();
             orderBill.setCoin(body.getCoin());
         }
@@ -538,6 +565,13 @@ public class OrderService implements IOrderService {
         orderBill.setTotalPayment(totalPrice);
         orderBill = orderBillRepository.save(orderBill);
 
+        // save coin history
+        if (deductCoin != 0) {
+            coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
+            coinHistoryRepository.save(coinHistory);
+        }
+
+
         // set giao dịch
         buildTransaction(body.getPaymentType(), request, orderBill);
         TransactionEntity transaction = orderBill.getTransaction();
@@ -549,7 +583,7 @@ public class OrderService implements IOrderService {
         orderEventList.add(OrderEventEntity.builder()
                 .orderStatus(OrderStatus.CREATED)
                 .description("Order created successfully")
-                .isEmployee(false)
+                .actor(ActorType.USER)
                 .orderBill(orderBill)
                 .build());
         orderBill.setOrderEventList(orderEventList);
@@ -571,14 +605,31 @@ public class OrderService implements IOrderService {
 
         OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(dataSaved);
+
+
         transaction = dataSaved.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
                 .transactionId(transaction.getId())
                 .build();
+
+
+        // set schedule for payment
         if (transaction.getPaymentUrl() != null && totalPrice > 0) {
             resData.setPaymentUrl(transaction.getPaymentUrl());
+            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
+            Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
+
+            if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
+            } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 16, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.SECONDS);
+            }
+            checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
+            checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
+            schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
         Instant newIn = DateUtils.after(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
@@ -612,12 +663,14 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
-        List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING, OrderStatus.SUCCEED, OrderStatus.CANCELED);
+        List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING,
+                OrderStatus.SUCCEED, OrderStatus.CANCELED,
+                OrderStatus.NOT_RECEIVED, OrderStatus.PREPARED);
 
-        if (!validOrderStatus.contains(body.getOrderStatus())) {
+        OrderStatus newStatus = body.getOrderStatus();
+        if (!validOrderStatus.contains(newStatus)) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order status is not valid");
         }
-
 
         OrderBillEntity order = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
@@ -625,25 +678,42 @@ public class OrderService implements IOrderService {
         if (order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
         }
-        if(order.getTransaction().getPaymentType() != PaymentType.CASHING &&
+        if (order.getTransaction().getPaymentType() != PaymentType.CASHING &&
                 order.getTransaction().getStatus() == PaymentStatus.UNPAID) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Orders must be paid online before acceptance");
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Orders must be paid online before acceptance or else");
         }
+
         order.getOrderEventList().add(OrderEventEntity.builder()
-                .orderStatus(body.getOrderStatus())
+                .orderStatus(newStatus)
                 .description(body.getDescription())
                 .orderBill(order)
-                .isEmployee(true)
+                .actor(ActorType.EMPLOYEE)
                 .build()
         );
 
         TransactionEntity transaction = order.getTransaction();
-        if (body.getOrderStatus() == OrderStatus.CANCELED && transaction.getStatus() == PaymentStatus.PAID) {
+        long coinRefunded = 0L;
+        if (newStatus == OrderStatus.CANCELED && transaction.getStatus() == PaymentStatus.PAID) {
             UserEntity user = order.getUser();
             user.setCoin(user.getCoin() + order.getTotalPayment());
-            userRepository.save(user);
-            transaction.setStatus(PaymentStatus.REFUNDED);
+
+            coinRefunded += transaction.getTotalPaid();
+
+            transaction.setRefunded(true);
             transactionRepository.save(transaction);
+
+        }
+        if(order.getCoin() != null) {
+            coinRefunded += order.getCoin();
+        }
+        if(coinRefunded > 0) {
+            CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                    .coin(coinRefunded)
+                    .actor(ActorType.AUTOMATIC)
+                    .user(order.getUser())
+                    .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
+                    .build();
+            coinHistoryRepository.save(coinHistory);
         }
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
@@ -673,7 +743,7 @@ public class OrderService implements IOrderService {
 
         orderBill.getOrderEventList().add(OrderEventEntity.builder()
                 .description("Customer creates a request to cancel the order")
-                .isEmployee(false)
+                .actor(ActorType.USER)
                 .orderBill(orderBill)
                 .orderStatus(OrderStatus.CANCELLATION_REQUEST)
                 .build());
@@ -704,29 +774,44 @@ public class OrderService implements IOrderService {
             if (body.getStatus() == CancellationRequestStatus.ACCEPTED) {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .description("Employee agreed to cancel the order")
-                        .isEmployee(true)
+                        .actor(ActorType.EMPLOYEE)
                         .orderBill(orderBill)
                         .orderStatus(OrderStatus.CANCELLATION_REQUEST_ACCEPTED)
                         .build());
 
-
-                if (orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+                TransactionEntity transaction = orderBill.getTransaction();
+                long coinRefunded = 0L;
+                if (transaction.getStatus() == PaymentStatus.PAID) {
                     customer.setCoin(orderBill.getTotalPayment() + customer.getCoin());
-                    userRepository.save(customer);
 
-                    orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
+                    coinRefunded += transaction.getTotalPaid();
+                    transaction.setRefunded(true);
+
+                }
+                if(orderBill.getCoin() != null) {
+                    coinRefunded += orderBill.getCoin();
+                }
+                if(coinRefunded > 0) {
+                    CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                            .coin(coinRefunded)
+                            .actor(ActorType.AUTOMATIC)
+                            .user(customer)
+                            .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
+                            .build();
+                    coinHistoryRepository.save(coinHistory);
                 }
 
             } else {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .description("Employee refused the request to cancel the order")
-                        .isEmployee(true)
+                        .actor(ActorType.EMPLOYEE)
                         .orderBill(orderBill)
                         .orderStatus(OrderStatus.CANCELLATION_REQUEST_REFUSED)
                         .build());
             }
             OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
             orderSearchService.upsertOrder(updatedOrder);
+
         } else {
             throw new CustomException(ErrorConstant.NOT_FOUND, "Cancellation request is not exist");
         }
@@ -749,14 +834,30 @@ public class OrderService implements IOrderService {
                 .orderStatus(OrderStatus.CANCELED)
                 .description(body.getDescription())
                 .orderBill(orderBill)
-                .isEmployee(false)
+                .actor(ActorType.USER)
                 .build()
         );
 
-        if (orderBill.getTransaction().getPaymentType() != PaymentType.CASHING && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+        TransactionEntity transaction = orderBill.getTransaction();
+
+        long coinRefunded = 0L;
+        if (transaction.getStatus() == PaymentStatus.PAID) {
             user.setCoin(user.getCoin() + orderBill.getTotalPayment());
-            userRepository.save(user);
-            orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
+
+            transaction.setRefunded(true);
+            coinRefunded += transaction.getTotalPaid();
+        }
+        if (orderBill.getCoin() != null) {
+            coinRefunded += orderBill.getCoin();
+        }
+        if (coinRefunded > 0) {
+            CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                    .actor(ActorType.AUTOMATIC)
+                    .coin(coinRefunded)
+                    .user(user)
+                    .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
+                    .build();
+            coinHistoryRepository.save(coinHistory);
         }
 
 

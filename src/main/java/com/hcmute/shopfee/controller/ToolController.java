@@ -260,7 +260,7 @@ public class ToolController {
         List<OrderEventEntity> orderEventEntityList = new ArrayList<OrderEventEntity>();
         orderEventEntityList.add(OrderEventEntity.builder()
                 .createdAt(new Date())
-                .isEmployee(false)
+                .actor(ActorType.USER)
                 .description("Create order successfully")
                 .orderBill(orderBill)
                 .orderStatus(OrderStatus.CREATED)
@@ -282,7 +282,8 @@ public class ToolController {
                 .orderBill(orderBill)
                 .name(product.getName())
                 .product(product)
-
+                .imageUrl(product.getImage().getImageUrl())
+                .thumbnailUrl(product.getImage().getThumbnailUrl())
                 .build();
 
         List<ItemDetailEntity> itemDetailEntityList = new ArrayList<ItemDetailEntity>();
