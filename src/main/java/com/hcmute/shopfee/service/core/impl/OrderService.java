@@ -665,7 +665,7 @@ public class OrderService implements IOrderService {
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
         List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING,
                 OrderStatus.SUCCEED, OrderStatus.CANCELED,
-                OrderStatus.NOT_RECEIVED, OrderStatus.PREPARED);
+                OrderStatus.NOT_RECEIVED, OrderStatus.PREPARED, OrderStatus.DELIVERED);
 
         OrderStatus newStatus = body.getOrderStatus();
         if (!validOrderStatus.contains(newStatus)) {
@@ -701,9 +701,8 @@ public class OrderService implements IOrderService {
 
             transaction.setRefunded(true);
             transactionRepository.save(transaction);
-
         }
-        if(order.getCoin() != null) {
+        if(newStatus == OrderStatus.CANCELED && order.getCoin() != null) {
             coinRefunded += order.getCoin();
         }
         if(coinRefunded > 0) {

@@ -8,6 +8,7 @@ public enum OrderStatus {
     CANCELLATION_REQUEST_ACCEPTED,
     PREPARED,
     DELIVERING,
+    DELIVERED,
     NOT_RECEIVED,
     CANCELED,
     SUCCEED,
