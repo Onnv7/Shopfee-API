@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "198446900787",
+    "project_id": "shopfee-12b03",
+    "storage_bucket": "shopfee-12b03.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198446900787:android:c44950e533bc2cb9466546",
+        "android_client_info": {
+          "package_name": "com.hcmute.shopfee"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198446900787-mem4pq0t8hdb2vaksf24e66l8mdmal17.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hcmute.shopfee",
+            "certificate_hash": "f5d511307dc2500bb566cdd135614f2fe171bb3f"
+          }
+        },
+        {
+          "client_id": "198446900787-bmt5usgcvrc4qpof8gu7pnqtiheurgjv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdxWPg0qO72bdOuwqoYBkdavEMP-tV1-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "198446900787-bmt5usgcvrc4qpof8gu7pnqtiheurgjv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

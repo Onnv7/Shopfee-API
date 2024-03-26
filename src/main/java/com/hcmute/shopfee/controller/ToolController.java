@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.dto.common.NotificationMessage;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -20,10 +21,7 @@ import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
-import com.hcmute.shopfee.service.common.CloudinaryService;
-import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.service.common.VNPayService;
-import com.hcmute.shopfee.service.common.ZaloPayService;
+import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
@@ -80,6 +78,7 @@ public class ToolController {
     private final RoleRepository roleRepository;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     @Autowired
     private Environment environment;
@@ -436,5 +435,11 @@ public class ToolController {
 
         String serverIpAddress = environment.getProperty("local.server.ip");
         return "Server IP Address: " + serverIpAddress;
+    }
+    @PostMapping("/sendNotification")
+    public String sendNotification(@RequestBody NotificationMessage body)  {
+
+        return firebaseMessagingService.sendNotification(body);
+
     }
 }
