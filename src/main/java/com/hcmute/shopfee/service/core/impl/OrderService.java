@@ -693,30 +693,31 @@ public class OrderService implements IOrderService {
 
         TransactionEntity transaction = order.getTransaction();
         long coinRefunded = 0L;
-        if (newStatus == OrderStatus.CANCELED && transaction.getStatus() == PaymentStatus.PAID) {
-            UserEntity user = order.getUser();
-            user.setCoin(user.getCoin() + order.getTotalPayment());
+        if (newStatus == OrderStatus.CANCELED) {
+            if (transaction.getStatus() == PaymentStatus.PAID) {
+                coinRefunded += transaction.getTotalPaid();
 
-            coinRefunded += transaction.getTotalPaid();
+                transaction.setRefunded(true);
+                transactionRepository.save(transaction);
+            } else if (transaction.getStatus() == PaymentStatus.UNPAID && order.getCoin() != null) {
+                coinRefunded += order.getCoin();
+            }
+            if (coinRefunded > 0) {
+                UserEntity user = order.getUser();
+                user.setCoin(user.getCoin() + coinRefunded);
 
-            transaction.setRefunded(true);
-            transactionRepository.save(transaction);
+                CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                        .coin(coinRefunded)
+                        .actor(ActorType.AUTOMATIC)
+                        .user(order.getUser())
+                        .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
+                        .build();
+                coinHistoryRepository.save(coinHistory);
+            }
         }
-        if(newStatus == OrderStatus.CANCELED && order.getCoin() != null) {
-            coinRefunded += order.getCoin();
-        }
-        if(coinRefunded > 0) {
-            CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
-                    .coin(coinRefunded)
-                    .actor(ActorType.AUTOMATIC)
-                    .user(order.getUser())
-                    .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
-                    .build();
-            coinHistoryRepository.save(coinHistory);
-        }
+
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
-
     }
 
     @Override
@@ -771,6 +772,7 @@ public class OrderService implements IOrderService {
         if (cancellationRequestEntity != null) {
             cancellationRequestEntity.setStatus(body.getStatus());
             if (body.getStatus() == CancellationRequestStatus.ACCEPTED) {
+                List<OrderEventEntity> statusList = new ArrayList<>();
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .description("Employee agreed to cancel the order")
                         .actor(ActorType.EMPLOYEE)
@@ -781,16 +783,14 @@ public class OrderService implements IOrderService {
                 TransactionEntity transaction = orderBill.getTransaction();
                 long coinRefunded = 0L;
                 if (transaction.getStatus() == PaymentStatus.PAID) {
-                    customer.setCoin(orderBill.getTotalPayment() + customer.getCoin());
-
                     coinRefunded += transaction.getTotalPaid();
                     transaction.setRefunded(true);
-
-                }
-                if(orderBill.getCoin() != null) {
+                } else if (transaction.getStatus() == PaymentStatus.UNPAID && orderBill.getCoin() != null) {
                     coinRefunded += orderBill.getCoin();
                 }
-                if(coinRefunded > 0) {
+                if (coinRefunded > 0) {
+                    customer.setCoin(customer.getCoin() + coinRefunded);
+
                     CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                             .coin(coinRefunded)
                             .actor(ActorType.AUTOMATIC)
@@ -841,15 +841,15 @@ public class OrderService implements IOrderService {
 
         long coinRefunded = 0L;
         if (transaction.getStatus() == PaymentStatus.PAID) {
-            user.setCoin(user.getCoin() + orderBill.getTotalPayment());
 
             transaction.setRefunded(true);
             coinRefunded += transaction.getTotalPaid();
-        }
-        if (orderBill.getCoin() != null) {
+        } else if (transaction.getStatus() == PaymentStatus.UNPAID && orderBill.getCoin() != null) {
             coinRefunded += orderBill.getCoin();
         }
         if (coinRefunded > 0) {
+            user.setCoin(user.getCoin() + coinRefunded);
+
             CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                     .actor(ActorType.AUTOMATIC)
                     .coin(coinRefunded)

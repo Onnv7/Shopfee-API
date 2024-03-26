@@ -45,7 +45,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;
@@ -315,7 +317,7 @@ public class UserAuthService implements IUserAuthService {
         ConfirmationEntity oldConfirmation = confirmationRepository.findByEmail(email).orElse(null);
         Date currentDate = new Date();
         Instant instant = currentDate.toInstant();
-        Instant newInstant = instant.plusSeconds(60);
+        Instant newInstant = instant.plus(Duration.of(3, ChronoUnit.MINUTES));
         Date newDate = Date.from(newInstant);
         if(oldConfirmation == null) {
             ConfirmationEntity confirmation = ConfirmationEntity.builder()

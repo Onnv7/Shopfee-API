@@ -9,6 +9,7 @@ import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
+import com.hcmute.shopfee.repository.database.OrderItemRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IAlbumService;
 import com.hcmute.shopfee.utils.ImageUtils;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 public class AlbumService implements IAlbumService {
     private final AlbumRepository albumRepository;
     private final CloudinaryService cloudinaryService;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     public void uploadImage(UploadImageRequest body) {
@@ -75,10 +77,12 @@ public class AlbumService implements IAlbumService {
         if(album.getProduct() != null || album.getCategory() != null) {
             throw new CustomException(ErrorConstant.CANT_DELETE);
         }
-        try {
-            cloudinaryService.deleteImage(album.getCloudinaryImageId());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(orderItemRepository.countOrderItemByImageUrl(album.getImageUrl()) == 0) {
+            try {
+                cloudinaryService.deleteImage(album.getCloudinaryImageId());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         albumRepository.delete(album);
