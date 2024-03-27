@@ -61,7 +61,7 @@ public class OrderController {
     public ResponseEntity<ResponseAPI<GetOrderHistoryForEmployeeResponse>> getOrderHistoryPageForEmployee(
             @PathVariable("orderStatus") OrderStatus orderStatus,
             @Parameter(name = "key", description = "Key is order's code, customerCode, email, phoneNumber, phoneNumberReceiver", required = false, example = "U00000001")
-            @RequestParam(name = "key", required = false) String key,
+            @RequestParam(name = "key", required = false, defaultValue = "") String key,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
@@ -260,6 +260,18 @@ public class OrderController {
     public ResponseEntity<ResponseAPI<GetOrderQuantityByStatusResponse>> getOrderQuantityByStatusAtCurrentDate(@RequestParam("status") OrderStatus orderStatus) {
         GetOrderQuantityByStatusResponse resData = orderService.getOrderQuantityByStatusAtCurrentDate(orderStatus);
         ResponseAPI<GetOrderQuantityByStatusResponse> res = ResponseAPI.<GetOrderQuantityByStatusResponse>builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = ORDER_GET_CANCELLATION_SUM)
+    @GetMapping(path = GET_ORDER_CANCELLATION_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetCancellationByOrderBillIdRequest>> getCancellationRequestByOrderBillId(@RequestParam(ORDER_ID) String orderId) {
+        GetCancellationByOrderBillIdRequest resData = orderService.getCancellationRequestByOrderBillId(orderId);
+        ResponseAPI<GetCancellationByOrderBillIdRequest> res = ResponseAPI.<GetCancellationByOrderBillIdRequest>builder()
                 .timestamp(new Date())
                 .data(resData)
                 .message(SuccessConstant.GET)

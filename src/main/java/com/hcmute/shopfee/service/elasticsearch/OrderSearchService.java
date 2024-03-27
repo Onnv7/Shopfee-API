@@ -7,6 +7,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
+import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,15 +29,15 @@ public class OrderSearchService {
         List<OrderItemEntity> orderItemList = orderBillEntity.getOrderItemList();
         ProductEntity product = orderItemList.get(0).getProduct();
 
-       OrderIndex orderIndex = OrderIndex.builder()
+        OrderIndex orderIndex = OrderIndex.builder()
                 .id(orderBillEntity.getId())
 //                .code(orderBillEntity.getCode())
+                .productName(product.getOrderItemList().get(0).getProduct().getName())
                 .customerName(user.getFullName())
                 .recipientName(orderBillEntity.getReceiverInformation().getRecipientName())
-                .phoneNumber(user.getPhoneNumber())
-                .phoneNumberReceiver(orderBillEntity.getReceiverInformation().getPhoneNumber())
+                .phoneNumber(orderBillEntity.getReceiverInformation().getPhoneNumber())
                 .orderType(orderBillEntity.getOrderType())
-                .statusLastEvent(OrderStatus.CREATED)
+                .statusLastEvent(orderBillEntity.getOrderEventList().get(0).getOrderStatus())
                 .total(orderBillEntity.getTotalItemPrice())
                 .productQuantity(orderItemList.size())
                 .productThumbnail(product.getImage().getThumbnailUrl())

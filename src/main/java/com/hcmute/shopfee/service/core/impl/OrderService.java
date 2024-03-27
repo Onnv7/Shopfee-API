@@ -651,10 +651,10 @@ public class OrderService implements IOrderService {
         Pageable pageable = PageRequest.of(page - 1, size);
         GetOrderHistoryForEmployeeResponse data = new GetOrderHistoryForEmployeeResponse();
 
-        if (key != null) {
+        if (!key.isBlank()) {
             Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
             data.setTotalPage(orderPage.getTotalPages());
-            data.setOrderList(modelMapperService.mapList(orderPage.getContent(), GetOrderHistoryForEmployeeResponse.OrderInfo.class));
+            data.setOrderList(GetOrderHistoryForEmployeeResponse.fromOrderIndexList(orderPage.getContent()));
             return data;
         }
 
@@ -1013,5 +1013,16 @@ public class OrderService implements IOrderService {
         long difference = current - prev;
         response.setDifference((int) difference);
         return response;
+    }
+
+    @Override
+    public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
+        OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderBillId));
+        if(orderBill.getRequestCancellation() != null) {
+            GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
+            data.setReason(orderBill.getRequestCancellation().getReason());
+        }
+        return null;
     }
 }

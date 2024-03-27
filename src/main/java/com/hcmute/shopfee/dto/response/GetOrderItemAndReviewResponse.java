@@ -10,6 +10,7 @@ import java.util.List;
 
 @Data
 public class GetOrderItemAndReviewResponse {
+    private String id;
     private String name;
     private String thumbnailUrl;
     private ItemReview review;
@@ -22,6 +23,7 @@ public class GetOrderItemAndReviewResponse {
     }
     private static GetOrderItemAndReviewResponse fromOrderItemEntity(OrderItemEntity entity) {
         GetOrderItemAndReviewResponse data = new GetOrderItemAndReviewResponse();
+        data.setId(entity.getId());
         data.setName(entity.getName());
         data.setThumbnailUrl(entity.getThumbnailUrl());
         ProductReviewEntity productReviewEntity = entity.getProductReview();

@@ -105,29 +105,21 @@ public class ReviewService implements IReviewService {
         data.setTotalPage(productReviewEntityList.getTotalPages());
 
         for (ProductReviewEntity productReviewEntity : productReviewEntityList.getContent()) {
-            GetProductReviewListResponse.ProductReview productReview = new GetProductReviewListResponse.ProductReview();
-            productReview.setAvatarUrl(productReviewEntity.getOrderItem().getOrderBill().getUser().getAvatarUrl());
-            productReview.setReviewerName(productReviewEntity.getOrderItem().getOrderBill().getUser().getFullName());
-            productReview.setStar(productReviewEntity.getStar());
-            productReview.setContent(productReviewEntity.getContent());
-            productReview.setCreatedAt(productReviewEntity.getCreatedAt());
-
             List<UserReviewInteractionEntity> userDislikeList = userReviewInteractionRepository.findByProductReviewIdAndInteraction(productReviewEntity.getId(), ReviewInteraction.DISLIKE);
-            productReview.setDislikeQuantity(userDislikeList.size());
 
             List<UserReviewInteractionEntity> userLikeList = userReviewInteractionRepository.findByProductReviewIdAndInteraction(productReviewEntity.getId(), ReviewInteraction.LIKE);
-            productReview.setLikeQuantity(userLikeList.size());
 
+            ReviewInteraction interaction = null;
             if (userId != null) {
                 UserReviewInteractionEntity userDisliked = userDislikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
                 UserReviewInteractionEntity userLiked = userLikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
                 if (userDisliked != null) {
-                    productReview.setInteraction(ReviewInteraction.DISLIKE);
+                    interaction = ReviewInteraction.DISLIKE;
                 } else if (userLiked != null) {
-                    productReview.setInteraction(ReviewInteraction.LIKE);
+                    interaction = ReviewInteraction.LIKE;
                 }
             }
-            productReviewList.add(productReview);
+            productReviewList.add(GetProductReviewListResponse.fromProductReviewEntity(productReviewEntity, userDislikeList.size(), userLikeList.size(), interaction));
         }
         return data;
     }

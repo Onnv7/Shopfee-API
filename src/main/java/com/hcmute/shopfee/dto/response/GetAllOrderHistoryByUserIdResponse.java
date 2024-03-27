@@ -21,7 +21,7 @@ public class GetAllOrderHistoryByUserIdResponse {
         GetAllOrderHistoryByUserIdResponse response = new GetAllOrderHistoryByUserIdResponse();
 
         response.setId(entity.getId());
-        response.setTotal(entity.getTotalItemPrice());
+        response.setTotal(entity.getTotalPayment());
         response.setProductQuantity(entity.getOrderItemList().size());
         response.setOrderType(entity.getOrderType());
         response.setProductName(entity.getOrderItemList().get(0).getName());

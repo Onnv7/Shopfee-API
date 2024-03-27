@@ -97,7 +97,7 @@ public class SecurityConstant {
     public static final String[] GET_EMPLOYEE_PATH = {
             GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_PATH,
             GET_ORDER_ALL_IN_QUEUE_PATH,
-            GET_EMPLOYEE_PROFILE_BY_ID_PATH,
+            GET_EMPLOYEE_PROFILE_BY_ID_PATH, GET_ORDER_CANCELLATION_PATH
     };
 
     public static final String[] PATCH_EMPLOYEE_PATH = {

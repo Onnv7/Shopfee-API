@@ -28,8 +28,9 @@ public class OrderIndex {
     private String email;
     private String customerCode;
     private String phoneNumber;
-    private String phoneNumberReceiver;
+//    private String phoneNumberReceiver;
     private String recipientName;
+    private String productName;
     private int productQuantity;
     private String productThumbnail;
     private Date timeLastEvent;

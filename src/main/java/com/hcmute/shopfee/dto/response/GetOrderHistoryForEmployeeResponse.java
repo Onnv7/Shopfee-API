@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 
+import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
@@ -44,6 +45,21 @@ public class GetOrderHistoryForEmployeeResponse {
             orderResponse.setOrderType(entity.getOrderType());
             return orderResponse;
         }
+        public static OrderInfo fromOrderIndex(OrderIndex index){
+            OrderInfo orderResponse = new OrderInfo();
+
+            orderResponse.setId(index.getId());
+            orderResponse.setCustomerName(index.getCustomerName());
+            orderResponse.setPhoneNumber(index.getPhoneNumber());
+            orderResponse.setProductQuantity(index.getProductQuantity());
+            orderResponse.setProductName(index.getProductName());
+            orderResponse.setProductThumbnailUrl(index.getProductThumbnail());
+            orderResponse.setTimeLastEvent(index.getTimeLastEvent());
+            orderResponse.setStatusLastEvent(index.getStatusLastEvent());
+            orderResponse.setTotal(index.getTotal());
+            orderResponse.setOrderType(index.getOrderType());
+            return orderResponse;
+        }
     }
 
 
@@ -51,6 +67,13 @@ public class GetOrderHistoryForEmployeeResponse {
         List<OrderInfo> data = new ArrayList<>();
         for (OrderBillEntity entity : entityList) {
             data.add(OrderInfo.fromOrderBillEntity(entity));
+        }
+        return data;
+    }
+    public static List<OrderInfo> fromOrderIndexList(List<OrderIndex> indexList) {
+        List<OrderInfo> data = new ArrayList<>();
+        for (OrderIndex index : indexList) {
+            data.add(OrderInfo.fromOrderIndex(index));
         }
         return data;
     }

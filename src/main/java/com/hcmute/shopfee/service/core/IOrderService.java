@@ -25,4 +25,5 @@ public interface IOrderService {
     List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size);
     List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId);
     GetOrderQuantityByStatusResponse getOrderQuantityByStatusAtCurrentDate(OrderStatus orderStatus);
+    GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId);
 }

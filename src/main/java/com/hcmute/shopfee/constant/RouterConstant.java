@@ -211,6 +211,8 @@ public class RouterConstant {
     public static final String GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_PATH = ORDER_BASE_PATH + GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH;
     public static final String GET_ORDER_ORDER_QUANTITY_BY_STATUS_SUB_PATH = "/quantity/today";
     public static final String GET_ORDER_ORDER_QUANTITY_BY_STATUS_PATH = ORDER_BASE_PATH + GET_ORDER_ORDER_QUANTITY_BY_STATUS_SUB_PATH;
+    public static final String GET_ORDER_CANCELLATION_SUB_PATH = ORDER_ID_PATH + "/cancellation-request";
+    public static final String GET_ORDER_CANCELLATION_PATH = ORDER_BASE_PATH + GET_ORDER_CANCELLATION_SUB_PATH;
 
     // ENDPOINT URL TRANSACTION =================================================================
     public static final String PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH = TRANSACTION_ID_PATH;
