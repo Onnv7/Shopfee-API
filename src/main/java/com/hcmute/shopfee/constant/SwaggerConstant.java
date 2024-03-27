@@ -135,6 +135,12 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_GET_BY_BRANCH_ID_SUM = "Get employee list by branch id";
     public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password for employee by employee id for employee";
 
+    // For Employee =============================================================
+    public static final String NOTIFICATION_CONTROLLER_TITLE = "NOTIFICATION MANAGEMENT";
+    public static final String NOTIFICATION_CREATE_USER_TOKEN_SUM = "Create a new fcm token for user";
+    public static final String NOTIFICATION_CREATE_EMPLOYEE_TOKEN_SUM = "Create a new fcm token for employee";
+    public static final String NOTIFICATION_UPDATE_INFORMATION_SUM = "Update information about fcm token";
+
     // For Branch =============================================================
     public static final String BRANCH_CONTROLLER_TITLE = "BRANCH MANAGEMENT";
     public static final String BRANCH_CREATE_SUM = "Create a new branch";
@@ -269,4 +275,5 @@ public class SwaggerConstant {
     public static final String CLOSE_TIME_EX = "20:00:00";
     public static final String BRANCH_STATUS_EX = "INACTIVE";
     public static final String ALBUM_TYPE_EX = "PRODUCT";
+    public static final String FCM_TOKEN_EX = "ep-xdyteTi6h1O16emTaLy:APA91bF_DJ1hpU_VqOv2olMzTeIn02Jpyjzhnq0mrXzHBhaZwei7RYVKvCK90Kh3wneZRvpJKA9AIGZBX1e20UNrU0QJoJxuP3a3LJB36wXuKTPmkniiGzJYNUQIOINOejCqFGZmGcI3";
 }

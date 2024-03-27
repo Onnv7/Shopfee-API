@@ -50,8 +50,8 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_FIREBASE_REGISTER_SUM)
     @PostMapping(POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(HttpServletRequest request) {
-        RegisterResponse resDate = userAuthService.firebaseRegisterUser(request);
+    public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(@RequestBody @Valid FirebaseRegisterRequest body, HttpServletRequest request) {
+        RegisterResponse resDate = userAuthService.firebaseRegisterUser(body, request);
 
         ResponseAPI<RegisterResponse> res = ResponseAPI.<RegisterResponse>builder()
                 .timestamp(new Date())
@@ -64,8 +64,8 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<LoginResponse>> loginUser(@RequestBody @Valid LoginRequest body) {
-        LoginResponse data = userAuthService.userLogin(body.getEmail(), body.getPassword());
+    public ResponseEntity<ResponseAPI<LoginResponse>> loginUser(@RequestBody @Valid UserLoginRequest body) {
+        LoginResponse data = userAuthService.userLogin(body);
         ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())
                 .success(true)
@@ -80,8 +80,8 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_FIREBASE_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(HttpServletRequest request) {
-        LoginResponse data = userAuthService.firebaseUserLogin(request);
+    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(@RequestBody @Valid FirebaseLoginRequest body, HttpServletRequest request) {
+        LoginResponse data = userAuthService.firebaseUserLogin(body, request);
         ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())
                 .success(true)
@@ -96,12 +96,13 @@ public class UserAuthController {
     }
 
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
-    @GetMapping(path = GET_AUTH_USER_LOGOUT_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    @PostMapping(path = POST_AUTH_USER_LOGOUT_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken,
+                                                     @RequestBody @Valid UserLogoutRequest body) {
         if (refreshToken == null) {
             throw new CustomException(ErrorConstant.NOT_FOUND);
         }
-        userAuthService.logoutUser(refreshToken);
+        userAuthService.logoutUser(body, refreshToken);
 
         ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())

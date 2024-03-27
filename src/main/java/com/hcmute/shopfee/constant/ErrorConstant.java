@@ -30,6 +30,7 @@ public class ErrorConstant {
     public static final String COUPON_CODE_NOT_FOUND = "Coupon with code ";
     public static final String PRODUCT_ID_NOT_FOUND = "Product with id ";
     public static final String ORDER_BILL_ID_NOT_FOUND = "Order bill with id ";
+    public static final String FCM_TOKEN_ID_NOT_FOUND = "Fcm token with id ";
     public static final String ORDER_ITEM_ID_NOT_FOUND = "Order item with id ";
     public static final String PRODUCT_REVIEW_ID_NOT_FOUND = "Product review with id ";
     public static final String TOKEN_STOLEN = "Tokens have been stolen";

@@ -1,8 +1,6 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.ChangePasswordRequest;
-import com.hcmute.shopfee.dto.request.RegisterUserRequest;
-import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
@@ -10,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface IUserAuthService {
     RegisterResponse registerUser(RegisterUserRequest body);
-    RegisterResponse firebaseRegisterUser(HttpServletRequest request);
-    LoginResponse userLogin(String email, String password);
-    LoginResponse firebaseUserLogin(HttpServletRequest request);
-    void logoutUser(String refreshToken);
+    RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, HttpServletRequest request);
+    LoginResponse userLogin(UserLoginRequest body);
+    LoginResponse firebaseUserLogin(FirebaseLoginRequest body, HttpServletRequest request);
+    void logoutUser(UserLogoutRequest body, String refreshToken);
     void sendCodeToRegister(String email);
     void sendCodeToGetPassword(String email);
     void verifyCodeByEmail(String code, String email);

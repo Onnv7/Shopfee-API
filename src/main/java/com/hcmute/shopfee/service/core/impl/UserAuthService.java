@@ -7,13 +7,12 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
-import com.hcmute.shopfee.dto.request.ChangePasswordRequest;
-import com.hcmute.shopfee.dto.request.RegisterUserRequest;
-import com.hcmute.shopfee.dto.request.UpdatePasswordRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
 import com.hcmute.shopfee.entity.sql.database.ConfirmationEntity;
+import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
 import com.hcmute.shopfee.entity.sql.database.RoleEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
@@ -23,6 +22,7 @@ import com.hcmute.shopfee.kafka.KafkaMessagePublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
 import com.hcmute.shopfee.repository.database.ConfirmationRepository;
+import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
@@ -64,9 +64,20 @@ public class UserAuthService implements IUserAuthService {
     private final UserTokenRedisService userTokenRedisService;
     private final ConfirmationRepository confirmationRepository;
     private final KafkaMessagePublisher kafkaMessagePublisher;
+    private final UserFCMTokenRepository userFcmTokenRepository;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
+
+    private void updateFcmTokenById(String fcmTokenId, UserEntity user) {
+        if(fcmTokenId == null) {
+            return;
+        }
+        UserFCMTokenEntity userFcmTokenEntity = userFcmTokenRepository.findById(fcmTokenId)
+                        .orElseThrow(() -> new CustomException(NOT_FOUND,FCM_TOKEN_ID_NOT_FOUND + fcmTokenId));
+        userFcmTokenEntity.setUser(user);
+        userFcmTokenRepository.save(userFcmTokenEntity);
+    }
 
     @Transactional
     @Override
@@ -78,8 +89,8 @@ public class UserAuthService implements IUserAuthService {
         }
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(()-> new CustomException(UNAUTHORIZED, "Email has not been verified"));
-        if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
+                .orElseThrow(() -> new CustomException(UNAUTHORIZED, "Email has not been verified"));
+        if (confirmation.getStatus() != ConfirmationCodeStatus.USED) {
             throw new CustomException(UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
@@ -87,9 +98,7 @@ public class UserAuthService implements IUserAuthService {
         RegisterResponse resData = new RegisterResponse();
         modelMapperService.map(userEntity, resData);
 
-//        data.setRoles(new Role[]{Role.ROLE_USER});
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-//        data.setCode(sequenceService.generateCode(UserCollection.SEQUENCE_NAME, UserCollection.PREFIX_CODE, UserCollection.LENGTH_NUMBER));
 
         Set<RoleEntity> roleList = new HashSet<>();
         RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
@@ -97,22 +106,23 @@ public class UserAuthService implements IUserAuthService {
         userEntity.setRoleList(roleList);
         userEntity.setStatus(UserStatus.ACTIVE);
         userEntity.setCoin(0L);
-        UserEntity savedUser = userRepository.save(userEntity);
+        userEntity = userRepository.save(userEntity);
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
-        var accessToken = jwtService.issueAccessToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
-        var refreshToken = jwtService.issueRefreshToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
-        userTokenRedisService.createNewUserRefreshToken(refreshToken, savedUser.getId());
+        var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
+        var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
+        userTokenRedisService.createNewUserRefreshToken(refreshToken, userEntity.getId());
         resData.setAccessToken(accessToken);
         resData.setRefreshToken(refreshToken);
-        resData.setUserId(savedUser.getId());
+        resData.setUserId(userEntity.getId());
+        updateFcmTokenById(body.getFcmTokenId(), userEntity);
         return resData;
     }
 
     @Override
-    public RegisterResponse firebaseRegisterUser(HttpServletRequest request) {
+    public RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, HttpServletRequest request) {
         RegisterResponse resData = new RegisterResponse();
         String idToken = request.getHeader("Id-token");
-        if(idToken == null) {
+        if (idToken == null) {
             throw new CustomException(NOT_FOUND, "Id token is null");
         }
         try {
@@ -140,17 +150,18 @@ public class UserAuthService implements IUserAuthService {
             userEntity.setRoleList(roleList);
             userEntity.setStatus(UserStatus.ACTIVE);
 
-            UserEntity savedUser = userRepository.save(userEntity);
+            userEntity = userRepository.save(userEntity);
             List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
 
-            var accessToken = jwtService.issueAccessToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
-            var refreshToken = jwtService.issueRefreshToken(savedUser.getId(), savedUser.getEmail(), roleNameList);
+            var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
+            var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
 
-            userTokenRedisService.createNewUserRefreshToken(refreshToken, savedUser.getId());
+            userTokenRedisService.createNewUserRefreshToken(refreshToken, userEntity.getId());
 
             resData.setAccessToken(accessToken);
             resData.setRefreshToken(refreshToken);
-            resData.setUserId(savedUser.getId());
+            resData.setUserId(userEntity.getId());
+            updateFcmTokenById(body.getFcmTokenId(), userEntity);
             return resData;
         } catch (FirebaseAuthException e) {
             throw new RuntimeException(e);
@@ -159,10 +170,10 @@ public class UserAuthService implements IUserAuthService {
 
 
     @Override
-    public LoginResponse userLogin(String email, String password) {
+    public LoginResponse userLogin(UserLoginRequest body) {
         UserPrincipal principal = UserPrincipal.builder()
-                .username(email)
-                .password(password)
+                .username(body.getEmail())
+                .password(body.getPassword())
                 .build();
 
         Authentication userCredential = new UserUsernamePasswordAuthenticationToken(principal);
@@ -181,13 +192,16 @@ public class UserAuthService implements IUserAuthService {
         String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
 
         userTokenRedisService.createNewUserRefreshToken(refreshToken, principalAuthenticated.getUserId());
+
+        updateFcmTokenById(body.getFcmTokenId(), user);
+
         return LoginResponse.builder().accessToken(accessToken).userId(userId).refreshToken(refreshToken).build();
     }
 
     @Override
-    public LoginResponse firebaseUserLogin(HttpServletRequest request) {
+    public LoginResponse firebaseUserLogin(FirebaseLoginRequest body, HttpServletRequest request) {
         String idToken = request.getHeader("Id-token");
-        if(idToken == null) {
+        if (idToken == null) {
             throw new CustomException(NOT_FOUND, "Id token is null");
         }
         try {
@@ -202,7 +216,7 @@ public class UserAuthService implements IUserAuthService {
             var accessToken = jwtService.issueAccessToken(userId, username, roles);
             String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
             userTokenRedisService.createNewUserRefreshToken(refreshToken, userId);
-
+            updateFcmTokenById(body.getFcmTokenId(), user);
             return LoginResponse.builder().accessToken(accessToken).userId(userId).refreshToken(refreshToken).build();
 
         } catch (FirebaseException e) {
@@ -211,9 +225,13 @@ public class UserAuthService implements IUserAuthService {
     }
 
     @Override
-    public void logoutUser(String refreshToken) {
+    public void logoutUser(UserLogoutRequest body, String refreshToken) {
         String employeeId = SecurityUtils.getCurrentUserId();
         userTokenRedisService.deleteByUserIdAndRefreshToken(employeeId, refreshToken);
+        UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+        fcmTokenEntity.setUser(null);
+        userFcmTokenRepository.save(fcmTokenEntity);
     }
 
     @Override
@@ -242,7 +260,7 @@ public class UserAuthService implements IUserAuthService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Confirmation data with email " + email));
         Date currentTime = new Date();
 
-        if (code.equals(confirmationCollection.getCode()) && currentTime.before(confirmationCollection.getExpireAt()) ) {
+        if (code.equals(confirmationCollection.getCode()) && currentTime.before(confirmationCollection.getExpireAt())) {
             confirmationCollection.setStatus(ConfirmationCodeStatus.USED);
             confirmationRepository.save(confirmationCollection);
             return;
@@ -258,8 +276,8 @@ public class UserAuthService implements IUserAuthService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "User with email " + body.getEmail()));
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(()-> new CustomException(UNAUTHORIZED, "Email has not been verified"));
-        if(confirmation.getStatus() != ConfirmationCodeStatus.USED) {
+                .orElseThrow(() -> new CustomException(UNAUTHORIZED, "Email has not been verified"));
+        if (confirmation.getStatus() != ConfirmationCodeStatus.USED) {
             throw new CustomException(UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
@@ -319,7 +337,7 @@ public class UserAuthService implements IUserAuthService {
         Instant instant = currentDate.toInstant();
         Instant newInstant = instant.plus(Duration.of(3, ChronoUnit.MINUTES));
         Date newDate = Date.from(newInstant);
-        if(oldConfirmation == null) {
+        if (oldConfirmation == null) {
             ConfirmationEntity confirmation = ConfirmationEntity.builder()
                     .email(email)
                     .code(code)
@@ -327,8 +345,7 @@ public class UserAuthService implements IUserAuthService {
                     .expireAt(newDate)
                     .build();
             confirmationRepository.save(confirmation);
-        }
-        else {
+        } else {
             oldConfirmation.setExpireAt(newDate);
             oldConfirmation.setCode(code);
             confirmationRepository.save(oldConfirmation);

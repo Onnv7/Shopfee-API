@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
@@ -13,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
@@ -89,4 +91,9 @@ public class EmployeeEntity {
     @JoinColumn(name = "branch_id")
     @JsonBackReference
     private BranchEntity branch;
+
+    // =================================================================================================
+    @OneToMany(mappedBy = "employee")
+    @JsonManagedReference
+    private List<EmployeeFCMTokenEntity> employeeFcmTokenList;
 }

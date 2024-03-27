@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
@@ -34,7 +35,7 @@ public class BranchController {
     private final Goong goong;
     @Operation(summary = BRANCH_CREATE_SUM)
     @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) {
+    public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) throws ExecutionException, InterruptedException {
         branchService.createBranch(body);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

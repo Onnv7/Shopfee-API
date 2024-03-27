@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public class NotificationMessage {
+public class NotificationMessageDto {
     private String recipientToken;
     private String title;
     private String body;

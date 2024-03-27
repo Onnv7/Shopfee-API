@@ -5,9 +5,10 @@ import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
 
 import java.sql.Time;
+import java.util.concurrent.ExecutionException;
 
 public interface IBranchService {
-    void createBranch(CreateBranchRequest body);
+    void createBranch(CreateBranchRequest body) throws ExecutionException, InterruptedException;
     void updateBranchById(UpdateBranchRequest body, String id);
     void deleteBranchById(String id);
     GetAllBranchResponse getBranchList(int page, int size);

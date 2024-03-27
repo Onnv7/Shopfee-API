@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.controller;
 
-import com.hcmute.shopfee.dto.common.NotificationMessage;
+import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -42,8 +42,16 @@ import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -437,9 +445,50 @@ public class ToolController {
         return "Server IP Address: " + serverIpAddress;
     }
     @PostMapping("/sendNotification")
-    public String sendNotification(@RequestBody NotificationMessage body)  {
+    public String sendNotification(@RequestBody NotificationMessageDto body)  {
 
-        return firebaseMessagingService.sendNotification(body);
+        return firebaseMessagingService.sendNotificationTest(body);
+
+    }
+    private static final String PUBLIC_KEY_STRING = "[B@39905cc";
+    private static final String PRIVATE_KEY_STRING = "YOUR_PRIVATE_KEY_STRING";
+
+    @GetMapping("/publicKey")
+    public String publicKey() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+        // Chuyển đổi chuỗi public key từ Base64 thành byte array
+        byte[] publicKeyBytes = Base64.getDecoder().decode(PUBLIC_KEY_STRING);
+
+        // Tạo một đối tượng PublicKey từ byte array
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+        // Chuyển đổi private key từ chuỗi thành dạng byte
+        byte[] privateKeyBytes = PRIVATE_KEY_STRING.getBytes();
+
+        // Tạo một đối tượng PrivateKey từ byte array
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+        // Dữ liệu cần mã hóa
+        String dataToEncrypt = "DATA_TO_ENCRYPT_HERE";
+
+        // Mã hóa dữ liệu sử dụng public key
+        Cipher encryptCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encryptedBytes = encryptCipher.doFinal(dataToEncrypt.getBytes());
+
+        // In ra dữ liệu đã được mã hóa
+        System.out.println("Encrypted Data: " + new String(encryptedBytes));
+
+        // Giải mã dữ liệu sử dụng private key
+        Cipher decryptCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] decryptedBytes = decryptCipher.doFinal(encryptedBytes);
+
+        // In ra dữ liệu đã được giải mã
+        System.out.println("Decrypted Data: " + new String(decryptedBytes));
+        return "ok";
 
     }
 }

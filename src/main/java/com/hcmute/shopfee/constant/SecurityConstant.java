@@ -28,6 +28,7 @@ public class SecurityConstant {
             POST_AUTH_SEND_OPT_PATH, POST_AUTH_SEND_CODE_TO_REGISTER_PATH, POST_USER_AUTH_RE_SEND_EMAIL_PATH,
             POST_USER_AUTH_REGISTER_PATH, POST_USER_AUTH_LOGIN_PATH, POST_USER_AUTH_VERIFY_EMAIL_PATH, POST_USER_AUTH_SEND_CODE_TO_GET_PWD_PATH,
             POST_COUPON_CHECK_COUPON_LIST_PATH, POST_USER_AUTH_FIREBASE_REGISTER_PATH, POST_USER_AUTH_FIREBASE_LOGIN_PATH,
+            POST_NOTIFICATION_CREATE_USER_TOKEN_PATH, POST_NOTIFICATION_CREATE_TOKEN_SUB_PATH
     };
 
     public static final String[] PATCH_AUTH_WHITELIST = {
@@ -43,7 +44,7 @@ public class SecurityConstant {
     public static final String[] PATCH_USER_PATH = {
             PATCH_USER_CHANGE_PASSWORD_PATH, PATCH_USER_UPLOAD_AVATAR_PATH,
             PATCH_ORDER_UPDATE_SUB_PATH, PATCH_TRANSACTION_UPDATE_BY_ID_PATH,
-            PATCH_USER_ADD_PHONE_NUMBER_PATH
+            PATCH_USER_ADD_PHONE_NUMBER_PATH, PATCH_NOTIFICATION_UPDATE_INFORMATION_PATH
     };
     public static final String[] PUT_USER_PATH = {
             PUT_ADDRESS_UPDATE_PATH,
@@ -55,7 +56,7 @@ public class SecurityConstant {
     public static final String[] GET_USER_PATH = {
             GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_PATH,
             GET_ADDRESS_BY_USER_ID_PATH, GET_ADDRESS_DETAILS_BY_ID_PATH,
-            GET_USER_BY_ID_PATH, GET_AUTH_USER_LOGOUT_PATH, GET_ORDER_ITEM_REVIEW_PATH
+            GET_USER_BY_ID_PATH, POST_AUTH_USER_LOGOUT_PATH, GET_ORDER_ITEM_REVIEW_PATH
     };
 
     // Only ADMIN =================================================================
@@ -111,7 +112,7 @@ public class SecurityConstant {
 
     // ADMIN + EMPLOYEE + MANAGER =================================================================
     public static final String[] GET_ADMIN_MANAGER_EMPLOYEE_PATH = {
-            GET_AUTH_EMPLOYEE_LOGOUT_PATH
+            POST_AUTH_EMPLOYEE_LOGOUT_PATH
     };
 
     // ADMIN + EMPLOYEE =================================================================

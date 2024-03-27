@@ -14,6 +14,7 @@ public class RouterConstant {
     public static final String COUPON_BASE_PATH = "/api/coupon";
     public static final String PRODUCT_BASE_PATH = "/api/product";
     public static final String EMPLOYEE_BASE_PATH = "/api/employee";
+    public static final String NOTIFICATION_BASE_PATH = "/api/notification";
     public static final String ORDER_BASE_PATH = "/api/order";
     public static final String TRANSACTION_BASE_PATH = "/api/transaction";
     public static final String STATISTICS_BASE_PATH = "/api/statistics";
@@ -152,6 +153,13 @@ public class RouterConstant {
     public static final String DELETE_EMPLOYEE_BY_ID_PATH = EMPLOYEE_BASE_PATH + DELETE_EMPLOYEE_BY_ID_SUB_PATH;
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH = EMPLOYEE_ID_PATH + "/change-password";
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH = EMPLOYEE_BASE_PATH + PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH;
+    // ENDPOINT URL NOTIFICATION =================================================================
+    public static final String POST_NOTIFICATION_CREATE_USER_TOKEN_SUB_PATH = "/user";
+    public static final String POST_NOTIFICATION_CREATE_USER_TOKEN_PATH = NOTIFICATION_BASE_PATH + POST_NOTIFICATION_CREATE_USER_TOKEN_SUB_PATH;
+    public static final String POST_NOTIFICATION_CREATE_EMPLOYEE_TOKEN_SUB_PATH = "/employee";
+    public static final String POST_NOTIFICATION_CREATE_TOKEN_SUB_PATH = NOTIFICATION_BASE_PATH + POST_NOTIFICATION_CREATE_EMPLOYEE_TOKEN_SUB_PATH;
+    public static final String PATCH_NOTIFICATION_UPDATE_INFORMATION_SUB_PATH = "/update";
+    public static final String PATCH_NOTIFICATION_UPDATE_INFORMATION_PATH = NOTIFICATION_BASE_PATH + PATCH_NOTIFICATION_UPDATE_INFORMATION_SUB_PATH;
 
     // ENDPOINT URL CATEGORY =================================================================
 
@@ -218,8 +226,8 @@ public class RouterConstant {
     public static final String POST_AUTH_SEND_CODE_TO_REGISTER_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH;
     public static final String POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH = "/login";
     public static final String POST_AUTH_EMPLOYEE_LOGIN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH;
-    public static final String GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH = "/logout";
-    public static final String GET_AUTH_EMPLOYEE_LOGOUT_PATH = EMPLOYEE_AUTH_BASE_PATH + GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH;
+    public static final String POST_AUTH_EMPLOYEE_LOGOUT_SUB_PATH = "/logout";
+    public static final String POST_AUTH_EMPLOYEE_LOGOUT_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_EMPLOYEE_LOGOUT_SUB_PATH;
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH = "/refresh-token";
     public static final String POST_AUTH_REFRESH_EMPLOYEE_TOKEN_PATH = EMPLOYEE_AUTH_BASE_PATH + POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH;
     public static final String POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH = "";
@@ -233,8 +241,8 @@ public class RouterConstant {
     public static final String POST_USER_AUTH_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_LOGIN_SUB_PATH;
     public static final String POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH = "/firebase/login";
     public static final String POST_USER_AUTH_FIREBASE_LOGIN_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH;
-    public static final String GET_AUTH_USER_LOGOUT_SUB_PATH = "/logout";
-    public static final String GET_AUTH_USER_LOGOUT_PATH = USER_AUTH_BASE_PATH + GET_AUTH_USER_LOGOUT_SUB_PATH;
+    public static final String POST_AUTH_USER_LOGOUT_SUB_PATH = "/logout";
+    public static final String POST_AUTH_USER_LOGOUT_PATH = USER_AUTH_BASE_PATH + POST_AUTH_USER_LOGOUT_SUB_PATH;
     public static final String POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH = "/resend-email";
     public static final String POST_USER_AUTH_RE_SEND_EMAIL_PATH = USER_AUTH_BASE_PATH + POST_USER_AUTH_RE_SEND_EMAIL_SUB_PATH;
     public static final String POST_USER_AUTH_SEND_CODE_TO_GET_PWD_SUB_PATH = "/password/send-code";

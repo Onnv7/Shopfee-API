@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
@@ -107,7 +109,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) {
+    public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         employeeService.updateEmployeeForAdmin(body, id);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

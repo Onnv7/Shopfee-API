@@ -43,4 +43,8 @@ public class UpdateEmployeeRequest {
     @Schema(example = EMPLOYEE_STATUS_EX)
     @NotNull
     private EmployeeStatus status;
+
+    @Schema(example = OBJECT_ID_EX)
+    @NotBlank
+    private String branchId;
 }

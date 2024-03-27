@@ -1,5 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
@@ -28,6 +30,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
 
@@ -75,7 +78,7 @@ public class BranchService implements IBranchService {
     }
 
     @Override
-    public void createBranch(CreateBranchRequest body) {
+    public void createBranch(CreateBranchRequest body) throws ExecutionException, InterruptedException {
         BranchEntity branch = modelMapperService.mapClass(body, BranchEntity.class);
         branch.setStatus(BranchStatus.INACTIVE);
         byte[] originalImage = new byte[0];
@@ -93,6 +96,11 @@ public class BranchService implements IBranchService {
             throw new RuntimeException(e);
         }
         branchRepository.save(branch);
+
+        TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopicAsync(
+                null,
+                branch.getId()
+        ).get();
     }
 
     @Override

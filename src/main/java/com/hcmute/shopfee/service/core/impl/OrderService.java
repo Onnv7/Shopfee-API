@@ -83,6 +83,7 @@ public class OrderService implements IOrderService {
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
     private final SchedulerService schedulerService;
+    private final FirebaseMessagingService firebaseMessagingService;
 
 
     private void buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
@@ -501,6 +502,7 @@ public class OrderService implements IOrderService {
         orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved2.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
 
+        firebaseMessagingService.sendOrderNotificationToBranch(branch.getId(), "A new order", "New shipping order from customer " + userId);
         return resData;
     }
 
@@ -638,6 +640,8 @@ public class OrderService implements IOrderService {
         orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
 
+
+        firebaseMessagingService.sendOrderNotificationToBranch(branch.getId(), "A new order", "New onsite order from customer " + userId);
         return resData;
     }
 

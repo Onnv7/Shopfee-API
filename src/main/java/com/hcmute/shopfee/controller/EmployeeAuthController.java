@@ -3,10 +3,7 @@ package com.hcmute.shopfee.controller;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.ChangePasswordEmployeeRequest;
-import com.hcmute.shopfee.dto.request.CreateEmployeeRequest;
-import com.hcmute.shopfee.dto.request.EmployeeLoginRequest;
-import com.hcmute.shopfee.dto.request.RefreshEmployeeTokenRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.enums.Role;
@@ -25,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
@@ -39,8 +37,8 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_LOGIN_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<EmployeeLoginResponse>> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) {
-        EmployeeLoginResponse data = employeeAuthService.attemptEmployeeLogin(body.getUsername(), body.getPassword());
+    public ResponseEntity<ResponseAPI<EmployeeLoginResponse>> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) throws ExecutionException, InterruptedException {
+        EmployeeLoginResponse data = employeeAuthService.employeeLogin(body);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -53,14 +51,14 @@ public class EmployeeAuthController {
     }
 
     @Operation(summary = AUTH_EMPLOYEE_LOGOUT_SUM)
-    @GetMapping(path = GET_AUTH_EMPLOYEE_LOGOUT_SUB_PATH)
-    public ResponseEntity<ResponseAPI<?>> logoutEmployee(HttpServletRequest request) {
+    @PostMapping(path = POST_AUTH_EMPLOYEE_LOGOUT_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> logoutEmployee(@RequestBody @Valid EmployeeLogoutRequest body, HttpServletRequest request) {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
         if(refreshToken == null) {
             throw new CustomException(ErrorConstant.NOT_FOUND, "Token is null");
         }
-        employeeAuthService.employeeLogout(refreshToken);
+        employeeAuthService.employeeLogout(body, refreshToken);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -94,7 +92,7 @@ public class EmployeeAuthController {
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
     @PostMapping(path = POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") Role role) {
-        employeeAuthService.registerEmployee(body, role);
+        employeeAuthService.employeeRegister(body, role);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)

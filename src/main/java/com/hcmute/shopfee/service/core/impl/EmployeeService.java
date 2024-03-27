@@ -1,15 +1,22 @@
 package com.hcmute.shopfee.service.core.impl;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.EmployeeFCMTokenEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.BranchRepository;
+import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.service.core.IEmployeeService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
@@ -24,12 +31,15 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
 public class EmployeeService implements IEmployeeService {
     private final EmployeeRepository employeeRepository;
     private final ModelMapperService modelMapperService;
+    private final BranchRepository branchRepository;
+    private final EmployeeFCMTokenRepository employeeFCMTokenRepository;
 
     public Optional<EmployeeEntity> findByUsername(String username) {
         return employeeRepository.findByUsernameAndIsDeletedFalse(username);
@@ -92,21 +102,38 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public void updateEmployeeForAdmin(UpdateEmployeeRequest data, String id) {
+    public void updateEmployeeForAdmin(UpdateEmployeeRequest body, String employeeId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         List<String> roleList = SecurityUtils.getRoleList();
-
-        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + id));
-
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+        BranchEntity branchEntity = branchRepository.findById(body.getBranchId())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         if (SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
-            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
+            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
                 throw new CustomException(ErrorConstant.FORBIDDEN, "Manager cannot update an employee account belonging to another branch");
             }
         }
 
-        modelMapperService.mapNotNull(data, employee);
+
+
+        String oldBranchId = employee.getBranch().getId();
+        if (oldBranchId != null && !oldBranchId.equals(body.getBranchId())){
+            List<EmployeeFCMTokenEntity> employeeFCMTokenList = employeeFCMTokenRepository.findByEmployeeId(employeeId);
+            List<String> deviceTokenList = employeeFCMTokenList.stream().map(EmployeeFCMTokenEntity::getToken).toList();
+            FirebaseMessaging.getInstance().unsubscribeFromTopicAsync(
+                    deviceTokenList,
+                    oldBranchId
+            ).get();
+            FirebaseMessaging.getInstance().subscribeToTopic(
+                    deviceTokenList,
+                    body.getBranchId()
+            );
+        }
+        modelMapperService.mapNotNull(body, employee);
+        employee.setBranch(branchEntity);
+
         employeeRepository.save(employee);
     }
 

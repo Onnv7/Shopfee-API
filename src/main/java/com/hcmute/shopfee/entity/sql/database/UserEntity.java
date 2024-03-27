@@ -100,6 +100,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<CoinHistoryEntity> coinHistoryList;
+
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<UserFCMTokenEntity> userFcmTokenList;
     public String getFullName() {
         return firstName + " " + lastName;
     }

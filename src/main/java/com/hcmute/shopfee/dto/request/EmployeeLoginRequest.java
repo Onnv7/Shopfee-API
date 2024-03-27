@@ -17,4 +17,8 @@ public class EmployeeLoginRequest {
     @NotBlank
     @Size(min = PASSWORD_LENGTH_MIN, max = PASSWORD_LENGTH_MAX)
     private String password;
+
+    @Schema(example = OBJECT_ID_EX)
+//    @NotBlank
+    private String fcmTokenId;
 }

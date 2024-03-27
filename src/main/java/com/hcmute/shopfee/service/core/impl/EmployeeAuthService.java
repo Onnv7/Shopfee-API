@@ -1,19 +1,22 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.ChangePasswordEmployeeRequest;
 import com.hcmute.shopfee.dto.request.CreateEmployeeRequest;
+import com.hcmute.shopfee.dto.request.EmployeeLoginRequest;
+import com.hcmute.shopfee.dto.request.EmployeeLogoutRequest;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
-import com.hcmute.shopfee.entity.sql.database.RoleEntity;
+import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.repository.database.BranchRepository;
+import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
@@ -33,9 +36,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
@@ -49,17 +54,32 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     private final JwtService jwtService;
     private final ModelMapperService modelMapperService;
     private final BranchRepository branchRepository;
+    private final EmployeeFCMTokenRepository employeeFCMTokenRepository;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
+    private void updateFcmTokenById(String fcmTokenId, EmployeeEntity employee) throws ExecutionException, InterruptedException {
+        if(fcmTokenId == null) {
+            return;
+        }
+        EmployeeFCMTokenEntity employeeFcmTokenEntity = employeeFCMTokenRepository.findById(fcmTokenId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND,FCM_TOKEN_ID_NOT_FOUND + fcmTokenId));
+        employeeFcmTokenEntity.setEmployee(employee);
+        employeeFCMTokenRepository.save(employeeFcmTokenEntity);
+
+        TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopicAsync(
+                Collections.singletonList(employeeFcmTokenEntity.getToken()),
+                employee.getBranch().getId()
+        ).get();
+    }
 
     @Override
-    public EmployeeLoginResponse attemptEmployeeLogin(String username, String password) {
+    public EmployeeLoginResponse employeeLogin(EmployeeLoginRequest body) throws ExecutionException, InterruptedException {
         UserPrincipal principal = UserPrincipal.builder()
-                .username(username)
-                .password(password)
+                .username(body.getUsername())
+                .password(body.getPassword())
                 .build();
         Authentication employeeCredential = new EmployeeUsernamePasswordAuthenticationToken(principal);
         var authentication = authenticationManager.authenticate(employeeCredential);
@@ -80,6 +100,9 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         String refreshToken = jwtService.issueRefreshToken(principalAuthenticated.getUserId(), principalAuthenticated.getUsername(), roles);
 
         employeeTokenRedisService.createNewEmployeeRefreshToken(refreshToken, principalAuthenticated.getUserId());
+
+        updateFcmTokenById(body.getFcmTokenId(), employee);
+
         return EmployeeLoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -90,9 +113,14 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     }
 
     @Override
-    public void employeeLogout(String refreshToken) {
+    public void employeeLogout(EmployeeLogoutRequest body, String refreshToken) {
         String employeeId = SecurityUtils.getCurrentUserId();
         employeeTokenRedisService.deleteByEmployeeIdAndRefreshToken(employeeId, refreshToken);
+
+        EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+        fcmTokenEntity.setEmployee(null);
+        employeeFCMTokenRepository.save(fcmTokenEntity);
     }
 
     @Override
@@ -128,7 +156,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     }
 
     @Override
-    public void registerEmployee(CreateEmployeeRequest body, Role roleName) {
+    public void employeeRegister(CreateEmployeeRequest body, Role roleName) {
         List<String> roles = SecurityUtils.getRoleList();
         // manager không thể tạo manager khác
         if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {

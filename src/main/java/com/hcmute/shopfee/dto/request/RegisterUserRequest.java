@@ -39,4 +39,8 @@ public class RegisterUserRequest {
     @Pattern(regexp = PHONE_NUMBER_REGEX)
     private String phoneNumber;
 
+    @Schema(example = OBJECT_ID_EX)
+//    @NotBlank
+    private String fcmTokenId;
+
 }
