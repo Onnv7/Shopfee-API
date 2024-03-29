@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.dto.common;
+package com.hcmute.shopfee.dto.kafka;
 
 import lombok.Data;
 

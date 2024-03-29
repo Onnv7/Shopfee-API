@@ -96,11 +96,6 @@ public class BranchService implements IBranchService {
             throw new RuntimeException(e);
         }
         branchRepository.save(branch);
-
-        TopicManagementResponse response = FirebaseMessaging.getInstance().subscribeToTopicAsync(
-                null,
-                branch.getId()
-        ).get();
     }
 
     @Override

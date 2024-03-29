@@ -58,6 +58,8 @@ public class OrderEventListener {
         } else if(orderStatus == OrderStatus.DELIVERED) {
             newOrderEvent.setOrderStatus(OrderStatus.SUCCEED);
             newOrderEvent.setDescription("Order completed successfully");
+        } else {
+            return;
         }
         if(newOrderEvent.getOrderStatus() == OrderStatus.CANCELED) {
             long coinRefunded = 0L;

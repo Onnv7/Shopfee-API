@@ -4,7 +4,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import com.hcmute.shopfee.dto.common.BranchNotificationDto;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
@@ -68,7 +67,6 @@ public class FirebaseMessagingService {
                 .setNotification(notification)
                 .build();
         try {
-
             firebaseMessaging.send(message);
         } catch (FirebaseMessagingException e) {
             e.printStackTrace();
