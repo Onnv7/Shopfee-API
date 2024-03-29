@@ -38,6 +38,19 @@ public class CouponController {
         return new ResponseEntity<>(res, StatusCode.CREATED);
     }
 
+    @Operation(summary = COUPON_UPDATE_SHIPPING_TYPE_SUM)
+    @PutMapping(path = PUT_COUPON_UPDATE_SHIPPING_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> updateShippingCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateShippingCouponRequest body) {
+        couponService.updateShippingCoupon(body, couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
     @Operation(summary = COUPON_CREATE_ORDER_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> createOrderCoupon(@RequestBody @Valid CreateOrderCouponRequest body) {
@@ -49,6 +62,19 @@ public class CouponController {
                 .build();
 
         return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = COUPON_UPDATE_ORDER_TYPE_SUM)
+    @PutMapping(path = PUT_COUPON_UPDATE_ORDER_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> updateOrderCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateOrderCouponRequest body) {
+        couponService.updateOrderCoupon(body, couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 
     @Operation(summary = COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
@@ -63,6 +89,18 @@ public class CouponController {
 
         return new ResponseEntity<>(res, StatusCode.CREATED);
     }
+    @Operation(summary = COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
+    @PutMapping(path = PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> updateAmountOffProductCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateProductMoneyCouponRequest body) {
+        couponService.updateAmountOffProductCoupon(body, couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 
     @Operation(summary = COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM)
     @PostMapping(path = POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH)
@@ -75,6 +113,19 @@ public class CouponController {
                 .build();
 
         return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = COUPON_UPDATE_BUY_GET_PRODUCT_GIFT_SUM)
+    @PutMapping(path = PUT_COUPON_UPDATE_BUY_GET_TYPE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> updateGiftProductCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateBuyXGetYCouponRequest body) {
+        couponService.updateGiftProductCoupon(body, couponId);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 
     @Operation(summary = COUPON_DELETE_BY_ID_SUM)

@@ -293,12 +293,20 @@ public class RouterConstant {
     // ENDPOINT URL COUPON =================================================================
     public static final String POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH = "/shipping";
     public static final String POST_COUPON_CREATE_SHIPPING_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH;
+    public static final String PUT_COUPON_UPDATE_SHIPPING_TYPE_SUB_PATH = "/shipping" + COUPON_ID_PATH;
+    public static final String PUT_COUPON_UPDATE_SHIPPING_TYPE_PATH = COUPON_BASE_PATH + PUT_COUPON_UPDATE_SHIPPING_TYPE_SUB_PATH;
     public static final String POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH = "/order";
     public static final String POST_COUPON_CREATE_ORDER_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH;
+    public static final String PUT_COUPON_UPDATE_ORDER_TYPE_SUB_PATH = "/order" + COUPON_ID_PATH;
+    public static final String PUT_COUPON_UPDATE_ORDER_TYPE_PATH = COUPON_BASE_PATH + PUT_COUPON_UPDATE_ORDER_TYPE_SUB_PATH;
     public static final String POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH = "/amount-off-product";
     public static final String POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH;
+    public static final String PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH = "/amount-off-product" + COUPON_ID_PATH;
+    public static final String PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_PATH = COUPON_BASE_PATH + PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH;
     public static final String POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH = "/product-gift";
     public static final String POST_COUPON_CREATE_BUY_GET_TYPE_PATH = COUPON_BASE_PATH + POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH;
+    public static final String PUT_COUPON_UPDATE_BUY_GET_TYPE_SUB_PATH = "/product-gift" + COUPON_ID_PATH;
+    public static final String PUT_COUPON_UPDATE_BUY_GET_TYPE_PATH = COUPON_BASE_PATH + PUT_COUPON_UPDATE_BUY_GET_TYPE_SUB_PATH;
     public static final String PUT_COUPON_UPDATE_MONEY_BY_ID_SUB_PATH = COUPON_ID_PATH + "/{couponType}";
     public static final String PUT_COUPON_UPDATE_MONEY_BY_ID_PATH = COUPON_BASE_PATH + PUT_COUPON_UPDATE_MONEY_BY_ID_SUB_PATH;
     public static final String PUT_COUPON_UPDATE_PRODUCT_GIFT_BY_ID_SUB_PATH = COUPON_ID_PATH + "/product-gift";

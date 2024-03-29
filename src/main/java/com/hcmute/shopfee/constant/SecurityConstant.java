@@ -71,7 +71,9 @@ public class SecurityConstant {
             PUT_PRODUCT_UPDATE_BY_ID_PATH,
             PUT_CATEGORY_UPDATE_BY_ID_PATH, PUT_BRANCH_UPDATE_PATH,
             PUT_BANNER_UPDATE_BY_ID_PATH,
-            PUT_COUPON_UPDATE_MONEY_BY_ID_PATH, PUT_COUPON_UPDATE_PRODUCT_GIFT_BY_ID_PATH
+            PUT_COUPON_UPDATE_MONEY_BY_ID_PATH, PUT_COUPON_UPDATE_PRODUCT_GIFT_BY_ID_PATH,
+            PUT_COUPON_UPDATE_SHIPPING_TYPE_PATH, PUT_COUPON_UPDATE_ORDER_TYPE_PATH,
+            PUT_COUPON_UPDATE_BUY_GET_TYPE_PATH, PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_PATH
     };
     public static final String[] POST_ADMIN_PATH = {
             POST_PRODUCT_CREATE_PATH,
@@ -84,6 +86,7 @@ public class SecurityConstant {
             POST_ALBUM_UPLOAD_IMAGE_PATH
     };
     public static final String[] PATCH_ADMIN_PATH = {
+
     };
 
     public static final String[] DELETE_ADMIN_PATH = {
