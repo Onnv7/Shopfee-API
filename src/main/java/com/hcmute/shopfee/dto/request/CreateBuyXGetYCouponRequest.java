@@ -32,7 +32,7 @@ public class CreateBuyXGetYCouponRequest {
 
     @Schema()
     @NotEmpty
-    private List<SubjectConditionDto> targetObjectConditionList;
+    private List<SubjectConditionDto> subjectConditionList;
 
     @Schema()
     @NotNull

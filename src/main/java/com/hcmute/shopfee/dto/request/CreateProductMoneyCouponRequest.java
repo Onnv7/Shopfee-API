@@ -33,7 +33,7 @@ public class CreateProductMoneyCouponRequest {
 
     @Schema()
     @NotEmpty
-    private List<SubjectConditionDto> targetObjectConditionList;
+    private List<SubjectConditionDto> subjectConditionList;
 
     @Schema()
     @NotNull

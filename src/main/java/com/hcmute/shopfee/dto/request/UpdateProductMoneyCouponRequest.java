@@ -41,7 +41,7 @@ public class UpdateProductMoneyCouponRequest {
 
     @Schema()
     @NotEmpty
-    private List<SubjectConditionDto> targetObjectConditionList;
+    private List<SubjectConditionDto> subjectConditionList;
 
     @Schema()
     @NotNull
