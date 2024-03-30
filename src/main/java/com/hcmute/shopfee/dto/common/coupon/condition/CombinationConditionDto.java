@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.CombinationConditionEntity;
 import com.hcmute.shopfee.enums.CouponType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +13,7 @@ import java.util.List;
 import static com.hcmute.shopfee.constant.SwaggerConstant.COMBINATION_CONDITION_EX;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CombinationConditionDto {
     @Schema(example = COMBINATION_CONDITION_EX)
     @NotNull

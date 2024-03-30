@@ -238,7 +238,7 @@ public class CouponController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
+    @Operation(summary = COUPON_GET_COUPON_LIST_CART_SUM)
     @PostMapping(path = POST_COUPON_CHECK_COUPON_LIST_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetCouponListForCartResponse>> getCouponListForCartResponse(@RequestBody @Valid GetCouponListForCartRequest body) {
         GetCouponListForCartResponse resData = couponService.getCouponListForCartResponse(body);

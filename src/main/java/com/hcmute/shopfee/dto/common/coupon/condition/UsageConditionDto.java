@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
 import com.hcmute.shopfee.enums.UsageConditionType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +14,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.INTEGER_VALUE_EX;
 import static com.hcmute.shopfee.constant.SwaggerConstant.USAGE_CONDITION_EX;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UsageConditionDto  {
     @Schema(example = USAGE_CONDITION_EX)
     @NotNull

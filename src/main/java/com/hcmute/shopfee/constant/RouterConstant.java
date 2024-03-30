@@ -315,7 +315,7 @@ public class RouterConstant {
     public static final String DELETE_COUPON_BY_ID_PATH = COUPON_BASE_PATH + DELETE_COUPON_BY_ID_SUB_PATH;
     public static final String GET_COUPON_RELEASE_LIST_SUB_PATH = "/status/release";
     public static final String GET_COUPON_RELEASE_LIST_PATH = COUPON_BASE_PATH + GET_COUPON_RELEASE_LIST_SUB_PATH;
-    public static final String GET_COUPON_RELEASE_BY_ID_SUB_PATH = COUPON_ID_PATH + "/release";
+    public static final String GET_COUPON_RELEASE_BY_ID_SUB_PATH =  "/release" + COUPON_ID_PATH;
     public static final String GET_COUPON_RELEASE_BY_ID_PATH = COUPON_BASE_PATH + GET_COUPON_RELEASE_BY_ID_SUB_PATH;
     public static final String GET_COUPON_LIST_SUB_PATH = "";
     public static final String GET_COUPON_LIST_PATH = COUPON_BASE_PATH + GET_COUPON_LIST_SUB_PATH;

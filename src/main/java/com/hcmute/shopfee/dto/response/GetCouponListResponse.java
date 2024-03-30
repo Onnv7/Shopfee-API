@@ -5,21 +5,32 @@ import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class GetCouponListResponse {
     private String id;
     private String code;
     private CouponType couponType;
-    private boolean isExpired;
+    private Boolean isExpired;
     private CouponStatus status;
 
+
     public static GetCouponListResponse fromCouponEntity(CouponEntity entity) {
-        GetCouponListResponse response = new GetCouponListResponse();
-        response.setId(entity.getId());
-        response.setCode(entity.getCode());
-        response.setCouponType(entity.getCouponType());
+        GetCouponListResponse data = new GetCouponListResponse();
+        Date date = new Date();
+        data.setId(entity.getId());
+        data.setCode(entity.getCode());
+        data.setCouponType(entity.getCouponType());
         // TODO xem chỗ isExpired
-        response.setStatus(entity.getStatus());
-        return response;
+        if(entity.getExpirationDate() == null) {
+            data.setIsExpired(null);
+        }
+        else {
+            data.setIsExpired(date.after(entity.getExpirationDate()));
+        }
+
+        data.setStatus(entity.getStatus());
+        return data;
     }
 }

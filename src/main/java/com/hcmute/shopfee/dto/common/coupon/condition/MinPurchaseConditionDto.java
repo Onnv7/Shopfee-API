@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.MinPurchaseConditionEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -8,6 +9,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.INTEGER_VALUE_EX;
 
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MinPurchaseConditionDto {
 //    @Schema(example = MIN_PURCHASE_TYPE)
 //    @NotNull

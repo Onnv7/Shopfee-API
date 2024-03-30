@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ import java.util.List;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SubjectConditionDto {
 //    @Schema(example = TARGET_OBJECT_CONDITION_EX)
 //    @NotNull
