@@ -11,7 +11,12 @@ public class KafkaConfig {
         return new NewTopic(KafkaConstant.SEND_CODE_EMAIL_TOPIC,  2, (short) 1);
     }
     @Bean
-    public NewTopic createFirebaseFCMTopic() {
-        return new NewTopic(KafkaConstant.FIREBASE_FCM_TOPIC,  3, (short) 1);
+    public NewTopic createUserOrderNotification() {
+        return new NewTopic(KafkaConstant.USER_ORDER_NOTIFICATION_TOPIC,  4, (short) 1);
+    }
+
+    @Bean
+    public NewTopic createEmployeeOOrderNotificationTopic() {
+        return new NewTopic(KafkaConstant.EMPLOYEE_ORDER_NOTIFICATION_TOPIC,  4, (short) 1);
     }
 }

@@ -18,7 +18,7 @@ import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.enums.UserStatus;
-import com.hcmute.shopfee.kafka.KafkaMessagePublisher;
+import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
 import com.hcmute.shopfee.repository.database.ConfirmationRepository;
@@ -63,7 +63,7 @@ public class UserAuthService implements IUserAuthService {
     private final AuthenticationManager authenticationManager;
     private final UserTokenRedisService userTokenRedisService;
     private final ConfirmationRepository confirmationRepository;
-    private final KafkaMessagePublisher kafkaMessagePublisher;
+    private final MailerKafkaPublisher mailerKafkaPublisher;
     private final UserFCMTokenRepository userFcmTokenRepository;
     @Autowired
     @Lazy
@@ -242,7 +242,7 @@ public class UserAuthService implements IUserAuthService {
         }
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
-        kafkaMessagePublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
+        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
     }
 
     @Override
@@ -251,7 +251,7 @@ public class UserAuthService implements IUserAuthService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "User with email " + email));
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
-        kafkaMessagePublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
+        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
     }
 
     @Override

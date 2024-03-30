@@ -1,7 +1,7 @@
-package com.hcmute.shopfee.kafka;
+package com.hcmute.shopfee.kafka.publisher;
 
-import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
+import com.hcmute.shopfee.kafka.KafkaConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,17 +12,18 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
-public class FirebaseFCMPublisher {
+public class MailerKafkaPublisher {
     @Autowired
     private KafkaTemplate<String, Object> template;
 
-    public void sendNotificationToBranch(BranchNotificationDto message) {
+    public void sendMessageToCodeEmail(CodeEmailDto message) {
         CompletableFuture<SendResult<String, Object>> future = template.send(KafkaConstant.SEND_CODE_EMAIL_TOPIC, message);
         future.whenComplete((rs, ex) -> {
             if(ex == null) {
-                log.info("Kafka publisher: Topic = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
+                log.info("MailerKafkaPublisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
+                        rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("Kafka publisher error {}", ex.getMessage());
+                log.error("MailerKafkaPublisher error {}", ex.getMessage());
             }
         });
     }

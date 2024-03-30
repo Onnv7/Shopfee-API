@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
+import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.sql.database.*;
@@ -20,6 +21,8 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
@@ -84,7 +87,8 @@ public class OrderService implements IOrderService {
     private final ZaloPayService zaloPayService;
     private final SchedulerService schedulerService;
     private final FirebaseMessagingService firebaseMessagingService;
-
+    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
+    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
 
     private void buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
@@ -502,7 +506,8 @@ public class OrderService implements IOrderService {
         orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved2.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
 
-        firebaseMessagingService.sendOrderNotificationToBranch(branch.getId(), "A new order", "New shipping order from customer " + userId);
+        BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
+        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         return resData;
     }
 
@@ -641,7 +646,6 @@ public class OrderService implements IOrderService {
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
 
 
-        firebaseMessagingService.sendOrderNotificationToBranch(branch.getId(), "A new order", "New onsite order from customer " + userId);
         return resData;
     }
 

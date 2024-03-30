@@ -1,7 +1,8 @@
 package com.hcmute.shopfee.controller;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
+import com.hcmute.shopfee.dto.common.OrderNotificationDto;
+import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -9,6 +10,8 @@ import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
 import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
@@ -43,16 +46,8 @@ import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.URISyntaxException;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -88,6 +83,8 @@ public class ToolController {
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
     private final FirebaseMessagingService firebaseMessagingService;
+    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
+    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
 
     @Autowired
     private Environment environment;
@@ -446,16 +443,29 @@ public class ToolController {
         String serverIpAddress = environment.getProperty("local.server.ip");
         return "Server IP Address: " + serverIpAddress;
     }
+
     @PostMapping("/sendNotification")
-    public String sendNotification(@RequestBody NotificationMessageDto body)  {
+    public String sendNotification(@RequestBody NotificationMessageDto body) {
 
         return firebaseMessagingService.sendNotificationTest(body);
 
     }
+
     @PostMapping("/sendNotificationTopic")
-    public String sendNotificationTopic(@RequestBody NotificationMessageDto body)  {
+    public String sendNotificationTopic(@RequestBody NotificationMessageDto body) {
         firebaseMessagingService.sendOrderNotificationToBranch(body.getRecipientToken(), body.getTitle(), body.getBody());
         return "okoko";
+    }
 
+    @PostMapping("/kafka-kafkaSendToBranch")
+    public String kafkaSendToBranch(@RequestBody BranchNotificationDto body) {
+        userOrderNotificationKafkaPublisher.sendNotificationToBranch(body);
+        return "okoko";
+    }
+
+    @PostMapping("/kafka-kafkaSendToClient")
+    public String kafkaSendToClient(@RequestBody OrderNotificationDto body) {
+        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(body);
+        return "okoko";
     }
 }

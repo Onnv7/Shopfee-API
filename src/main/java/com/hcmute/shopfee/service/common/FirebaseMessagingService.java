@@ -42,21 +42,6 @@ public class FirebaseMessagingService {
         }
     }
 
-    public void sendNotification(NotificationMessageDto notificationMessageDto) throws FirebaseMessagingException {
-        Notification notification = Notification.builder()
-                .setTitle(notificationMessageDto.getTitle())
-                .setBody(notificationMessageDto.getBody())
-                .setImage(notificationMessageDto.getImage())
-                .build();
-
-        Message message = Message.builder()
-                .setToken(notificationMessageDto.getRecipientToken())
-                .setNotification(notification)
-                .putAllData(notificationMessageDto.getData())
-                .build();
-
-        firebaseMessaging.send(message);
-    }
     public void sendOrderNotificationToBranch(String branchId, String title, String body) {
         Notification notification = Notification.builder()
                 .setTitle(title)
