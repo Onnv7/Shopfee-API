@@ -1022,6 +1022,7 @@ public class OrderService implements IOrderService {
         if(orderBill.getRequestCancellation() != null) {
             GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
             data.setReason(orderBill.getRequestCancellation().getReason());
+            return data;
         }
         return null;
     }

@@ -785,12 +785,27 @@ public class CouponService implements ICouponService {
         return data;
     }
 
-    private List<GetCouponListForCartResponse.CouponCard> checkCoupon(List<CouponEntity> shippingCouponList, String userId,
+    @Override
+    public GetRewardOfCouponResponse getRewardOfCouponList(String couponId) {
+        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+        CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
+        GetRewardOfCouponResponse data = new GetRewardOfCouponResponse();
+        if(couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
+            List<ProductRewardEntity> productRewardEntityList = couponRewardEntity.getProductRewardList();
+            data.setProductRewardList(GetRewardOfCouponResponse.fromProductRewardEntityList(productRewardEntityList));
+        } else if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
+            data.setMoneyReward(GetRewardOfCouponResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
+        }
+        return data;
+    }
+
+    private List<GetCouponListForCartResponse.CouponCard> checkCoupon(List<CouponEntity> couponEntityList, String userId,
                                                                       GetCouponListForCartRequest body, List<CouponType> couponTypeList, boolean canCombined,
                                                                       CouponEntity couponSelected) {
-        List<GetCouponListForCartResponse.CouponCard> shippingCouponDtoList = new ArrayList<>();
+        List<GetCouponListForCartResponse.CouponCard> couponCardList = new ArrayList<>();
 
-        for (CouponEntity coupon : shippingCouponList) {
+        for (CouponEntity coupon : couponEntityList) {
             GetCouponListForCartResponse.CouponCard couponCard = new GetCouponListForCartResponse.CouponCard();
             couponCard.setCouponId(coupon.getId());
             couponCard.setCode(coupon.getCode());
@@ -798,8 +813,8 @@ public class CouponService implements ICouponService {
             couponCard.setDescription(coupon.getDescription());
             couponCard.setExpirationDate(coupon.getExpirationDate());
             if (couponSelected != null && couponSelected.getCode().equals(coupon.getCode())) {
-                couponCard.setMinPurchaseCondition(null);
-                shippingCouponDtoList.add(couponCard);
+//                couponCard.setMinPurchaseCondition(null);
+                couponCardList.add(couponCard);
                 continue;
             }
             List<CouponConditionEntity> conditionList = coupon.getConditionList();
@@ -867,22 +882,22 @@ public class CouponService implements ICouponService {
 
             }
 
-            shippingCouponDtoList.add(couponCard);
+            couponCardList.add(couponCard);
         }
-        return shippingCouponDtoList;
+        return couponCardList;
     }
 
-    private void checkCombination(List<CouponType> couponTypeList, List<CombinationConditionEntity> conditionList, GetCouponListForCartResponse.CouponCard couponCard, CouponType couponTypeChecking) {
+    private void checkCombination(List<CouponType> couponTypeListInCart, List<CombinationConditionEntity> conditionList, GetCouponListForCartResponse.CouponCard couponCard, CouponType couponTypeChecking) {
 
         List<CouponType> combinationList = new ArrayList<>();
         for (CombinationConditionEntity condition : conditionList) {
             combinationList.add(condition.getType());
         }
         // check combination xem 1 coupon trong list không thể combination với coupon nào trong cart
-        for (CouponType cpType : couponTypeList) {
-            if (!combinationList.contains(cpType) && couponTypeChecking != cpType) {
+        for (CouponType couponType : couponTypeListInCart) {
+            if (!combinationList.contains(couponType) && couponTypeChecking != couponType) {
                 // invalid
-                couponCard.getCombinationConditionList().add(new GetCouponListForCartResponse.CouponCard.CombinationCondition(cpType));
+                couponCard.getCombinationConditionList().add(new GetCouponListForCartResponse.CouponCard.CombinationCondition(couponType));
                 couponCard.setValid(false);
             }
         }
