@@ -113,4 +113,17 @@ public class EmployeeAuthController {
 
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
+    @Operation(summary = EMPLOYEE_SET_NEW_PASSWORD_SUM)
+    @PatchMapping(path = PATCH_EMPLOYEE_SET_PASSWORD_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> setPasswordByEmployeeId(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid SetPasswordByEmployeeIdRequest body) {
+        employeeAuthService.setPasswordByEmployeeId(body, id);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .message(SuccessConstant.UPDATED)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 }

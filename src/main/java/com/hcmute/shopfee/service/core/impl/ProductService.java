@@ -234,7 +234,7 @@ public class ProductService implements IProductService {
         Pageable pageable = PageRequest.of(page - 1, size);
         String categoryIdRegex = RegexUtils.generateFilterRegexString(categoryId != null ? categoryId : "");
         String productStatusRegex = RegexUtils.generateFilterRegexString(productStatus != null ? productStatus.toString() : "");
-        if (key == null) {
+        if (key.isBlank()) {
             Page<ProductEntity> productPage = productRepository.getProductList(categoryIdRegex, productStatusRegex, pageable);
             GetProductListResponse productList = new GetProductListResponse();
             productList.setTotalPage(productPage.getTotalPages());

@@ -178,12 +178,14 @@ public class WebSecurityConfig {
 
                                 // ADMIN + EMPLOYEE + MANAGER
                                 .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_EMPLOYEE_PATH).hasAnyRole(ADMIN, MANAGER, EMPLOYEE)
+                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_MANAGER_EMPLOYEE_PATH).hasAnyRole(ADMIN, MANAGER, EMPLOYEE)
 
 
                                 // ADMIN + MANAGER
                                 .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
                                 .requestMatchers(HttpMethod.PUT, PUT_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
                                 .requestMatchers(HttpMethod.DELETE, DELETE_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
+                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
                                 .anyRequest().authenticated()
 
                 );

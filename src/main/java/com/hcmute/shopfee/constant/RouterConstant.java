@@ -153,6 +153,8 @@ public class RouterConstant {
     public static final String DELETE_EMPLOYEE_BY_ID_PATH = EMPLOYEE_BASE_PATH + DELETE_EMPLOYEE_BY_ID_SUB_PATH;
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH = EMPLOYEE_ID_PATH + "/change-password";
     public static final String PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH = EMPLOYEE_BASE_PATH + PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH;
+    public static final String PATCH_EMPLOYEE_SET_PASSWORD_SUB_PATH = EMPLOYEE_ID_PATH + "/set-password";
+    public static final String PATCH_EMPLOYEE_SET_PASSWORD_PATH = EMPLOYEE_BASE_PATH + PATCH_EMPLOYEE_SET_PASSWORD_SUB_PATH;
     // ENDPOINT URL NOTIFICATION =================================================================
     public static final String POST_NOTIFICATION_CREATE_USER_TOKEN_SUB_PATH = "/user";
     public static final String POST_NOTIFICATION_CREATE_USER_TOKEN_PATH = NOTIFICATION_BASE_PATH + POST_NOTIFICATION_CREATE_USER_TOKEN_SUB_PATH;

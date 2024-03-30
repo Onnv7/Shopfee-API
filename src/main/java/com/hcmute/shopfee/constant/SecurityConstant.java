@@ -106,7 +106,7 @@ public class SecurityConstant {
 
     public static final String[] PATCH_EMPLOYEE_PATH = {
             PATCH_TRANSACTION_UPDATE_COMPLETE_PATH,
-            PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH, PATCH_ORDER_UPDATE_STATUS_PATH,
+           PATCH_ORDER_UPDATE_STATUS_PATH,
             PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH, PATCH_EMPLOYEE_PROFILE_BY_ID_PATH
     };
     // Only MANAGER =================================================================
@@ -145,6 +145,10 @@ public class SecurityConstant {
     public static final String[] DELETE_ADMIN_MANAGER_PATH = {
             DELETE_EMPLOYEE_BY_ID_PATH,
     };
+
+    public static final String[] PATCH_ADMIN_MANAGER_PATH = {
+            PATCH_EMPLOYEE_SET_PASSWORD_PATH,
+    };
     // ADMIN + USER =================================================================
     public static final String[] GET_ADMIN_USER_PATH = {
 
@@ -179,4 +183,8 @@ public class SecurityConstant {
             GET_ORDER_DETAILS_BY_ID_PATH,
     };
 
+    // ADMIN + EMPLOYEE + BRANCH =================================================================
+    public static final String[] PATCH_ADMIN_MANAGER_EMPLOYEE_PATH = {
+            PATCH_EMPLOYEE_UPDATE_PASSWORD_PATH,
+    };
 }

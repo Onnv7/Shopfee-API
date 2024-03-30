@@ -4,10 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.request.ChangePasswordEmployeeRequest;
-import com.hcmute.shopfee.dto.request.CreateEmployeeRequest;
-import com.hcmute.shopfee.dto.request.EmployeeLoginRequest;
-import com.hcmute.shopfee.dto.request.EmployeeLogoutRequest;
+import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.entity.sql.database.*;
@@ -163,7 +160,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
             throw new CustomException(ErrorConstant.FORBIDDEN, "Managers cannot create another manager account");
         }
 
-        if(SecurityUtils.isOnlyRole(roles, Role.ROLE_MANAGER)) {
+        if(SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
             EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             // manager không được tạo emlpyee cho chi nhánh khác
@@ -206,6 +203,15 @@ public class EmployeeAuthService implements IEmployeeAuthService {
             throw new CustomException(ErrorConstant.UNAUTHORIZED, WRONG_PASSWORD);
         }
         employee.setPassword(passwordEncoder.encode(data.getNewPassword()));
+        employeeRepository.save(employee);
+    }
+
+    // TODO: check quyeefn admin va branch cho viec doi mk
+    @Override
+    public void setPasswordByEmployeeId(SetPasswordByEmployeeIdRequest data, String emplId) {
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(emplId)
+                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
+                employee.setPassword(passwordEncoder.encode(data.getPassword()));
         employeeRepository.save(employee);
     }
 }

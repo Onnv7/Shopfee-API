@@ -141,7 +141,7 @@ public class ProductController {
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetProductListResponse>> getAllProducts(
             @Parameter(name = "key", description = "Key is name or description", required = false, example = "name or description")
-            @RequestParam(name = "key", required = false) String key,
+            @RequestParam(name = "key", required = false, defaultValue = "") String key,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")

@@ -40,7 +40,8 @@ public class SecurityUtils {
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(Object::toString).toList();
     }
 
-    public static boolean isOnlyRole(List<String> roles, Role roleName) {
+    public static boolean isOnlyRole(Role roleName) {
+        List<String> roles = getRoleList();
         return roles.size() == 1 && roles.get(0).equals(roleName.name());
     }
 }

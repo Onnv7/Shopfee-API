@@ -103,12 +103,11 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public void updateEmployeeForAdmin(UpdateEmployeeRequest body, String employeeId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
-        List<String> roleList = SecurityUtils.getRoleList();
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         BranchEntity branchEntity = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
-        if (SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
+        if (SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
             EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
@@ -153,7 +152,7 @@ public class EmployeeService implements IEmployeeService {
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + id));
 
-        if (SecurityUtils.isOnlyRole(roleList, Role.ROLE_MANAGER)) {
+        if (SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
             EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
