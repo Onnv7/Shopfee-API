@@ -376,26 +376,27 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            List<OrderItemEntity> orderItemEntityList = orderBill.getOrderItemList();
-            long discountValue = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
-            MoneyRewardUnit moneyRewardUnit = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit();
+            if(couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
+                List<OrderItemEntity> orderItemEntityList = orderBill.getOrderItemList();
+                long discountValue = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+                MoneyRewardUnit moneyRewardUnit = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit();
 
-            for(OrderItemEntity orderItemEntity : orderItemEntityList) {
-                int itemQuantity = orderItemEntity.getItemDetailList().stream().map(ItemDetailEntity::getQuantity)
-                        .reduce(0, Integer::sum);
-                String productIdCart = orderItemEntity.getProduct().getId();
-                if(productIdDiscountList.contains(productIdCart)) {
-                    if(moneyRewardUnit ==  MoneyRewardUnit.MONEY) {
-                        amountReduced += (itemQuantity * discountValue);
-                    } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
-                        List<ItemDetailEntity> itemDetailEntityList = orderItemEntity.getItemDetailList();
-                        for(ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
-                            amountReduced += itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
+                for(OrderItemEntity orderItemEntity : orderItemEntityList) {
+                    int itemQuantity = orderItemEntity.getItemDetailList().stream().map(ItemDetailEntity::getQuantity)
+                            .reduce(0, Integer::sum);
+                    String productIdCart = orderItemEntity.getProduct().getId();
+                    if(productIdDiscountList.contains(productIdCart)) {
+                        if(moneyRewardUnit ==  MoneyRewardUnit.MONEY) {
+                            amountReduced += (itemQuantity * discountValue);
+                        } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
+                            List<ItemDetailEntity> itemDetailEntityList = orderItemEntity.getItemDetailList();
+                            for(ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
+                                amountReduced += itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
+                            }
                         }
                     }
                 }
             }
-
         }
         orderBill.setCouponUsedList(couponUsedList);
         return amountReduced;
