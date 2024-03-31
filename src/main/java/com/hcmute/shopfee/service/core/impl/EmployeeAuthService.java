@@ -114,10 +114,12 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         String employeeId = SecurityUtils.getCurrentUserId();
         employeeTokenRedisService.deleteByEmployeeIdAndRefreshToken(employeeId, refreshToken);
 
-        EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
-                .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
-        fcmTokenEntity.setEmployee(null);
-        employeeFCMTokenRepository.save(fcmTokenEntity);
+        if(body.getFcmTokenId() != null) {
+            EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
+                    .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+            fcmTokenEntity.setEmployee(null);
+            employeeFCMTokenRepository.save(fcmTokenEntity);
+        }
     }
 
     @Override

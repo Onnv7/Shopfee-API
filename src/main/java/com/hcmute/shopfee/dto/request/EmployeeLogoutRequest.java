@@ -9,6 +9,6 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.OBJECT_ID_EX;
 @Data
 public class EmployeeLogoutRequest {
     @Schema(example = OBJECT_ID_EX)
-    @NotBlank
+//    @NotBlank
     private String fcmTokenId;
 }
