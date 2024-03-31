@@ -846,7 +846,7 @@ public class CouponService implements ICouponService {
     }
 
     @Override
-    public GetRewardOfCouponResponse getRewardOfCouponList(String couponId) {
+    public GetRewardOfCouponResponse getRewardOfCoupon(String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();

@@ -254,8 +254,8 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_REWARD_OF_COUPON_LIST_CART_SUM)
     @GetMapping(path = GET_COUPON_REWARD_OF_COUPON_LIST_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetRewardOfCouponResponse>> getRewardOfCouponList(@PathVariable(COUPON_ID) String couponId) {
-        GetRewardOfCouponResponse resData = couponService.getRewardOfCouponList(couponId);
+    public ResponseEntity<ResponseAPI<GetRewardOfCouponResponse>> getRewardOfCoupon(@PathVariable(COUPON_ID) String couponId) {
+        GetRewardOfCouponResponse resData = couponService.getRewardOfCoupon(couponId);
 
         ResponseAPI<GetRewardOfCouponResponse> res = ResponseAPI.<GetRewardOfCouponResponse>builder()
                 .timestamp(new Date())

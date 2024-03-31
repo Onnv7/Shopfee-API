@@ -2,8 +2,6 @@ package com.hcmute.shopfee.service.core;
 
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -25,5 +23,5 @@ public interface ICouponService {
     GetProductGiftCouponDetailByIdResponse getProductGiftCouponDetailById(String couponId);
     GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId);
     GetCouponListForCartResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
-    GetRewardOfCouponResponse getRewardOfCouponList(String couponId);
+    GetRewardOfCouponResponse getRewardOfCoupon(String couponId);
 }

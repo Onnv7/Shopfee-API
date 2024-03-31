@@ -195,9 +195,9 @@ public class OrderService implements IOrderService {
 
 
     private void getCantCombinedCouponTypeList(String orderCouponCode, CouponType typeChecking, List<CouponType> sampleNot) {
-        List<CouponType> sample = Arrays.asList(CouponType.PRODUCT, CouponType.ORDER, CouponType.SHIPPING);
+        List<CouponType> sampleList = Arrays.asList(CouponType.PRODUCT, CouponType.ORDER, CouponType.SHIPPING);
         List<CouponType> couponTypeCombinedList = combinationConditionRepository.getCombinationConditionByCouponCode(orderCouponCode);
-        sample.forEach(couponType -> {
+        sampleList.forEach(couponType -> {
             if (!couponTypeCombinedList.contains(couponType) && typeChecking != couponType && !sampleNot.contains(couponType)) {
                 sampleNot.add(couponType);
             }
@@ -353,19 +353,49 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(shippingCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            amountReduced += orderBill.getShippingFee();
-        }
-        if (productCouponCode != null) {
-            CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
-            couponUsed.setOrderBill(orderBill);
-            couponUsedList.add(couponUsed);
-            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
+            if(couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
                 if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
                     amountReduced += couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
-                    amountReduced += orderBill.getTotalItemPrice() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100;
+                    amountReduced += orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100;
                 }
             }
+        }
+        if (productCouponCode != null) {
+            CouponEntity couponEntity = couponRepository.findByCodeAndIsDeletedFalse(productCouponCode)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
+
+            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(it -> it.getType() == ConditionType.TARGET_OBJECT)
+                    .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon error"));
+            List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
+            List<String> productIdDiscountList = new ArrayList<>();
+            for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
+                productIdDiscountList.add(subjectConditionEntity.getObjectId());
+            }
+
+            CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
+            couponUsed.setOrderBill(orderBill);
+            couponUsedList.add(couponUsed);
+            List<OrderItemEntity> orderItemEntityList = orderBill.getOrderItemList();
+            long discountValue = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+            MoneyRewardUnit moneyRewardUnit = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit();
+
+            for(OrderItemEntity orderItemEntity : orderItemEntityList) {
+                int itemQuantity = orderItemEntity.getItemDetailList().stream().map(ItemDetailEntity::getQuantity)
+                        .reduce(0, Integer::sum);
+                String productIdCart = orderItemEntity.getProduct().getId();
+                if(productIdDiscountList.contains(productIdCart)) {
+                    if(moneyRewardUnit ==  MoneyRewardUnit.MONEY) {
+                        amountReduced += (itemQuantity * discountValue);
+                    } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
+                        List<ItemDetailEntity> itemDetailEntityList = orderItemEntity.getItemDetailList();
+                        for(ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
+                            amountReduced += itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
+                        }
+                    }
+                }
+            }
+
         }
         orderBill.setCouponUsedList(couponUsedList);
         return amountReduced;
