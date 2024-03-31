@@ -197,7 +197,7 @@ public class ProductService implements IProductService {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        if (key != null) {
+        if (!key.isBlank()) {
             Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, page, size);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();

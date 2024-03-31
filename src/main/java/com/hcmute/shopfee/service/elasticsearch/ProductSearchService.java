@@ -56,8 +56,8 @@ public class ProductSearchService {
 
     public Page<ProductIndex> searchVisibleProduct(String key, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        String textRegex = RegexUtils.generateFilterRegexString(key);
-        return productSearchRepository.searchVisibleProduct(key, textRegex, pageable);
+//        String textRegex = RegexUtils.generateFilterRegexString(key);
+        return productSearchRepository.searchVisibleProduct(key, pageable);
     }
 
     public Page<ProductIndex> searchProduct(String key, String categoryIdRegex, String productStatusRegex, int page, int size) {

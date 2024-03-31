@@ -107,8 +107,8 @@ public class ProductController {
     @Operation(summary = PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_VISIBLE_SUB_PATH)
     public ResponseEntity<ResponseAPI<GetAllVisibleProductResponse>> getAllProductsVisible(
-            @Parameter(name = "key", description = "Key is name or description or id", required = false, example = "name or description")
-            @RequestParam(name = "key", required = false) String key,
+            @Parameter(name = "key", description = "Key is name or description or id", required = false, example = "P0001")
+            @RequestParam(name = "key", required = false, defaultValue = "") String key,
 
             @Parameter(name = "min_price", required = false, example = "1")
             @RequestParam(name = "min_price", required = false) @Min(value = 1, message = "min_price must be greater than 0") Long minPrice,

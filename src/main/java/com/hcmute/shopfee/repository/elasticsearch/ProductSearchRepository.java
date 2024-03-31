@@ -10,25 +10,27 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductSearchRepository extends ElasticsearchRepository<ProductIndex, String> {
     @Query("""
-        {
-             "bool": {
-                "must": [
-                 { "match": { "isDeleted": false } }
-                ],
-               "must_not": [
-                 { "match": { "status": "HIDDEN" } }
-               ],
-               "should": [
-                 { "match": { "name": "?0 " } },
-                 { "match": { "description": "?0" } },
-                 { "regexp": { "id": "?1" } }
-               ],
-               "minimum_should_match": 1
-             }
-               
+    {
+        "bool":{
+            "must_not":[
+                { "match":{ "status":"HIDDEN" } }
+              ],
+            "must":[
+                {
+                    "multi_match":{
+                        "query":"?0",
+                        "fields":[
+                            "name",
+                            "description",
+                            "id"
+                        ]
+                    }
+                }
+            ]
         }
+    }
     """)
-    Page<ProductIndex> searchVisibleProduct(String key, String code, Pageable page);
+    Page<ProductIndex> searchVisibleProduct(String key, Pageable page);
 
     @Query("""
             {
@@ -36,8 +38,7 @@ public interface ProductSearchRepository extends ElasticsearchRepository<Product
                    "must": [
                         { "multi_match": { "query": "?0", "fields": ["name", "description", "id"] }},
                         { "regexp": { "categoryId": "?1" } },
-                        { "regexp": { "status": "?2" } },
-                        { "match": { "isDeleted": false } }
+                        { "regexp": { "status": "?2" } }
                    ]
                 }
             }
