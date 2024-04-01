@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.enums.MoneyRewardUnit;
@@ -13,6 +14,7 @@ import java.util.List;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class GetRewardOfCouponResponse {
     private List<ProductGift> productRewardList;
     private MoneyReward moneyReward;

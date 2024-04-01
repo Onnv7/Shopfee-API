@@ -30,12 +30,12 @@ public class GetCouponListForCartRequest {
     @NotNull
     private Long totalItemPrice;
 
-    @Schema(example = INTERACTION)
+    @Schema(example = COUPON_CODE_EX)
     private String shippingCouponCode;
 
-    @Schema(example = INTERACTION)
+    @Schema(example = COUPON_CODE_EX)
     private String orderCouponCode;
 
-    @Schema(example = INTERACTION)
+    @Schema(example = COUPON_CODE_EX)
     private String productCouponCode;
 }

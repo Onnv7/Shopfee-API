@@ -185,7 +185,7 @@ public class SwaggerConstant {
     public static final String COUPON_GET_PRODUCT_GIFT_BY_ID_SUM = "Get product gift coupon's details by id";
     public static final String COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM = "Get amount off product coupon's details by id";
     public static final String COUPON_GET_COUPON_LIST_CART_SUM = "Get coupon list and validate them";
-    public static final String COUPON_CHECK_LIST_IN_CART_SUM = "Check the validity of the coupons in the cart";
+    public static final String COUPON_CHECK_LIST_IN_CART_SUM = "Check the validity of the coupons in the cart and get reward of coupon";
     public static final String COUPON_GET_REWARD_OF_COUPON_LIST_CART_SUM = "Get reward information of a coupon by id";
 
 

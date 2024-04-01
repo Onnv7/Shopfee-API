@@ -861,7 +861,12 @@ public class CouponService implements ICouponService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
         couponResult.setCouponType(couponEntity.getCouponType());
 
+        CheckCouponInCartResponse.ViolatedCondition violatedCondition = new CheckCouponInCartResponse.ViolatedCondition();
+
         List<CouponConditionEntity> couponConditionEntityList = couponEntity.getConditionList();
+        List<String> productIdListInCart = new ArrayList<>();
+        List<String> subjectIdListInCart = new ArrayList<>();
+
         for (CouponConditionEntity conditionEntity : couponConditionEntityList) {
             ConditionType conditionType = conditionEntity.getType();
             if (conditionType == ConditionType.MIN_PURCHASE) {
@@ -870,7 +875,7 @@ public class CouponService implements ICouponService {
                     // invalid
                     couponResult.setValid(false);
                     CheckCouponInCartResponse.MinPurchaseCondition minPurchaseCondition = new CheckCouponInCartResponse.MinPurchaseCondition(minPurchaseValue);
-                    couponResult.setMinPurchaseCondition(minPurchaseCondition);
+                    violatedCondition.setMinPurchaseCondition(minPurchaseCondition);
                 }
             } else if (conditionType == ConditionType.USAGE) {
                 List<UsageConditionEntity> usageConditionEntityList = conditionEntity.getUsageConditionList();
@@ -892,11 +897,14 @@ public class CouponService implements ICouponService {
                         }
                     }
                 }
-                couponResult.setUsageConditionList(usageConditionList);
-            } else if (conditionType == ConditionType.TARGET_OBJECT) {
+                violatedCondition.setUsageConditionList(usageConditionList);
+            }
+            else if (conditionType == ConditionType.TARGET_OBJECT) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
 
                 List<CheckCouponInCartResponse.SubjectCondition> subjectConditionList = new ArrayList<>();
+                productIdListInCart = orderItemDtoList.stream().map(OrderItemDto::getProductId).toList();
+                subjectIdListInCart = subjectConditionEntityList.stream().map(SubjectConditionEntity::getObjectId).toList();
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
                     OrderItemDto item = orderItemDtoList.stream()
                             .filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId()))
@@ -924,25 +932,60 @@ public class CouponService implements ICouponService {
                         }
                     }
                 }
+                violatedCondition.setSubjectConditionList(subjectConditionList);
             }
+        }
+        if (couponResult.isValid()) {
+            CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
+            CheckCouponInCartResponse.Reward reward = new CheckCouponInCartResponse.Reward();
+
+            if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
+                reward.setMoneyReward(CheckCouponInCartResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
+            } else if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
+                reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponRewardEntity.getProductRewardList()));
+            }
+            if(couponEntity.getCouponType() == CouponType.PRODUCT) {
+                for(String subjectId: subjectIdListInCart) {
+                    if(productIdListInCart.contains(subjectId)) {
+                        ProductEntity productEntity = productRepository.findById(subjectId)
+                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectId));
+
+                        CheckCouponInCartResponse.SubjectInformation subjectInformation = new CheckCouponInCartResponse.SubjectInformation(subjectId, productEntity.getName());
+                        reward.setSubjectInformation(subjectInformation);
+                    }
+                }
+            }
+            couponResult.setReward(reward);
+        } else {
+            couponResult.setViolatedCondition(violatedCondition);
         }
         return couponResult;
     }
 
-    @Override
-    public GetRewardOfCouponResponse getRewardOfCoupon(String couponId) {
-        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
-        CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
-        GetRewardOfCouponResponse data = new GetRewardOfCouponResponse();
-        if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
-            List<ProductRewardEntity> productRewardEntityList = couponRewardEntity.getProductRewardList();
-            data.setProductRewardList(GetRewardOfCouponResponse.fromProductRewardEntityList(productRewardEntityList));
-        } else if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
-            data.setMoneyReward(GetRewardOfCouponResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
-        }
-        return data;
-    }
+//    @Override
+//    public GetRewardOfCouponResponse getRewardOfCoupon(String couponId) {
+//        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
+//                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+//        CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
+//
+//        GetRewardOfCouponResponse data = new GetRewardOfCouponResponse();
+//
+//        if (couponEntity.getCouponType() == CouponType.PRODUCT) {
+//            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.TARGET_OBJECT).findFirst().orElseThrow(
+//                    () -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon is not valid")
+//            );
+////            ProductEntity productEntity = productRepository.findById()
+////                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+//
+//        }
+//        if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
+//            List<ProductRewardEntity> productRewardEntityList = couponRewardEntity.getProductRewardList();
+//            data.setProductRewardList(GetRewardOfCouponResponse.fromProductRewardEntityList(productRewardEntityList));
+//        } else if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
+//            data.setMoneyReward(GetRewardOfCouponResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
+//        }
+//        return data;
+//    }
 
     private List<GetCouponListForCartResponse.CouponCard> checkCouponListForType(List<CouponEntity> couponEntityList, String userId,
                                                                                  GetCouponListForCartRequest body, List<CouponType> couponTypeListInCart, boolean canCombined,

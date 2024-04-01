@@ -24,5 +24,5 @@ public interface ICouponService {
     GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId);
     GetCouponListForCartResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
     List<CheckCouponInCartResponse> checkingCouponListInCart(GetCouponListForCartRequest body);
-    GetRewardOfCouponResponse getRewardOfCoupon(String couponId);
+//    GetRewardOfCouponResponse getRewardOfCoupon(String couponId);
 }
