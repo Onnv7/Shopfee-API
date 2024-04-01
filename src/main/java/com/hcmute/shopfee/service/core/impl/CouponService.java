@@ -669,37 +669,13 @@ public class CouponService implements ICouponService {
     }
 
     @Override
-    public List<GetReleaseCouponListResponse> getReleaseCouponList() {
+    public List<GetReleaseCouponListResponse> getReleaseCouponList(int quantity, CouponType type) {
         String userId = SecurityUtils.getCurrentUserId();
-
-        List<CouponEntity> couponEntityList = couponRepository.getReleaseCouponList();
         List<GetReleaseCouponListResponse> response = new ArrayList<>();
-        for (CouponEntity couponEntity : couponEntityList) {
-            GetReleaseCouponListResponse coupon = GetReleaseCouponListResponse.fromCouponEntity(couponEntity);
-            response.add(coupon);
-
-//            List<CouponConditionEntity> couponConditionEntityList = couponEntity.getConditionList();
-//            for (CouponConditionEntity conditionEntity : couponConditionEntityList) {
-//                ConditionType conditionType = conditionEntity.getType();
-//                if (conditionType == ConditionType.USAGE) {
-//                    List<UsageConditionEntity> usageConditionList = conditionEntity.getUsageConditionList();
-//                    for (UsageConditionEntity usageConditionEntity : usageConditionList) {
-//                        if (usageConditionEntity.getType() == UsageConditionType.QUANTITY) {
-//                            int usedQuantity = couponUsedRepository.getUsedCouponCount(couponEntity.getId());
-//                            if (usedQuantity > usageConditionEntity.getValue()) {
-//                                // error
-//                            }
-//                        } else {
-//                            if (couponUsedRepository.getCouponUsedByUserIdAndCode(userId, couponEntity.getCode()).isPresent()) {
-//                                // error
-//                            }
-//                        }
-//                    }
-//                }
-//                else if (conditionType == ConditionType.MIN_PURCHASE) {
-//                    if()
-//                }
-//            }
+        if(type == null) {
+            response = GetReleaseCouponListResponse.fromCouponEntityList( couponRepository.getReleaseCouponList(quantity));
+        } else {
+           response = GetReleaseCouponListResponse.fromCouponEntityList(couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, type));
         }
 
         return response;
@@ -782,9 +758,9 @@ public class CouponService implements ICouponService {
         data.setCanCombinedWithOrderCoupon(true);
         data.setCanCombinedWithShippingCoupon(true);
 
-        List<CouponEntity> shippingCouponList = couponRepository.findByStatusAndCouponType(CouponStatus.RELEASED, CouponType.SHIPPING);
-        List<CouponEntity> orderCouponList = couponRepository.findByStatusAndCouponType(CouponStatus.RELEASED, CouponType.ORDER);
-        List<CouponEntity> productCouponList = couponRepository.findByStatusAndCouponType(CouponStatus.RELEASED, CouponType.PRODUCT);
+        List<CouponEntity> shippingCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.SHIPPING);
+        List<CouponEntity> orderCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.ORDER);
+        List<CouponEntity> productCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.PRODUCT);
 
         CouponEntity shippingCoupon = null;
         CouponEntity orderCoupon = null;

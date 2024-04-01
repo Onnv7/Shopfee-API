@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core;
 
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.enums.CouponType;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface ICouponService {
     void createGiftProductCoupon(CreateBuyXGetYCouponRequest body);
     void updateGiftProductCoupon(UpdateBuyXGetYCouponRequest body, String couponId);
     void deleteCoupon(String couponId);
-    List<GetReleaseCouponListResponse> getReleaseCouponList();
+    List<GetReleaseCouponListResponse> getReleaseCouponList(int quantity, CouponType type);
     GetReleaseCouponByIdResponse getReleaseCouponById(String couponId);
     List<GetCouponListResponse> getCouponList();
     GetShippingCouponDetailsByIdResponse getShippingCouponDetailById(String couponId);

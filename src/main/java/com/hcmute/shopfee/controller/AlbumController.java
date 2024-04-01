@@ -32,7 +32,7 @@ public class AlbumController {
 
     @Operation(summary = ALBUM_UPLOAD_IMAGE_SUM)
     @PostMapping(path = POST_ALBUM_UPLOAD_IMAGE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseAPI<?>> addAddressToUserByUserId(@ModelAttribute @Valid UploadImageRequest body) {
+    public ResponseEntity<ResponseAPI<?>> uploadImage(@ModelAttribute @Valid UploadImageRequest body) {
         albumService.uploadImage(body);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

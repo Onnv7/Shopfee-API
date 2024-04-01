@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.enums.CouponType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.ICouponService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,8 +144,12 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_RELEASE_LIST_SUM)
     @GetMapping(path = GET_COUPON_RELEASE_LIST_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<GetReleaseCouponListResponse>>> getReleaseCouponList() {
-        List<GetReleaseCouponListResponse> resData = couponService.getReleaseCouponList();
+    public ResponseEntity<ResponseAPI<List<GetReleaseCouponListResponse>>> getReleaseCouponList(
+            @RequestParam(name = "quantity", required = false, defaultValue = "3") int quantity,
+            @RequestParam(name = "type", required = false) CouponType type
+
+    ) {
+        List<GetReleaseCouponListResponse> resData = couponService.getReleaseCouponList(quantity, type);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -277,6 +282,6 @@ public class CouponController {
 //                .message(SuccessConstant.GET)
 //                .build();
 //
-//        return new ResponseEntity<>(res, StatusCode.OK);
+//        return  new ResponseEntity<>(res, StatusCode.OK);
 //    }
 }

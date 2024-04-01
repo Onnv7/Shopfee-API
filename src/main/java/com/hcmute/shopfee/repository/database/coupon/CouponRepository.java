@@ -24,7 +24,8 @@ public interface CouponRepository extends JpaRepository<CouponEntity, String> {
             from coupon c
             where c.is_deleted = 0
             and c.status = 'RELEASED'
+            limit ?1
             """, nativeQuery = true)
-    List<CouponEntity> getReleaseCouponList();
-    List<CouponEntity> findByStatusAndCouponType(CouponStatus status, CouponType couponType);
+    List<CouponEntity> getReleaseCouponList(int limit);
+    List<CouponEntity> findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus status, CouponType couponType);
 }
