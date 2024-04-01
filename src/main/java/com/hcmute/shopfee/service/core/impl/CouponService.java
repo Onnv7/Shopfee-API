@@ -978,7 +978,7 @@ public class CouponService implements ICouponService {
 
             // neu la coupon dang duoc chon => bo qua
             if (couponSelected != null && couponSelected.getCode().equals(coupon.getCode())) {
-//                couponCard.setMinPurchaseCondition(null);
+                couponCard.setMinPurchaseCondition(null);
                 couponCardList.add(couponCard);
                 continue;
             }
