@@ -5,11 +5,14 @@ import com.hcmute.shopfee.dto.common.coupon.condition.CombinationConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.MinPurchaseConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.SubjectConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
+import com.hcmute.shopfee.dto.common.coupon.reward.ProductRewardDto;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +29,7 @@ public class GetProductGiftCouponDetailByIdResponse {
     private CouponStatus status;
     private Date startDate;
     private Date expirationDate;
+    private List<ProductRewardDto> productRewardList;
 
     public static GetProductGiftCouponDetailByIdResponse fromCouponEntity(CouponEntity entity) {
         GetProductGiftCouponDetailByIdResponse data = new GetProductGiftCouponDetailByIdResponse();
@@ -35,6 +39,15 @@ public class GetProductGiftCouponDetailByIdResponse {
         data.setStatus(entity.getStatus());
         data.setStartDate(entity.getStartDate());
         data.setExpirationDate(entity.getExpirationDate());
+        List<ProductRewardDto> productRewardList;
+        List<ProductRewardEntity> productRewardEntityList = entity.getCouponReward().getProductRewardList();
+        if(productRewardEntityList != null) {
+            productRewardList = new ArrayList<>();
+            for (ProductRewardEntity productRewardEntity: productRewardEntityList) {
+                productRewardList.add(ProductRewardDto.fromProductRewardEntity(productRewardEntity));
+            }
+            data.setProductRewardList(productRewardList);
+        }
 
         List<CouponConditionEntity>  conditionEntityList = entity.getConditionList();
         for (CouponConditionEntity condition: conditionEntityList) {
