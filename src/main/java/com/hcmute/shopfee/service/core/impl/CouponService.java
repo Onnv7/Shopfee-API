@@ -398,7 +398,7 @@ public class CouponService implements ICouponService {
         // Target Object
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity targetObject = new CouponConditionEntity();
-            targetObject.setType(ConditionType.TARGET_OBJECT);
+            targetObject.setType(ConditionType.SUBJECT_TYPE);
             targetObject.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
@@ -478,7 +478,7 @@ public class CouponService implements ICouponService {
         // Target Object
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity targetObject = new CouponConditionEntity();
-            targetObject.setType(ConditionType.TARGET_OBJECT);
+            targetObject.setType(ConditionType.SUBJECT_TYPE);
             targetObject.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
@@ -560,7 +560,7 @@ public class CouponService implements ICouponService {
         // Subject condition
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity subjectCondition = new CouponConditionEntity();
-            subjectCondition.setType(ConditionType.TARGET_OBJECT);
+            subjectCondition.setType(ConditionType.SUBJECT_TYPE);
             subjectCondition.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
@@ -643,7 +643,7 @@ public class CouponService implements ICouponService {
         // Subject condition
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity subjectCondition = new CouponConditionEntity();
-            subjectCondition.setType(ConditionType.TARGET_OBJECT);
+            subjectCondition.setType(ConditionType.SUBJECT_TYPE);
             subjectCondition.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
@@ -694,7 +694,7 @@ public class CouponService implements ICouponService {
             if (conditionEntity.getType() == ConditionType.USAGE) {
                 List<UsageConditionEntity> usageConditionEntityList = conditionEntity.getUsageConditionList();
                 conditionDto.setUsageConditionList(UsageConditionDto.fromUsageConditionEntityList(usageConditionEntityList));
-            } else if (conditionEntity.getType() == ConditionType.TARGET_OBJECT) {
+            } else if (conditionEntity.getType() == ConditionType.SUBJECT_TYPE) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
                 conditionDto.setSubjectConditionList(SubjectConditionDto.fromSubjectConditionEntityList(subjectConditionEntityList));
             } else if (conditionEntity.getType() == ConditionType.COMBINATION) {
@@ -875,7 +875,7 @@ public class CouponService implements ICouponService {
                 }
                 violatedCondition.setUsageConditionList(usageConditionList);
             }
-            else if (conditionType == ConditionType.TARGET_OBJECT) {
+            else if (conditionType == ConditionType.SUBJECT_TYPE) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
 
                 List<CheckCouponInCartResponse.SubjectCondition> subjectConditionList = new ArrayList<>();
@@ -947,7 +947,7 @@ public class CouponService implements ICouponService {
 //        GetRewardOfCouponResponse data = new GetRewardOfCouponResponse();
 //
 //        if (couponEntity.getCouponType() == CouponType.PRODUCT) {
-//            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.TARGET_OBJECT).findFirst().orElseThrow(
+//            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT_TYPE).findFirst().orElseThrow(
 //                    () -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon is not valid")
 //            );
 ////            ProductEntity productEntity = productRepository.findById()
@@ -1016,8 +1016,8 @@ public class CouponService implements ICouponService {
                         couponCard.setMinPurchaseCondition(null);
                     }
                 }
-                // check TARGET_OBJECT
-                else if (condition.getType() == ConditionType.TARGET_OBJECT) {
+                // check SUBJECT_TYPE
+                else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
                     List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
 
                     for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {

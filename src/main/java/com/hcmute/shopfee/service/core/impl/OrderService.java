@@ -236,7 +236,7 @@ public class OrderService implements IOrderService {
                         }
                     }
                 }
-            } else if (condition.getType() == ConditionType.TARGET_OBJECT) {
+            } else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
 
                 List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
@@ -261,23 +261,19 @@ public class OrderService implements IOrderService {
 
     public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
         String userId = SecurityUtils.getCurrentUserId();
-        List<String> couponCodeList = new ArrayList<>();
         List<CouponType> cantCombinedCouponTypeList = new ArrayList<>();
         List<CouponType> couponTypeUsingList = new ArrayList<>();
         if (orderCouponCode != null) {
-            couponCodeList.add(orderCouponCode);
             couponTypeUsingList.add(CouponType.ORDER);
             getCantCombinedCouponTypeList(orderCouponCode, CouponType.ORDER, cantCombinedCouponTypeList);
             validateCoupon(orderCouponCode, itemList, totalItemPrice, userId);
         }
         if (shippingCouponCode != null) {
-            couponCodeList.add(shippingCouponCode);
             couponTypeUsingList.add(CouponType.SHIPPING);
             getCantCombinedCouponTypeList(shippingCouponCode, CouponType.SHIPPING, cantCombinedCouponTypeList);
             validateCoupon(shippingCouponCode, itemList, totalItemPrice, userId);
         }
         if (productCouponCode != null) {
-            couponCodeList.add(productCouponCode);
             couponTypeUsingList.add(CouponType.PRODUCT);
             validateCoupon(productCouponCode, itemList, totalItemPrice, userId);
             getCantCombinedCouponTypeList(productCouponCode, CouponType.PRODUCT, cantCombinedCouponTypeList);
@@ -353,9 +349,12 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(shippingCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            if(couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
+            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
                 if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
-                    amountReduced += couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+                    long shippingFeeDiscount = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+                    amountReduced += orderBill.getShippingFee() <= shippingFeeDiscount ? orderBill.getShippingFee() : shippingFeeDiscount;
+
+
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
                     amountReduced += orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100;
                 }
@@ -365,7 +364,7 @@ public class OrderService implements IOrderService {
             CouponEntity couponEntity = couponRepository.findByCodeAndIsDeletedFalse(productCouponCode)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
 
-            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(it -> it.getType() == ConditionType.TARGET_OBJECT)
+            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(it -> it.getType() == ConditionType.SUBJECT_TYPE)
                     .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon error"));
             List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
             List<String> productIdDiscountList = new ArrayList<>();
@@ -376,21 +375,21 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            if(couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
+            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
                 List<OrderItemEntity> orderItemEntityList = orderBill.getOrderItemList();
                 long discountValue = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
                 MoneyRewardUnit moneyRewardUnit = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit();
 
-                for(OrderItemEntity orderItemEntity : orderItemEntityList) {
+                for (OrderItemEntity orderItemEntity : orderItemEntityList) {
                     int itemQuantity = orderItemEntity.getItemDetailList().stream().map(ItemDetailEntity::getQuantity)
                             .reduce(0, Integer::sum);
                     String productIdCart = orderItemEntity.getProduct().getId();
-                    if(productIdDiscountList.contains(productIdCart)) {
-                        if(moneyRewardUnit ==  MoneyRewardUnit.MONEY) {
+                    if (productIdDiscountList.contains(productIdCart)) {
+                        if (moneyRewardUnit == MoneyRewardUnit.MONEY) {
                             amountReduced += (itemQuantity * discountValue);
                         } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
                             List<ItemDetailEntity> itemDetailEntityList = orderItemEntity.getItemDetailList();
-                            for(ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
+                            for (ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
                                 amountReduced += itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
                             }
                         }
@@ -414,7 +413,7 @@ public class OrderService implements IOrderService {
         }
 
 
-        long totalPrice = 0L;
+        long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
         if (body.getCoin() == null) {
@@ -429,7 +428,8 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.SHIPPING);
 
-        totalPrice = calculateOrderBill(body.getItemList(), orderBill);
+        long totalItemPrice = calculateOrderBill(body.getItemList(), orderBill);
+        totalPayment += totalItemPrice;
 
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
@@ -457,29 +457,30 @@ public class OrderService implements IOrderService {
 
         // set tổng hóa đơn và phí ship
         orderBill.setShippingFee(body.getShippingFee());
-        orderBill.setTotalItemPrice(totalPrice);
+        orderBill.setTotalItemPrice(totalItemPrice);
 
-        // tính phí vận chuyển
-        totalPrice += body.getShippingFee();
 
         // xử lý coupon
-        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
+        validateCouponForOrder(totalPayment, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
-        totalPrice -= amountReduced;
+        totalPayment -= amountReduced;
+
+        // tính phí vận chuyển
+        totalPayment += body.getShippingFee();
 
         CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                 .actor(ActorType.USER)
                 .user(user)
                 .build();
 
-        if (totalPrice <= deductCoin && deductCoin != 0) {
-            coinHistory.setCoin(-totalPrice);
-            orderBill.setCoin(totalPrice);
-            totalPrice = 0;
+        if (totalPayment <= deductCoin && deductCoin != 0) {
+            coinHistory.setCoin(-totalPayment);
+            orderBill.setCoin(totalPayment);
+            totalPayment = 0;
         } else if (deductCoin != 0) {
             coinHistory.setCoin(-deductCoin);
-            totalPrice -= deductCoin;
+            totalPayment -= deductCoin;
             orderBill.setCoin(deductCoin);
         }
 
@@ -487,10 +488,10 @@ public class OrderService implements IOrderService {
         user.setCoin(user.getCoin() - orderBill.getCoin());
         userRepository.save(user);
 
-        if (totalPrice != body.getTotal()) {
+        if (totalPayment != body.getTotal()) {
             throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
-        orderBill.setTotalPayment(totalPrice);
+        orderBill.setTotalPayment(totalPayment);
         orderBill = orderBillRepository.save(orderBill);
 
         // save coin history
@@ -514,7 +515,7 @@ public class OrderService implements IOrderService {
                 .transactionId(transaction.getId())
                 .build();
         // set schedule for payment
-        if (transaction.getPaymentUrl() != null && totalPrice > 0) {
+        if (transaction.getPaymentUrl() != null && totalPayment > 0) {
             resData.setPaymentUrl(transaction.getPaymentUrl());
             Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
@@ -552,7 +553,7 @@ public class OrderService implements IOrderService {
             throw new CustomException(ErrorConstant.VNP_ERROR, ErrorConstant.VNPAY_MONEY_INVALID, "vnpay does not support bill payments under 10,000đ");
         }
 
-        long totalPrice = 0L;
+        long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
@@ -566,28 +567,29 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.ONSITE);
 
-        totalPrice = calculateOrderBill(body.getItemList(), orderBill);
-        orderBill.setTotalItemPrice(totalPrice);
+        long totalPriceItem = calculateOrderBill(body.getItemList(), orderBill);
+        totalPayment += totalPriceItem;
+        orderBill.setTotalItemPrice(totalPriceItem);
 
-//        validateCouponForOrder(totalPrice, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
+        validateCouponForOrder(totalPayment, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), null, body.getProductCouponCode());
 
-        totalPrice -= amountReduced;
+        totalPayment -= amountReduced;
 
         CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                 .actor(ActorType.USER)
                 .user(user)
                 .build();
 
-        if (totalPrice <= deductCoin && deductCoin != 0) {
-            orderBill.setCoin(-totalPrice);
-            totalPrice = 0;
-            coinHistory.setCoin(totalPrice);
+        if (totalPayment <= deductCoin && deductCoin != 0) {
+            orderBill.setCoin(-totalPayment);
+            totalPayment = 0;
+            coinHistory.setCoin(totalPayment);
 
             coinHistoryRepository.save(coinHistory);
         } else if (deductCoin != 0) {
             orderBill.setCoin(-deductCoin);
-            totalPrice -= body.getCoin();
+            totalPayment -= body.getCoin();
             orderBill.setCoin(body.getCoin());
         }
 
@@ -595,12 +597,12 @@ public class OrderService implements IOrderService {
         user.setCoin(user.getCoin() - orderBill.getCoin());
         userRepository.save(user);
 
-        if (totalPrice != body.getTotal()) {
+        if (totalPayment != body.getTotal()) {
             throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
 
         // set total payment
-        orderBill.setTotalPayment(totalPrice);
+        orderBill.setTotalPayment(totalPayment);
         orderBill = orderBillRepository.save(orderBill);
 
         // save coin history
@@ -654,7 +656,7 @@ public class OrderService implements IOrderService {
 
 
         // set schedule for payment
-        if (transaction.getPaymentUrl() != null && totalPrice > 0) {
+        if (transaction.getPaymentUrl() != null && totalPayment > 0) {
             resData.setPaymentUrl(transaction.getPaymentUrl());
             Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
@@ -1054,7 +1056,7 @@ public class OrderService implements IOrderService {
     public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderBillId));
-        if(orderBill.getRequestCancellation() != null) {
+        if (orderBill.getRequestCancellation() != null) {
             GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
             data.setReason(orderBill.getRequestCancellation().getReason());
             return data;
