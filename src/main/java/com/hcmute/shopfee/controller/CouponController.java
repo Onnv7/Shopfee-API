@@ -245,10 +245,10 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_COUPON_LIST_CART_SUM)
     @PostMapping(path = POST_COUPON_GET_VALIDATE_COUPON_LIST_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetCouponListForCartResponse>> getCouponListForCartResponse(@RequestBody @Valid GetCouponListForCartRequest body) {
-        GetCouponListForCartResponse resData = couponService.getCouponListForCartResponse(body);
+    public ResponseEntity<ResponseAPI<GetCouponOptionsResponse>> getCouponListForCartResponse(@RequestBody @Valid GetCouponListForCartRequest body) {
+        GetCouponOptionsResponse resData = couponService.getCouponListForCartResponse(body);
 
-        ResponseAPI<GetCouponListForCartResponse> res = ResponseAPI.<GetCouponListForCartResponse>builder()
+        ResponseAPI<GetCouponOptionsResponse> res = ResponseAPI.<GetCouponOptionsResponse>builder()
                 .timestamp(new Date())
                 .data(resData)
                 .message(SuccessConstant.GET)
@@ -259,8 +259,8 @@ public class CouponController {
 
     @Operation(summary = COUPON_CHECK_LIST_IN_CART_SUM)
     @PostMapping(path = POST_COUPON_CHECK_LIST_IN_CART_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<CheckCouponInCartResponse>>> checkingCouponListInCart(@RequestBody @Valid GetCouponListForCartRequest body) {
-        List<CheckCouponInCartResponse> resData = couponService.checkingCouponListInCart(body);
+    public ResponseEntity<ResponseAPI<List<CheckCouponInCartResponse>>> checkCouponListInCart(@RequestBody @Valid GetCouponListForCartRequest body) {
+        List<CheckCouponInCartResponse> resData = couponService.validateCouponAndItemInCart(body);
 
         ResponseAPI<List<CheckCouponInCartResponse>> res = ResponseAPI.<List<CheckCouponInCartResponse>>builder()
                 .timestamp(new Date())
@@ -271,17 +271,4 @@ public class CouponController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-//    @Operation(summary = COUPON_GET_REWARD_OF_COUPON_LIST_CART_SUM)
-//    @GetMapping(path = GET_COUPON_REWARD_OF_COUPON_LIST_SUB_PATH)
-//    public ResponseEntity<ResponseAPI<GetRewardOfCouponResponse>> getRewardOfCoupon(@PathVariable(COUPON_ID) String couponId) {
-//        GetRewardOfCouponResponse resData = couponService.getRewardOfCoupon(couponId);
-//
-//        ResponseAPI<GetRewardOfCouponResponse> res = ResponseAPI.<GetRewardOfCouponResponse>builder()
-//                .timestamp(new Date())
-//                .data(resData)
-//                .message(SuccessConstant.GET)
-//                .build();
-//
-//        return  new ResponseEntity<>(res, StatusCode.OK);
-//    }
 }

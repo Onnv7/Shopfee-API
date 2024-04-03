@@ -35,6 +35,9 @@ public class ItemDetailEntity {
     @Column(name = "price", nullable = false)
     private Long price;
 
+    @Column(name = "discount_money")
+    private Long discountMoney;
+
     @Column(name = "note")
     private String note;
 

@@ -28,7 +28,6 @@ public class CheckCouponInCartResponse {
     public static class Reward {
         private List<CheckCouponInCartResponse.ProductGift> productRewardList;
         private CheckCouponInCartResponse.MoneyReward moneyReward;
-
         private SubjectInformation subjectInformation;
     }
 

@@ -672,10 +672,10 @@ public class CouponService implements ICouponService {
     public List<GetReleaseCouponListResponse> getReleaseCouponList(int quantity, CouponType type) {
         String userId = SecurityUtils.getCurrentUserId();
         List<GetReleaseCouponListResponse> response = new ArrayList<>();
-        if(type == null) {
-            response = GetReleaseCouponListResponse.fromCouponEntityList( couponRepository.getReleaseCouponList(quantity));
+        if (type == null) {
+            response = GetReleaseCouponListResponse.fromCouponEntityList(couponRepository.getReleaseCouponList(quantity));
         } else {
-           response = GetReleaseCouponListResponse.fromCouponEntityList(couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, type));
+            response = GetReleaseCouponListResponse.fromCouponEntityList(couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, type));
         }
 
         return response;
@@ -750,88 +750,184 @@ public class CouponService implements ICouponService {
     }
 
     @Override
-    public GetCouponListForCartResponse getCouponListForCartResponse(GetCouponListForCartRequest body) {
+    public GetCouponOptionsResponse getCouponListForCartResponse(GetCouponListForCartRequest body) {
         String userId = SecurityUtils.getCurrentUserId();
-        GetCouponListForCartResponse data = new GetCouponListForCartResponse();
-
-        data.setCanCombinedWithProductCoupon(true);
-        data.setCanCombinedWithOrderCoupon(true);
-        data.setCanCombinedWithShippingCoupon(true);
-
-        List<CouponEntity> shippingCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.SHIPPING);
-        List<CouponEntity> orderCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.ORDER);
-        List<CouponEntity> productCouponList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, CouponType.PRODUCT);
-
-        CouponEntity shippingCoupon = null;
-        CouponEntity orderCoupon = null;
-        CouponEntity productCoupon = null;
+        GetCouponOptionsResponse data = new GetCouponOptionsResponse();
 
         List<CouponType> couponTypeList = new ArrayList<>();
-        List<CouponType> cantCombinedCouponList = Arrays.asList(CouponType.PRODUCT, CouponType.ORDER, CouponType.SHIPPING);
+
         if (body.getShippingCouponCode() != null) {
             couponTypeList.add(CouponType.SHIPPING);
-            shippingCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getShippingCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getShippingCouponCode()));
-            List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getShippingCouponCode());
-            if (!couponTypeCombinedListOfCoupon.contains(CouponType.ORDER)) {
-                data.setCanCombinedWithOrderCoupon(false);
-            } else if (!couponTypeCombinedListOfCoupon.contains(CouponType.PRODUCT)) {
-                data.setCanCombinedWithProductCoupon(false);
-            }
+            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getShippingCouponCode());
+            data.setNoShippingWithCoupon(resultList);
         }
 
         if (body.getOrderCouponCode() != null) {
             couponTypeList.add(CouponType.ORDER);
-            orderCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getOrderCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getOrderCouponCode()));
-            List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getOrderCouponCode());
-            if (!couponTypeCombinedListOfCoupon.contains(CouponType.SHIPPING)) {
-                data.setCanCombinedWithShippingCoupon(false);
-            } else if (!couponTypeCombinedListOfCoupon.contains(CouponType.PRODUCT)) {
-                data.setCanCombinedWithProductCoupon(false);
-            }
+            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getOrderCouponCode());
+            data.setNoShippingWithCoupon(resultList);
         }
         if (body.getProductCouponCode() != null) {
             couponTypeList.add(CouponType.PRODUCT);
-            productCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(body.getProductCouponCode(), CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + body.getProductCouponCode()));
-            List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionByCouponCode(body.getProductCouponCode());
-            if (!couponTypeCombinedListOfCoupon.contains(CouponType.SHIPPING)) {
-                data.setCanCombinedWithShippingCoupon(false);
-            } else if (!couponTypeCombinedListOfCoupon.contains(CouponType.ORDER)) {
-                data.setCanCombinedWithOrderCoupon(false);
-            }
+            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getProductCouponCode());
+            data.setNoShippingWithCoupon(resultList);
         }
 
 
-        List<GetCouponListForCartResponse.CouponCard> shippingCouponCard = checkCouponListForType(shippingCouponList, userId, body, couponTypeList, data.isCanCombinedWithShippingCoupon(), shippingCoupon);
+        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, data.getNoShippingWithCoupon() != null, body.getShippingCouponCode());
         data.setShippingCouponList(shippingCouponCard);
-        List<GetCouponListForCartResponse.CouponCard> orderCouponCard = checkCouponListForType(orderCouponList, userId, body, couponTypeList, data.isCanCombinedWithOrderCoupon(), orderCoupon);
+        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList, data.getNoOrderWithCoupon() != null, body.getOrderCouponCode());
         data.setOrderCouponList(orderCouponCard);
-        List<GetCouponListForCartResponse.CouponCard> productCouponCard = checkCouponListForType(productCouponList, userId, body, couponTypeList, data.isCanCombinedWithProductCoupon(), productCoupon);
+        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList, data.getNoProductWithCoupon() != null, body.getProductCouponCode());
         data.setProductCouponList(productCouponCard);
 
         return data;
     }
 
-    @Override
-    public List<CheckCouponInCartResponse> checkingCouponListInCart(GetCouponListForCartRequest body) {
-        List<CheckCouponInCartResponse> data = new ArrayList<>();
-        String userId = SecurityUtils.getCurrentUserId();
-        List<OrderItemDto> orderItemDtoList = body.getOrderItemList();
-        if (body.getOrderCouponCode() != null) {
-            data.add(checkCouponWithCodeAndOrderItemCart(body.getOrderCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+    private List<GetCouponOptionsResponse.CouponCard> checkAndGetCouponCardOptionsByType(
+            CouponType couponType, String userId, GetCouponListForCartRequest body,
+            List<CouponType> couponTypeListInCart, boolean canCombined, String couponCode) {
+        List<GetCouponOptionsResponse.CouponCard> couponCardList = new ArrayList<>();
+        List<CouponEntity> couponEntityList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, couponType);
+        for (CouponEntity coupon : couponEntityList) {
+            GetCouponOptionsResponse.CouponCard couponCard = new GetCouponOptionsResponse.CouponCard();
+            couponCard.setCouponId(coupon.getId());
+            couponCard.setCode(coupon.getCode());
+            couponCard.setValid(true);
+            couponCard.setDescription(coupon.getDescription());
+            couponCard.setExpirationDate(coupon.getExpirationDate());
+
+            // neu la coupon dang duoc chon => bo qua
+            if (couponCode != null && couponCode.equals(coupon.getCode())) {
+                couponCard.setMinPurchaseCondition(null);
+                couponCardList.add(couponCard);
+                continue;
+            }
+            List<CouponConditionEntity> conditionList = coupon.getConditionList();
+            if (!canCombined) {
+                couponCard.setValid(false);
+            } else {
+                for (CouponConditionEntity condition : conditionList) {
+                    // check USAGE
+                    if (condition.getType() == ConditionType.USAGE) {
+                        List<UsageConditionEntity> usageConditionList = condition.getUsageConditionList();
+                        List<GetCouponOptionsResponse.UsageCondition> usageConditionDataList = new ArrayList<>();
+                        for (UsageConditionEntity usageCondition : usageConditionList) {
+                            if (usageCondition.getType() == UsageConditionType.QUANTITY) {
+                                int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
+                                if (usedCount >= usageCondition.getValue()) {
+                                    // invalid
+                                    usageConditionDataList.add(new GetCouponOptionsResponse.UsageCondition(usageCondition.getType(), 0));
+                                    couponCard.setValid(false);
+                                }
+                            } else if (usageCondition.getType() == UsageConditionType.LIMIT_ONE_FOR_USER) {
+                                CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId()).orElse(null);
+                                if (couponUsed != null) {
+                                    usageConditionDataList.add(new GetCouponOptionsResponse.UsageCondition(usageCondition.getType(), null));
+                                    couponCard.setValid(false);
+                                }
+                            }
+                        }
+                        couponCard.setUsageConditionList(usageConditionDataList);
+                    }
+                    // check MIN_PURCHASE
+                    else if (condition.getType() == ConditionType.MIN_PURCHASE) {
+                        MinPurchaseConditionEntity minPurchaseCondition = condition.getMinPurchaseCondition();
+                        GetCouponOptionsResponse.MinPurchaseCondition minPurchaseConditionData = new GetCouponOptionsResponse.MinPurchaseCondition();
+                        if (body.getTotalItemPrice() < minPurchaseCondition.getValue()) {
+                            // invalid
+                            minPurchaseConditionData.setValue(minPurchaseCondition.getValue());
+                            couponCard.setValid(false);
+                        } else {
+                            couponCard.setMinPurchaseCondition(null);
+                        }
+                        couponCard.setMinPurchaseCondition(minPurchaseConditionData);
+                    }
+                    // check SUBJECT_TYPE
+                    else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
+                        List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
+                        List<GetCouponOptionsResponse.SubjectCondition> subjectConditionDataList = new ArrayList<>();
+                        for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
+                            OrderItemDto item = body.getOrderItemList().stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
+                            if (item == null) {
+                                // invalid
+                                ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
+                                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
+                                couponCard.setValid(false);
+                            } else {
+                                int count = 0;
+                                for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
+                                    count += itemDetailDto.getQuantity();
+                                }
+                                if (count < subjectConditionEntity.getValue()) {
+                                    // invalid
+                                    ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
+                                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                    subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
+                                    couponCard.setValid(false);
+                                }
+                            }
+                        }
+                        couponCard.setSubjectConditionList(subjectConditionDataList);
+                    }
+                    // check COMBINATION
+                    else if (condition.getType() == ConditionType.COMBINATION) {
+                        List<CouponType> combinationList = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
+                        List<GetCouponOptionsResponse.CombinationCondition> combinationConditionDataList = new ArrayList<>();
+                        // check combination xem 1 coupon trong list không thể combination với coupon nào trong cart
+                        for (CouponType couponTypeInCart : couponTypeListInCart) {
+                            // neu cac coupon list khong chua loai couponType trong cart => khong the combine tu list -> cart
+                            if (!combinationList.contains(couponTypeInCart) && coupon.getCouponType() != couponTypeInCart) {
+                                // invalid
+                                combinationConditionDataList.add(new GetCouponOptionsResponse.CombinationCondition(couponTypeInCart));
+                                couponCard.setValid(false);
+                            }
+                        }
+                        couponCard.setCombinationConditionList(combinationConditionDataList);
+                    }
+                }
+            }
+            couponCardList.add(couponCard);
         }
-        if (body.getProductCouponCode() != null) {
-            data.add(checkCouponWithCodeAndOrderItemCart(body.getProductCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
-        }
-        if (body.getShippingCouponCode() != null) {
-            data.add(checkCouponWithCodeAndOrderItemCart(body.getShippingCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+        return couponCardList;
+    }
+    private List<CouponType> checkAndGetNoCouponTypeCombineList(String couponCode) {
+        List<CouponType> couponTypeList = Arrays.asList(CouponType.SHIPPING, CouponType.PRODUCT, CouponType.ORDER);
+        List<CouponType> data = new ArrayList<>();
+        if (couponCode != null) {
+            CouponEntity shippingCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
+
+            List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
+
+            for (CouponType couponType : couponTypeList) {
+                if (!couponTypeCombinedListOfCoupon.contains(couponType) && couponType != shippingCoupon.getCouponType()) {
+                    data.add(couponType);
+                }
+            }
         }
         return data;
     }
 
-    private CheckCouponInCartResponse checkCouponWithCodeAndOrderItemCart(String couponCode, long totalPayment, String userId, List<OrderItemDto> orderItemDtoList) {
+    @Override
+    public List<CheckCouponInCartResponse> validateCouponAndItemInCart(GetCouponListForCartRequest body) {
+        List<CheckCouponInCartResponse> data = new ArrayList<>();
+        String userId = SecurityUtils.getCurrentUserId();
+        List<OrderItemDto> orderItemDtoList = body.getOrderItemList();
+        if (body.getOrderCouponCode() != null) {
+            data.add(checkCouponCodeWithOrderItemCart(body.getOrderCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+        }
+        if (body.getProductCouponCode() != null) {
+            data.add(checkCouponCodeWithOrderItemCart(body.getProductCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+        }
+        if (body.getShippingCouponCode() != null) {
+            data.add(checkCouponCodeWithOrderItemCart(body.getShippingCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+        }
+        return data;
+    }
+
+    private CheckCouponInCartResponse checkCouponCodeWithOrderItemCart(String couponCode, long totalPayment, String userId, List<OrderItemDto> orderItemDtoList) {
         CheckCouponInCartResponse couponResult = new CheckCouponInCartResponse();
         CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
@@ -874,8 +970,7 @@ public class CouponService implements ICouponService {
                     }
                 }
                 violatedCondition.setUsageConditionList(usageConditionList);
-            }
-            else if (conditionType == ConditionType.SUBJECT_TYPE) {
+            } else if (conditionType == ConditionType.SUBJECT_TYPE) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
 
                 List<CheckCouponInCartResponse.SubjectCondition> subjectConditionList = new ArrayList<>();
@@ -891,7 +986,6 @@ public class CouponService implements ICouponService {
                     // trong cart khong co product item thoa man
                     if (item == null) {
                         // invalid
-
                         couponResult.setValid(false);
                         subjectConditionList.add(new CheckCouponInCartResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                     }
@@ -920,9 +1014,9 @@ public class CouponService implements ICouponService {
             } else if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
                 reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponRewardEntity.getProductRewardList()));
             }
-            if(couponEntity.getCouponType() == CouponType.PRODUCT) {
-                for(String subjectId: subjectIdListInCart) {
-                    if(productIdListInCart.contains(subjectId)) {
+            if (couponEntity.getCouponType() == CouponType.PRODUCT) {
+                for (String subjectId : subjectIdListInCart) {
+                    if (productIdListInCart.contains(subjectId)) {
                         ProductEntity productEntity = productRepository.findById(subjectId)
                                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectId));
 
@@ -938,141 +1032,4 @@ public class CouponService implements ICouponService {
         return couponResult;
     }
 
-//    @Override
-//    public GetRewardOfCouponResponse getRewardOfCoupon(String couponId) {
-//        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-//                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
-//        CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
-//
-//        GetRewardOfCouponResponse data = new GetRewardOfCouponResponse();
-//
-//        if (couponEntity.getCouponType() == CouponType.PRODUCT) {
-//            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT_TYPE).findFirst().orElseThrow(
-//                    () -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon is not valid")
-//            );
-////            ProductEntity productEntity = productRepository.findById()
-////                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
-//
-//        }
-//        if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
-//            List<ProductRewardEntity> productRewardEntityList = couponRewardEntity.getProductRewardList();
-//            data.setProductRewardList(GetRewardOfCouponResponse.fromProductRewardEntityList(productRewardEntityList));
-//        } else if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
-//            data.setMoneyReward(GetRewardOfCouponResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
-//        }
-//        return data;
-//    }
-
-    private List<GetCouponListForCartResponse.CouponCard> checkCouponListForType(List<CouponEntity> couponEntityList, String userId,
-                                                                                 GetCouponListForCartRequest body, List<CouponType> couponTypeListInCart, boolean canCombined,
-                                                                                 CouponEntity couponSelected) {
-        List<GetCouponListForCartResponse.CouponCard> couponCardList = new ArrayList<>();
-
-        for (CouponEntity coupon : couponEntityList) {
-            GetCouponListForCartResponse.CouponCard couponCard = new GetCouponListForCartResponse.CouponCard();
-            couponCard.setCouponId(coupon.getId());
-            couponCard.setCode(coupon.getCode());
-            couponCard.setValid(true);
-            couponCard.setDescription(coupon.getDescription());
-            couponCard.setExpirationDate(coupon.getExpirationDate());
-
-            // neu la coupon dang duoc chon => bo qua
-            if (couponSelected != null && couponSelected.getCode().equals(coupon.getCode())) {
-                couponCard.setMinPurchaseCondition(null);
-                couponCardList.add(couponCard);
-                continue;
-            }
-            List<CouponConditionEntity> conditionList = coupon.getConditionList();
-
-            for (CouponConditionEntity condition : conditionList) {
-                // check USAGE
-                if (condition.getType() == ConditionType.USAGE) {
-                    List<UsageConditionEntity> usageConditionList = condition.getUsageConditionList();
-                    for (UsageConditionEntity usageCondition : usageConditionList) {
-                        if (usageCondition.getType() == UsageConditionType.QUANTITY) {
-                            int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
-                            if (usedCount >= usageCondition.getValue()) {
-                                // invalid
-                                couponCard.getUsageConditionList().add(new GetCouponListForCartResponse.CouponCard.UsageCondition(usageCondition.getType(), 0));
-                                couponCard.setValid(false);
-                            }
-                        } else if (usageCondition.getType() == UsageConditionType.LIMIT_ONE_FOR_USER) {
-                            CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId()).orElse(null);
-                            if (couponUsed != null) {
-                                couponCard.getUsageConditionList().add(new GetCouponListForCartResponse.CouponCard.UsageCondition(usageCondition.getType(), null));
-                                couponCard.setValid(false);
-                            }
-                        }
-                    }
-                }
-                // check MIN_PURCHASE
-                else if (condition.getType() == ConditionType.MIN_PURCHASE) {
-                    MinPurchaseConditionEntity minPurchaseCondition = condition.getMinPurchaseCondition();
-                    if (body.getTotalItemPrice() < minPurchaseCondition.getValue()) {
-                        // invalid
-                        couponCard.getMinPurchaseCondition().setValue(minPurchaseCondition.getValue());
-                        couponCard.setValid(false);
-                    } else {
-                        couponCard.setMinPurchaseCondition(null);
-                    }
-                }
-                // check SUBJECT_TYPE
-                else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
-                    List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
-
-                    for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
-                        OrderItemDto item = body.getOrderItemList().stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
-                        if (item == null) {
-                            // invalid
-                            ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
-                            couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
-                            couponCard.setValid(false);
-                        } else {
-                            int count = 0;
-                            for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
-                                count += itemDetailDto.getQuantity();
-                            }
-                            if (count < subjectConditionEntity.getValue()) {
-                                // invalid
-                                ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
-                                couponCard.getSubjectConditionList().add(new GetCouponListForCartResponse.CouponCard.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
-                                couponCard.setValid(false);
-                            }
-                        }
-                    }
-                } else if (condition.getType() == ConditionType.COMBINATION) {
-                    if (canCombined) {
-                        checkCombination(couponTypeListInCart, condition.getCombinationConditionList(), couponCard, coupon.getCouponType());
-                    } else {
-                        couponCard.setValid(false);
-                    }
-                }
-
-            }
-
-            couponCardList.add(couponCard);
-        }
-        return couponCardList;
-    }
-
-    // kiem tra chieu nguoc lai, coupon o list co the combine voi coupon trong cart khong
-    private void checkCombination(List<CouponType> couponTypeListInCart, List<CombinationConditionEntity> conditionList, GetCouponListForCartResponse.CouponCard couponCard, CouponType couponTypeChecking) {
-
-        List<CouponType> combinationList = new ArrayList<>();
-        for (CombinationConditionEntity condition : conditionList) {
-            combinationList.add(condition.getType());
-        }
-        // check combination xem 1 coupon trong list không thể combination với coupon nào trong cart
-        for (CouponType couponType : couponTypeListInCart) {
-            // neu cac coupon list khong chua loai couponType trong cart => khong the combine tu list -> cart
-            if (!combinationList.contains(couponType) && couponTypeChecking != couponType) {
-                // invalid
-                couponCard.getCombinationConditionList().add(new GetCouponListForCartResponse.CouponCard.CombinationCondition(couponType));
-                couponCard.setValid(false);
-            }
-        }
-
-    }
 }

@@ -23,7 +23,6 @@ public interface ICouponService {
     GetOrderCouponDetailByIdResponse getOrderCouponDetailById(String couponId);
     GetProductGiftCouponDetailByIdResponse getProductGiftCouponDetailById(String couponId);
     GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId);
-    GetCouponListForCartResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
-    List<CheckCouponInCartResponse> checkingCouponListInCart(GetCouponListForCartRequest body);
-//    GetRewardOfCouponResponse getRewardOfCoupon(String couponId);
+    GetCouponOptionsResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
+    List<CheckCouponInCartResponse> validateCouponAndItemInCart(GetCouponListForCartRequest body);
 }

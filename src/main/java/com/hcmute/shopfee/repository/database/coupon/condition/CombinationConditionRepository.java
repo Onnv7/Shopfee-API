@@ -18,8 +18,9 @@ public interface CombinationConditionRepository extends JpaRepository<Combinatio
             join coupon_condition cc2 on cc.coupon_condition_id = cc2.id\s
             join coupon c on cc2.coupon_id = c.id\s
             where c.code = ?1 and c.status = 'RELEASED'
+            and c.is_deleted = false
             """, nativeQuery = true)
-    List<CouponType> getCombinationConditionByCouponCode(String couponCode);
+    List<CouponType> getCombinationConditionListByCouponCode(String couponCode);
 
     @Query(value = """
             select cc.`type`\s
