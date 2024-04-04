@@ -1,11 +1,11 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;
-import com.hcmute.shopfee.enums.OrderType;
-import com.hcmute.shopfee.enums.PaymentStatus;
-import com.hcmute.shopfee.enums.PaymentType;
-import com.hcmute.shopfee.enums.ProductSize;
+import com.hcmute.shopfee.enums.*;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,25 +19,28 @@ public class GetOrderByIdResponse {
     private String id;
     //    private String code;
     private String note;
-    private Long totalPayment;
-    private Long shippingFee;
+    private List<Product> itemList;
+
     private Long totalItemPrice;
+
+    private Long shippingFee;
+
     private Long coin;
+
+    private Long totalPayment;
+    private RewardInformation rewardInformation;
+
     private OrderType orderType;
     private ReceiverInformation receiverInformation;
     private Date createdAt;
-    private List<Product> itemList;
 
     private Transaction transaction;
 
-    private Long shippingDiscount;
-    private Long orderDiscount;
     private Branch branch;
     private Boolean needReview;
 //    private String branchAddress;
 
     public static GetOrderByIdResponse fromOrderBillEntity(OrderBillEntity entity) {
-        // TODO: viết set cho private Review review;
         GetOrderByIdResponse order = new GetOrderByIdResponse();
         order.setId(entity.getId());
         order.setNote(entity.getNote());
@@ -56,11 +59,11 @@ public class GetOrderByIdResponse {
             Product product = Product.fromOrderItemEntity(item);
             itemList.add(product);
 
-            if(item.getProductReview() == null) {
+            if (item.getProductReview() == null) {
                 order.setNeedReview(true);
             }
         }
-        if(order.getNeedReview() == null) {
+        if (order.getNeedReview() == null) {
             order.setNeedReview(false);
         }
         order.setItemList(itemList);
@@ -71,16 +74,50 @@ public class GetOrderByIdResponse {
                 .address(entity.getBranch().getFullAddress())
                 .id(entity.getBranch().getId())
                 .build());
+
+        RewardInformation rewardInformation = new RewardInformation(entity.getOrderDiscount(), entity.getShippingDiscount());
+        CouponUsedEntity productCoupon = entity.getCouponUsedList().stream().filter(it -> it.getType() == CouponType.PRODUCT).findFirst().orElse(null);
+        if (productCoupon != null) {
+            if (productCoupon.getCouponRewardReceived().getType() == CouponRewardType.PRODUCT_GIFT) {
+                List<ProductRewardReceivedEntity> productRewardReceivedEntityList = productCoupon.getCouponRewardReceived().getProductRewardReceivedList();
+                List<GetOrderByIdResponse.ProductGift> productGiftList = new ArrayList<>();
+                for (ProductRewardReceivedEntity productGiftEntity: productRewardReceivedEntityList) {
+                    productGiftList.add(new ProductGift(productGiftEntity.getProductId(), productGiftEntity.getProductName(), productGiftEntity.getProductSize(), productGiftEntity.getQuantity()));
+                }
+                rewardInformation.setProductGiftList(productGiftList);
+            }
+        }
+        order.setRewardInformation(rewardInformation);
         return order;
     }
 
     @Data
-    @Builder
-    private static class ReceiverInfo {
-        private String receiverName;
-        private Date receiveTime;
-        private String phoneNumber;
+    private static class RewardInformation {
+        private Long orderDiscount;
+        private Long shippingDiscount;
+        private List<ProductGift> productGiftList;
+
+        public RewardInformation(Long orderDiscount, Long shippingDiscount) {
+            this.orderDiscount = orderDiscount;
+            this.shippingDiscount = shippingDiscount;
+        }
     }
+
+    @Data
+    private static class ProductGift {
+        private String productId;
+        private String name;
+        private String size;
+        private Short quantity;
+
+        public ProductGift(String productId, String name, String size, Short quantity) {
+            this.productId = productId;
+            this.name = name;
+            this.size = size;
+            this.quantity = quantity;
+        }
+    }
+
     @Data
     @Builder
     static class Branch {
@@ -93,7 +130,6 @@ public class GetOrderByIdResponse {
         private String id;
         private PaymentStatus status;
         private PaymentType paymentType;
-        private Long totalPaid;
         private String paymentUrl;
 
         public static Transaction fromTransactionEntity(TransactionEntity entity) {
@@ -101,7 +137,6 @@ public class GetOrderByIdResponse {
             transaction.setId(entity.getId());
             transaction.setStatus(entity.getStatus());
             transaction.setPaymentType(entity.getPaymentType());
-            transaction.setTotalPaid(entity.getTotalPaid());
             transaction.setPaymentUrl(entity.getPaymentUrl());
             return transaction;
         }
@@ -148,11 +183,13 @@ public class GetOrderByIdResponse {
             private List<Topping> toppingList;
             private ProductSize size;
             private Long price;
+            private Long productDiscount;
             private String note;
 
             public static ItemDetail fromItemDetailEntity(ItemDetailEntity entity) {
                 ItemDetail data = new ItemDetail();
                 data.setPrice(entity.getPrice());
+                data.setProductDiscount(entity.getProductDiscount());
                 data.setNote(entity.getNote());
                 data.setSize(entity.getSize());
                 data.setQuantity(entity.getQuantity());

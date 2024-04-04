@@ -259,7 +259,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CHECK_LIST_IN_CART_SUM)
     @PostMapping(path = POST_COUPON_CHECK_LIST_IN_CART_SUB_PATH)
-    public ResponseEntity<ResponseAPI<List<CheckCouponInCartResponse>>> checkCouponListInCart(@RequestBody @Valid GetCouponListForCartRequest body) {
+    public ResponseEntity<ResponseAPI<List<CheckCouponInCartResponse>>> validateCouponAndItemInCart(@RequestBody @Valid GetCouponListForCartRequest body) {
         List<CheckCouponInCartResponse> resData = couponService.validateCouponAndItemInCart(body);
 
         ResponseAPI<List<CheckCouponInCartResponse>> res = ResponseAPI.<List<CheckCouponInCartResponse>>builder()

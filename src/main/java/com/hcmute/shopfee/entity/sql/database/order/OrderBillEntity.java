@@ -45,23 +45,27 @@ public class OrderBillEntity {
     @JsonBackReference
     private UserEntity user;
 
-//    @Indexed(unique = true)
-//    private String code;
-
     @Column(name = "note")
     private String note;
 
     @Column(name = "shipping_fee")
     private Long shippingFee;
 
+    @Column(name = "shipping_discount")
+    private Long shippingDiscount;
+
     @Column(name = "total_item_price", nullable = false)
     private Long totalItemPrice;
+
+    @Column(name = "order_discount")
+    private Long orderDiscount;
 
     @Column(name = "coin")
     private Long coin;
 
     @Column(name = "total_payment", nullable = false)
     private Long totalPayment;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type", nullable = false)

@@ -339,9 +339,11 @@ public class OrderService implements IOrderService {
             couponUsedList.add(couponUsed);
             if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
                 if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
-                    amountReduced += couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+                    orderBill.setOrderDiscount(Long.valueOf(couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue()));
+                    amountReduced += orderBill.getOrderDiscount();
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
-                    amountReduced += orderBill.getTotalItemPrice() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100;
+                    orderBill.setOrderDiscount(orderBill.getTotalItemPrice() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
+                    amountReduced += orderBill.getOrderDiscount();
                 }
             }
         }
@@ -352,11 +354,11 @@ public class OrderService implements IOrderService {
             if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
                 if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
                     long shippingFeeDiscount = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
-                    amountReduced += orderBill.getShippingFee() <= shippingFeeDiscount ? orderBill.getShippingFee() : shippingFeeDiscount;
-
-
+                    orderBill.setShippingDiscount(orderBill.getShippingFee() <= shippingFeeDiscount ? orderBill.getShippingFee() : shippingFeeDiscount);
+                    amountReduced += orderBill.getShippingFee();
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
-                    amountReduced += orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100;
+                    orderBill.setShippingDiscount(orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
+                    amountReduced += orderBill.getShippingFee();
                 }
             }
         }
@@ -368,6 +370,7 @@ public class OrderService implements IOrderService {
                     .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon error"));
             List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
             List<String> productIdDiscountList = new ArrayList<>();
+
             for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
                 productIdDiscountList.add(subjectConditionEntity.getObjectId());
             }
@@ -391,13 +394,15 @@ public class OrderService implements IOrderService {
                         if (moneyRewardUnit == MoneyRewardUnit.MONEY) {
                             discountMoneyPerItemDetail = itemQuantity * discountValue;
                             amountReduced += discountMoneyPerItemDetail;
+
                             for (ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
-                                itemDetailEntity.setDiscountMoney(discountMoneyPerItemDetail);
+                                itemDetailEntity.setProductDiscount(discountMoneyPerItemDetail);
                             }
+
                         } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
                             for (ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
                                 discountMoneyPerItemDetail = itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
-                                itemDetailEntity.setDiscountMoney(discountMoneyPerItemDetail);
+                                itemDetailEntity.setProductDiscount(discountMoneyPerItemDetail);
                                 amountReduced += discountMoneyPerItemDetail;
                             }
                         }
@@ -972,11 +977,10 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public GetOrderByIdResponse getOrderDetailsById(String id) {
-        OrderBillEntity orderBill = orderBillRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + id));
-        GetOrderByIdResponse order = GetOrderByIdResponse.fromOrderBillEntity(orderBill);
-        return order;
+    public GetOrderByIdResponse getOrderDetailsById(String orderId) {
+        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+        return GetOrderByIdResponse.fromOrderBillEntity(orderBill);
     }
 
     @Override

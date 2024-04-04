@@ -765,20 +765,20 @@ public class CouponService implements ICouponService {
         if (body.getOrderCouponCode() != null) {
             couponTypeList.add(CouponType.ORDER);
             List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getOrderCouponCode());
-            data.setNoShippingWithCoupon(resultList);
+            data.setNoOrderWithCoupon(resultList);
         }
         if (body.getProductCouponCode() != null) {
             couponTypeList.add(CouponType.PRODUCT);
             List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getProductCouponCode());
-            data.setNoShippingWithCoupon(resultList);
+            data.setNoProductWithCoupon(resultList);
         }
 
 
-        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, data.getNoShippingWithCoupon() != null, body.getShippingCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, data.getNoShippingWithCoupon() == null, body.getShippingCouponCode());
         data.setShippingCouponList(shippingCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList, data.getNoOrderWithCoupon() != null, body.getOrderCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList, data.getNoOrderWithCoupon() == null, body.getOrderCouponCode());
         data.setOrderCouponList(orderCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList, data.getNoProductWithCoupon() != null, body.getProductCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList, data.getNoProductWithCoupon() == null, body.getProductCouponCode());
         data.setProductCouponList(productCouponCard);
 
         return data;
@@ -837,11 +837,11 @@ public class CouponService implements ICouponService {
                         if (body.getTotalItemPrice() < minPurchaseCondition.getValue()) {
                             // invalid
                             minPurchaseConditionData.setValue(minPurchaseCondition.getValue());
+                            couponCard.setMinPurchaseCondition(minPurchaseConditionData);
                             couponCard.setValid(false);
                         } else {
                             couponCard.setMinPurchaseCondition(null);
                         }
-                        couponCard.setMinPurchaseCondition(minPurchaseConditionData);
                     }
                     // check SUBJECT_TYPE
                     else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
@@ -896,13 +896,13 @@ public class CouponService implements ICouponService {
         List<CouponType> couponTypeList = Arrays.asList(CouponType.SHIPPING, CouponType.PRODUCT, CouponType.ORDER);
         List<CouponType> data = new ArrayList<>();
         if (couponCode != null) {
-            CouponEntity shippingCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
+            CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
 
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
 
             for (CouponType couponType : couponTypeList) {
-                if (!couponTypeCombinedListOfCoupon.contains(couponType) && couponType != shippingCoupon.getCouponType()) {
+                if (!couponTypeCombinedListOfCoupon.contains(couponType) && couponType != couponEntity.getCouponType()) {
                     data.add(couponType);
                 }
             }
