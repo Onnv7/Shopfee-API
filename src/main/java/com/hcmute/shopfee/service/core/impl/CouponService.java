@@ -873,7 +873,7 @@ public class CouponService implements ICouponService {
                     }
                     // check COMBINATION
                     else if (condition.getType() == ConditionType.COMBINATION) {
-                        List<CouponType> combinationList = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
+                        List<CouponType> combinationList = combinationConditionRepository.getCombinationConditionListByCouponCode(coupon.getCode());
                         List<GetCouponOptionsResponse.CombinationCondition> combinationConditionDataList = new ArrayList<>();
                         // check combination xem 1 coupon trong list không thể combination với coupon nào trong cart
                         for (CouponType couponTypeInCart : couponTypeListInCart) {

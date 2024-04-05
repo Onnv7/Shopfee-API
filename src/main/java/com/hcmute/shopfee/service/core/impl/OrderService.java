@@ -121,10 +121,31 @@ public class OrderService implements IOrderService {
         orderBill.setTransaction(transData);
     }
 
-    private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill) {
+    private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill, String productCouponCode) {
         long totalPrice = 0;
         List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
         int itemSize = orderItemList.size();
+        List<String> productIdDiscountList = new ArrayList<>();
+        long productDiscountValue = 0;
+        MoneyRewardUnit productDiscountUnit = null;
+        if(productCouponCode != null) {
+            CouponEntity productCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(productCouponCode, CouponStatus.RELEASED)
+                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
+            if(productCoupon.getCouponType() != CouponType.PRODUCT) {
+                throw new CustomException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid");
+            }
+
+            if(productCoupon.getCouponReward().getType() == CouponRewardType.MONEY) {
+                productDiscountValue = productCoupon.getCouponReward().getMoneyReward().getValue();
+                productDiscountUnit = productCoupon.getCouponReward().getMoneyReward().getUnit();
+
+                List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT_TYPE)
+                        .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
+                productIdDiscountList = subjectConditionList.stream().map(SubjectConditionEntity::getObjectId).toList();
+            }
+        }
+
+
         for (int i = 0; i < itemSize; i++) {
             OrderItemDto orderItemDto = orderItemList.get(i);
 
@@ -176,10 +197,21 @@ public class OrderService implements IOrderService {
                 SizeEntity sizeItem = sizeList.stream()
                         .filter(it -> it.getSize() == itemDetail.getSize())
                         .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Product's size with id " + itemDetail.getSize()));
-                itemDetailEntity.setPrice(sizeItem.getPrice());
-                itemsDetailEntityList.add(itemDetailEntity);
 
-                totalPrice += (long) ((sizeItem.getPrice() + totalPriceToppings) * itemDetail.getQuantity());
+                long productSizePrice = sizeItem.getPrice();
+                long productDiscount = 0;
+                if(!productIdDiscountList.isEmpty() && productIdDiscountList.contains(orderItemDto.getProductId())) {
+                    if(productDiscountUnit == MoneyRewardUnit.MONEY) {
+                        productDiscount = productDiscountValue;
+                    } else if(productDiscountUnit == MoneyRewardUnit.PERCENTAGE) {
+                        productDiscount = productSizePrice * productDiscountValue / 100;
+                    }
+                }
+                itemDetailEntity.setPrice(sizeItem.getPrice());
+                itemDetailEntity.setProductDiscount(productDiscount);
+                itemsDetailEntityList.add(itemDetailEntity);
+                long productPriceFinal = productSizePrice - productDiscount > 0 ? productSizePrice - productDiscount : 0;
+                totalPrice += (long) ((productPriceFinal + totalPriceToppings) * itemDetail.getQuantity());
             }
 
             item.setItemDetailList(itemsDetailEntityList);
@@ -358,57 +390,14 @@ public class OrderService implements IOrderService {
                     amountReduced += orderBill.getShippingFee();
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
                     orderBill.setShippingDiscount(orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
-                    amountReduced += orderBill.getShippingFee();
+                    amountReduced += orderBill.getShippingDiscount();
                 }
             }
         }
         if (productCouponCode != null) {
-            CouponEntity couponEntity = couponRepository.findByCodeAndIsDeletedFalse(productCouponCode)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
-
-            CouponConditionEntity conditionEntity = couponEntity.getConditionList().stream().filter(it -> it.getType() == ConditionType.SUBJECT_TYPE)
-                    .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon error"));
-            List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
-            List<String> productIdDiscountList = new ArrayList<>();
-
-            for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
-                productIdDiscountList.add(subjectConditionEntity.getObjectId());
-            }
-
             CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
-                List<OrderItemEntity> orderItemEntityList = orderBill.getOrderItemList();
-                long discountValue = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
-                MoneyRewardUnit moneyRewardUnit = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit();
-
-                for (OrderItemEntity orderItemEntity : orderItemEntityList) {
-                    String productIdCart = orderItemEntity.getProduct().getId();
-                    if (productIdDiscountList.contains(productIdCart)) {
-                        int itemQuantity = orderItemEntity.getItemDetailList().stream().map(ItemDetailEntity::getQuantity)
-                                .reduce(0, Integer::sum);
-
-                        List<ItemDetailEntity> itemDetailEntityList = orderItemEntity.getItemDetailList();
-                        long discountMoneyPerItemDetail = 0L;
-                        if (moneyRewardUnit == MoneyRewardUnit.MONEY) {
-                            discountMoneyPerItemDetail = itemQuantity * discountValue;
-                            amountReduced += discountMoneyPerItemDetail;
-
-                            for (ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
-                                itemDetailEntity.setProductDiscount(discountMoneyPerItemDetail);
-                            }
-
-                        } else if (moneyRewardUnit == MoneyRewardUnit.PERCENTAGE) {
-                            for (ItemDetailEntity itemDetailEntity : itemDetailEntityList) {
-                                discountMoneyPerItemDetail = itemDetailEntity.getPrice() * itemDetailEntity.getQuantity() * discountValue / 100;
-                                itemDetailEntity.setProductDiscount(discountMoneyPerItemDetail);
-                                amountReduced += discountMoneyPerItemDetail;
-                            }
-                        }
-                    }
-                }
-            }
         }
         orderBill.setCouponUsedList(couponUsedList);
         return amountReduced;
@@ -441,7 +430,8 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.SHIPPING);
 
-        long totalItemPrice = calculateOrderBill(body.getItemList(), orderBill);
+        long totalItemPrice = calculateOrderBill(body.getItemList(), orderBill, body.getProductCouponCode());
+        orderBill.setTotalItemPrice(totalItemPrice);
         totalPayment += totalItemPrice;
 
         // set địa chỉ giao hàng
@@ -470,11 +460,10 @@ public class OrderService implements IOrderService {
 
         // set tổng hóa đơn và phí ship
         orderBill.setShippingFee(body.getShippingFee());
-        orderBill.setTotalItemPrice(totalItemPrice);
 
 
         // xử lý coupon
-        validateCouponForOrder(totalPayment, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
+        validateCouponForOrder(totalItemPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
         totalPayment -= amountReduced;
@@ -580,11 +569,11 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.ONSITE);
 
-        long totalPriceItem = calculateOrderBill(body.getItemList(), orderBill);
-        totalPayment += totalPriceItem;
+        long totalPriceItem = calculateOrderBill(body.getItemList(), orderBill, body.getProductCouponCode());
         orderBill.setTotalItemPrice(totalPriceItem);
+        totalPayment += totalPriceItem;
 
-        validateCouponForOrder(totalPayment, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
+        validateCouponForOrder(totalPriceItem, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), null, body.getProductCouponCode());
 
         totalPayment -= amountReduced;
