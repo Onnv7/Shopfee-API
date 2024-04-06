@@ -226,8 +226,8 @@ public class UserAuthService implements IUserAuthService {
 
     @Override
     public void logoutUser(UserLogoutRequest body, String refreshToken) {
-        String employeeId = SecurityUtils.getCurrentUserId();
-        userTokenRedisService.deleteByUserIdAndRefreshToken(employeeId, refreshToken);
+        String userId = SecurityUtils.getCurrentUserId();
+        userTokenRedisService.deleteByUserIdAndRefreshToken(userId, refreshToken);
         UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
                 .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
         fcmTokenEntity.setUser(null);

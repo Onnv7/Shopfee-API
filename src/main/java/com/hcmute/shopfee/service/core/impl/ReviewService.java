@@ -5,6 +5,8 @@ import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
 import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
+import com.hcmute.shopfee.dto.sql.GetProductReviewStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
@@ -122,5 +124,11 @@ public class ReviewService implements IReviewService {
             productReviewList.add(GetProductReviewListResponse.fromProductReviewEntity(productReviewEntity, userDislikeList.size(), userLikeList.size(), interaction));
         }
         return data;
+    }
+
+    @Override
+    public GetProductReviewStatisticResponse getProductReviewStatistic(String productId) {
+        List<GetProductReviewStatisticDto> productReviewStatisticDto = productReviewRepository.getProductReviewStatistic(productId);
+        return GetProductReviewStatisticResponse.fromGetProductReviewStatisticResponseList(productReviewStatisticDto);
     }
 }

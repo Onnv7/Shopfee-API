@@ -96,6 +96,8 @@ public class RouterConstant {
     public static final String POST_REVIEW_INTERACT_PATH = REVIEW_BASE_PATH + POST_REVIEW_INTERACT_SUB_PATH;
     public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH = "/product" + PRODUCT_ID_PATH;
     public static final String GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_PATH = REVIEW_BASE_PATH + GET_PRODUCT_REVIEW_LIST_BY_PRODUCT_ID_SUB_PATH;
+    public static final String GET_PRODUCT_REVIEW_STATISTIC_BY_PRODUCT_ID_SUB_PATH = "/statistic/product" + PRODUCT_ID_PATH;
+    public static final String GET_PRODUCT_REVIEW_STATISTIC_BY_PRODUCT_ID_PATH = REVIEW_BASE_PATH + GET_PRODUCT_REVIEW_STATISTIC_BY_PRODUCT_ID_SUB_PATH;
 
     // ENDPOINT URL STATISTICS =================================================================
     public static final String GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH = "/revenue/today";

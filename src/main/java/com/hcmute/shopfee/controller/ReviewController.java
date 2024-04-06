@@ -6,6 +6,7 @@ import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
 import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IReviewService;
@@ -50,7 +51,7 @@ public class ReviewController {
     @Operation(summary = REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM)
     @PostMapping(path = POST_REVIEW_INTERACT_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> interactProductReview(@PathVariable(PRODUCT_REVIEW_ID) String productReviewId,
-                                                             @RequestBody @Valid InteractProductReviewRequest body) {
+                                                                @RequestBody @Valid InteractProductReviewRequest body) {
         reviewService.createProductReviewInteraction(productReviewId, body);
 
         ResponseAPI<?> res = ResponseAPI.builder()
@@ -68,7 +69,7 @@ public class ReviewController {
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
-            ) {
+    ) {
         GetProductReviewListResponse resData = reviewService.getProductReviewListByProductId(productId, page, size);
 
         ResponseAPI<GetProductReviewListResponse> res = ResponseAPI.<GetProductReviewListResponse>builder()
@@ -76,6 +77,19 @@ public class ReviewController {
                 .data(resData)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = REVIEW_GET_PRODUCT_STATISTICS_SUM)
+    @GetMapping(path = GET_PRODUCT_REVIEW_STATISTIC_BY_PRODUCT_ID_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetProductReviewStatisticResponse>> getProductReviewStatistic(@PathVariable(PRODUCT_ID) String productId) {
+        GetProductReviewStatisticResponse resData = reviewService.getProductReviewStatistic(productId);
+
+        ResponseAPI<GetProductReviewStatisticResponse> res = ResponseAPI.<GetProductReviewStatisticResponse>builder()
+                .message(SuccessConstant.GET)
+                .data(resData)
+                .timestamp(new Date())
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 }

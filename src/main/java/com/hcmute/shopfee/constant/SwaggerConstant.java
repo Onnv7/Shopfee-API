@@ -61,6 +61,7 @@ public class SwaggerConstant {
     public static final String REVIEW_CREATE_SUM = "Create a new product's review";
     public static final String REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM = "Interact with product reviews";
     public static final String REVIEW_GET_PRODUCT_TYPE_SUM = "Get product's review list by product's id";
+    public static final String REVIEW_GET_PRODUCT_STATISTICS_SUM = "Get product's review statistics by product's id";
 
     // For statistics =================================================================
     public static final String STATISTICS_CONTROLLER_TITLE = "STATISTICS MANAGEMENT";
