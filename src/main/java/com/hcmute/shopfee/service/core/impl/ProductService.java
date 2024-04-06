@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.common.RatingSummaryDto;
 import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
@@ -110,17 +111,17 @@ public class ProductService implements IProductService {
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
 
             productEntity.setCategory(categoryEntity);
-            HashMap<String, String> imageUploaded = cloudinaryService.uploadFileToFolder(
+            CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
                     StringUtils.generateFileName(body.getName(), "product"),
                     newImage
             );
 
             AlbumEntity productImage = AlbumEntity.builder()
-                    .imageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                    .imageUrl(imageUploaded.getUrl())
                     .type(AlbumType.PRODUCT)
-                    .cloudinaryImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID))
-                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.get(CloudinaryConstant.PUBLIC_ID)))
+                    .cloudinaryImageId(imageUploaded.getPublicId())
+                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.getPublicId()))
                     .build();
             productEntity.setImage(productImage);
 
@@ -295,14 +296,14 @@ public class ProductService implements IProductService {
                 byte[] originalImage = body.getImage().getBytes();
 
                 byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
-                HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
+                CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
                         StringUtils.generateFileName(body.getName(), "product"), newImage);
 
                 AlbumEntity productImage = AlbumEntity.builder()
                         .type(AlbumType.PRODUCT)
-                        .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
-                        .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
-                        .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)))
+                        .imageUrl(fileUploaded.getUrl())
+                        .cloudinaryImageId(fileUploaded.getPublicId())
+                        .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()))
                         .build();
                 product.setImage(productImage);
             } catch (IOException e) {

@@ -35,10 +35,6 @@ public class  CreateOrderCouponRequest {
     @NotNull
     private MinPurchaseConditionDto minPurchaseCondition;
 
-//    @Schema()
-//    @NotNull
-//    private EligibilityCustomerConditionDto applicableCustomerCondition;
-
     @Schema(example = DATE_ISO_EX)
     @NotNull
     private Date startDate;

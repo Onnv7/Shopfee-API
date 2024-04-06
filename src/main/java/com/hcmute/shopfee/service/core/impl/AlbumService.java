@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.UploadImageRequest;
 import com.hcmute.shopfee.dto.response.GetAllImageResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
@@ -39,11 +40,11 @@ public class AlbumService implements IAlbumService {
         String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
         String fileName = StringUtils.generateFileName("", "album");
         try {
-            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(pathCloudinary, fileName, body.getImage().getBytes());
+            CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(pathCloudinary, fileName, body.getImage().getBytes());
             AlbumEntity album = AlbumEntity.builder()
-                    .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
-                    .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
-                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)))
+                    .imageUrl(fileUploaded.getUrl())
+                    .cloudinaryImageId(fileUploaded.getPublicId())
+                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()))
                     .type(body.getType())
                     .build();
             albumRepository.save(album);

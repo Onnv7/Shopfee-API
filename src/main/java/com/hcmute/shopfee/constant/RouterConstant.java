@@ -16,6 +16,7 @@ public class RouterConstant {
     public static final String EMPLOYEE_BASE_PATH = "/api/employee";
     public static final String NOTIFICATION_BASE_PATH = "/api/notification";
     public static final String ORDER_BASE_PATH = "/api/order";
+    public static final String ORDER_REFUND_BASE_PATH = "/api/order-refund";
     public static final String TRANSACTION_BASE_PATH = "/api/transaction";
     public static final String STATISTICS_BASE_PATH = "/api/statistics";
     // ALL PATH=================================================
@@ -215,6 +216,12 @@ public class RouterConstant {
     public static final String GET_ORDER_ORDER_QUANTITY_BY_STATUS_PATH = ORDER_BASE_PATH + GET_ORDER_ORDER_QUANTITY_BY_STATUS_SUB_PATH;
     public static final String GET_ORDER_CANCELLATION_SUB_PATH = ORDER_ID_PATH + "/cancellation-request";
     public static final String GET_ORDER_CANCELLATION_PATH = ORDER_BASE_PATH + GET_ORDER_CANCELLATION_SUB_PATH;
+
+    // ENDPOINT URL ORDER =================================================================
+    public static final String POST_ORDER_REFUND_CREATE_REQUEST_SUB_PATH = ORDER_ID_PATH;
+    public static final String POST_ORDER_REFUND_CREATE_REQUEST_PATH = ORDER_REFUND_BASE_PATH + POST_ORDER_REFUND_CREATE_REQUEST_SUB_PATH;
+    public static final String PATCH_ORDER_REFUND_PROCESSING_REQUEST_SUB_PATH = ORDER_ID_PATH;
+    public static final String PATCH_ORDER_REFUND_PROCESSING_REQUEST_PATH = ORDER_REFUND_BASE_PATH + PATCH_ORDER_REFUND_PROCESSING_REQUEST_SUB_PATH;
 
     // ENDPOINT URL TRANSACTION =================================================================
     public static final String PATCH_TRANSACTION_UPDATE_BY_ID_SUB_PATH = TRANSACTION_ID_PATH;

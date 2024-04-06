@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
@@ -85,13 +86,13 @@ public class BranchService implements IBranchService {
         try {
             originalImage = body.getImage().getBytes();
 
-            HashMap<String, String> imageUploaded = cloudinaryService.uploadFileToFolder(
+            CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
                     StringUtils.generateFileName(body.getName(), "branch"),
                     originalImage
             );
-            branch.setImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID));
-            branch.setImageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY));
+            branch.setImageId(imageUploaded.getPublicId());
+            branch.setImageUrl(imageUploaded.getUrl());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -107,13 +108,13 @@ public class BranchService implements IBranchService {
             try {
                 originalImage = body.getImage().getBytes();
 
-                HashMap<String, String> imageUploaded = cloudinaryService.uploadFileToFolder(
+                CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.PRODUCT_PATH,
                         StringUtils.generateFileName(body.getName(), "branch"),
                         originalImage
                 );
-                branch.setImageId(imageUploaded.get(CloudinaryConstant.PUBLIC_ID));
-                branch.setImageUrl(imageUploaded.get(CloudinaryConstant.URL_PROPERTY));
+                branch.setImageId(imageUploaded.getPublicId());
+                branch.setImageUrl(imageUploaded.getUrl());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

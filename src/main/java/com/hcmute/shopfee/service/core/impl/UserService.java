@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
@@ -89,11 +90,10 @@ public class UserService implements IUserService {
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
             byte[] imageBytes = body.getImage().getBytes();
-            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);
-            fileUploaded.get(CloudinaryConstant.URL_PROPERTY);
+            CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);
 
-            user.setAvatarId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID));
-            user.setAvatarUrl(cloudinaryService.getThumbnailUrl(fileUploaded.get(CloudinaryConstant.PUBLIC_ID)));
+            user.setAvatarId(fileUploaded.getPublicId());
+            user.setAvatarUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()));
 
             userRepository.save(user);
         } catch (IOException e) {

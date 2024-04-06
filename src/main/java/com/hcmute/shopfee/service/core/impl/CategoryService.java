@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
 import com.hcmute.shopfee.dto.request.UpdateCategoryRequest;
 import com.hcmute.shopfee.dto.response.GetCategoryByIdResponse;
@@ -49,12 +50,12 @@ public class CategoryService implements ICategoryService {
         try {
             originalImage = body.getImage().getBytes();
             byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
-            HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.CATEGORY_PATH,
+            CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.CATEGORY_PATH,
                     StringUtils.generateFileName(body.getName(), "category"), newImage);
             AlbumEntity image = AlbumEntity.builder()
                     .type(AlbumType.CATEGORY)
-                    .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
-                    .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                    .cloudinaryImageId(fileUploaded.getPublicId())
+                    .imageUrl(fileUploaded.getUrl())
                     .build();
             CategoryEntity category = CategoryEntity.builder()
                     .image(image)
@@ -95,15 +96,15 @@ public class CategoryService implements ICategoryService {
                 byte[] originalImage = body.getImage().getBytes();
                 byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
 
-                HashMap<String, String> fileUploaded = cloudinaryService.uploadFileToFolder(
+                CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.CATEGORY_PATH,
                         StringUtils.generateFileName(body.getName(), "category"),
                         newImage
                 );
                 AlbumEntity image = AlbumEntity.builder()
                         .type(AlbumType.CATEGORY)
-                        .cloudinaryImageId(fileUploaded.get(CloudinaryConstant.PUBLIC_ID))
-                        .imageUrl(fileUploaded.get(CloudinaryConstant.URL_PROPERTY))
+                        .cloudinaryImageId(fileUploaded.getPublicId())
+                        .imageUrl(fileUploaded.getUrl())
                         .build();
                 category.setImage(image);
             } catch (IOException e) {

@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
+import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
@@ -387,7 +388,7 @@ public class OrderService implements IOrderService {
                 if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
                     long shippingFeeDiscount = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
                     orderBill.setShippingDiscount(orderBill.getShippingFee() <= shippingFeeDiscount ? orderBill.getShippingFee() : shippingFeeDiscount);
-                    amountReduced += orderBill.getShippingFee();
+                    amountReduced += orderBill.getShippingDiscount();
                 } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
                     orderBill.setShippingDiscount(orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
                     amountReduced += orderBill.getShippingDiscount();
@@ -523,17 +524,17 @@ public class OrderService implements IOrderService {
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
 
             if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
             } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 16, ChronoUnit.MINUTES);
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.SECONDS);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
             }
             checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
             checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
             schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
-        Instant orderAcceptanceScheduleTime = DateUtils.after(dataSaved2.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
+        Instant orderAcceptanceScheduleTime = DateUtils.plus(dataSaved2.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
         // set schedule for accept order
         Map<String, Object> orderAcceptanceScheduleData = new HashMap<String, Object>();
@@ -664,17 +665,17 @@ public class OrderService implements IOrderService {
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
 
             if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
             } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 16, ChronoUnit.MINUTES);
-                checkTransactionTime = DateUtils.after(checkTransactionTime, 15, ChronoUnit.SECONDS);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
+                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
             }
             checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
             checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
             schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
-        Instant newIn = DateUtils.after(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
+        Instant newIn = DateUtils.plus(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
         Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
         orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved.getId());
@@ -718,7 +719,7 @@ public class OrderService implements IOrderService {
         OrderBillEntity order = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (order.getRequestCancellation() != null && order.getRequestCancellation().getStatus() == CancellationRequestStatus.PENDING) {
+        if (order.getCancellationRequest() != null && order.getCancellationRequest().getStatus() == AnswerStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
         }
         if (order.getTransaction().getPaymentType() != PaymentType.CASHING &&
@@ -759,6 +760,13 @@ public class OrderService implements IOrderService {
             }
         }
 
+        OrderNotificationDto messageDto = OrderNotificationDto.builder()
+                .title("New Order Status")
+                .body(newStatus.name())
+                .clientId(order.getUser().getId())
+                .build();
+        firebaseMessagingService.sendOrderNotificationToUser(messageDto);
+
         OrderBillEntity updatedOrder = orderBillRepository.save(order);
         orderSearchService.upsertOrder(updatedOrder);
     }
@@ -778,7 +786,7 @@ public class OrderService implements IOrderService {
 
         CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
                 .reason(body.getReason())
-                .status(CancellationRequestStatus.PENDING)
+                .status(AnswerStatus.PENDING)
                 .orderBill(orderBill)
                 .build();
 
@@ -798,23 +806,23 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId) {
-        if (body.getStatus() == CancellationRequestStatus.PENDING) {
+        if (body.getStatus() == AnswerStatus.PENDING) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID);
         }
 
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        CancellationRequestEntity cancellationRequestEntity = orderBill.getRequestCancellation();
+        CancellationRequestEntity cancellationRequestEntity = orderBill.getCancellationRequest();
 
-        if (cancellationRequestEntity != null && cancellationRequestEntity.getStatus() != CancellationRequestStatus.PENDING) {
+        if (cancellationRequestEntity != null && cancellationRequestEntity.getStatus() != AnswerStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The request has already been processed");
         }
 
         UserEntity customer = orderBill.getUser();
         if (cancellationRequestEntity != null) {
             cancellationRequestEntity.setStatus(body.getStatus());
-            if (body.getStatus() == CancellationRequestStatus.ACCEPTED) {
+            if (body.getStatus() == AnswerStatus.ACCEPTED) {
                 List<OrderEventEntity> statusList = new ArrayList<>();
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .description("Employee agreed to cancel the order")
@@ -1057,9 +1065,9 @@ public class OrderService implements IOrderService {
     public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderBillId));
-        if (orderBill.getRequestCancellation() != null) {
+        if (orderBill.getCancellationRequest() != null) {
             GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
-            data.setReason(orderBill.getRequestCancellation().getReason());
+            data.setReason(orderBill.getCancellationRequest().getReason());
             return data;
         }
         return null;

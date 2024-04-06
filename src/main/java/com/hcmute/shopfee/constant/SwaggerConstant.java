@@ -103,7 +103,6 @@ public class SwaggerConstant {
 
 
     // For Order =============================================================
-
     public static final String ORDER_CONTROLLER_TITLE = "ORDER MANAGEMENT";
     public static final String ORDER_UPDATE_EVENT_SUM = "Insert an order event to the status line";
     public static final String ORDER_CREATE_CANCELLATION_REQUEST_SUM = "Create an order cancellation request";
@@ -122,6 +121,10 @@ public class SwaggerConstant {
     public static final String ORDER_GET_ORDER_QUANTITY_BY_STATUS_SUM = "Get order's quantity by status at today";
     public static final String ORDER_GET_LIST_SUM = "Get order list for admin";
     public static final String ORDER_GET_CANCELLATION_SUM = "Get cancellation order request by order id";
+    // For Order return =============================================================
+    public static final String ORDER_REFUND_CONTROLLER_TITLE = "ORDER REFUND MANAGEMENT";
+    public static final String ORDER_RETURN_CREATE_REQUEST_SUM = "Create a order refund request";
+    public static final String ORDER_RETURN_PROCESSING_REQUEST_SUM = "Processing the order refund request";
 
     // For Employee =============================================================
     public static final String EMPLOYEE_CONTROLLER_TITLE = "EMPLOYEE MANAGEMENT";
@@ -284,5 +287,6 @@ public class SwaggerConstant {
     public static final String CLOSE_TIME_EX = "20:00:00";
     public static final String BRANCH_STATUS_EX = "INACTIVE";
     public static final String ALBUM_TYPE_EX = "PRODUCT";
+    public static final String REASON_EX = "This is reason";
     public static final String FCM_TOKEN_EX = "ep-xdyteTi6h1O16emTaLy:APA91bF_DJ1hpU_VqOv2olMzTeIn02Jpyjzhnq0mrXzHBhaZwei7RYVKvCK90Kh3wneZRvpJKA9AIGZBX1e20UNrU0QJoJxuP3a3LJB36wXuKTPmkniiGzJYNUQIOINOejCqFGZmGcI3";
 }

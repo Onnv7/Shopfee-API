@@ -3,7 +3,9 @@ package com.hcmute.shopfee.service.common;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.model.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,7 @@ public class CloudinaryService {
         }
     }
 
-    public HashMap<String, String> uploadFileToFolder(String pathName, String fileName, byte[] imageData) throws IOException {
+    public CloudinaryUploadResponse uploadFileToFolder(String pathName, String fileName, byte[] imageData) throws IOException {
         var file = cloudinary.uploader()
                 .upload(imageData,
                         Map.of(
@@ -58,8 +60,8 @@ public class CloudinaryService {
                                 UPLOAD_PRESET, pathName,
                                 OVERWRITE, true
                         ));
-
-        return (HashMap<String, String>) file;
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(file.toString(), CloudinaryUploadResponse.class);
     }
 
     public void deleteImage(String publicId) throws IOException {
