@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.response.CreateOrderResponse;
 import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
+import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
 import com.hcmute.shopfee.enums.AnswerStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IOrderReturnService;
@@ -41,10 +42,22 @@ public class OrderReturnController {
     @PatchMapping(path = PATCH_ORDER_REFUND_PROCESSING_REQUEST_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> processOrderRefundRequest(@RequestParam("status") AnswerStatus status, @PathVariable(ORDER_ID) String orderId) {
         orderReturnService.processOrderRefundRequest(status, orderId);
-        ResponseAPI<CreateOrderResponse> res = ResponseAPI.<CreateOrderResponse>builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
-                .message(SuccessConstant.CREATED)
+                .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = ORDER_RETURN_GET_REQUEST_SUM)
+    @GetMapping(path = GET_ORDER_REFUND_REQUEST_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetOrderRefundResponse>> getOrderRefundRequest(@PathVariable(ORDER_ID) String orderId) {
+        GetOrderRefundResponse data = orderReturnService.getOrderRefundRequest(orderId);
+        ResponseAPI<GetOrderRefundResponse> res = ResponseAPI.<GetOrderRefundResponse>builder()
+                .timestamp(new Date())
+                .data(data)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 }

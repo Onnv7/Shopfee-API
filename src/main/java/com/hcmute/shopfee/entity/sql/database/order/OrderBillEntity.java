@@ -7,6 +7,7 @@ import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.order.shipping.ShippingTaskEntity;
 import com.hcmute.shopfee.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -117,5 +118,9 @@ public class OrderBillEntity {
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
-    private OrderReturnRequestEntity orderReturnRequest;
+    private OrderRefundRequestEntity orderReturnRequest;
+
+    @OneToOne(mappedBy = "orderBill")
+    @JsonManagedReference
+    private ShippingTaskEntity shippingTask;
 }

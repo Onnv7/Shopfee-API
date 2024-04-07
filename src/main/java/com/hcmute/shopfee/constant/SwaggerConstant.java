@@ -126,6 +126,7 @@ public class SwaggerConstant {
     public static final String ORDER_REFUND_CONTROLLER_TITLE = "ORDER REFUND MANAGEMENT";
     public static final String ORDER_RETURN_CREATE_REQUEST_SUM = "Create a order refund request";
     public static final String ORDER_RETURN_PROCESSING_REQUEST_SUM = "Processing the order refund request";
+    public static final String ORDER_RETURN_GET_REQUEST_SUM = "Get the order refund request";
 
     // For Employee =============================================================
     public static final String EMPLOYEE_CONTROLLER_TITLE = "EMPLOYEE MANAGEMENT";
@@ -288,6 +289,7 @@ public class SwaggerConstant {
     public static final String CLOSE_TIME_EX = "20:00:00";
     public static final String BRANCH_STATUS_EX = "INACTIVE";
     public static final String ALBUM_TYPE_EX = "PRODUCT";
-    public static final String REASON_EX = "This is reason";
+    public static final String REASON_EX = "This is a reason";
+    public static final String NOTE_EX = "This is a note";
     public static final String FCM_TOKEN_EX = "ep-xdyteTi6h1O16emTaLy:APA91bF_DJ1hpU_VqOv2olMzTeIn02Jpyjzhnq0mrXzHBhaZwei7RYVKvCK90Kh3wneZRvpJKA9AIGZBX1e20UNrU0QJoJxuP3a3LJB36wXuKTPmkniiGzJYNUQIOINOejCqFGZmGcI3";
 }

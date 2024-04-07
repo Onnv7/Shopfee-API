@@ -35,6 +35,7 @@ import com.hcmute.shopfee.utils.GeneratorUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,6 +56,7 @@ import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserAuthService implements IUserAuthService {
     private final ModelMapperService modelMapperService;
     private final JwtService jwtService;
@@ -227,11 +229,18 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void logoutUser(UserLogoutRequest body, String refreshToken) {
         String userId = SecurityUtils.getCurrentUserId();
-        userTokenRedisService.deleteByUserIdAndRefreshToken(userId, refreshToken);
-        UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
-                .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
-        fcmTokenEntity.setUser(null);
-        userFcmTokenRepository.save(fcmTokenEntity);
+        try {
+            if(body.getFcmTokenId() != null) {
+                UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
+                        .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+                fcmTokenEntity.setUser(null);
+                userFcmTokenRepository.save(fcmTokenEntity);
+            }
+            userTokenRedisService.deleteByUserIdAndRefreshToken(userId, refreshToken);
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @Override

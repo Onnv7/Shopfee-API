@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.enums.AlbumType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -14,17 +13,17 @@ import java.util.Date;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
-@Table(name = "order_return_media")
+@Table(name = "order_refund_media")
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class OrderReturnMediaEntity {
+public class OrderRefundMediaEntity {
     @Id
-    @GenericGenerator(name = "order_return_media_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "order_return_media_id")
+    @GenericGenerator(name = "order_refund_media_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "order_refund_media_id")
     private String id;
 
     @Column(name = "media_url")
@@ -50,5 +49,5 @@ public class OrderReturnMediaEntity {
     @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "order_return_request_id", nullable = false)
-    private OrderReturnRequestEntity orderReturnRequest;
+    private OrderRefundRequestEntity orderReturnRequest;
 }

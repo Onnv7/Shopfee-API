@@ -107,7 +107,7 @@ public class SecurityConstant {
 
     public static final String[] PATCH_EMPLOYEE_PATH = {
             PATCH_TRANSACTION_UPDATE_COMPLETE_PATH,
-           PATCH_ORDER_UPDATE_STATUS_PATH,
+            PATCH_ORDER_UPDATE_STATUS_PATH,
             PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_PATH, PATCH_EMPLOYEE_PROFILE_BY_ID_PATH,
             PATCH_ORDER_REFUND_PROCESSING_REQUEST_PATH
     };
@@ -170,7 +170,7 @@ public class SecurityConstant {
 
     // EMPLOYEE + USER =================================================================
     public static final String[] GET_EMPLOYEE_USER_PATH = {
-            GET_ORDER_STATUS_LINE_PATH
+            GET_ORDER_STATUS_LINE_PATH, GET_ORDER_REFUND_REQUEST_PATH
     };
 
     public static final String[] POST_EMPLOYEE_USER_PATH = {

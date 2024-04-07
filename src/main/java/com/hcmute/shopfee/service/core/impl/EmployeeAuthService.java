@@ -24,6 +24,7 @@ import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +45,7 @@ import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmployeeAuthService implements IEmployeeAuthService {
     private final EmployeeRepository employeeRepository;
     private final AuthenticationManager authenticationManager;
@@ -112,13 +114,17 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Override
     public void employeeLogout(EmployeeLogoutRequest body, String refreshToken) {
         String employeeId = SecurityUtils.getCurrentUserId();
-        employeeTokenRedisService.deleteByEmployeeIdAndRefreshToken(employeeId, refreshToken);
+        try {
+            employeeTokenRedisService.deleteByEmployeeIdAndRefreshToken(employeeId, refreshToken);
 
-        if(body.getFcmTokenId() != null) {
-            EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
-                    .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
-            fcmTokenEntity.setEmployee(null);
-            employeeFCMTokenRepository.save(fcmTokenEntity);
+            if(body.getFcmTokenId() != null) {
+                EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
+                        .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+                fcmTokenEntity.setEmployee(null);
+                employeeFCMTokenRepository.save(fcmTokenEntity);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 

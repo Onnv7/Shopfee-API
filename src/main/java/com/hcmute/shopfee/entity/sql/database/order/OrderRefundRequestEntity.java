@@ -16,21 +16,24 @@ import java.util.List;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
-@Table(name = "order_return_request")
+@Table(name = "order_refund_request")
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class OrderReturnRequestEntity {
+public class OrderRefundRequestEntity {
     @Id
-    @GenericGenerator(name = "order_return_request_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "order_return_request_id")
+    @GenericGenerator(name = "order_refund_request_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "order_refund_request_id")
     private String id;
 
     @Column(name = "reason", nullable = false)
     private String reason;
+
+    @Column(name = "note")
+    private String note;
 
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
@@ -56,6 +59,6 @@ public class OrderReturnRequestEntity {
 
     @OneToMany(cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private List<OrderReturnMediaEntity> orderReturnMediaList;
+    private List<OrderRefundMediaEntity> orderReturnMediaList;
 
 }

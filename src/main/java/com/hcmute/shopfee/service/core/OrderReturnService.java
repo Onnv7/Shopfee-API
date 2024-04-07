@@ -4,11 +4,12 @@ import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
+import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.sql.database.order.OrderReturnMediaEntity;
-import com.hcmute.shopfee.entity.sql.database.order.OrderReturnRequestEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderRefundMediaEntity;
+import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
 import com.hcmute.shopfee.enums.AnswerStatus;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.model.CustomException;
@@ -43,41 +44,34 @@ public class OrderReturnService implements IOrderReturnService {
         List<OrderEventEntity> orderEventEntityList = orderBill.getOrderEventList();
         OrderEventEntity lastEvent = orderEventEntityList.get(0);
 
-        if(lastEvent.getOrderStatus() != OrderStatus.SUCCEED) {
+        if (lastEvent.getOrderStatus() != OrderStatus.SUCCEED) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "It is not possible to submit a refund request without a successful application");
         }
 
-        if(Date.from(DateUtils.plus(lastEvent.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES)).after(currentTime)) {
+        if (Date.from(DateUtils.plus(lastEvent.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES)).after(currentTime)) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
         }
 
-        OrderEventEntity event = OrderEventEntity.builder()
-                .orderBill(orderBill)
-                .orderStatus(OrderStatus.ORDER_REFUND_REQUEST)
-                .build();
-        orderBill.getOrderEventList().add(event);
-
-
-
-        List<OrderReturnMediaEntity> orderReturnMediaEntityList = new ArrayList<>();
-        OrderReturnRequestEntity orderReturnRequestEntity = OrderReturnRequestEntity
+        List<OrderRefundMediaEntity> orderRefundMediaEntityList = new ArrayList<>();
+        OrderRefundRequestEntity orderRefundRequestEntity = OrderRefundRequestEntity
                 .builder()
                 .status(AnswerStatus.PENDING)
                 .orderBill(orderBill)
                 .reason(body.getReason())
-                .orderReturnMediaList(orderReturnMediaEntityList)
+                .note(body.getNote())
+                .orderReturnMediaList(orderRefundMediaEntityList)
                 .build();
-        orderBill.setOrderReturnRequest(orderReturnRequestEntity);
+        orderBill.setOrderReturnRequest(orderRefundRequestEntity);
         for (MultipartFile media : body.getMediaList()) {
             try {
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, StringUtils.generateFileName(orderId, "order_return"), media.getBytes());
-                OrderReturnMediaEntity mediaEntity = OrderReturnMediaEntity.builder()
+                OrderRefundMediaEntity mediaEntity = OrderRefundMediaEntity.builder()
                         .mediaUrl(fileUploaded.getUrl())
                         .cloudinaryMediaId(fileUploaded.getPublicId())
                         .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()))
-                        .orderReturnRequest(orderReturnRequestEntity)
+                        .orderReturnRequest(orderRefundRequestEntity)
                         .build();
-                orderReturnMediaEntityList.add(mediaEntity);
+                orderRefundMediaEntityList.add(mediaEntity);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -87,26 +81,14 @@ public class OrderReturnService implements IOrderReturnService {
 
     @Override
     public void processOrderRefundRequest(AnswerStatus status, String orderId) {
-        OrderReturnRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
+        OrderRefundRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Order return request not found"));
-        if(orderReturnRequest.getStatus() != AnswerStatus.PENDING) {
+        if (orderReturnRequest.getStatus() != AnswerStatus.PENDING) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The request has already been processed");
         }
         OrderBillEntity orderBill = orderReturnRequest.getOrderBill();
         orderReturnRequest.setStatus(status);
-        if(status == AnswerStatus.REFUSED) {
-            OrderEventEntity event = OrderEventEntity.builder()
-                    .orderBill(orderBill)
-                    .orderStatus(OrderStatus.ORDER_REFUND_REFUSED)
-                    .build();
-            orderBill.getOrderEventList().add(event);
-
-        } else if(status == AnswerStatus.ACCEPTED){
-            OrderEventEntity event = OrderEventEntity.builder()
-                    .orderBill(orderBill)
-                    .orderStatus(OrderStatus.ORDER_REFUND_ACCEPTED)
-                    .build();
-            orderBill.getOrderEventList().add(event);
+        if (status == AnswerStatus.ACCEPTED) {
 
             UserEntity user = orderBill.getUser();
             long coinRefund = orderBill.getCoin() + orderBill.getTotalPayment();
@@ -115,5 +97,12 @@ public class OrderReturnService implements IOrderReturnService {
 
         }
         orderBillRepository.save(orderBill);
+    }
+
+    @Override
+    public GetOrderRefundResponse getOrderRefundRequest(String orderId) {
+        OrderRefundRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Order return request not found"));
+        return GetOrderRefundResponse.fromOrderRefundRequestEntity(orderReturnRequest);
     }
 }
