@@ -8,6 +8,7 @@ import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
+import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IEmployeeService;
@@ -146,5 +147,22 @@ public class EmployeeController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
+    @Operation(summary = EMPLOYEE_GET_ORDER_STATISTIC_SUM)
+    @GetMapping(path = GET_EMPLOYEE_STATISTIC_TODAY_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetSaleStatisticTodayResponse>> getStatisticToday(
+            @PathVariable(EMPLOYEE_ID) String employeeId,
+            @Parameter(name = "start_date", required = true, example = "2024-02-24")
+            @RequestParam("start_date") java.sql.Date startDate,
+            @Parameter(name = "end_date", required = true, example = "2024-03-25")
+            @RequestParam("end_date") java.sql.Date endDate) {
+        GetSaleStatisticTodayResponse resData = employeeService.getStatisticToday(employeeId, startDate, endDate);
+        ResponseAPI res = ResponseAPI.builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.GET)
+                .build();
+
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 
 }

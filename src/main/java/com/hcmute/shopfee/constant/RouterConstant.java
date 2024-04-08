@@ -69,6 +69,10 @@ public class RouterConstant {
     public static final String PATCH_USER_UPLOAD_AVATAR_PATH = USER_BASE_PATH + PATCH_USER_UPLOAD_AVATAR_SUB_PATH;
     public static final String PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH = USER_ID_PATH + "/add-phone-number";
     public static final String PATCH_USER_ADD_PHONE_NUMBER_PATH = USER_BASE_PATH + PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH;
+    public static final String GET_USER_SPENDING_STATISTIC_SUB_PATH = USER_ID_PATH + "/spent-statistics";
+    public static final String GET_USER_SPENDING_STATISTIC_PATH = USER_BASE_PATH + GET_USER_SPENDING_STATISTIC_SUB_PATH;
+    public static final String GET_USER_ORDER_STATISTIC_SUB_PATH = USER_ID_PATH + "/order-statistics";
+    public static final String GET_USER_ORDER_STATISTIC_PATH = USER_BASE_PATH + GET_USER_ORDER_STATISTIC_SUB_PATH;
 
     // ENDPOINT URL ADDRESS =================================================================
     public static final String POST_ADDRESS_CREATE_SUB_PATH = "/user" + USER_ID_PATH;
@@ -139,6 +143,8 @@ public class RouterConstant {
     // ENDPOINT URL EMPLOYEE =================================================================
     public static final String GET_EMPLOYEE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH;
     public static final String GET_EMPLOYEE_BY_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_BY_ID_SUB_PATH;
+    public static final String GET_EMPLOYEE_STATISTIC_TODAY_SUB_PATH = EMPLOYEE_ID_PATH + "/sale-statistics";
+    public static final String GET_EMPLOYEE_STATISTIC_TODAY_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_STATISTIC_TODAY_SUB_PATH;
 
     public static final String GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH = EMPLOYEE_ID_PATH + "/profile";
     public static final String GET_EMPLOYEE_PROFILE_BY_ID_PATH = EMPLOYEE_BASE_PATH + GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH;

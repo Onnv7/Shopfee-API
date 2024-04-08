@@ -5,7 +5,12 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
+import com.hcmute.shopfee.dto.response.GetUserOrderStatusStatisticsResponse;
+import com.hcmute.shopfee.dto.response.GetUserSpendingStatisticsResponse;
+import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
+
+import java.sql.Date;
 
 public interface IUserService {
     GetAllUserResponse getUserList(String key, UserStatus status, int page, int size);
@@ -14,4 +19,6 @@ public interface IUserService {
     String checkExistedUserByEmail(String email);
     void uploadAvatar(UploadUserAvatarRequest body, String userId);
     void addPhoneNumberToUser(AddPhoneNumberRequest body, String userId);
+    GetUserSpendingStatisticsResponse getUserSpendingStatistic(String userId, Date startDate, Date endDate);
+    GetUserOrderStatusStatisticsResponse getOrderStatisticByUserId(String userId, UserChartStatisticType chartType);
 }

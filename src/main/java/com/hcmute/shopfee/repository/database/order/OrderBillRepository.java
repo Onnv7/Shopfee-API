@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.repository.database.order;
 
+import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,4 +108,18 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             join order_event oe on last_event.created_at = oe.created_at
             """, nativeQuery = true)
     GetStatisticOfOrderQuantityQueryDto getStatisticOfOrderQuantity();
+
+
+    @Query(value = """
+            SELECT DATE_FORMAT(ob.created_at, '%Y-%m-%d') as 'time', sum(ob.total_item_price) as totalItemPrice, count(*) orderCount
+            FROM order_bill ob\s
+            join order_event oe on ob.id = oe.order_bill_id\s
+            JOIN employee e on oe.created_by = e.id\s
+            where e.id = ?1\s
+            and oe.order_status = 'PREPARED'
+            AND oe.created_at >= ?2
+            AND oe.created_at <= ?3
+            GROUP BY DATE_FORMAT(ob.created_at, '%Y-%m-%d')
+            """, nativeQuery = true)
+    List<GetEmployeeOrderStatisticDto> getEmployeeOrderStatistic(String userId, Date startDate, Date endDate);
 }

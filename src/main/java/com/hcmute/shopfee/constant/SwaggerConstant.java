@@ -44,6 +44,8 @@ public class SwaggerConstant {
     public static final String USER_CHECK_EXISTED_BY_EMAIL_SUM = "Check user existence by email";
     public static final String USER_UPLOAD_AVATAR_BY_USER_ID_SUM = "Upload user's avatar";
     public static final String USER_ADD_PHONE_NUMBER_SUM = "Add phone number by user id";
+    public static final String USER_GET_SPENDING_STATISTIC_SUM = "Get user's spending statistics";
+    public static final String USER_GET_ORDER_STATISTIC_SUM = "Get user's order statistics";
     // For address =================================================================
     public static final String ADDRESS_CONTROLLER_TITLE = "ADDRESS MANAGEMENT";
     public static final String ADDRESS_ADD_ADDRESS_BY_ID_SUM = "Add new address for user";
@@ -141,6 +143,7 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_GET_BY_BRANCH_ID_SUM = "Get employee list by branch id";
     public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password for employee by employee id for employee";
     public static final String EMPLOYEE_SET_NEW_PASSWORD_SUM = "Set new password for employee by employee id";
+    public static final String EMPLOYEE_GET_ORDER_STATISTIC_SUM = "Get sales data statistics";
 
     // For Employee =============================================================
     public static final String NOTIFICATION_CONTROLLER_TITLE = "NOTIFICATION MANAGEMENT";

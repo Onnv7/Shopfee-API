@@ -6,8 +6,10 @@ import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
+import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -19,4 +21,5 @@ public interface IEmployeeService {
     void deleteEmployeeById(String id);
     GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId);
     GetEmployeeByIdResponse getEmployeeById(String employeeId);
+    GetSaleStatisticTodayResponse getStatisticToday(String employeeId, Date startDate, Date endDate);
 }

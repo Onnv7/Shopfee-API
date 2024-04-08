@@ -9,6 +9,8 @@ import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
 import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
+import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
+import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeFCMTokenEntity;
@@ -18,8 +20,10 @@ import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
+import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.core.IEmployeeService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import com.hcmute.shopfee.utils.DateUtils;
 import com.hcmute.shopfee.utils.RegexUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +45,7 @@ public class EmployeeService implements IEmployeeService {
     private final ModelMapperService modelMapperService;
     private final BranchRepository branchRepository;
     private final EmployeeFCMTokenRepository employeeFCMTokenRepository;
+    private final OrderBillRepository orderBillRepository;
 
     public Optional<EmployeeEntity> findByUsername(String username) {
         return employeeRepository.findByUsernameAndIsDeletedFalse(username);
@@ -176,6 +182,16 @@ public class EmployeeService implements IEmployeeService {
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
         return GetEmployeeByIdResponse.fromEmployeeEntity(employee);
+    }
+
+    @Override
+    public GetSaleStatisticTodayResponse getStatisticToday(String employeeId, Date startDate, Date endDate) {
+        SecurityUtils.checkUserId(employeeId);
+        if(!DateUtils.isWithin31Days(startDate, endDate)) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
+        }
+        List<GetEmployeeOrderStatisticDto>  dataList = orderBillRepository.getEmployeeOrderStatistic(employeeId, startDate, endDate);
+        return GetSaleStatisticTodayResponse.fromEmployeeOrderStatisticRecordList(dataList, startDate, endDate);
     }
 
 

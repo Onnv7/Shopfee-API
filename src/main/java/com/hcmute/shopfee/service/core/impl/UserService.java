@@ -8,13 +8,21 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
+import com.hcmute.shopfee.dto.response.GetUserOrderStatusStatisticsResponse;
+import com.hcmute.shopfee.dto.response.GetUserSpendingStatisticsResponse;
+import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
+import com.hcmute.shopfee.dto.sql.GetUserSpendingStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.TransactionRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
+import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IUserService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import com.hcmute.shopfee.utils.DateUtils;
 import com.hcmute.shopfee.utils.ImageUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +32,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +44,8 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
+    private final TransactionRepository transactionRepository;
+    private final OrderEventRepository orderEventRepository;
 
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -112,5 +123,27 @@ public class UserService implements IUserService {
         }
         user.setPhoneNumber(body.getPhoneNumber());
         userRepository.save(user);
+    }
+
+    @Override
+    public GetUserSpendingStatisticsResponse getUserSpendingStatistic(String userId, Date startDate, Date endDate) {
+        SecurityUtils.checkUserId(userId);
+        if(!DateUtils.isWithin31Days(startDate, endDate)) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
+        }
+        List<GetUserSpendingStatisticDto> dataStatisticsList = transactionRepository.getUserSpendingStatisticsByDate(startDate, endDate, userId);
+        return GetUserSpendingStatisticsResponse.fromDatabase(dataStatisticsList, startDate, endDate);
+    }
+
+    @Override
+    public GetUserOrderStatusStatisticsResponse getOrderStatisticByUserId(String userId, UserChartStatisticType chartType) {
+        SecurityUtils.checkUserId(userId);
+        List<GetStatisticByKeyValue> dataList = new ArrayList<>();
+        if(chartType == UserChartStatisticType.ORDER_STATUS) {
+            dataList = orderEventRepository.getCountOrderEventStatisticsByUser(userId);
+        } else if(chartType == UserChartStatisticType.PAYMENT_TYPE) {
+            dataList = transactionRepository.getUserPaymentTypeStatistic(userId);
+        }
+        return GetUserOrderStatusStatisticsResponse.fromOrderStatusStatistics(dataList);
     }
 }

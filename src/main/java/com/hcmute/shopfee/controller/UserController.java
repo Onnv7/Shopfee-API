@@ -7,6 +7,9 @@ import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.GetAllUserResponse;
 import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
+import com.hcmute.shopfee.dto.response.GetUserOrderStatusStatisticsResponse;
+import com.hcmute.shopfee.dto.response.GetUserSpendingStatisticsResponse;
+import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IUserService;
@@ -103,13 +106,47 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = USER_ADD_PHONE_NUMBER_SUM)
     @PatchMapping(path = PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH)
-    public ResponseEntity<ResponseAPI<String>> updatePhoneNumber(@PathVariable(USER_ID) String userId, @RequestBody @Valid AddPhoneNumberRequest body) {
+    public ResponseEntity<ResponseAPI<?>> updatePhoneNumber(@PathVariable(USER_ID) String userId, @RequestBody @Valid AddPhoneNumberRequest body) {
         userService.addPhoneNumberToUser(body, userId);
-        ResponseAPI<String> res = ResponseAPI.<String>builder()
+        ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = USER_GET_SPENDING_STATISTIC_SUM)
+    @GetMapping(path = GET_USER_SPENDING_STATISTIC_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetUserSpendingStatisticsResponse>> getUserSpendingStatistic(
+            @PathVariable(USER_ID) String userId,
+            @Parameter(name = "start_date", required = true, example = "2024-02-24")
+            @RequestParam("start_date") java.sql.Date startDate,
+            @Parameter(name = "end_date", required = true, example = "2024-03-25")
+            @RequestParam("end_date") java.sql.Date endDate
+    ) {
+        GetUserSpendingStatisticsResponse data = userService.getUserSpendingStatistic(userId, startDate, endDate);
+        ResponseAPI<GetUserSpendingStatisticsResponse> res = ResponseAPI.<GetUserSpendingStatisticsResponse>builder()
+                .timestamp(new Date())
+                .data(data)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = USER_GET_ORDER_STATISTIC_SUM)
+    @GetMapping(path = GET_USER_ORDER_STATISTIC_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetUserOrderStatusStatisticsResponse>> getOrderStatisticByUserId(
+            @PathVariable(USER_ID) String userId,
+            @RequestParam("chart_type") UserChartStatisticType chartType
+            ) {
+        GetUserOrderStatusStatisticsResponse data = userService.getOrderStatisticByUserId(userId, chartType);
+        ResponseAPI<GetUserOrderStatusStatisticsResponse> res = ResponseAPI.<GetUserOrderStatusStatisticsResponse>builder()
+                .timestamp(new Date())
+                .data(data)
+                .message(SuccessConstant.GET)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }

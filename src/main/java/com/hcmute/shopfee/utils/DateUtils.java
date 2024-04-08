@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.utils;
 
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,5 +48,24 @@ public class DateUtils {
 
     public static Instant plus(Instant original, int timeValue, ChronoUnit unit) {
         return original.plus(timeValue, unit);
+    }
+    public static boolean isWithin31Days(java.sql.Date startDate, java.sql.Date endDate) {
+        LocalDate startLocalDate = startDate.toLocalDate();
+        LocalDate endLocalDate = endDate.toLocalDate();
+
+        // Tính khoảng thời gian giữa startDate và endDate
+        Duration duration = Duration.between(startLocalDate.atStartOfDay(), endLocalDate.atStartOfDay());
+
+        return duration.toDays() <= 31;
+    }
+    public static java.sql.Date getSqlDateFromTimeString(String timeString) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date utilDate = sdf.parse(timeString);
+            return new java.sql.Date(utilDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace(); // Xử lý ngoại lệ nếu có
+            return null; // Trả về null nếu không thể chuyển đổi
+        }
     }
 }

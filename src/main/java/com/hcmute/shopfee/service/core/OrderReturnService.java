@@ -91,8 +91,8 @@ public class OrderReturnService implements IOrderReturnService {
         if (status == AnswerStatus.ACCEPTED) {
 
             UserEntity user = orderBill.getUser();
-            long coinRefund = orderBill.getCoin() + orderBill.getTotalPayment();
-            user.setCoin(user.getCoin() + coinRefund);
+            long coinRefunded = orderBill.getCoin() + orderBill.getTotalPayment();
+            user.setCoin(user.getCoin() + coinRefunded);
             orderBill.getTransaction().setRefunded(true);
 
         }
