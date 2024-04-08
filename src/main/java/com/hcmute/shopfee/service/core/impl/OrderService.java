@@ -1044,22 +1044,7 @@ public class OrderService implements IOrderService {
         return eventList;
     }
 
-    @Override
-    public GetOrderQuantityByStatusResponse getOrderQuantityByStatusAtCurrentDate(OrderStatus orderStatus) {
-        Date startDate = DateUtils.createDateTimeByToday(0, 0, 0, 0, 0);
-        Date endDate = DateUtils.createDateTimeByToday(23, 59, 59, 999, 0);
-        GetOrderQuantityByStatusResponse response = new GetOrderQuantityByStatusResponse();
-        long current = orderBillRepository.countOrderInCurrentDateByStatus(orderStatus.name(), DateUtils.formatYYYYMMDD(new Date()));
-        response.setOrderQuantity((int) current);
 
-        Date startDatePrev = DateUtils.createDateTimeByToday(0, 0, 0, 0, -1);
-        Date endDatePrev = DateUtils.createDateTimeByToday(23, 59, 59, 999, -1);
-
-        long prev = orderBillRepository.countOrderInCurrentDateByStatus(orderStatus.name(), DateUtils.formatYYYYMMDD(startDatePrev));
-        long difference = current - prev;
-        response.setDifference((int) difference);
-        return response;
-    }
 
     @Override
     public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {

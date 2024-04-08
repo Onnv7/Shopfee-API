@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateProductRequest;
@@ -20,6 +21,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +40,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createProduct(@ModelAttribute @Valid CreateProductRequest body, @RequestParam("type") ProductType productType) {
         productService.createProduct(body, body.getImage(), productType);
 
@@ -50,6 +53,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_BY_ID_SUM)
     @GetMapping(path = GET_PRODUCT_DETAILS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetProductByIdResponse>> getProductDetailsById(@PathVariable(PRODUCT_ID) String id) {
         GetProductByIdResponse resData = productService.getProductDetailsById(id);
 
@@ -139,6 +143,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_ALL_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetProductListResponse>> getAllProducts(
             @Parameter(name = "key", description = "Key is name or description", required = false, example = "name or description")
             @RequestParam(name = "key", required = false, defaultValue = "") String key,
@@ -160,6 +165,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_PRODUCT_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteProductById(@PathVariable("productId") String id) {
         productService.deleteProductById(id);
 
@@ -172,6 +178,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_SOME_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_SOME_PRODUCT_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteSomeProductById(@RequestBody @Valid DeleteSomeProductRequest body) {
         productService.deleteSomeProductById(body.getProductIdList());
 
@@ -184,6 +191,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_PRODUCT_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateProductById(
             @ModelAttribute @Valid UpdateProductRequest body,
             @PathVariable("productId") String id
@@ -229,6 +237,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file, @RequestParam("product_type") ProductType productType) {
         if(productType == ProductType.BEVERAGE) {
             productService.createBeverageFromFile(file);

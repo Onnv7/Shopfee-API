@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -97,6 +99,7 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
     @PostMapping(path = POST_AUTH_USER_LOGOUT_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                                      @RequestBody @Valid UserLogoutRequest body) {
         if (refreshToken == null) {
@@ -114,9 +117,8 @@ public class UserAuthController {
     }
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
-    @PostMapping(POST_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
+    @PostMapping(POST_USER_AUTH_SEND_CODE_TO_REGISTER_SUB_PATH)
     public ResponseEntity<ResponseAPI<?>> sendCodeToRegister(@RequestBody @Valid SendCodeRequest body) {
-
         userAuthService.sendCodeToRegister(body.getEmail());
         ResponseAPI<?> res = ResponseAPI.builder()
                 .timestamp(new Date())
@@ -185,6 +187,7 @@ public class UserAuthController {
 
     @Operation(summary = USER_CHANGE_PWD_SUM)
     @PatchMapping(path = PATCH_USER_CHANGE_PASSWORD_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> changePasswordProfile(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid UpdatePasswordRequest body

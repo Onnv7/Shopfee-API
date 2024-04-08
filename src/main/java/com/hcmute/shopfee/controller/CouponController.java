@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -28,6 +30,7 @@ public class CouponController {
     private final ICouponService couponService;
     @Operation(summary = COUPON_CREATE_SHIPPING_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createShippingCoupon(@RequestBody @Valid CreateShippingCouponRequest body) {
         couponService.createShippingCoupon(body);
 
@@ -41,6 +44,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_UPDATE_SHIPPING_TYPE_SUM)
     @PutMapping(path = PUT_COUPON_UPDATE_SHIPPING_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateShippingCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateShippingCouponRequest body) {
         couponService.updateShippingCoupon(body, couponId);
 
@@ -54,6 +58,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_ORDER_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_ORDER_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createOrderCoupon(@RequestBody @Valid CreateOrderCouponRequest body) {
         couponService.createOrderCoupon(body);
 
@@ -67,6 +72,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_UPDATE_ORDER_TYPE_SUM)
     @PutMapping(path = PUT_COUPON_UPDATE_ORDER_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateOrderCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateOrderCouponRequest body) {
         couponService.updateOrderCoupon(body, couponId);
 
@@ -80,6 +86,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
     @PostMapping(path = POST_COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createAmountOffProductCoupon(@RequestBody @Valid CreateProductMoneyCouponRequest body) {
         couponService.createAmountOffProductCoupon(body);
 
@@ -92,6 +99,7 @@ public class CouponController {
     }
     @Operation(summary = COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
     @PutMapping(path = PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateAmountOffProductCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateProductMoneyCouponRequest body) {
         couponService.updateAmountOffProductCoupon(body, couponId);
 
@@ -105,6 +113,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM)
     @PostMapping(path = POST_COUPON_CREATE_BUY_GET_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createGiftProductCoupon(@RequestBody @Valid CreateBuyXGetYCouponRequest body) {
         couponService.createGiftProductCoupon(body);
 
@@ -118,6 +127,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_UPDATE_BUY_GET_PRODUCT_GIFT_SUM)
     @PutMapping(path = PUT_COUPON_UPDATE_BUY_GET_TYPE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateGiftProductCoupon(@PathVariable(COUPON_ID) String couponId, @RequestBody @Valid UpdateBuyXGetYCouponRequest body) {
         couponService.updateGiftProductCoupon(body, couponId);
 
@@ -131,6 +141,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_COUPON_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteCouponById(@PathVariable(COUPON_ID) String couponId) {
         couponService.deleteCoupon(couponId);
 
@@ -175,6 +186,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_LIST_SUM)
     @GetMapping(path = GET_COUPON_LIST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<List<GetCouponListResponse>>> getCouponList() {
         List<GetCouponListResponse> resData = couponService.getCouponList();
 
@@ -189,6 +201,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_SHIPPING_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_SHIPPING_DETAIL_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetShippingCouponDetailsByIdResponse>> getShippingCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetShippingCouponDetailsByIdResponse resData = couponService.getShippingCouponDetailById(couponId);
 
@@ -203,6 +216,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_ORDER_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_ORDER_DETAIL_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetOrderCouponDetailByIdResponse>> getOrderCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetOrderCouponDetailByIdResponse resData = couponService.getOrderCouponDetailById(couponId);
 
@@ -217,6 +231,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_PRODUCT_GIFT_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_PRODUCT_GIFT_DETAIL_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetProductGiftCouponDetailByIdResponse>> getProductGiftCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetProductGiftCouponDetailByIdResponse resData = couponService.getProductGiftCouponDetailById(couponId);
 
@@ -231,6 +246,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetAmountOffProductCouponDetailByIdResponse>> getAmountOffProductCouponDetailById(@PathVariable(COUPON_ID) String couponId) {
         GetAmountOffProductCouponDetailByIdResponse resData = couponService.getAmountOffProductCouponDetailById(couponId);
 
@@ -259,6 +275,7 @@ public class CouponController {
 
     @Operation(summary = COUPON_CHECK_LIST_IN_CART_SUM)
     @PostMapping(path = POST_COUPON_CHECK_LIST_IN_CART_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<List<CheckCouponInCartResponse>>> validateCouponAndItemInCart(@RequestBody @Valid GetCouponListForCartRequest body) {
         List<CheckCouponInCartResponse> resData = couponService.validateCouponAndItemInCart(body);
 

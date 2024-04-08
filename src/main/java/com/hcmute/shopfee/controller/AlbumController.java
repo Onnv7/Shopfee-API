@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UploadImageRequest;
@@ -16,6 +17,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -32,6 +34,7 @@ public class AlbumController {
 
     @Operation(summary = ALBUM_UPLOAD_IMAGE_SUM)
     @PostMapping(path = POST_ALBUM_UPLOAD_IMAGE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> uploadImage(@ModelAttribute @Valid UploadImageRequest body) {
         albumService.uploadImage(body);
         ResponseAPI res = ResponseAPI.builder()
@@ -43,6 +46,7 @@ public class AlbumController {
 
     @Operation(summary = ALBUM_GET_ALL_SUM)
     @GetMapping(path = GET_ALBUM_GET_ALL_IMAGE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetAllImageResponse>> getAllImage(
             @Parameter(name = "album_type", required = false, example = "")
             @RequestParam(name = "album_type", required = false) AlbumType type,
@@ -64,6 +68,7 @@ public class AlbumController {
 
     @Operation(summary = ALBUM_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_ALBUM_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteImageById(@PathVariable(ALBUM_ID) String albumId) {
         albumService.deleteImageById(albumId);
         ResponseAPI res = ResponseAPI.builder()

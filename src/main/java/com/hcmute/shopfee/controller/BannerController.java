@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateBannerRequest;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -32,6 +34,7 @@ public class BannerController {
 
     @Operation(summary = BANNER_CREATE_SUM)
     @PostMapping(path = POST_BANNER_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createBanner(@ModelAttribute @Valid CreateBannerRequest body) {
         bannerService.createBanner(body);
 
@@ -44,6 +47,7 @@ public class BannerController {
     }
     @Operation(summary = BANNER_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_BANNER_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateBannerById(@ModelAttribute @Valid UpdateBannerRequest body, @PathVariable(BANNER_ID) String bannerId) {
         bannerService.updateBannerById(body, bannerId);
 
@@ -56,6 +60,7 @@ public class BannerController {
     }
     @Operation(summary = BANNER_GET_LIST_SUM)
     @GetMapping(path = GET_BANNER_LIST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<List<GetBannerListResponse>>> getBannerList() {
         List<GetBannerListResponse>  resData = bannerService.getBannerList();
 
@@ -82,6 +87,7 @@ public class BannerController {
     }
     @Operation(summary = BANNER_GET_DETAILS_BY_ID_LIST_SUM)
     @GetMapping(path = GET_BANNER_DETAILS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetBannerDetailResponse>> getBannerDetailsById(@PathVariable(BANNER_ID) String bannerId) {
         GetBannerDetailResponse resData = bannerService.getBannerDetailsById(bannerId);
 
@@ -95,6 +101,7 @@ public class BannerController {
     }
     @Operation(summary = BANNER_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_BANNER_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteBannerById(@PathVariable(BANNER_ID) String bannerId) {
         bannerService.deleteBannerById(bannerId);
 

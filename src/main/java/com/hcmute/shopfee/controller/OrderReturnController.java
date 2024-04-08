@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.response.CreateOrderResponse;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -29,6 +31,7 @@ public class OrderReturnController {
     private final IOrderReturnService orderReturnService;
     @Operation(summary = ORDER_RETURN_CREATE_REQUEST_SUM)
     @PostMapping(path = POST_ORDER_REFUND_CREATE_REQUEST_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> createOrderRefundRequest(@ModelAttribute @Valid CreateOrderReturnRequest body, @PathVariable(ORDER_ID) String orderId) {
         orderReturnService.createOrderRefundRequest(body, orderId);
         ResponseAPI<CreateOrderResponse> res = ResponseAPI.<CreateOrderResponse>builder()
@@ -40,6 +43,7 @@ public class OrderReturnController {
 
     @Operation(summary = ORDER_RETURN_PROCESSING_REQUEST_SUM)
     @PatchMapping(path = PATCH_ORDER_REFUND_PROCESSING_REQUEST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<?>> processOrderRefundRequest(@RequestParam("status") AnswerStatus status, @PathVariable(ORDER_ID) String orderId) {
         orderReturnService.processOrderRefundRequest(status, orderId);
         ResponseAPI<?> res = ResponseAPI.builder()
@@ -51,6 +55,7 @@ public class OrderReturnController {
 
     @Operation(summary = ORDER_RETURN_GET_REQUEST_SUM)
     @GetMapping(path = GET_ORDER_REFUND_REQUEST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
     public ResponseEntity<ResponseAPI<GetOrderRefundResponse>> getOrderRefundRequest(@PathVariable(ORDER_ID) String orderId) {
         GetOrderRefundResponse data = orderReturnService.getOrderRefundRequest(orderId);
         ResponseAPI<GetOrderRefundResponse> res = ResponseAPI.<GetOrderRefundResponse>builder()

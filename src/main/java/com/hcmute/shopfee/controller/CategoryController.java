@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -31,6 +33,7 @@ public class CategoryController {
     private final ICategoryService categoryService;
     @Operation(summary = CATEGORY_CREATE_SUM)
     @PostMapping(path = POST_CATEGORY_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createCategory(@ModelAttribute @Valid CreateCategoryRequest body) {
         categoryService.createCategory(body);
 
@@ -43,6 +46,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_GET_BY_ID_SUM)
     @GetMapping(GET_CATEGORY_BY_SUB_ID_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetCategoryByIdResponse>> getCategoryById(@PathVariable(CATEGORY_ID) String categoryId) {
         GetCategoryByIdResponse resData = categoryService.getCategoryById(categoryId);
         ResponseAPI res = ResponseAPI.builder()
@@ -55,6 +59,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_GET_ALL_SUM)
     @GetMapping(path = GET_CATEGORY_ALL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<List<GetCategoryListResponse>>> getCategoryList() {
         List<GetCategoryListResponse> resData = categoryService.getCategoryList();
 
@@ -80,6 +85,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateCategory(
             @ModelAttribute @Valid UpdateCategoryRequest body,
             @PathVariable(CATEGORY_ID) String id) {
@@ -93,6 +99,7 @@ public class CategoryController {
 
     @Operation(summary = CATEGORY_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_CATEGORY_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteCategoryById(@PathVariable(CATEGORY_ID) String id) {
         categoryService.deleteCategoryById(id);
         ResponseAPI res = ResponseAPI.builder()

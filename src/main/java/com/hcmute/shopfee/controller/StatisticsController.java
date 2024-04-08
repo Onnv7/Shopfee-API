@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +34,7 @@ public class StatisticsController {
 
     @Operation(summary = STATISTICS_GET_REVENUE_CURRENT_DATE_SUM)
     @GetMapping(path = GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetRevenueCurrentDateResponse>> getRevenueCurrentDate() {
         GetRevenueCurrentDateResponse revenue = statisticsService.getRevenueCurrentDate();
         ResponseAPI<GetRevenueCurrentDateResponse> res = ResponseAPI.<GetRevenueCurrentDateResponse>builder()
@@ -43,6 +46,7 @@ public class StatisticsController {
 
     @Operation(summary = STATISTICS_GET_ORDER_QUANTITY_BY_STAGE_SUM)
     @GetMapping(path = GET_STATISTICS_QUANTITY_BY_STAGE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetStatisticsOfOrderQuantityResponse>> getStatisticOfOrderQuantity() {
         GetStatisticsOfOrderQuantityResponse resData = statisticsService.getStatisticOfOrderQuantity();
         ResponseAPI<GetStatisticsOfOrderQuantityResponse> res = ResponseAPI.<GetStatisticsOfOrderQuantityResponse>builder()
@@ -54,6 +58,7 @@ public class StatisticsController {
 
     @Operation(summary = STATISTICS_GET_REVENUE_BY_TIME_SUM)
     @GetMapping(path = GET_STATISTICS_REVENUE_BY_TIME_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetRevenueByTimeResponse>> getRevenueByTime(
             @Parameter(name = "start_date", required = true, example = "2024-02-24")
             @RequestParam("start_date")  Date startDate,

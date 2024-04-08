@@ -21,12 +21,12 @@ public class CreateRoleDataCommand implements CommandLineRunner {
         try {
             boolean existedAdmin = roleRepository.findByRoleName(Role.ROLE_ADMIN).orElse(null) != null;
             boolean existedUser = roleRepository.findByRoleName(Role.ROLE_USER).orElse(null) != null;
-            boolean existedEmployee = roleRepository.findByRoleName(Role.ROLE_EMPLOYEE).orElse(null) != null;
+            boolean existedEmployee = roleRepository.findByRoleName(Role.ROLE_WAITER).orElse(null) != null;
             boolean existedManager = roleRepository.findByRoleName(Role.ROLE_MANAGER).orElse(null) != null;
 
             RoleEntity admin = RoleEntity.builder().roleName(Role.ROLE_ADMIN).build();
             RoleEntity user = RoleEntity.builder().roleName(Role.ROLE_USER).build();
-            RoleEntity employee = RoleEntity.builder().roleName(Role.ROLE_EMPLOYEE).build();
+            RoleEntity employee = RoleEntity.builder().roleName(Role.ROLE_WAITER).build();
             RoleEntity manager = RoleEntity.builder().roleName(Role.ROLE_MANAGER).build();
 
             if(!existedAdmin) {

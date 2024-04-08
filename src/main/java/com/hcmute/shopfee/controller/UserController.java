@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
@@ -21,6 +22,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -37,6 +39,7 @@ public class UserController {
 
     @Operation(summary = USER_GET_ALL_SUM)
     @GetMapping(path = GET_USER_ALL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetAllUserResponse>> getUserList(
             @Parameter(name = "key", description = "Key is user's id, phone number, email", required = false, example = "nav611")
             @RequestParam(name = "key", required = false) String key,
@@ -59,6 +62,7 @@ public class UserController {
 
     @Operation(summary = USER_GET_BY_ID_SUM)
     @GetMapping(path = GET_USER_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<GetUserByIdResponse>> getUserProfileById(@PathVariable(USER_ID) String userId) {
         GetUserByIdResponse resData = userService.getUserProfileById(userId);
 
@@ -71,6 +75,7 @@ public class UserController {
 
     @Operation(summary = USER_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_USER_UPDATE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> updateUserProfile(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid UpdateUserRequest body
@@ -98,6 +103,7 @@ public class UserController {
 
     @Operation(summary = USER_UPLOAD_AVATAR_BY_USER_ID_SUM)
     @PatchMapping(path = PATCH_USER_UPLOAD_AVATAR_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<String>> uploadAvatar(@PathVariable(USER_ID) String userId, @ModelAttribute @Valid UploadUserAvatarRequest body) {
         userService.uploadAvatar(body, userId);
         ResponseAPI<String> res = ResponseAPI.<String>builder()
@@ -109,6 +115,7 @@ public class UserController {
 
     @Operation(summary = USER_ADD_PHONE_NUMBER_SUM)
     @PatchMapping(path = PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> updatePhoneNumber(@PathVariable(USER_ID) String userId, @RequestBody @Valid AddPhoneNumberRequest body) {
         userService.addPhoneNumberToUser(body, userId);
         ResponseAPI<?> res = ResponseAPI.builder()
@@ -120,6 +127,7 @@ public class UserController {
 
     @Operation(summary = USER_GET_SPENDING_STATISTIC_SUM)
     @GetMapping(path = GET_USER_SPENDING_STATISTIC_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<GetUserSpendingStatisticsResponse>> getUserSpendingStatistic(
             @PathVariable(USER_ID) String userId,
             @Parameter(name = "start_date", required = true, example = "2024-02-24")
@@ -138,6 +146,7 @@ public class UserController {
 
     @Operation(summary = USER_GET_ORDER_STATISTIC_SUM)
     @GetMapping(path = GET_USER_ORDER_STATISTIC_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<GetUserOrderStatusStatisticsResponse>> getOrderStatisticByUserId(
             @PathVariable(USER_ID) String userId,
             @RequestParam("chart_type") UserChartStatisticType chartType

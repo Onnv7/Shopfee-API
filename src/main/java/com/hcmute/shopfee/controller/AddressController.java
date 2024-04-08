@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateAddressRequest;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +32,7 @@ public class AddressController {
     private final IAddressService addressService;
     @Operation(summary = ADDRESS_ADD_ADDRESS_BY_ID_SUM)
     @PostMapping(path = POST_ADDRESS_CREATE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> addAddressToUserByUserId(
             @PathVariable(USER_ID) String userId,
             @RequestBody @Valid CreateAddressRequest body) {
@@ -43,6 +46,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_UPDATE_ADDRESS_BY_ID_SUM)
     @PutMapping(path = PUT_ADDRESS_UPDATE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> updateAddressById(
             @PathVariable(ADDRESS_ID) String addressId,
             @RequestBody @Valid UpdateAddressRequest body
@@ -57,6 +61,7 @@ public class AddressController {
     }
     @Operation(summary = ADDRESS_DELETE_ADDRESS_BY_ID_SUM)
     @DeleteMapping(path = DELETE_ADDRESS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> deleteAddressById(@PathVariable(ADDRESS_ID) String addressId) {
         addressService.deleteAddressById(addressId);
         ResponseAPI res = ResponseAPI.builder()
@@ -68,6 +73,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_GET_BY_USER_ID_SUM)
     @GetMapping(path = GET_ADDRESS_BY_USER_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<List<GetAddressListByUserIdResponse>>> getAddressByUserId(@PathVariable(USER_ID) String userId) {
 
         List<GetAddressListByUserIdResponse> resData = addressService.getAddressListByUserId(userId);
@@ -81,6 +87,7 @@ public class AddressController {
 
     @Operation(summary = ADDRESS_GET_DETAILS_BY_ID_SUM)
     @GetMapping(path = GET_ADDRESS_DETAILS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<GetAddressDetailsByIdResponse>> getAddressDetailsById(@PathVariable(ADDRESS_ID) String addressId) {
         GetAddressDetailsByIdResponse resData = addressService.getAddressDetailById(addressId);
         ResponseAPI res = ResponseAPI.builder()

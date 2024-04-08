@@ -226,7 +226,7 @@ public class ToolController {
         addressRepository.save(addressEntity);
 
         Set<RoleEntity> employeeRoleList = new HashSet<>();
-        RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_EMPLOYEE)
+        RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_WAITER)
                 .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
         employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()

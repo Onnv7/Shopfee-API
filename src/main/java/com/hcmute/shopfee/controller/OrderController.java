@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_CREATE_SHIPPING_SUM)
     @PostMapping(path = POST_ORDER_CREATE_SHIPPING_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
     public ResponseEntity<ResponseAPI<CreateOrderResponse>> createShippingOrder(HttpServletRequest request, @RequestBody @Valid CreateShippingOrderRequest body) {
         CreateOrderResponse resData = orderService.createShippingOrder(body, request);
         ResponseAPI<CreateOrderResponse> res = ResponseAPI.<CreateOrderResponse>builder()
@@ -47,6 +50,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_CREATE_ONSITE_SUM)
     @PostMapping(path = POST_ORDER_CREATE_ONSITE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<CreateOrderResponse>> createOnsiteOrder(HttpServletRequest request, @RequestBody @Valid CreateOnsiteOrderRequest body) {
         CreateOrderResponse resData = orderService.createOnsiteOrder(body, request);
         ResponseAPI<CreateOrderResponse> res = ResponseAPI.<CreateOrderResponse>builder()
@@ -58,6 +62,7 @@ public class OrderController {
     }
     @Operation(summary = ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM)
     @GetMapping(path = GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<GetOrderHistoryForEmployeeResponse>> getOrderHistoryPageForEmployee(
             @PathVariable("orderStatus") OrderStatus orderStatus,
             @Parameter(name = "key", description = "Key is order's code, customerCode, email, phoneNumber, phoneNumberReceiver", required = false, example = "U00000001")
@@ -79,6 +84,7 @@ public class OrderController {
     }
     @Operation(summary = ORDER_UPDATE_EVENT_SUM)
     @PatchMapping(path = PATCH_ORDER_UPDATE_STATUS_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<?>> insertOrderEventByEmployee(
             @PathVariable(ORDER_ID) String id,
             @RequestBody @Valid UpdateOrderStatusRequest body, HttpServletRequest request) {
@@ -94,6 +100,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_UPDATE_CANCEL_EVENT_SUM)
     @PatchMapping(path = PATCH_ORDER_UPDATE_CANCEL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> cancelOrder(
             @PathVariable(ORDER_ID) String id,
             @RequestBody @Valid CancelOrderBillRequest body) {
@@ -108,6 +115,7 @@ public class OrderController {
     }
     @Operation(summary = ORDER_CREATE_CANCELLATION_REQUEST_SUM)
     @PostMapping(path = POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> createCancellationRequest(
             @PathVariable(ORDER_ID) String orderId,
             @RequestBody @Valid CreateCancellationDemandRequest body) {
@@ -123,6 +131,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_UPDATE_CANCELLATION_REQUEST_SUM)
     @PatchMapping(path = PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<?>> processCancellationRequest(
             @PathVariable(ORDER_ID) String orderId,
             @RequestBody @Valid ProcessCancellationDemandRequest body) {
@@ -138,6 +147,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM)
     @GetMapping(path = GET_ORDER_ALL_IN_QUEUE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<GetOrderQueueResponse>> getOrderQueueToday(
             @RequestParam("orderType") OrderType orderType,
             @Parameter(name = "page", required = true, example = "1")
@@ -162,6 +172,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_LIST_SUM)
     @GetMapping(path = GET_ORDER_LIST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetOrderListResponse>> getOrderListForAdmin(
             @Parameter(name = "key", description = "Key is order's code, customerCode, email, phoneNumber, phoneNumberReceiver", required = false, example = "an nguyen")
             @RequestParam(name = "key", required = false) String key,
@@ -183,6 +194,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_DETAILS_BY_ID_SUM)
     @GetMapping(path = GET_ORDER_DETAILS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_WAITER_USER)
     public ResponseEntity<ResponseAPI<GetOrderByIdResponse>> getOrderDetailsById(@PathVariable(ORDER_ID) String id) {
         GetOrderByIdResponse resData = orderService.getOrderDetailsById(id);
         ResponseAPI<GetOrderByIdResponse> res = ResponseAPI.<GetOrderByIdResponse>builder()
@@ -195,6 +207,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_ORDER_ITEM_REVIEW_SUM)
     @GetMapping(path = GET_ORDER_ITEM_REVIEW_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<List<GetOrderItemAndReviewResponse>>> getOrderItemAndReview(@PathVariable(ORDER_ID) String id) {
         List<GetOrderItemAndReviewResponse> resData = orderService.getOrderItemAndReviewByOrderBillId(id);
         ResponseAPI<List<GetOrderItemAndReviewResponse>> res = ResponseAPI.<List<GetOrderItemAndReviewResponse>>builder()
@@ -224,6 +237,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM)
     @GetMapping(path = GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<List<GetAllOrderHistoryByUserIdResponse>>> getOrdersHistoryByUserId(
             @PathVariable("userId") String id,
             @RequestParam("order_phases_status") OrderPhasesStatus orderPhasesStatus,
@@ -244,6 +258,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_STATUS_LINE_SUM)
     @GetMapping(path = GET_ORDER_STATUS_LINE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
     public ResponseEntity<ResponseAPI<List<GetOrderStatusLineResponse>>> getOrderStatusLine(@PathVariable(ORDER_ID) String orderId) {
         List<GetOrderStatusLineResponse> resData = orderService.getOrderEventLogById(orderId);
 
@@ -255,20 +270,10 @@ public class OrderController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = ORDER_GET_ORDER_QUANTITY_BY_STATUS_SUM)
-    @GetMapping(path = GET_ORDER_ORDER_QUANTITY_BY_STATUS_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetOrderQuantityByStatusResponse>> getOrderQuantityByStatusAtCurrentDate(@RequestParam("status") OrderStatus orderStatus) {
-        GetOrderQuantityByStatusResponse resData = orderService.getOrderQuantityByStatusAtCurrentDate(orderStatus);
-        ResponseAPI<GetOrderQuantityByStatusResponse> res = ResponseAPI.<GetOrderQuantityByStatusResponse>builder()
-                .timestamp(new Date())
-                .data(resData)
-                .message(SuccessConstant.GET)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
 
     @Operation(summary = ORDER_GET_CANCELLATION_SUM)
     @GetMapping(path = GET_ORDER_CANCELLATION_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<GetCancellationByOrderBillIdRequest>> getCancellationRequestByOrderBillId(@RequestParam(ORDER_ID) String orderId) {
         GetCancellationByOrderBillIdRequest resData = orderService.getCancellationRequestByOrderBillId(orderId);
         ResponseAPI<GetCancellationByOrderBillIdRequest> res = ResponseAPI.<GetCancellationByOrderBillIdRequest>builder()

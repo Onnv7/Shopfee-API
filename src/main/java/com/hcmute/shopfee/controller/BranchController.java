@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.controller;
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
@@ -17,6 +18,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Time;
@@ -35,6 +37,7 @@ public class BranchController {
     private final Goong goong;
     @Operation(summary = BRANCH_CREATE_SUM)
     @PostMapping(path = POST_BRANCH_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> createBranch(@ModelAttribute @Valid CreateBranchRequest body) throws ExecutionException, InterruptedException {
         branchService.createBranch(body);
         ResponseAPI res = ResponseAPI.builder()
@@ -46,6 +49,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_BRANCH_UPDATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateBranchInfoById(@ModelAttribute @Valid UpdateBranchRequest body, @PathVariable(BRANCH_ID) String branchId) {
         branchService.updateBranchById(body, branchId);
         ResponseAPI res = ResponseAPI.builder()
@@ -57,6 +61,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_BRANCH_UPDATE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> deleteBranchInfoById(@PathVariable(BRANCH_ID) String branchId) {
         branchService.deleteBranchById(branchId);
         ResponseAPI res = ResponseAPI.builder()
@@ -68,6 +73,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_GET_ALL_SUM)
     @GetMapping(path = GET_BRANCH_ALL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetAllBranchResponse>> getAllBranch(
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
@@ -104,6 +110,7 @@ public class BranchController {
 
     @Operation(summary = BRANCH_GET_DETAIL_BY_ID_SUM)
     @GetMapping(path = GET_BRANCH_DETAIL_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetBranchDetailByIdResponse>> getBranchById(@PathVariable(BRANCH_ID) String branchId) {
         GetBranchDetailByIdResponse resData = branchService.getBranchDetailById(branchId);
         ResponseAPI res = ResponseAPI.builder()

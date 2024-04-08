@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
@@ -19,6 +20,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -36,6 +38,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_ALL_SUM)
     @GetMapping(path = GET_EMPLOYEE_ALL_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<GetAllEmployeeResponse>> getEmployeeList(
             @Parameter(name = "key", description = "Key is employee's username", required = false, example = "nav611")
             @RequestParam(name = "key", required = false) String key,
@@ -59,6 +62,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_BY_BRANCH_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_BY_BRANCH_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_MANAGER)
     public ResponseEntity<ResponseAPI<GetAllEmployeeResponse>> getEmployeeListByBranchId(
             @PathVariable(BRANCH_ID) String branchId,
             @Parameter(name = "key", description = "Key is employee's username", required = false, example = "nav611")
@@ -83,6 +87,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_PROFILE_BY_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<GetEmployeeProfileByIdResponse>> getEmployeeProfileById(@PathVariable(EMPLOYEE_ID) String employeeId) {
         GetEmployeeProfileByIdResponse resData = employeeService.getEmployeeProfileById(employeeId);
 
@@ -97,6 +102,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_BY_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<GetEmployeeByIdResponse>> getEmployeeById(@PathVariable(EMPLOYEE_ID) String employeeId) {
         GetEmployeeByIdResponse resData = employeeService.getEmployeeById(employeeId);
         ResponseAPI res = ResponseAPI.builder()
@@ -110,6 +116,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         employeeService.updateEmployeeForAdmin(body, id);
         ResponseAPI res = ResponseAPI.builder()
@@ -123,6 +130,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<?>> updateEmployeeProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeProfileRequest body) {
         employeeService.updateEmployeeProfile(body, id);
         ResponseAPI res = ResponseAPI.builder()
@@ -136,6 +144,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_EMPLOYEE_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<?>> deleteEmployeeById(@PathVariable(EMPLOYEE_ID) String id) {
         employeeService.deleteEmployeeById(id);
 
@@ -149,6 +158,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_ORDER_STATISTIC_SUM)
     @GetMapping(path = GET_EMPLOYEE_STATISTIC_TODAY_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<GetSaleStatisticTodayResponse>> getStatisticToday(
             @PathVariable(EMPLOYEE_ID) String employeeId,
             @Parameter(name = "start_date", required = true, example = "2024-02-24")

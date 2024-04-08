@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.config.Customizer;
@@ -29,8 +28,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-import static com.hcmute.shopfee.constant.SecurityConstant.*;
-
 
 @Configuration
 @EnableWebSecurity
@@ -44,9 +41,6 @@ public class WebSecurityConfig {
     private final String EMPLOYEE = "EMPLOYEE";
     private final String USER = "USER";
     private final String MANAGER = "MANAGER";
-
-//    @Autowired
-//    private CustomOidcUserService customOidcUserService;
 
 
     @Autowired
@@ -125,69 +119,9 @@ public class WebSecurityConfig {
                 .and()
                 .formLogin().disable()
                 .securityMatcher("/**")
+
                 .authorizeHttpRequests(register -> register
                                 .requestMatchers("/**").permitAll()
-//                        .requestMatchers("/socket.io/**").permitAll()
-//                        .requestMatchers("/socket.io").permitAll()
-
-                                // ALL
-                                .requestMatchers("/tool/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, GET_AUTH_WHITELIST).permitAll()
-                                .requestMatchers(HttpMethod.POST, POST_AUTH_WHITELIST).permitAll()
-                                .requestMatchers(HttpMethod.PATCH, PATCH_AUTH_WHITELIST).permitAll()
-
-                                // Only USER
-                                .requestMatchers(HttpMethod.GET, GET_USER_PATH).hasRole(USER)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_USER_PATH).hasRole(USER)
-                                .requestMatchers(HttpMethod.PUT, PUT_USER_PATH).hasRole(USER)
-                                .requestMatchers(HttpMethod.POST, POST_USER_PATH).hasRole(USER)
-                                .requestMatchers(HttpMethod.DELETE, DELETE_USER_PATH).hasRole(USER)
-                                // Only EMPLOYEE
-                                .requestMatchers(HttpMethod.GET, GET_EMPLOYEE_PATH).hasRole(EMPLOYEE)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_EMPLOYEE_PATH).hasRole(EMPLOYEE)
-
-                                // Only ADMIN
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_PATH).hasRole(ADMIN)
-                                .requestMatchers(HttpMethod.PUT, PUT_ADMIN_PATH).hasRole(ADMIN)
-                                .requestMatchers(HttpMethod.PUT, PATCH_ADMIN_PATH).hasRole(ADMIN)
-                                .requestMatchers(HttpMethod.POST, POST_ADMIN_PATH).hasRole(ADMIN)
-                                .requestMatchers(HttpMethod.DELETE, DELETE_ADMIN_PATH).hasRole(ADMIN)
-
-                                // Only GET_MANAGER_PATH
-                                .requestMatchers(HttpMethod.GET, GET_MANAGER_PATH).hasRole(MANAGER)
-
-                                // ADMIN + EMPLOYEE
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_EMPLOYEE_PATH).hasAnyRole(ADMIN, EMPLOYEE)
-                                .requestMatchers(HttpMethod.PUT, PUT_ADMIN_EMPLOYEE_PATH).hasAnyRole(ADMIN, EMPLOYEE)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_EMPLOYEE_PATH).hasAnyRole(ADMIN, EMPLOYEE)
-
-                                // ADMIN + USER
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_USER_PATH).hasAnyRole(ADMIN, USER)
-                                .requestMatchers(HttpMethod.POST, POST_ADMIN_USER_PATH).hasAnyRole(ADMIN, USER)
-                                .requestMatchers(HttpMethod.PUT, PUT_ADMIN_USER_PATH).hasAnyRole(ADMIN, USER)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_USER_PATH).hasAnyRole(ADMIN, USER)
-
-                                // EMPLOYEE + USER
-                                .requestMatchers(HttpMethod.GET, GET_EMPLOYEE_USER_PATH).hasAnyRole(EMPLOYEE, USER)
-                                .requestMatchers(HttpMethod.POST, POST_EMPLOYEE_USER_PATH).hasAnyRole(EMPLOYEE, USER)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_EMPLOYEE_USER_PATH).hasAnyRole(EMPLOYEE, USER)
-
-                                // EMPLOYEE + USER
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_EMPLOYEE_USER_PATH).hasAnyRole(ADMIN, EMPLOYEE, USER)
-
-
-                                // ADMIN + EMPLOYEE + MANAGER
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_EMPLOYEE_PATH).hasAnyRole(ADMIN, MANAGER, EMPLOYEE)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_MANAGER_EMPLOYEE_PATH).hasAnyRole(ADMIN, MANAGER, EMPLOYEE)
-
-
-                                // ADMIN + MANAGER
-                                .requestMatchers(HttpMethod.GET, GET_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
-                                .requestMatchers(HttpMethod.PUT, PUT_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
-                                .requestMatchers(HttpMethod.DELETE, DELETE_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
-                                .requestMatchers(HttpMethod.PATCH, PATCH_ADMIN_MANAGER_PATH).hasAnyRole(ADMIN, MANAGER)
-                                .anyRequest().authenticated()
-
                 );
 
         return http.build();

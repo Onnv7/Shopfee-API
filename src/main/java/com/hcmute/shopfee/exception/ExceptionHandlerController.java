@@ -36,8 +36,6 @@ public class ExceptionHandlerController {
     private static final List<String> error400= Arrays.asList(
             CANT_DELETE, IMAGE_INVALID,  DATA_SEND_INVALID,
             COUPON_INVALID, INVALID_COIN_NUMBER, ORDER_INVALID, ACTING_INCORRECTLY
-
-
     );
     private static final List<String> error403= Arrays.asList(
             PRINCIPAL_INVALID, USER_ID_INVALID,
@@ -48,7 +46,7 @@ public class ExceptionHandlerController {
     );
     private static final List<String> error500 = Arrays.asList(VNP_ERROR, SERVER_ERROR);
 
-    @ExceptionHandler(AuthenticationException.class)
+    @ExceptionHandler({AuthenticationException.class, AccessDeniedException.class})
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
         ex.printStackTrace();
         ErrorResponse res = ErrorResponse.builder()

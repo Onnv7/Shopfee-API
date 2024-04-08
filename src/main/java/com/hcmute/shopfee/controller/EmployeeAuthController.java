@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -36,7 +38,7 @@ public class EmployeeAuthController {
     private final IEmployeeAuthService employeeAuthService;
 
     @Operation(summary = AUTH_EMPLOYEE_LOGIN_SUM)
-    @PostMapping(path = POST_AUTH_EMPLOYEE_LOGIN_SUB_PATH)
+    @PostMapping(path = POST_EMPLOYEE_AUTH_LOGIN_SUB_PATH)
     public ResponseEntity<ResponseAPI<EmployeeLoginResponse>> loginEmployee(@RequestBody @Valid EmployeeLoginRequest body) throws ExecutionException, InterruptedException {
         EmployeeLoginResponse data = employeeAuthService.employeeLogin(body);
 
@@ -51,7 +53,8 @@ public class EmployeeAuthController {
     }
 
     @Operation(summary = AUTH_EMPLOYEE_LOGOUT_SUM)
-    @PostMapping(path = POST_AUTH_EMPLOYEE_LOGOUT_SUB_PATH)
+    @PostMapping(path = POST_EMPLOYEE_AUTH_LOGOUT_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<?>> logoutEmployee(@RequestBody @Valid EmployeeLogoutRequest body, HttpServletRequest request) {
 
         String refreshToken = CookieUtils.getRefreshToken(request);
@@ -70,7 +73,7 @@ public class EmployeeAuthController {
     }
 
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
-    @PostMapping(path = POST_AUTH_REFRESH_EMPLOYEE_TOKEN_SUB_PATH)
+    @PostMapping(path = POST_EMPLOYEE_AUTH_REFRESH_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
 
         if (refreshToken == null) {
@@ -90,7 +93,8 @@ public class EmployeeAuthController {
     }
 
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
-    @PostMapping(path = POST_AUTH_EMPLOYEE_REGISTER_SUB_PATH)
+    @PostMapping(path = POST_EMPLOYEE_AUTH_REGISTER_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") Role role) {
         employeeAuthService.employeeRegister(body, role);
         ResponseAPI res = ResponseAPI.builder()
@@ -103,6 +107,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = EMPLOYEE_UPDATE_PASSWORD_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_UPDATE_PASSWORD_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<?>> changePasswordProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid ChangePasswordEmployeeRequest body) {
         employeeAuthService.changePasswordProfile(body, id);
 
@@ -116,6 +121,7 @@ public class EmployeeAuthController {
 
     @Operation(summary = EMPLOYEE_SET_NEW_PASSWORD_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_SET_PASSWORD_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<?>> setPasswordByEmployeeId(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid SetPasswordByEmployeeIdRequest body) {
         employeeAuthService.setPasswordByEmployeeId(body, id);
 

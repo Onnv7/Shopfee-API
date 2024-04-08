@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 
+import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.CreateReviewRequest;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -38,6 +40,7 @@ public class ReviewController {
 
     @Operation(summary = REVIEW_CREATE_SUM)
     @PostMapping(path = POST_REVIEW_CREATE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> createReview(@RequestBody @Valid CreateReviewRequest body) {
         reviewService.createProductReview(body);
 
@@ -50,6 +53,7 @@ public class ReviewController {
 
     @Operation(summary = REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM)
     @PostMapping(path = POST_REVIEW_INTERACT_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<?>> interactProductReview(@PathVariable(PRODUCT_REVIEW_ID) String productReviewId,
                                                                 @RequestBody @Valid InteractProductReviewRequest body) {
         reviewService.createProductReviewInteraction(productReviewId, body);

@@ -121,7 +121,6 @@ public class SwaggerConstant {
     public static final String ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM = "Get orders history by user id and order status";
     public static final String ORDER_GET_STATUS_LINE_SUM = "Get order status line by order id";
     public static final String ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM = "Get all order history for employee by page and size or search by code, customerName, customerCode, phoneNumber, recipientName";
-    public static final String ORDER_GET_ORDER_QUANTITY_BY_STATUS_SUM = "Get order's quantity by status at today";
     public static final String ORDER_GET_LIST_SUM = "Get order list for admin";
     public static final String ORDER_GET_CANCELLATION_SUM = "Get cancellation order request by order id";
     // For Order return =============================================================
@@ -210,7 +209,7 @@ public class SwaggerConstant {
     public static final String MAX_LENGTH_DES = "Minimum length: ";
 
 
-    public static final String PASSWORD_EX = "123456";
+    public static final String PASSWORD_EX = "112233";
     public static final String PASSWORD_DES = MIN_LENGTH_DES + PASSWORD_LENGTH_MIN + ", " + MAX_LENGTH_DES + PASSWORD_LENGTH_MAX;
     public static final String CATEGORY_NAME_EX = "Coffee";
     public static final String PRODUCT_NAME_EX = "Coca cola";
@@ -257,7 +256,7 @@ public class SwaggerConstant {
     public static final String REVIEW_DES_EX = "Good service";
     public static final String BOOLEAN_EX = "false";
     public static final String PRODUCT_STATUS_EX = "HIDDEN";
-    public static final String USERNAME_EX = "employee";
+    public static final String USERNAME_EX = "nva6112002";
     public static final String REFRESH_TOKEN_EX = "wesaferg534vbdrbtgertyrrw6b456ertbvw354t";
     public static final String PROVINCE_EX = "Binh Duong";
     public static final String WARD_EX = "Tan Binh";
