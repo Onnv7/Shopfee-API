@@ -998,7 +998,6 @@ public class OrderService implements IOrderService {
 
         Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
         BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
-        // TODO: tính tien ship tu ben thu 3
 
         int shippingFee = ahamoveService.getShippingFee(lat, lng, branchEntity.getLatitude(), branchEntity.getLongitude());
         data.setShippingFee(shippingFee);

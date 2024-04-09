@@ -1,8 +1,6 @@
 package com.hcmute.shopfee.constant;
 
 
-import static com.hcmute.shopfee.constant.RouterConstant.*;
-
 public class SecurityConstant {
     public static final String ROLE_ADMIN = "hasRole('ROLE_ADMIN')";
     public static final String ROLE_MANAGER = "hasRole('ROLE_MANAGER')";

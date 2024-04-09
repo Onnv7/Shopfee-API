@@ -51,17 +51,6 @@ services:
     depends_on:
       - redis
 
-#  elasticsearch:
-#    container_name: elasticsearch
-#    image: elasticsearch:8.7.1
-#    ports:
-#      - 9200:9200
-#    environment:
-#      - discovery.type=single-node
-#    ulimits:
-#      memlock:
-#        soft: -1
-#        hard: -1
   elasticsearch:
     image: elasticsearch:8.8.0
     container_name: elasticsearch

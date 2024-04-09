@@ -3,68 +3,85 @@ package com.hcmute.shopfee.dto.common;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 public class CloudinaryUploadResponse {
-    @JsonProperty("signature")
     private String signature;
 
-    @JsonProperty("format")
     private String format;
 
-    @JsonProperty("resource_type")
     private String resourceType;
 
-    @JsonProperty("secure_url")
     private String secureUrl;
 
-    @JsonProperty("created_at")
     private String createdAt;
 
-    @JsonProperty("asset_id")
     private String assetId;
 
-    @JsonProperty("version_id")
     private String versionId;
 
-    @JsonProperty("type")
     private String type;
 
-    @JsonProperty("version")
     private String version;
 
-    @JsonProperty("access_mode")
     private String accessMode;
 
-    @JsonProperty("url")
     private String url;
 
-    @JsonProperty("public_id")
     private String publicId;
 
-    @JsonProperty("tags")
     private String[] tags;
 
-    @JsonProperty("folder")
     private String folder;
 
-    @JsonProperty("original_filename")
     private String originalFilename;
 
-    @JsonProperty("api_key")
     private String apiKey;
 
-    @JsonProperty("bytes")
     private int bytes;
 
-    @JsonProperty("width")
     private int width;
 
-    @JsonProperty("etag")
     private String etag;
 
-    @JsonProperty("placeholder")
     private boolean placeholder;
 
-    @JsonProperty("height")
     private int height;
+    private boolean overwritten;
+
+    public CloudinaryUploadResponse(Map<String, String> map) {
+        this.signature = map.get("signature");
+        this.format = map.get("format");
+        this.resourceType = map.get("resource_type");
+        this.secureUrl = map.get("secure_url");
+        this.createdAt = map.get("created_at");
+        this.assetId = map.get("asset_id");
+        this.versionId = map.get("version_id");
+        this.type = map.get("type");
+        this.version = String.valueOf(Integer.parseInt(map.get("version")));
+        this.accessMode = map.get("access_mode");
+        this.url = map.get("url");
+        this.publicId = map.get("public_id");
+        this.tags = map.get("tags").isEmpty() ? new String[0] : map.get("tags").split(","); // Handle empty tags
+        this.folder = map.get("folder");
+        this.originalFilename = map.get("original_filename");
+        this.apiKey = map.get("api_key");
+        this.bytes = (int) Long.parseLong(map.get("bytes"));
+        this.overwritten = Boolean.parseBoolean(map.get("overwritten"));
+        this.width = Integer.parseInt(map.get("width"));
+        this.etag = map.get("etag");
+        this.placeholder = Boolean.parseBoolean(map.get("placeholder"));
+        this.height = Integer.parseInt(map.get("height"));
+    }
+    public static CloudinaryUploadResponse fromString(String string) {
+        Map<String, String> map = new HashMap<>();
+        for (String keyValue : string.substring(1, string.length() - 1).split(", ")) {
+            String[] parts = keyValue.split("=");
+            map.put(parts[0], parts[1]);
+        }
+        return new CloudinaryUploadResponse(map);
+    }
+
 }

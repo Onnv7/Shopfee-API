@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.model.CustomException;
@@ -54,14 +55,9 @@ public class CloudinaryService {
 
     public CloudinaryUploadResponse uploadFileToFolder(String pathName, String fileName, byte[] imageData) throws IOException {
         var file = cloudinary.uploader()
-                .upload(imageData,
-                        Map.of(
-                                PUBLIC_ID, fileName,
-                                UPLOAD_PRESET, pathName,
-                                OVERWRITE, true
-                        ));
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(file.toString(), CloudinaryUploadResponse.class);
+                .upload(imageData, Map.of(PUBLIC_ID, fileName, UPLOAD_PRESET, pathName, OVERWRITE, true));
+        return CloudinaryUploadResponse.fromString(file.toString());
+
     }
 
     public void deleteImage(String publicId) throws IOException {
