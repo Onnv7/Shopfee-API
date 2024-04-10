@@ -258,7 +258,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_STATUS_LINE_SUM)
     @GetMapping(path = GET_ORDER_STATUS_LINE_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
+//    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
     public ResponseEntity<ResponseAPI<List<GetOrderStatusLineResponse>>> getOrderStatusLine(@PathVariable(ORDER_ID) String orderId) {
         List<GetOrderStatusLineResponse> resData = orderService.getOrderEventLogById(orderId);
 
