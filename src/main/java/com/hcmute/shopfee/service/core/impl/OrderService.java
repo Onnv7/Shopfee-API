@@ -22,7 +22,6 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
-import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
@@ -41,6 +40,8 @@ import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
+import com.hcmute.shopfee.statemachine.OrderEvent;
+import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +89,7 @@ public class OrderService implements IOrderService {
     private final ZaloPayService zaloPayService;
     private final SchedulerService schedulerService;
     private final FirebaseMessagingService firebaseMessagingService;
-    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
+    private final OrderStateService orderStateService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
 
     private void buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
@@ -140,7 +141,7 @@ public class OrderService implements IOrderService {
                 productDiscountValue = productCoupon.getCouponReward().getMoneyReward().getValue();
                 productDiscountUnit = productCoupon.getCouponReward().getMoneyReward().getUnit();
 
-                List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT_TYPE)
+                List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT)
                         .findFirst().orElseThrow(() -> new CustomException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
                 productIdDiscountList = subjectConditionList.stream().map(SubjectConditionEntity::getObjectId).toList();
             }
@@ -269,7 +270,7 @@ public class OrderService implements IOrderService {
                         }
                     }
                 }
-            } else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
+            } else if (condition.getType() == ConditionType.SUBJECT) {
 
                 List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
@@ -707,43 +708,32 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
-        List<OrderStatus> validOrderStatus = Arrays.asList(OrderStatus.ACCEPTED, OrderStatus.DELIVERING,
-                OrderStatus.SUCCEED, OrderStatus.CANCELED,
-                OrderStatus.NOT_RECEIVED, OrderStatus.PREPARED, OrderStatus.DELIVERED);
+        List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.ORDER_REFUSE, OrderEvent.ORDER_ACCEPT,
+                OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING, OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
 
-        OrderStatus newStatus = body.getOrderStatus();
-        if (!validOrderStatus.contains(newStatus)) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order status is not valid");
+        if (!validOrderEvent.contains(body.getEvent())) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Order event is not valid");
         }
 
         OrderBillEntity order = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (order.getCancellationRequest() != null && order.getCancellationRequest().getStatus() == AnswerStatus.PENDING) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "You must to process cancellation request from user");
-        }
-        if (order.getTransaction().getPaymentType() != PaymentType.CASHING &&
-                order.getTransaction().getStatus() == PaymentStatus.UNPAID) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Orders must be paid online before acceptance or else");
-        }
 
-        order.getOrderEventList().add(OrderEventEntity.builder()
-                .orderStatus(newStatus)
-                .description(body.getDescription())
-                .orderBill(order)
-                .actor(ActorType.EMPLOYEE)
-                .build()
-        );
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), body.getEvent());
 
-        TransactionEntity transaction = order.getTransaction();
-        long coinRefunded = 0L;
-        if (newStatus == OrderStatus.CANCELED) {
+        if(!rs) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
+        }
+        if(body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
+            long coinRefunded = 0L;
+            TransactionEntity transaction = order.getTransaction();
             if (transaction.getStatus() == PaymentStatus.PAID) {
                 coinRefunded += transaction.getTotalPaid();
 
                 transaction.setRefunded(true);
                 transactionRepository.save(transaction);
-            } else if (transaction.getStatus() == PaymentStatus.UNPAID && order.getCoin() != null) {
+            }
+            if (order.getCoin() != null) {
                 coinRefunded += order.getCoin();
             }
             if (coinRefunded > 0) {
@@ -762,7 +752,7 @@ public class OrderService implements IOrderService {
 
         OrderNotificationDto messageDto = OrderNotificationDto.builder()
                 .title("New Order Status")
-                .body(newStatus.name())
+                .body(order.getOrderEventList().get(0).getOrderStatus().name())
                 .clientId(order.getUser().getId())
                 .build();
         firebaseMessagingService.sendOrderNotificationToUser(messageDto);
@@ -771,122 +761,42 @@ public class OrderService implements IOrderService {
         orderSearchService.upsertOrder(updatedOrder);
     }
 
+    @Transactional
     @Override
     public void createCancellationRequest(CreateCancellationDemandRequest body, String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (orderBill.getOrderEventList() != null && orderBill.getOrderEventList().size() == 2 && orderBill.getOrderEventList().get(1).getOrderStatus() == OrderStatus.ACCEPTED) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cannot create cancellation request when order status is not \"ACCEPTED\"");
-        }
-
-
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
 
+        boolean rs = orderStateService.sendMonoEvent(orderId, "Customer creates a request to cancel the order", OrderEvent.CANCEL_REQUEST);
+        if (!rs) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
+        }
+
         CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
                 .reason(body.getReason())
-                .status(AnswerStatus.PENDING)
                 .orderBill(orderBill)
                 .build();
 
         cancellationDemandRepository.save(cancellationRequestEntity);
 
-        orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                .description("Customer creates a request to cancel the order")
-                .actor(ActorType.USER)
-                .orderBill(orderBill)
-                .orderStatus(OrderStatus.CANCELLATION_REQUEST)
-                .build());
-
         orderBill = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(orderBill);
     }
-
+    @Override
     @Transactional
-    @Override
-    public void processCancellationRequest(ProcessCancellationDemandRequest body, String orderId) {
-        if (body.getStatus() == AnswerStatus.PENDING) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID);
-        }
-
-        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
-
-        CancellationRequestEntity cancellationRequestEntity = orderBill.getCancellationRequest();
-
-        if (cancellationRequestEntity != null && cancellationRequestEntity.getStatus() != AnswerStatus.PENDING) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The request has already been processed");
-        }
-
-        UserEntity customer = orderBill.getUser();
-        if (cancellationRequestEntity != null) {
-            cancellationRequestEntity.setStatus(body.getStatus());
-            if (body.getStatus() == AnswerStatus.ACCEPTED) {
-                List<OrderEventEntity> statusList = new ArrayList<>();
-                orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                        .description("Employee agreed to cancel the order")
-                        .actor(ActorType.EMPLOYEE)
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.CANCELLATION_REQUEST_ACCEPTED)
-                        .build());
-
-                TransactionEntity transaction = orderBill.getTransaction();
-                long coinRefunded = 0L;
-                if (transaction.getStatus() == PaymentStatus.PAID) {
-                    coinRefunded += transaction.getTotalPaid();
-                    transaction.setRefunded(true);
-                } else if (transaction.getStatus() == PaymentStatus.UNPAID && orderBill.getCoin() != null) {
-                    coinRefunded += orderBill.getCoin();
-                }
-                if (coinRefunded > 0) {
-                    customer.setCoin(customer.getCoin() + coinRefunded);
-
-                    CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
-                            .coin(coinRefunded)
-                            .actor(ActorType.AUTOMATIC)
-                            .user(customer)
-                            .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
-                            .build();
-                    coinHistoryRepository.save(coinHistory);
-                }
-
-            } else {
-                orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                        .description("Employee refused the request to cancel the order")
-                        .actor(ActorType.EMPLOYEE)
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.CANCELLATION_REQUEST_REFUSED)
-                        .build());
-            }
-            OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
-            orderSearchService.upsertOrder(updatedOrder);
-
-        } else {
-            throw new CustomException(ErrorConstant.NOT_FOUND, "Cancellation request is not exist");
-        }
-    }
-
-    @Override
     public void cancelOrder(String orderId, CancelOrderBillRequest body) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
 
-        if (orderBill.getOrderEventList().get(0).getOrderStatus() != OrderStatus.CREATED) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Cant cancel order");
-        }
-
-
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
-
-        orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                .orderStatus(OrderStatus.CANCELED)
-                .description(body.getDescription())
-                .orderBill(orderBill)
-                .actor(ActorType.USER)
-                .build()
-        );
+        boolean rs =  orderStateService.sendMonoEvent(orderId, body.getDescription(), OrderEvent.ORDER_REFUSE);
+        if(!rs) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
+        }
 
         TransactionEntity transaction = orderBill.getTransaction();
 

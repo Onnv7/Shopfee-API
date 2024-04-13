@@ -3,6 +3,7 @@ package com.hcmute.shopfee.repository.database.order;
 import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.enums.OrderType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -122,4 +123,12 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             GROUP BY DATE_FORMAT(ob.created_at, '%Y-%m-%d')
             """, nativeQuery = true)
     List<GetEmployeeOrderStatisticDto> getEmployeeOrderStatistic(String userId, Date startDate, Date endDate);
+
+
+    @Query(value = """
+            select ob.order_type
+            from order_bill as ob
+            where ob.id = ?1
+            """, nativeQuery = true)
+    OrderType getOrderType(String orderId);
 }

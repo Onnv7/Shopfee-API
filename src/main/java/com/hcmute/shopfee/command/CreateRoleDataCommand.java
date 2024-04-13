@@ -23,11 +23,13 @@ public class CreateRoleDataCommand implements CommandLineRunner {
             boolean existedUser = roleRepository.findByRoleName(Role.ROLE_USER).orElse(null) != null;
             boolean existedEmployee = roleRepository.findByRoleName(Role.ROLE_WAITER).orElse(null) != null;
             boolean existedManager = roleRepository.findByRoleName(Role.ROLE_MANAGER).orElse(null) != null;
+            boolean existedShipper = roleRepository.findByRoleName(Role.ROLE_SHIPPER).orElse(null) != null;
 
             RoleEntity admin = RoleEntity.builder().roleName(Role.ROLE_ADMIN).build();
             RoleEntity user = RoleEntity.builder().roleName(Role.ROLE_USER).build();
             RoleEntity employee = RoleEntity.builder().roleName(Role.ROLE_WAITER).build();
             RoleEntity manager = RoleEntity.builder().roleName(Role.ROLE_MANAGER).build();
+            RoleEntity shipper = RoleEntity.builder().roleName(Role.ROLE_SHIPPER).build();
 
             if(!existedAdmin) {
                 roleRepository.save(admin);
@@ -45,9 +47,9 @@ public class CreateRoleDataCommand implements CommandLineRunner {
 
             if(!existedEmployee) {
                 roleRepository.save(employee);
-                log.info("Employee role is created");
+                log.info("Waiter role is created");
             } else {
-                log.info("Employee role were existed");
+                log.info("Waiter role were existed");
             }
 
             if(!existedManager) {
@@ -55,6 +57,12 @@ public class CreateRoleDataCommand implements CommandLineRunner {
                 log.info("Manager role is created");
             } else {
                 log.info("Manager role were existed");
+            }
+            if(!existedShipper) {
+                roleRepository.save(shipper);
+                log.info("Shipper role is created");
+            } else {
+                log.info("Shipper role were existed");
             }
         }
         catch (Exception e) {

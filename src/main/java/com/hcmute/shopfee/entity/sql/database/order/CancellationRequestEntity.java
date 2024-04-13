@@ -36,9 +36,9 @@ public class CancellationRequestEntity {
     @Column(name = "reason", nullable = false)
     private String reason;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private AnswerStatus status;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "status", nullable = false)
+//    private AnswerStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

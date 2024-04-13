@@ -30,7 +30,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderReturnService implements IOrderReturnService {
+public class OrderRefundService implements IOrderRefundService {
 
     private final OrderBillRepository orderBillRepository;
     private final CloudinaryService cloudinaryService;

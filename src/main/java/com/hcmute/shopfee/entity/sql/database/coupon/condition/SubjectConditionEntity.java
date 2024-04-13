@@ -9,7 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
-@Table(name = "target_object_condition")
+@Table(name = "subject_condition")
 @Builder
 @Getter
 @Setter
@@ -17,8 +17,8 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class SubjectConditionEntity {
     @Id
-    @GenericGenerator(name = "target_object_condition_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "target_object_condition_id")
+    @GenericGenerator(name = "subject_condition_id", strategy = TIME_ID_GENERATOR)
+    @GeneratedValue(generator = "subject_condition_id")
     private String id;
 
 //    @Enumerated(EnumType.STRING)

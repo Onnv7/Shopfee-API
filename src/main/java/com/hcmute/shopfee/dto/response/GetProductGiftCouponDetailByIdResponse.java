@@ -61,7 +61,7 @@ public class GetProductGiftCouponDetailByIdResponse {
                 case COMBINATION -> {
                     data.setCombinationConditionList(CombinationConditionDto.fromCombinationConditionEntityList(condition.getCombinationConditionList()));
                 }
-                case SUBJECT_TYPE -> {
+                case SUBJECT -> {
                     data.setSubjectConditionList(SubjectConditionDto.fromSubjectConditionEntityList(condition.getSubjectConditionList()));
                 }
             }

@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.listener.OrderEventListener;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import jakarta.persistence.*;
@@ -22,7 +21,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners({AuditingEntityListener.class, OrderEventListener.class})
+@EntityListeners({AuditingEntityListener.class}) //, OrderEventListener.class
 public class OrderEventEntity {
     @Id
     @GenericGenerator(name = "order_event_id", strategy = TIME_ID_GENERATOR)

@@ -241,6 +241,7 @@ public class SwaggerConstant {
     public static final String CONTENT_EX = "It's so good";
     public static final String ORDER_STATUS_EX = "CREATED";
     public static final String ORDER_STATUS_DES_EX = "Order is created";
+    public static final String ORDER_EVENT_EX = "ORDER_REFUSE";
     public static final String PRODUCT_QUANTITY_EX = "3";
     public static final String COUPON_QUANTITY_EX = "3";
     public static final String PRODUCT_NOTE_EX = "This is note";

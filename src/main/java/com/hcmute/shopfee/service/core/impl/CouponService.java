@@ -398,7 +398,7 @@ public class CouponService implements ICouponService {
         // Target Object
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity targetObject = new CouponConditionEntity();
-            targetObject.setType(ConditionType.SUBJECT_TYPE);
+            targetObject.setType(ConditionType.SUBJECT);
             targetObject.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
@@ -478,7 +478,7 @@ public class CouponService implements ICouponService {
         // Target Object
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity targetObject = new CouponConditionEntity();
-            targetObject.setType(ConditionType.SUBJECT_TYPE);
+            targetObject.setType(ConditionType.SUBJECT);
             targetObject.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
@@ -560,7 +560,7 @@ public class CouponService implements ICouponService {
         // Subject condition
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity subjectCondition = new CouponConditionEntity();
-            subjectCondition.setType(ConditionType.SUBJECT_TYPE);
+            subjectCondition.setType(ConditionType.SUBJECT);
             subjectCondition.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
@@ -643,7 +643,7 @@ public class CouponService implements ICouponService {
         // Subject condition
         if (body.getSubjectConditionList() != null) {
             CouponConditionEntity subjectCondition = new CouponConditionEntity();
-            subjectCondition.setType(ConditionType.SUBJECT_TYPE);
+            subjectCondition.setType(ConditionType.SUBJECT);
             subjectCondition.setCoupon(couponEntity);
 
             List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
@@ -694,7 +694,7 @@ public class CouponService implements ICouponService {
             if (conditionEntity.getType() == ConditionType.USAGE) {
                 List<UsageConditionEntity> usageConditionEntityList = conditionEntity.getUsageConditionList();
                 conditionDto.setUsageConditionList(UsageConditionDto.fromUsageConditionEntityList(usageConditionEntityList));
-            } else if (conditionEntity.getType() == ConditionType.SUBJECT_TYPE) {
+            } else if (conditionEntity.getType() == ConditionType.SUBJECT) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
                 conditionDto.setSubjectConditionList(SubjectConditionDto.fromSubjectConditionEntityList(subjectConditionEntityList));
             } else if (conditionEntity.getType() == ConditionType.COMBINATION) {
@@ -844,7 +844,7 @@ public class CouponService implements ICouponService {
                         }
                     }
                     // check SUBJECT_TYPE
-                    else if (condition.getType() == ConditionType.SUBJECT_TYPE) {
+                    else if (condition.getType() == ConditionType.SUBJECT) {
                         List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
                         List<GetCouponOptionsResponse.SubjectCondition> subjectConditionDataList = new ArrayList<>();
                         for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
@@ -970,7 +970,7 @@ public class CouponService implements ICouponService {
                     }
                 }
                 violatedCondition.setUsageConditionList(usageConditionList);
-            } else if (conditionType == ConditionType.SUBJECT_TYPE) {
+            } else if (conditionType == ConditionType.SUBJECT) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
 
                 List<CheckCouponInCartResponse.SubjectCondition> subjectConditionList = new ArrayList<>();

@@ -30,6 +30,8 @@ import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
+import com.hcmute.shopfee.statemachine.OrderEvent;
+import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,11 +42,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.statemachine.StateMachineEventResult;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -85,7 +89,7 @@ public class ToolController {
     private final FirebaseMessagingService firebaseMessagingService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
     private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
-
+    private final OrderStateService orderStateService;
     @Autowired
     private Environment environment;
     private final EmployeeRepository employeeRepository;
@@ -230,8 +234,8 @@ public class ToolController {
                 .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
         employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()
-                .username("employee")
-                .password(passwordEncoder.encode("123456"))
+                .username("nva6112002")
+                .password(passwordEncoder.encode("112233"))
                 .firstName("an")
                 .lastName("nguyen")
                 .roleList(employeeRoleList)
@@ -466,6 +470,23 @@ public class ToolController {
     @PostMapping("/kafka-kafkaSendToClient")
     public String kafkaSendToClient(@RequestBody OrderNotificationDto body) {
         employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(body);
+        return "okoko";
+    }
+
+    @GetMapping("/tst-state-machine")
+    public String machine(@RequestParam("orderId") String orderId, @RequestParam("orderEvent") OrderEvent orderEvent){
+
+        Mono<OrderStatus>  rs = orderStateService.sendEventMono(orderId, "Test", orderEvent);
+
+//                .subscribe(rs1 -> {
+//                    System.out.println(rs1);
+//                }, err -> {
+//
+//                    System.out.println(err);
+//                }, () -> {
+//
+//                    System.out.println("err");
+//                });
         return "okoko";
     }
 }

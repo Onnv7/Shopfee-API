@@ -21,7 +21,7 @@ public class AuditorAwareService implements AuditorAware<String> {
         } catch (ClassCastException e) {
 
         }
-        // TODO: nhớ xóa TestID
+
         if (clientId != null) {
             return Optional.of(clientId);
         } else {

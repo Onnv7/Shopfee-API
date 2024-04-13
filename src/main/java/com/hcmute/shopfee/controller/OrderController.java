@@ -129,21 +129,21 @@ public class OrderController {
         return new ResponseEntity<>(res, StatusCode.CREATED);
     }
 
-    @Operation(summary = ORDER_UPDATE_CANCELLATION_REQUEST_SUM)
-    @PatchMapping(path = PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER)
-    public ResponseEntity<ResponseAPI<?>> processCancellationRequest(
-            @PathVariable(ORDER_ID) String orderId,
-            @RequestBody @Valid ProcessCancellationDemandRequest body) {
-
-        orderService.processCancellationRequest(body, orderId);
-
-        ResponseAPI<?> res = ResponseAPI.builder()
-                .timestamp(new Date())
-                .message(SuccessConstant.UPDATED)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
+//    @Operation(summary = ORDER_UPDATE_CANCELLATION_REQUEST_SUM)
+//    @PatchMapping(path = PATCH_ORDER_UPDATE_CANCELLATION_DEMAND_SUB_PATH)
+//    @PreAuthorize(SecurityConstant.ROLE_WAITER)
+//    public ResponseEntity<ResponseAPI<?>> processCancellationRequest(
+//            @PathVariable(ORDER_ID) String orderId,
+//            @RequestBody @Valid ProcessCancellationDemandRequest body) {
+//
+//        orderService.processCancellationRequest(body, orderId);
+//
+//        ResponseAPI<?> res = ResponseAPI.builder()
+//                .timestamp(new Date())
+//                .message(SuccessConstant.UPDATED)
+//                .build();
+//        return new ResponseEntity<>(res, StatusCode.OK);
+//    }
 
     @Operation(summary = ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM)
     @GetMapping(path = GET_ORDER_ALL_IN_QUEUE_SUB_PATH)
