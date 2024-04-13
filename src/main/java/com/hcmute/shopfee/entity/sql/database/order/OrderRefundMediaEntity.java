@@ -46,8 +46,8 @@ public class OrderRefundMediaEntity {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @ManyToOne
+    @ManyToOne(cascade = {})
     @JsonBackReference
-    @JoinColumn(name = "order_return_request_id", nullable = false)
-    private OrderRefundRequestEntity orderReturnRequest;
+    @JoinColumn(name = "order_refund_request_id", nullable = false)
+    private OrderRefundRequestEntity orderRefundRequest;
 }

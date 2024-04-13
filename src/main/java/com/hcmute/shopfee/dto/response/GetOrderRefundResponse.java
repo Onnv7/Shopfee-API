@@ -23,7 +23,7 @@ public class GetOrderRefundResponse {
         data.setReason(entity.getReason());
         data.setNote(entity.getNote());
         data.setStatus(entity.getStatus());
-        data.setMediaList(entity.getOrderReturnMediaList().stream().map(it -> {
+        data.setMediaList(entity.getOrderRefundMediaList().stream().map(it -> {
             Media media = new Media();
             media.setMediaUrl(it.getMediaUrl());
             media.setThumbnailUrl(it.getThumbnailUrl());

@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.utils;
 
+import com.hcmute.shopfee.enums.MediaType;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class ImageUtils {
+public class MediaUtils {
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png");
 
     public static byte[] resizeImage(byte[] originalImage, int height, int width) throws IOException {
@@ -33,5 +34,21 @@ public class ImageUtils {
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
 
         return ALLOWED_EXTENSIONS.contains(extension);
+    }
+
+    public static MediaType getMediaType( MultipartFile file) {
+        String contentType = file.getContentType();
+
+        if (contentType != null) {
+            if (contentType.startsWith("image")) {
+                return MediaType.IMAGE;
+            } else if (contentType.startsWith("video")) {
+                return MediaType.VIDEO;
+            } else {
+                return MediaType.NONE;
+            }
+        } else {
+            return MediaType.NONE;
+        }
     }
 }

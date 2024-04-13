@@ -23,7 +23,7 @@ import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IUserService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.DateUtils;
-import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +91,7 @@ public class UserService implements IUserService {
 
     @Override
     public void uploadAvatar(UploadUserAvatarRequest body, String userId) {
-        if (!ImageUtils.isValidImageFile(body.getImage())) {
+        if (!MediaUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         try {
@@ -104,7 +103,7 @@ public class UserService implements IUserService {
             CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);
 
             user.setAvatarId(fileUploaded.getPublicId());
-            user.setAvatarUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()));
+            user.setAvatarUrl(cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId()));
 
             userRepository.save(user);
         } catch (IOException e) {

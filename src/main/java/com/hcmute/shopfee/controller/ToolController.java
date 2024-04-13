@@ -19,6 +19,7 @@ import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayReq
 import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -42,7 +43,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.statemachine.StateMachineEventResult;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -420,9 +420,13 @@ public class ToolController {
         return zaloPayService.getOrderTest(request);
     }
 
+    @PostMapping("/test-sendRefundZalo")
+    public Map sendRefundZalo(@RequestBody RefundRequestDTO request) throws IOException, URISyntaxException {
+        return zaloPayService.sendRefund(request);
+    }
+
     @GetMapping("/test-get-info-vnpay-ip-address")
     public TransactionInfoQuery searchProduct(
-
             HttpServletRequest request,
             @RequestParam("txnref") String txnref,
             @RequestParam("transId") String transId,
@@ -436,7 +440,7 @@ public class ToolController {
     public String cloudinary(@RequestParam("id") String id) throws UnsupportedEncodingException {
 
         System.out.println(new Date());
-        String data = cloudinaryService.getThumbnailUrl(id);
+        String data = cloudinaryService.getThumbnailUrlOfImage(id);
         System.out.println(new Date());
         return data;
     }

@@ -724,6 +724,7 @@ public class OrderService implements IOrderService {
         if(!rs) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
         }
+
         if(body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
             long coinRefunded = 0L;
             TransactionEntity transaction = order.getTransaction();
@@ -749,6 +750,7 @@ public class OrderService implements IOrderService {
                 coinHistoryRepository.save(coinHistory);
             }
         }
+
 
         OrderNotificationDto messageDto = OrderNotificationDto.builder()
                 .title("New Order Status")

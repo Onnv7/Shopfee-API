@@ -13,7 +13,7 @@ import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IAlbumService;
-import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class AlbumService implements IAlbumService {
 
     @Override
     public void uploadImage(UploadImageRequest body) {
-        if(!ImageUtils.isValidImageFile(body.getImage())) {
+        if(!MediaUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
@@ -44,7 +43,7 @@ public class AlbumService implements IAlbumService {
             AlbumEntity album = AlbumEntity.builder()
                     .imageUrl(fileUploaded.getUrl())
                     .cloudinaryImageId(fileUploaded.getPublicId())
-                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()))
+                    .thumbnailUrl(cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId()))
                     .type(body.getType())
                     .build();
             albumRepository.save(album);

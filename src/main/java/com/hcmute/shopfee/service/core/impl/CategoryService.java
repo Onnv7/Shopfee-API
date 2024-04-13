@@ -18,13 +18,12 @@ import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.service.core.ICategoryService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -37,7 +36,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void createCategory(CreateCategoryRequest body) {
-        if(!ImageUtils.isValidImageFile(body.getImage())) {
+        if(!MediaUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
 
@@ -49,7 +48,7 @@ public class CategoryService implements ICategoryService {
         byte[] originalImage;
         try {
             originalImage = body.getImage().getBytes();
-            byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
+            byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
             CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.CATEGORY_PATH,
                     StringUtils.generateFileName(body.getName(), "category"), newImage);
             AlbumEntity image = AlbumEntity.builder()
@@ -94,7 +93,7 @@ public class CategoryService implements ICategoryService {
         if (body.getImage() != null) {
             try {
                 byte[] originalImage = body.getImage().getBytes();
-                byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
+                byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
 
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.CATEGORY_PATH,

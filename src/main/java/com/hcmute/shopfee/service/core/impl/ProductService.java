@@ -24,7 +24,7 @@ import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
-import com.hcmute.shopfee.utils.ImageUtils;
+import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.RegexUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -68,7 +67,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
-        if (!ImageUtils.isValidImageFile(body.getImage())) {
+        if (!MediaUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
         if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
@@ -105,7 +104,7 @@ public class ProductService implements IProductService {
         byte[] originalImage = new byte[0];
         try {
             originalImage = image.getBytes();
-            byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
+            byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
 
             CategoryEntity categoryEntity = categoryRepository.findById(body.getCategoryId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
@@ -121,7 +120,7 @@ public class ProductService implements IProductService {
                     .imageUrl(imageUploaded.getUrl())
                     .type(AlbumType.PRODUCT)
                     .cloudinaryImageId(imageUploaded.getPublicId())
-                    .thumbnailUrl(cloudinaryService.getThumbnailUrl(imageUploaded.getPublicId()))
+                    .thumbnailUrl(cloudinaryService.getThumbnailUrlOfImage(imageUploaded.getPublicId()))
                     .build();
             productEntity.setImage(productImage);
 
@@ -295,7 +294,7 @@ public class ProductService implements IProductService {
 
                 byte[] originalImage = body.getImage().getBytes();
 
-                byte[] newImage = ImageUtils.resizeImage(originalImage, 200, 200);
+                byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
                         StringUtils.generateFileName(body.getName(), "product"), newImage);
 
@@ -303,7 +302,7 @@ public class ProductService implements IProductService {
                         .type(AlbumType.PRODUCT)
                         .imageUrl(fileUploaded.getUrl())
                         .cloudinaryImageId(fileUploaded.getPublicId())
-                        .thumbnailUrl(cloudinaryService.getThumbnailUrl(fileUploaded.getPublicId()))
+                        .thumbnailUrl(cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId()))
                         .build();
                 product.setImage(productImage);
             } catch (IOException e) {

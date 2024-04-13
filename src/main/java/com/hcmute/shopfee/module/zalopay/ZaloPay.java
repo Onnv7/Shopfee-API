@@ -5,15 +5,19 @@ import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayReq
 import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.module.zalopay.refund.RefundZaloAPI;
+import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 public class ZaloPay {
     private final String APP_ID;
     private final String KEY1;
     private final String KEY2;
     private final OrderZaloAPI orderZaloAPI;
+    private final RefundZaloAPI refundZaloAPI;
 
     public String getAppId() {
         return APP_ID;
@@ -32,6 +36,7 @@ public class ZaloPay {
         this.KEY1 = KEY1;
         this.KEY2 = KEY2;
         orderZaloAPI = new OrderZaloAPI(this);
+        refundZaloAPI = new RefundZaloAPI(this);
     }
 
     public CreateOrderZaloPayResponse createOrderZaloPay(CreateOrderZaloPayRequest createOrderZaloPayRequest) throws IOException {
@@ -40,5 +45,9 @@ public class ZaloPay {
 
     public GetOrderZaloPayResponse getOrder(GetOrderZaloPayRequest body) throws IOException, URISyntaxException {
         return orderZaloAPI.getOrder(body);
+    }
+
+    public Map<String, Object> sendRefund(RefundRequestDTO refundRequestDTO) throws IOException {
+        return refundZaloAPI.sendRefund(refundRequestDTO);
     }
 }

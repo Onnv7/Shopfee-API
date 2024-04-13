@@ -3,8 +3,6 @@ package com.hcmute.shopfee.service.common;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.model.CustomException;
@@ -12,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.hcmute.shopfee.constant.CloudinaryConstant.*;
@@ -39,12 +35,11 @@ public class CloudinaryService {
         }
     }
 
-    public String getThumbnailUrl(String publicId) {
+    public String getThumbnailUrlOfImage(String publicId) {
         try {
             String quality = "auto:low";
 
             Transformation transformation = new Transformation().quality(quality).width(300).height(200);
-
             return cloudinary.url().transformation(transformation)
                     .version(cloudinary.api().resource(publicId, null).get("version"))
                     .generate(publicId);
@@ -53,9 +48,20 @@ public class CloudinaryService {
         }
     }
 
+    public String getThumbnailUrlOfVideo(String publicId) {
+        try {
+            String quality = "auto:low";
+
+            Transformation transformation = new Transformation().quality(quality).width(300).height(200);
+            return cloudinary.url().resourceType("video").transformation(transformation).format("png").generate(publicId);
+        } catch (Exception e) {
+            throw new CustomException(ErrorConstant.NOT_FOUND);
+        }
+    }
+
     public CloudinaryUploadResponse uploadFileToFolder(String pathName, String fileName, byte[] imageData) throws IOException {
         var file = cloudinary.uploader()
-                .upload(imageData, Map.of(PUBLIC_ID, fileName, UPLOAD_PRESET, pathName, OVERWRITE, true));
+                .uploadLarge(imageData, Map.of(PUBLIC_ID, fileName, UPLOAD_PRESET, pathName, OVERWRITE, true, "resource_type", "auto"));
         return CloudinaryUploadResponse.fromString(file.toString());
 
     }

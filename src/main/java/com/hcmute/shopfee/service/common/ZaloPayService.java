@@ -5,11 +5,13 @@ import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayReq
 import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +46,9 @@ public class ZaloPayService {
 
     public GetOrderZaloPayResponse getOrderTest(GetOrderZaloPayRequest body) throws IOException, URISyntaxException {
         return zaloPay.getOrder(body);
+    }
+
+    public Map<String, Object> sendRefund(RefundRequestDTO request) throws IOException, URISyntaxException {
+        return zaloPay.sendRefund(request);
     }
 }

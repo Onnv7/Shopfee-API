@@ -57,8 +57,8 @@ public class OrderRefundRequestEntity {
 
     // =================================================
 
-    @OneToMany(mappedBy = "orderReturnRequest", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "orderRefundRequest", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
-    private List<OrderRefundMediaEntity> orderReturnMediaList;
+    private List<OrderRefundMediaEntity> orderRefundMediaList;
 
 }
