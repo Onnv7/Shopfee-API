@@ -6,10 +6,7 @@ import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
-import com.hcmute.shopfee.dto.response.GetAllUserResponse;
-import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
-import com.hcmute.shopfee.dto.response.GetUserOrderStatusStatisticsResponse;
-import com.hcmute.shopfee.dto.response.GetUserSpendingStatisticsResponse;
+import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
 import com.hcmute.shopfee.dto.sql.GetUserSpendingStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
@@ -90,7 +87,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void uploadAvatar(UploadUserAvatarRequest body, String userId) {
+    public UploadAvatarResponse uploadAvatar(UploadUserAvatarRequest body, String userId) {
+        UploadAvatarResponse response = new UploadAvatarResponse();
         if (!MediaUtils.isValidImageFile(body.getImage())) {
             throw new CustomException(ErrorConstant.IMAGE_INVALID);
         }
@@ -106,6 +104,8 @@ public class UserService implements IUserService {
             user.setAvatarUrl(cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId()));
 
             userRepository.save(user);
+            response.setAvatarUrl(user.getAvatarUrl());
+            return response;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

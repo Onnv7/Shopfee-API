@@ -45,7 +45,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             	join product p on p.id = oi.product_id
             	join order_bill ob on ob.id = oi.order_bill_id
             	where p.status != 'HIDDEN'
-            		and ob.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            		and ob.created_at >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
             		and DATE_FORMAT(ob.created_at, '%Y-%m-%d') <= CURDATE()
             	group by oi.product_id
             ) as top_product on top_product.product_id = p.id

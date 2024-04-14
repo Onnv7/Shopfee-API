@@ -45,6 +45,7 @@ public class OrderRefundService implements IOrderRefundService {
     public void createOrderRefundRequest(CreateOrderReturnRequest body, String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+
         Date currentTime = new Date();
         List<OrderEventEntity> orderEventEntityList = orderBill.getOrderEventList();
         OrderEventEntity lastEvent = orderEventEntityList.get(0);
@@ -53,7 +54,7 @@ public class OrderRefundService implements IOrderRefundService {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "It is not possible to submit a refund request without a successful application");
         }
 
-        if (Date.from(DateUtils.plus(lastEvent.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES)).after(currentTime)) {
+        if (DateUtils.isAfterFromTimeOriginalPlusPeriod(lastEvent.getOrderBill().getCreatedAt().toInstant(), 3, ChronoUnit.HOURS)) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
         }
 
@@ -66,7 +67,7 @@ public class OrderRefundService implements IOrderRefundService {
                 .note(body.getNote())
                 .build();
         orderBill.setOrderRefundRequest(orderRefundRequestEntity);
-//        orderRefundRequestEntity = orderBillRepository.save(orderBill).getOrderRefundRequest();
+
         for (MultipartFile media : body.getMediaList()) {
             try {
                 String thumbnailUrl = "";

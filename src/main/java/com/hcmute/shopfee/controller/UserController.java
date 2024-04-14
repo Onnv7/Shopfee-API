@@ -6,10 +6,7 @@ import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
-import com.hcmute.shopfee.dto.response.GetAllUserResponse;
-import com.hcmute.shopfee.dto.response.GetUserByIdResponse;
-import com.hcmute.shopfee.dto.response.GetUserOrderStatusStatisticsResponse;
-import com.hcmute.shopfee.dto.response.GetUserSpendingStatisticsResponse;
+import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.ResponseAPI;
@@ -104,9 +101,9 @@ public class UserController {
     @Operation(summary = USER_UPLOAD_AVATAR_BY_USER_ID_SUM)
     @PatchMapping(path = PATCH_USER_UPLOAD_AVATAR_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(SecurityConstant.ROLE_USER)
-    public ResponseEntity<ResponseAPI<String>> uploadAvatar(@PathVariable(USER_ID) String userId, @ModelAttribute @Valid UploadUserAvatarRequest body) {
-        userService.uploadAvatar(body, userId);
-        ResponseAPI<String> res = ResponseAPI.<String>builder()
+    public ResponseEntity<ResponseAPI<UploadAvatarResponse>> uploadAvatar(@PathVariable(USER_ID) String userId, @ModelAttribute @Valid UploadUserAvatarRequest body) {
+        UploadAvatarResponse data = userService.uploadAvatar(body, userId);
+        ResponseAPI<UploadAvatarResponse> res = ResponseAPI.<UploadAvatarResponse>builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();

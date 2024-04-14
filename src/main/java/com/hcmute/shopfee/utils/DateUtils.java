@@ -68,4 +68,9 @@ public class DateUtils {
             return null; // Trả về null nếu không thể chuyển đổi
         }
     }
+
+    public static boolean isAfterFromTimeOriginalPlusPeriod(Instant timeOriginal, int period, ChronoUnit unit) {
+        Instant timeAfterPeriod = timeOriginal.plus(period, unit);
+        return timeOriginal.isAfter(timeAfterPeriod);
+    }
 }
