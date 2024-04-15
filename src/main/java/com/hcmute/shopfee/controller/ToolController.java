@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonObject;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
@@ -16,16 +17,15 @@ import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublishe
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.vnpay.VNPay;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
-import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
+import com.hcmute.shopfee.module.vnpay.VNPayUtils;
+import com.hcmute.shopfee.dto.common.vnpay.VNPayPaymentUrl;
+import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.ZaloCallbackResponse;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
+import com.hcmute.shopfee.dto.common.zalopay.CallBackDto;
+import com.hcmute.shopfee.dto.common.zalopay.CreateOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
+import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -43,9 +43,7 @@ import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
@@ -60,19 +58,22 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
+import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TRANSACTION_DATE_KEY;
+import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TXN_REF_KEY;
 
 @RestController
 @RequestMapping("tool")
@@ -418,20 +419,20 @@ public class ToolController {
         return "okokok";
     }
 
-    @GetMapping("/test-create-url-vnpay")
-    public PreTransactionInfo searchProduct(
+    @GetMapping("/VNPAY-test-create-url")
+    public VNPayPaymentUrl searchProduct(
             HttpServletRequest request) throws UnsupportedEncodingException {
         return vnPayService.createUrlPayment(request, 50000, "odkasok");
     }
 
-    @GetMapping("/test-rfund-vnpay")
+    @GetMapping("/VNPAY-test-refund")
     public Map<String, Object> refund(
             HttpServletRequest request, @RequestParam("timeId") String timeId,
             @RequestParam("amount") String amount, @RequestParam("invoiceCode") String invoiceCode) throws IOException {
-        return vnPay.refund(request, timeId, amount, invoiceCode);
+        return vnPay.refund(request, timeId, invoiceCode, Long.parseLong(amount));
     }
 
-    @GetMapping("/test-create-url-vnpay-callback")
+    @GetMapping("/VNPAY-test-callback")
     public ResponseEntity<Map<String, Object>> doCallBack(@RequestParam Map<String, Object> callBackInfo, HttpServletRequest request) throws UnsupportedEncodingException, JsonProcessingException {
 
         vnPayService.processCallback(request);
@@ -439,42 +440,37 @@ public class ToolController {
         return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
     }
 
-    @PostMapping("/test-create-url-zalopay")
-    public CreateOrderZaloPayResponse createZaloPay(@RequestBody CreateOrderZaloPayRequest request) throws IOException {
-
-        return zaloPayService.createOrderTest(request);
+    @GetMapping("/VNPAY-test-get-order")
+    public TransactionInfoQuery getTransactionInfo(HttpServletRequest request, @RequestParam("txnref") String txnref, @RequestParam("transId") String transId) throws UnsupportedEncodingException {
+        return vnPayService.getTransactionInfo(txnref, transId, request);
     }
 
-    @PostMapping("/test-get-order-zalopay")
-    public GetOrderZaloPayResponse createZaloPay(@RequestBody GetOrderZaloPayRequest request) throws IOException, URISyntaxException {
-        return zaloPayService.getOrderTest(request);
+    @PostMapping("/ZALOPAY-test-create-url")
+    public CreateOrderZaloPayResponse createZaloPay(@RequestParam("amount") long amount) throws IOException {
+
+        return zaloPayService.createOrderTransaction(amount);
     }
 
-    @PostMapping("/test-get-order-zalopay-callback")
+    @PostMapping("/ZALOPAY-test-get-order")
+    public GetOrderZaloPayResponse getOrderTransactionInformation(@RequestParam("appTransId")  String appTransId) throws IOException, URISyntaxException {
+        return zaloPayService.getOrderTransactionInformation(appTransId);
+    }
+
+    @PostMapping("/ZALOPAY-test-callback")
     public ZaloCallbackResponse createZaloPaycallback(@RequestBody CallBackDto body) throws IOException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException {
         return zaloPayService.processCallback(body);
     }
 
-    @PostMapping("/test-sendRefundZalo")
+    @PostMapping("/ZALOPAY-test-refund")
     public Map sendRefundZalo(@RequestBody RefundRequestDTO request) throws IOException, URISyntaxException {
         return zaloPayService.sendRefund(request);
     }
 
-    @GetMapping("/test-sendRefundZalo")
+    @GetMapping("/ZALOPAY-test-get-refund")
     public Map sendRefundZalo(@RequestParam("refundId") String refundId) throws IOException, URISyntaxException {
         return zaloPayService.getStatusRefund(refundId);
     }
 
-    @GetMapping("/test-get-info-vnpay-ip-address")
-    public TransactionInfoQuery searchProduct(
-            HttpServletRequest request,
-            @RequestParam("txnref") String txnref,
-            @RequestParam("transId") String transId,
-            @RequestParam("ip") String ip
-    ) throws UnsupportedEncodingException {
-
-        return vnPayService.getTransactionInfoTest(txnref, transId, ip);
-    }
 
     @GetMapping("/test-cloudinary-thumbnail")
     public String cloudinary(@RequestParam("id") String id) throws UnsupportedEncodingException {
@@ -533,4 +529,92 @@ public class ToolController {
 //                });
         return "okoko";
     }
+
+    @GetMapping("/vnpay-refund")
+    public ResponseEntity<?> refund(HttpServletRequest req, HttpServletResponse resp,
+                                    @RequestParam(VNP_TRANSACTION_DATE_KEY) String transId,
+                                    @RequestParam("amount") String amount,
+                                    @RequestParam(VNP_TXN_REF_KEY) String txnref,
+                                    @RequestParam("refund_type") String type)
+            throws IOException {
+        String vnp_RequestId = VNPayUtils.getRandomNumber(8);
+        String vnp_Version = "2.1.0";
+        String vnp_Command = "refund";
+        String vnp_TmnCode = vnPay.getTmnCode();
+//        02: Giao dịch hoàn trả toàn phần (vnp_TransactionType=02)
+//        03: Giao dịch hoàn trả một phần (vnp_TransactionType=03)
+        // mac dinh = 2, dell ai tra mot phan cho met
+
+        String vnp_TransactionType = type;//req.getParameter("vnp_TransactionType")
+        String vnp_TxnRef = txnref;//req.getParameter("order_id");
+        // response từ query trả về từ vnpay ko cần *100, nó đã sẵn nhân 100 rồi
+//        int amount =100 ;//Integer.parseInt(req.getParameter("amount"))*100;//150.000 * 100;10.000.000
+        String vnp_Amount = String.valueOf(Integer.parseInt(amount) * 100); //Integer.parseInt(amount);  //String.valueOf(amount);
+        String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
+        String vnp_TransactionNo = "";
+        String vnp_TransactionDate = transId;//req.getParameter("trans_date"); //
+        String vnp_CreateBy = "ADMIN";//req.getParameter("user");NGUYEN VAN A// ko quan trong
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_CreateDate = formatter.format(cld.getTime());
+
+        String vnp_IpAddr = VNPayUtils.getIpAddress(req);
+
+        JsonObject vnp_Params = new JsonObject();
+
+        //63562614
+        //20230616094041
+
+        vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
+        vnp_Params.addProperty("vnp_Version", vnp_Version);
+        vnp_Params.addProperty("vnp_Command", vnp_Command);
+        vnp_Params.addProperty("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.addProperty("vnp_TransactionType", vnp_TransactionType);
+        vnp_Params.addProperty("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.addProperty("vnp_Amount", vnp_Amount);
+        vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
+
+        if (vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty()) {
+            vnp_Params.addProperty("vnp_TransactionNo", "{get value of vnp_TransactionNo}");
+        }
+
+        vnp_Params.addProperty("vnp_TransactionDate", vnp_TransactionDate);
+        vnp_Params.addProperty("vnp_CreateBy", vnp_CreateBy);
+        vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
+        vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
+
+        String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" +
+                vnp_TransactionType + "|" + vnp_TxnRef + "|" + vnp_Amount + "|" + vnp_TransactionNo + "|"
+                + vnp_TransactionDate + "|" + vnp_CreateBy + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
+
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
+
+        vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
+
+        URL url = new URL("https://sandbox.vnpayment.vn/merchant_webapi/api/transaction");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(vnp_Params.toString());
+        wr.flush();
+        wr.close();
+        int responseCode = con.getResponseCode();
+        System.out.println("nSending 'POST' request to URL : " + url);
+        System.out.println("Post Data : " + vnp_Params);
+        System.out.println("Response Code : " + responseCode);
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String output;
+        StringBuffer response = new StringBuffer();
+        while ((output = in.readLine()) != null) {
+            response.append(output);
+        }
+        in.close();
+        System.out.println(response.toString());
+        return ResponseEntity.ok().body(response);
+    }
+
 }

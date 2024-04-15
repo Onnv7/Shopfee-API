@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.module.vnpay.transaction.dto;
+package com.hcmute.shopfee.dto.common.vnpay;
 
 import lombok.Data;
 

@@ -14,8 +14,12 @@ public class ZaloPayConfig {
     @Value("${zalo_pay.key2}")
     private String KEY2;
 
+
+    @Value("${zalo_pay.callback_url}")
+    private String CALLBACK_URL;
+
     @Bean
     public ZaloPay zaloPay() {
-        return new ZaloPay(APP_ID, KEY1, KEY2);
+        return new ZaloPay(CALLBACK_URL, APP_ID, KEY1, KEY2);
     }
 }

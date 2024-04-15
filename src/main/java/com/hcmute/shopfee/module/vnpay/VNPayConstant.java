@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.constant;
+package com.hcmute.shopfee.module.vnpay;
 
 public class VNPayConstant {
     public static final String VNP_VERSION = "2.1.0";

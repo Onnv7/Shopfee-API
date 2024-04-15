@@ -1,27 +1,22 @@
 package com.hcmute.shopfee.module.zalopay;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hcmute.shopfee.module.zalopay.order.OrderZaloAPI;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallbackDataRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.module.zalopay.refund.RefundZaloAPI;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundStatusRequestDTO;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
 public class ZaloPay {
+    private final String CALLBACK_URL;
     private final String APP_ID;
     private final String KEY1;
     private final String KEY2;
     private final OrderZaloAPI orderZaloAPI;
     private final RefundZaloAPI refundZaloAPI;
+    public String getCallbackUrl() {
+        return CALLBACK_URL;
+    }
 
     public String getAppId() {
         return APP_ID;
@@ -35,7 +30,8 @@ public class ZaloPay {
         return KEY2;
     }
 
-    public ZaloPay(String APP_ID, String KEY1, String KEY2) {
+    public ZaloPay(String CALLBACK_URL, String APP_ID, String KEY1, String KEY2) {
+        this.CALLBACK_URL = CALLBACK_URL;
         this.APP_ID = APP_ID;
         this.KEY1 = KEY1;
         this.KEY2 = KEY2;
@@ -43,23 +39,19 @@ public class ZaloPay {
         refundZaloAPI = new RefundZaloAPI(this);
     }
 
-    public CreateOrderZaloPayResponse createOrderZaloPay(CreateOrderZaloPayRequest createOrderZaloPayRequest) throws IOException {
-        return orderZaloAPI.createOrder(createOrderZaloPayRequest);
+    public Map<String, Object> createOrderZaloPay(String appUser, long amount) throws IOException {
+        return orderZaloAPI.createOrder(appUser, amount);
     }
 
-    public GetOrderZaloPayResponse getOrder(GetOrderZaloPayRequest body) throws IOException, URISyntaxException {
-        return orderZaloAPI.getOrder(body);
+    public Map<String, Object> getOrder(String appTransId) throws IOException, URISyntaxException {
+        return orderZaloAPI.getOrder(appTransId);
     }
 
-    public Map<String, Object> sendRefund(RefundRequestDTO refundRequestDTO) throws IOException {
-        return refundZaloAPI.sendRefund(refundRequestDTO);
+    public Map<String, Object> sendRefund(String zpTransId, long amount, String description) throws IOException {
+        return refundZaloAPI.sendRefund(zpTransId, amount, description);
     }
 
     public Map<String, Object> getStatusRefund(String refundId) throws IOException, URISyntaxException {
         return refundZaloAPI.getStatusRefund(refundId);
-    }
-
-    public CallbackDataRequest getDataCallBack(String dataJson) throws JsonProcessingException {
-        return orderZaloAPI.getDataCallBack(dataJson);
     }
 }

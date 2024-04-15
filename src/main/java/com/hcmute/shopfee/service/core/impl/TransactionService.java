@@ -1,17 +1,20 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.CustomException;
-import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
+import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.common.AuditorAwareService;
@@ -24,6 +27,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -71,7 +78,7 @@ public class TransactionService implements ITransactionService {
             if (transResult.getReturnCode() == 1 && transResult.getAmount() == orderBill.getTotalPayment()) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) transResult.getAmount());
-                transaction.getZaloPay().setZalopayTransactionId(transResult.getZpTransId());
+                transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
             } else if (transResult.getReturnCode() == 2) {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .orderStatus(OrderStatus.CANCELED)
@@ -79,7 +86,7 @@ public class TransactionService implements ITransactionService {
                         .orderBill(orderBill)
                         .actor(ActorType.USER)
                         .build());
-                transaction.getZaloPay().setZalopayTransactionId(transResult.getZpTransId());
+                transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
                 transaction.setTotalPaid(0L);
                 orderBillRepository.save(orderBill);
             }
@@ -98,5 +105,39 @@ public class TransactionService implements ITransactionService {
         trans.setStatus(PaymentStatus.PAID);
         trans.setTotalPaid(totalPaid);
         transactionRepository.save(trans);
+    }
+
+    public boolean refundTransaction(HttpServletRequest request, String transactionId) throws IOException, URISyntaxException {
+        TransactionEntity transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.TRANSACTION_ID_NOT_FOUND + transactionId));
+
+        if(transaction.getPaymentType() == PaymentType.CASHING) {
+            return false;
+        }
+        if(transaction.getPaymentType() == PaymentType.VNPAY) {
+            Map<String, Object> responseRefund = vnPayService.refundOrder(request, transaction.getVnPay().getTimeCode(), transaction.getVnPay().getInvoiceCode(), transaction.getTotalPaid());
+            String responseCode = responseRefund.get(VNPayConstant.VNP_RESPONSE_CODE).toString();
+            if(responseCode.equals("00")) {
+                // refund thafnh coong
+                return true;
+            } else {
+                return false;
+            }
+        } else if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
+            RefundRequestDTO refundRequestDTO = new RefundRequestDTO();
+            ZaloPayEntity zaloPay = transaction.getZaloPay();
+            refundRequestDTO.setAmount(transaction.getTotalPaid());
+            refundRequestDTO.setZpTransId(zaloPay.getZalopayTransactionId());
+            refundRequestDTO.setDescription("");
+            Map<String, Object> responseRefund = zaloPayService.sendRefund(refundRequestDTO);
+            int returnCode = (int) responseRefund.getOrDefault("return_code", -1);
+            if(returnCode == 1) {
+                // refund thafnh coong
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 }

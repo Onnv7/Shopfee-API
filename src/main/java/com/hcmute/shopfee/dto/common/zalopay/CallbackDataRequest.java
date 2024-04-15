@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.module.zalopay.order.dto.request;
+package com.hcmute.shopfee.dto.common.zalopay;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

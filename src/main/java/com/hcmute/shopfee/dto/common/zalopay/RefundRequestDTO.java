@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.module.zalopay.order.dto.request;
+package com.hcmute.shopfee.dto.common.zalopay;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateOrderZaloPayRequest {
-    private String appUser;
-    private Long amount;
-    private String orderId;
-}
+public class RefundRequestDTO {
 
+    private String zpTransId;
+    private Long amount;
+    private String description;
+}

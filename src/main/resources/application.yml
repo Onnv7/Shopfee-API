@@ -162,6 +162,7 @@ zalo_pay:
   app_id: ${ZALO_PAY_APP_ID}
   key1: ${ZALO_PAY_KEY_1}
   key2: ${ZALO_PAY_KEY_2}
+  callback_url: ${ZALO_PAY_CALLBACK_URL}
 
 
 app:

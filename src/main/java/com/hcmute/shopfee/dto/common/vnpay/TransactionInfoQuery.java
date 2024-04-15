@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.module.vnpay.querydr.response;
+package com.hcmute.shopfee.dto.common.vnpay;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

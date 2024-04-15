@@ -1,12 +1,8 @@
 package com.hcmute.shopfee.module.vnpay;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hcmute.shopfee.module.vnpay.querydr.QueryDr;
+import com.hcmute.shopfee.module.vnpay.querydr.VNPayQuery;
 import com.hcmute.shopfee.module.vnpay.refund.VNPayRefund;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
 import com.hcmute.shopfee.module.vnpay.transaction.VNPayTransaction;
-import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackData;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
@@ -25,8 +21,9 @@ public class VNPay {
 
 
     private final VNPayTransaction vnPayTransaction;
-    private final QueryDr queryDr;
+    private final VNPayQuery VNPayQuery;
     private final VNPayRefund vnpayRefund;
+
     public String getSecretKey() {
         return SECRET_KEY;
     }
@@ -39,30 +36,23 @@ public class VNPay {
         SECRET_KEY = secretKey;
         TMN_CODE = tmnCode;
         vnPayTransaction = new VNPayTransaction(this);
-        queryDr = new QueryDr(this);
+        VNPayQuery = new VNPayQuery(this);
         vnpayRefund = new VNPayRefund(this);
     }
 
-    public PreTransactionInfo createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
+    public Map<String, Object> createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
         return vnPayTransaction.createUrlPayment(request, amount, orderInfo);
     }
 
-    public TransactionInfoQuery getTransactionInfo(String txnref, String transId, String ipAddress) throws IOException {
-        return queryDr.getTransactionInfo(txnref, transId, ipAddress);
+    public Map<String, Object> getTransactionInfo(String txnref, String transId, String ipAddress) throws IOException {
+        return VNPayQuery.getTransactionInfo(txnref, transId, ipAddress);
     }
 
-    public TransactionInfoQuery getTransactionInfoTest(String txnref, String transId, String request) throws IOException {
-        return queryDr.getTransactionInfoTest(txnref, transId, request);
-    }
 
-    public VnpayCallbackData getCallbackData(String dataJson) throws JsonProcessingException {
-        return vnPayTransaction.getCallbackData(dataJson);
-    }
 
-    public Map<String, Object> refund(HttpServletRequest req, String timeId, String amount, String invoiceCode) throws IOException {
+    public Map<String, Object> refund(HttpServletRequest req, String timeId, String invoiceCode, long amount) throws IOException {
         return vnpayRefund.refund(req, timeId, amount, invoiceCode, "02");
     }
-
 
 
 }

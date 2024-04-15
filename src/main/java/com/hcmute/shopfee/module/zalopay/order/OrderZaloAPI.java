@@ -1,16 +1,8 @@
 package com.hcmute.shopfee.module.zalopay.order;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallbackDataRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacUtils;
+import com.hcmute.shopfee.module.zalopay.ZaloPayUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,11 +16,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class OrderZaloAPI {
-    private final String ORDER_CREATE_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/create";
+    private static final String ORDER_CREATE_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/create";
     private static final String ORDER_STATUS_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/query";
     private final ZaloPay zaloPay;
 
@@ -36,27 +27,27 @@ public class OrderZaloAPI {
         this.zaloPay = zaloPay;
     }
 
-    public CreateOrderZaloPayResponse createOrder(CreateOrderZaloPayRequest createOrderZaloPayRequest) throws IOException {
+    public Map<String, Object> createOrder(String appUser, long amount) throws IOException {
 
-        String apptransid = getCurrentTimeString("yyMMdd") + "_" + new Date().getTime();
+        String apptransid = ZaloPayUtils.getCurrentTimeString("yyMMdd") + "_" + new Date().getTime();
         System.out.println("apptransid - " + apptransid);
         Map<String, Object> order = new HashMap<String, Object>() {{
             put("app_id", zaloPay.getAppId());
             put("app_trans_id", apptransid);
             // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
             put("app_time", System.currentTimeMillis()); // miliseconds
-            put("app_user", createOrderZaloPayRequest.getAppUser());
-            put("amount", createOrderZaloPayRequest.getAmount());
+            put("app_user", appUser);
+            put("amount", amount);
             put("description", "Shopfee - Payment for the order");
             put("bank_code", "");
             put("item", "[]");
             put("embed_data", "{}");
-            put("callback_url", "https://212c-171-246-220-60.ngrok-free.app/tool/test-get-order-zalopay-callback");
+            put("callback_url", zaloPay.getCallbackUrl() != null ? zaloPay.getCallbackUrl() : "");
         }};
 
         String data = order.get("app_id") + "|" + order.get("app_trans_id") + "|" + order.get("app_user") + "|" + order.get("amount")
                 + "|" + order.get("app_time") + "|" + order.get("embed_data") + "|" + order.get("item");
-        order.put("mac", Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey1().getBytes(), data.getBytes())));
+        order.put("mac", ZaloPayUtils.hmacSha256(zaloPay.getKey1(), data));
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(ORDER_CREATE_ENDPOINT);
@@ -80,20 +71,22 @@ public class OrderZaloAPI {
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        CreateOrderZaloPayResponse resData = objectMapper.readValue(resultJsonStr.toString(), CreateOrderZaloPayResponse.class);
-        resData.setInvoiceCode(apptransid);
+        Map<String, Object> resData = objectMapper.readValue(resultJsonStr.toString(), Map.class);
+        resData.put("invoice_code", apptransid);
+
         return resData;
     }
 
-    public GetOrderZaloPayResponse getOrder(GetOrderZaloPayRequest body) throws URISyntaxException, IOException {
+    public Map<String, Object> getOrder(String appTransId) throws URISyntaxException, IOException {
 
 //        String appTranId = "210608_2553_1623145380738";  // Input your app_trans_id
-        String data = zaloPay.getAppId() + "|" + body.getAppTransId() + "|" + zaloPay.getKey1(); // appid|app_trans_id|key1
-        String mac = Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey1().getBytes(), data.getBytes()));
+        String data = zaloPay.getAppId() + "|" + appTransId + "|" + zaloPay.getKey1(); // appid|app_trans_id|key1
+        String mac = ZaloPayUtils.hmacSha256(zaloPay.getKey1(), data);
+
 
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("app_id", zaloPay.getAppId()));
-        params.add(new BasicNameValuePair("app_trans_id", body.getAppTransId()));
+        params.add(new BasicNameValuePair("app_trans_id", appTransId));
         params.add(new BasicNameValuePair("mac", mac));
 
         URIBuilder uri = new URIBuilder(ORDER_STATUS_ENDPOINT);
@@ -114,21 +107,8 @@ public class OrderZaloAPI {
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(resultJsonStr.toString(), GetOrderZaloPayResponse.class);
-
+        return objectMapper.readValue(resultJsonStr.toString(), Map.class);
     }
 
-    private String getCurrentTimeString(String format) {
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
-        SimpleDateFormat fmt = new SimpleDateFormat(format);
-        fmt.setCalendar(cal);
-        return fmt.format(cal.getTimeInMillis());
-    }
-
-    public CallbackDataRequest getDataCallBack(String dataJson) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        CallbackDataRequest data = mapper.readValue(dataJson, CallbackDataRequest.class);
-        return data;
-    }
 
 }

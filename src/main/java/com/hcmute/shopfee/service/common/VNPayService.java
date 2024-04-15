@@ -1,17 +1,17 @@
 package com.hcmute.shopfee.service.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hcmute.shopfee.constant.VNPayConstant;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
-import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackData;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackResponse;
+import com.hcmute.shopfee.dto.common.vnpay.VNPayPaymentUrl;
+import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
+import com.hcmute.shopfee.dto.common.vnpay.VnpayCallbackResponse;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.payment.VNPayRepository;
@@ -35,10 +35,12 @@ public class VNPayService {
     private final OrderBillRepository orderBillRepository;
     private final TransactionRepository transactionRepository;
 
-    public PreTransactionInfo createUrlPayment(HttpServletRequest request, long amount, String orderInfo) {
+    public VNPayPaymentUrl createUrlPayment(HttpServletRequest request, long amount, String orderInfo) {
         try {
-            return vnPay.createUrlPayment(request, amount, orderInfo);
-        } catch (UnsupportedEncodingException e) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object>  responseUrl = vnPay.createUrlPayment(request, amount, orderInfo);
+            return objectMapper.readValue(responseUrl.toString(), VNPayPaymentUrl.class);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -51,18 +53,16 @@ public class VNPayService {
             } else {
                 ipAddress = VNPayUtils.getIpAddress(request);
             }
-            return vnPay.getTransactionInfo(invoiceCode, timeCode, ipAddress);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> transactionInfo = vnPay.getTransactionInfo(invoiceCode, timeCode, ipAddress);
+            return objectMapper.readValue(transactionInfo.toString(), TransactionInfoQuery.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public TransactionInfoQuery getTransactionInfoTest(String invoiceCode, String timeCode, String ip) {
-        try {
-            return vnPay.getTransactionInfoTest(invoiceCode, timeCode, ip);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public Map<String, Object> refundOrder(HttpServletRequest request, String timeCode, String invoiceCode,  long amount) throws IOException {
+        return vnPay.refund(request, timeCode, invoiceCode, amount);
     }
 
     public VnpayCallbackResponse processCallback(HttpServletRequest request) throws JsonProcessingException, UnsupportedEncodingException {

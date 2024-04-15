@@ -29,8 +29,8 @@ import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.vnpay.VNPayPaymentUrl;
+import com.hcmute.shopfee.dto.common.zalopay.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
@@ -106,7 +106,7 @@ public class OrderService implements IOrderService {
                     .orderBill(orderBill)
                     .paymentType(PaymentType.CASHING).build();
         } else if (paymentType == PaymentType.VNPAY) {
-            PreTransactionInfo paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
+            VNPayPaymentUrl paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
             VNPayEntity vnPay = VNPayEntity.builder()
                     .invoiceCode(paymentData.getVnpTxnRef())
                     .timeCode(paymentData.getVnpCreateDate())
@@ -121,7 +121,7 @@ public class OrderService implements IOrderService {
                     .build();
             vnPay.setTransaction(transData);
         } else if (paymentType == PaymentType.ZALOPAY) {
-            CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment(), orderBill.getId());
+            CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment());
             ZaloPayEntity zaloPay = ZaloPayEntity.builder()
                     .transaction(transData)
                     .appTransactionId(paymentData.getInvoiceCode())

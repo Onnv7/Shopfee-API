@@ -1,25 +1,21 @@
 package com.hcmute.shopfee.service.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hcmute.shopfee.constant.ErrorConstant;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.enums.PaymentStatus;
-import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CallbackDataRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.ZaloCallbackResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
+import com.hcmute.shopfee.module.zalopay.ZaloPayUtils;
+import com.hcmute.shopfee.dto.common.zalopay.CallBackDto;
+import com.hcmute.shopfee.dto.common.zalopay.CallbackDataRequest;
+import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
+import com.hcmute.shopfee.dto.common.zalopay.CreateOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.payment.ZaloPayRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -34,32 +30,32 @@ public class ZaloPayService {
     private final TransactionRepository transactionRepository;
 
 
-    public CreateOrderZaloPayResponse createOrderTransaction(Long amount, String orderId)  {
-        CreateOrderZaloPayRequest request = new CreateOrderZaloPayRequest();
-        request.setAmount(amount);
-        request.setOrderId(orderId);
-        request.setAppUser("shopfee");
+    public CreateOrderZaloPayResponse createOrderTransaction(Long amount)  {
         try {
-            return zaloPay.createOrderZaloPay(request);
+            Map<String, Object> orderResponse = zaloPay.createOrderZaloPay("shopfee", amount);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.convertValue(orderResponse, CreateOrderZaloPayResponse.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public GetOrderZaloPayResponse getOrderTransactionInformation(String appTransId) {
-        GetOrderZaloPayRequest body = new GetOrderZaloPayRequest();
-        body.setAppTransId(appTransId);
         try {
-            return zaloPay.getOrder(body);
-        } catch (IOException | URISyntaxException e) {
+            Map<String, Object> orderResponse = zaloPay.getOrder(appTransId);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.convertValue(orderResponse, GetOrderZaloPayResponse.class);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
     public ZaloCallbackResponse processCallback(CallBackDto body) throws JsonProcessingException {
         ZaloCallbackResponse response = new ZaloCallbackResponse();
-        String reqMac = Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey2().getBytes(), body.getData().getBytes()));
+        String reqMac = ZaloPayUtils.hmacSha256(zaloPay.getKey2(), body.getData());
         if(reqMac.equals(body.getMac())) {
-            CallbackDataRequest dataRequest = zaloPay.getDataCallBack(body.getData());
+            ObjectMapper mapper = new ObjectMapper();
+            CallbackDataRequest dataRequest = mapper.readValue(body.getData(), CallbackDataRequest.class);
+
             ZaloPayEntity zaloPay = zaloPayRepository.findByAppTransactionId(dataRequest.getAppTransId())
                     .orElse(null);
 
@@ -71,7 +67,7 @@ public class ZaloPayService {
                 } else {
                     transaction.setTotalPaid((long) dataRequest.getAmount());
                     transaction.setStatus(PaymentStatus.PAID);
-                    zaloPay.setZalopayTransactionId(dataRequest.getZpTransId());
+                    zaloPay.setZalopayTransactionId(String.valueOf(dataRequest.getZpTransId()));
 
                     response.setReturnCode(1);
                     response.setReturnMessage("success");
@@ -90,16 +86,10 @@ public class ZaloPayService {
         return response;
 
     }
-    public CreateOrderZaloPayResponse createOrderTest(CreateOrderZaloPayRequest createOrderZaloPayRequest) throws IOException {
-        return zaloPay.createOrderZaloPay(createOrderZaloPayRequest);
-    }
 
-    public GetOrderZaloPayResponse getOrderTest(GetOrderZaloPayRequest body) throws IOException, URISyntaxException {
-        return zaloPay.getOrder(body);
-    }
 
     public Map<String, Object> sendRefund(RefundRequestDTO request) throws IOException, URISyntaxException {
-        return zaloPay.sendRefund(request);
+        return zaloPay.sendRefund(request.getZpTransId(), request.getAmount(), request.getDescription());
     }
 
     public Map<String, Object> getStatusRefund(String refundId) throws IOException, URISyntaxException {

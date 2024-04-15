@@ -26,7 +26,7 @@ public class ZaloPayEntity {
     private String appTransactionId;
 
     @Column(name = "zp_trans_id")
-    private Long zalopayTransactionId;
+    private String zalopayTransactionId;
 
     @OneToOne
     @JoinColumn(name = "transaction_id", nullable = false)

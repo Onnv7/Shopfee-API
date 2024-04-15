@@ -1,11 +1,7 @@
 package com.hcmute.shopfee.module.vnpay.transaction;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
-import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackData;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.*;
@@ -14,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.hcmute.shopfee.constant.VNPayConstant.*;
+import static com.hcmute.shopfee.module.vnpay.VNPayConstant.*;
 
 public class VNPayTransaction {
     private final VNPay vnPay;
@@ -23,19 +19,19 @@ public class VNPayTransaction {
         this.vnPay = vnPay;
     }
 
-    public PreTransactionInfo createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
+    public  Map<String, Object> createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
         String vnp_TxnRef = VNPayUtils.getRandomNumber(8);
         String vnp_IpAddr = VNPayUtils.getIpAddress(request);
         String vnp_TmnCode = vnPay.getTmnCode();
 
-        PreTransactionInfo result = new PreTransactionInfo();
+        Map<String, Object>  result = new HashMap<>();
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put(VNP_VERSION_KEY, VNPay.vnp_Version);
         vnp_Params.put(VNP_COMMAND_KEY, VNPay.vnp_Command);
         vnp_Params.put(VNP_TMN_CODE_KEY, vnp_TmnCode);
         vnp_Params.put(VNP_AMOUNT_KEY, String.valueOf(amount * 100));
         vnp_Params.put(VNP_CURRENCY_CODE_KEY, "VND");
-//        vnp_Params.put("vnp_BankCode", "NCB");
+
         vnp_Params.put(VNP_TXN_REF_KEY, vnp_TxnRef);
         vnp_Params.put(VNP_ORDER_INFO_KEY, orderInfo);
         vnp_Params.put(VNP_RETURN_URL_KEY, "https://www.youtube.com");  //"http://localhost:8080/api/test/ok"
@@ -80,16 +76,18 @@ public class VNPayTransaction {
         String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = VNPay.vnp_PayUrl + "?" + queryUrl;
-        result.setVnpTxnRef(vnp_TxnRef);
-        result.setVnpCreateDate(vnp_CreateDate);
-        result.setVnpUrl(paymentUrl);
-        result.setIpAddress(vnp_IpAddr);
+
+
+//        result.setVnpTxnRef(vnp_TxnRef);
+//        result.setVnpCreateDate(vnp_CreateDate);
+//        result.setVnpUrl(paymentUrl);
+//        result.setIpAddress(vnp_IpAddr);
+        result.put(VNP_TXN_REF_KEY, vnp_TxnRef);
+        result.put(VNP_CREATE_DATE_KEY, vnp_CreateDate);
+        result.put(VNP_URL_KEY, paymentUrl);
         return result;
     }
 
-    public VnpayCallbackData getCallbackData(String dataJson) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(dataJson, VnpayCallbackData.class);
-    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.module.zalopay.order.dto.response;
+package com.hcmute.shopfee.dto.common.zalopay;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -26,5 +26,6 @@ public class CreateOrderZaloPayResponse {
     @JsonProperty("return_code")
     private String returnCode;
 
+    @JsonProperty("invoice_code")
     private String invoiceCode;
 }

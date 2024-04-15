@@ -1,10 +1,8 @@
 package com.hcmute.shopfee.module.zalopay.refund;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
-import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundStatusRequestDTO;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacUtils;
+import com.hcmute.shopfee.module.zalopay.ZaloPayUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -31,21 +29,21 @@ public class RefundZaloAPI {
         this.zaloPay = zaloPay;
     }
 
-    public Map<String, Object> sendRefund(RefundRequestDTO refundRequestDTO) throws JSONException, IOException {
-
+    public Map<String, Object> sendRefund(String zpTransId, long amount, String description) throws JSONException, IOException {
         Map<String, Object> order = new HashMap<>(){{
             put("app_id", zaloPay.getAppId());
-            put("zp_trans_id", refundRequestDTO.getZpTransId());
+            put("zp_trans_id", zpTransId);
             put("m_refund_id", getCurrentTimeString("yyMMdd") +"_"+ zaloPay.getAppId() +"_"+
                     System.currentTimeMillis() + "" + (111 + new Random().nextInt(888)));
             put("timestamp", System.currentTimeMillis());
-            put("amount", refundRequestDTO.getAmount());
-            put("description", refundRequestDTO.getDescription());
+            put("amount", amount);
+            put("description", description);
         }};
 
         String data = order.get("app_id") +"|"+ order.get("zp_trans_id") +"|"+ order.get("amount")
                 +"|"+ order.get("description") +"|"+ order.get("timestamp");
-        order.put("mac", Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey1().getBytes(), data.getBytes())));
+        order.put("mac", ZaloPayUtils.hmacSha256(zaloPay.getKey1(), data));
+
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(ORDER_REFUND_ENDPOINT);
@@ -66,13 +64,14 @@ public class RefundZaloAPI {
             resultJsonStr.append(line);
         }
 
-        JSONObject jsonResult = new JSONObject(resultJsonStr.toString());
-        Map<String, Object> finalResult = new HashMap<>();
-        for (Iterator it = jsonResult.keys(); it.hasNext(); ) {
-            String key = (String) it.next();
-            finalResult.put(key, jsonResult.get(key));
-        }
-        return finalResult;
+//        JSONObject jsonResult = new JSONObject(resultJsonStr.toString());
+//        Map<String, Object> finalResult = new HashMap<>();
+//        for (Iterator it = jsonResult.keys(); it.hasNext(); ) {
+//            String key = (String) it.next();
+//            finalResult.put(key, jsonResult.get(key));
+//        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(resultJsonStr.toString(), Map.class);
     }
     private String getCurrentTimeString(String format) {
 
@@ -83,11 +82,9 @@ public class RefundZaloAPI {
     }
 
     public Map<String, Object> getStatusRefund(String refundId) throws IOException, URISyntaxException, JSONException {
-
-//        String mRefundId = "190308_2553_123456";
         String timestamp = Long.toString(System.currentTimeMillis()); // miliseconds
         String data = zaloPay.getAppId() +"|"+ refundId  +"|"+ timestamp; // app_id|m_refund_id|timestamp
-        String mac = Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey1().getBytes(), data.getBytes()));
+        String mac = ZaloPayUtils.hmacSha256(zaloPay.getKey1(), data);
 
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("app_id", zaloPay.getAppId()));
