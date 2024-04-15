@@ -7,4 +7,5 @@ public class ShopfeeConstant {
     public static final String COIN_REFUND_CANCELLED_ORDER = "Coins refunded from canceled paid orders";
     public static final String DEDUCT_COIN_TO_PAY = "Deduct coins to pay bill ";
     public static final String REVIEW_COIN = "Bonus coins for product reviews";
+    public static final int HOURS_REQUEST_REFUND = 3;
 }

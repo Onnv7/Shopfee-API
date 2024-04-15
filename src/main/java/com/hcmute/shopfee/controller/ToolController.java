@@ -1,10 +1,12 @@
 package com.hcmute.shopfee.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
@@ -13,12 +15,16 @@ import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
 import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
+import com.hcmute.shopfee.module.zalopay.ZaloPay;
+import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
 import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
+import com.hcmute.shopfee.module.zalopay.order.dto.response.ZaloCallbackResponse;
 import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -36,10 +42,14 @@ import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,8 +60,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -86,6 +100,7 @@ public class ToolController {
     private final RoleRepository roleRepository;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
+    private final ZaloPay zaloPay;
     private final FirebaseMessagingService firebaseMessagingService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
     private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
@@ -93,6 +108,9 @@ public class ToolController {
     @Autowired
     private Environment environment;
     private final EmployeeRepository employeeRepository;
+
+
+    private final VNPay vnPay;
 
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
@@ -208,7 +226,7 @@ public class ToolController {
         userRepository.save(userEntity);
         UserEntity userEntity2 = UserEntity.builder()
                 .email("nva@gmail.com")
-                .password(passwordEncoder.encode("123456"))
+                .password(passwordEncoder.encode("112233"))
                 .firstName("an")
                 .lastName("nguyen")
                 .coin(0L)
@@ -402,10 +420,23 @@ public class ToolController {
 
     @GetMapping("/test-create-url-vnpay")
     public PreTransactionInfo searchProduct(
-
             HttpServletRequest request) throws UnsupportedEncodingException {
-
         return vnPayService.createUrlPayment(request, 50000, "odkasok");
+    }
+
+    @GetMapping("/test-rfund-vnpay")
+    public Map<String, Object> refund(
+            HttpServletRequest request, @RequestParam("timeId") String timeId,
+            @RequestParam("amount") String amount, @RequestParam("invoiceCode") String invoiceCode) throws IOException {
+        return vnPay.refund(request, timeId, amount, invoiceCode);
+    }
+
+    @GetMapping("/test-create-url-vnpay-callback")
+    public ResponseEntity<Map<String, Object>> doCallBack(@RequestParam Map<String, Object> callBackInfo, HttpServletRequest request) throws UnsupportedEncodingException, JsonProcessingException {
+
+        vnPayService.processCallback(request);
+        System.out.println(callBackInfo);
+        return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
     }
 
     @PostMapping("/test-create-url-zalopay")
@@ -416,13 +447,22 @@ public class ToolController {
 
     @PostMapping("/test-get-order-zalopay")
     public GetOrderZaloPayResponse createZaloPay(@RequestBody GetOrderZaloPayRequest request) throws IOException, URISyntaxException {
-
         return zaloPayService.getOrderTest(request);
+    }
+
+    @PostMapping("/test-get-order-zalopay-callback")
+    public ZaloCallbackResponse createZaloPaycallback(@RequestBody CallBackDto body) throws IOException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException {
+        return zaloPayService.processCallback(body);
     }
 
     @PostMapping("/test-sendRefundZalo")
     public Map sendRefundZalo(@RequestBody RefundRequestDTO request) throws IOException, URISyntaxException {
         return zaloPayService.sendRefund(request);
+    }
+
+    @GetMapping("/test-sendRefundZalo")
+    public Map sendRefundZalo(@RequestParam("refundId") String refundId) throws IOException, URISyntaxException {
+        return zaloPayService.getStatusRefund(refundId);
     }
 
     @GetMapping("/test-get-info-vnpay-ip-address")
@@ -478,9 +518,9 @@ public class ToolController {
     }
 
     @GetMapping("/tst-state-machine")
-    public String machine(@RequestParam("orderId") String orderId, @RequestParam("orderEvent") OrderEvent orderEvent){
+    public String machine(@RequestParam("orderId") String orderId, @RequestParam("orderEvent") OrderEvent orderEvent) {
 
-        Mono<OrderStatus>  rs = orderStateService.sendEventMono(orderId, "Test", orderEvent);
+        Mono<OrderStatus> rs = orderStateService.sendEventMono(orderId, "Test", orderEvent);
 
 //                .subscribe(rs1 -> {
 //                    System.out.println(rs1);

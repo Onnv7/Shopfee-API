@@ -1,6 +1,8 @@
-package com.hcmute.shopfee.entity.sql.database.order;
+package com.hcmute.shopfee.entity.sql.database.payment;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import jakarta.persistence.*;
@@ -28,16 +30,16 @@ public class TransactionEntity {
     @GeneratedValue(generator = "transaction_id")
     private String id;
 
-    @OneToOne
+    @OneToOne//(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;
 
-    @Column(name = "invoice_code")
-    private String invoiceCode;
-
-    @Column(name = "time_code")
-    private String timeCode;
+//    @Column(name = "invoice_code")
+//    private String invoiceCode;
+//
+//    @Column(name = "time_code")
+//    private String timeCode;
 
     @Column(name = "payment_url", columnDefinition = "TEXT")
     private String paymentUrl;
@@ -67,4 +69,12 @@ public class TransactionEntity {
     private Date updatedAt;
 
     // =================================================================
+
+    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private VNPayEntity vnPay;
+
+    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private ZaloPayEntity zaloPay;
 }

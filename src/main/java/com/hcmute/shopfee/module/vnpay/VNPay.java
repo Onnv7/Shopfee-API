@@ -1,17 +1,17 @@
 package com.hcmute.shopfee.module.vnpay;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hcmute.shopfee.module.vnpay.querydr.QueryDr;
+import com.hcmute.shopfee.module.vnpay.refund.VNPayRefund;
 import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
 import com.hcmute.shopfee.module.vnpay.transaction.VNPayTransaction;
 import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
+import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackData;
 import jakarta.servlet.http.HttpServletRequest;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.util.*;
 
 public class VNPay {
     private final String SECRET_KEY;
@@ -26,6 +26,7 @@ public class VNPay {
 
     private final VNPayTransaction vnPayTransaction;
     private final QueryDr queryDr;
+    private final VNPayRefund vnpayRefund;
     public String getSecretKey() {
         return SECRET_KEY;
     }
@@ -39,6 +40,7 @@ public class VNPay {
         TMN_CODE = tmnCode;
         vnPayTransaction = new VNPayTransaction(this);
         queryDr = new QueryDr(this);
+        vnpayRefund = new VNPayRefund(this);
     }
 
     public PreTransactionInfo createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
@@ -53,47 +55,14 @@ public class VNPay {
         return queryDr.getTransactionInfoTest(txnref, transId, request);
     }
 
-    public String getRandomNumber(int len) {
-        Random rnd = new Random();
-        String chars = "0123456789";
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        }
-        return sb.toString();
+    public VnpayCallbackData getCallbackData(String dataJson) throws JsonProcessingException {
+        return vnPayTransaction.getCallbackData(dataJson);
     }
-    public String getIpAddress(HttpServletRequest request) {
-        String ipAdress;
-        try {
-            ipAdress = request.getHeader("X-FORWARDED-FOR");
-            if (ipAdress == null) {
-                ipAdress = request.getRemoteAddr();
-            }
-        } catch (Exception e) {
-            ipAdress = "Invalid IP:" + e.getMessage();
-        }
-        return ipAdress;
-    }
-    public String hmacSHA512(final String key, final String data) {
-        try {
 
-            if (key == null || data == null) {
-                throw new NullPointerException();
-            }
-            final Mac hmac512 = Mac.getInstance("HmacSHA512");
-            byte[] hmacKeyBytes = key.getBytes();
-            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
-            hmac512.init(secretKey);
-            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-            byte[] result = hmac512.doFinal(dataBytes);
-            StringBuilder sb = new StringBuilder(2 * result.length);
-            for (byte b : result) {
-                sb.append(String.format("%02x", b & 0xff));
-            }
-            return sb.toString();
-
-        } catch (Exception ex) {
-            return "";
-        }
+    public Map<String, Object> refund(HttpServletRequest req, String timeId, String amount, String invoiceCode) throws IOException {
+        return vnpayRefund.refund(req, timeId, amount, invoiceCode, "02");
     }
+
+
+
 }

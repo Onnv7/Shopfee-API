@@ -19,6 +19,7 @@ public class VNPayConstant {
     public static final String VNP_CREATE_DATE_KEY =  "vnp_CreateDate";
     public static final String VNP_IP_ADDRESS_KEY =  "vnp_IpAddr";
     public static final String VNP_SECURE_HASH_KEY =  "vnp_SecureHash";
+    public static final String VNP_SECURE_HASH_TYPE_KEY =  "vnp_SecureHashType";
     public static final String VNP_URL_KEY =  "vnp_url";
     public static final String VNP_TRANSACTION_TYPE_KEY =  "vnp_TransactionType";
     public static final String VNP_AMOUNT_KEY =  "vnp_Amount";
@@ -28,4 +29,5 @@ public class VNPayConstant {
     public static final String VNP_ORDER_TYPE_KEY =  "vnp_OrderType";
     public static final String VNP_LOCALE_KEY =  "vnp_Locale";
     public static final String VNP_EXPIRE_DATE_KEY =  "vnp_ExpireDate";
+    public static final String VNP_RESPONSE_CODE =  "vnp_ResponseCode";
 }

@@ -1,7 +1,11 @@
 package com.hcmute.shopfee.module.vnpay.transaction;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.vnpay.VNPay;
+import com.hcmute.shopfee.module.vnpay.VNPayUtils;
 import com.hcmute.shopfee.module.vnpay.transaction.dto.PreTransactionInfo;
+import com.hcmute.shopfee.module.vnpay.transaction.dto.VnpayCallbackData;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.*;
@@ -20,8 +24,8 @@ public class VNPayTransaction {
     }
 
     public PreTransactionInfo createUrlPayment(HttpServletRequest request, long amount, String orderInfo) throws UnsupportedEncodingException {
-        String vnp_TxnRef = vnPay.getRandomNumber(8);
-        String vnp_IpAddr = vnPay.getIpAddress(request);
+        String vnp_TxnRef = VNPayUtils.getRandomNumber(8);
+        String vnp_IpAddr = VNPayUtils.getIpAddress(request);
         String vnp_TmnCode = vnPay.getTmnCode();
 
         PreTransactionInfo result = new PreTransactionInfo();
@@ -34,7 +38,7 @@ public class VNPayTransaction {
 //        vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put(VNP_TXN_REF_KEY, vnp_TxnRef);
         vnp_Params.put(VNP_ORDER_INFO_KEY, orderInfo);
-        vnp_Params.put(VNP_RETURN_URL_KEY, "https://sandbox.vnpayment.vn/apis/docs/huong-dan-tich-hop/#code-returnurl");  //"http://localhost:8080/api/test/ok"
+        vnp_Params.put(VNP_RETURN_URL_KEY, "https://www.youtube.com");  //"http://localhost:8080/api/test/ok"
         vnp_Params.put(VNP_IP_ADDRESS_KEY, vnp_IpAddr);
         vnp_Params.put(VNP_ORDER_TYPE_KEY, "other");
         vnp_Params.put(VNP_LOCALE_KEY, "vn");
@@ -73,7 +77,7 @@ public class VNPayTransaction {
         }
 
         String queryUrl = query.toString();
-        String vnp_SecureHash = vnPay.hmacSHA512(vnPay.getSecretKey(), hashData.toString());
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = VNPay.vnp_PayUrl + "?" + queryUrl;
         result.setVnpTxnRef(vnp_TxnRef);
@@ -83,6 +87,9 @@ public class VNPayTransaction {
         return result;
     }
 
-
+    public VnpayCallbackData getCallbackData(String dataJson) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(dataJson, VnpayCallbackData.class);
+    }
 
 }

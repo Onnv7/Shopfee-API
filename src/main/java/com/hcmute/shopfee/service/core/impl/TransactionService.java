@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
@@ -12,7 +12,7 @@ import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.GetOrderZaloPayResponse;
-import com.hcmute.shopfee.repository.database.TransactionRepository;
+import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.common.AuditorAwareService;
 import com.hcmute.shopfee.service.common.VNPayService;
@@ -48,8 +48,7 @@ public class TransactionService implements ITransactionService {
 
         // Goi den VNPay de lay thong tin
         if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getInvoiceCode(), transaction.getTimeCode(), request);
-            ;
+            TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), request);
 
             // nếu giao dịch vnpay thành công
             if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount() != null && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalPayment() * 100))) {
@@ -67,11 +66,12 @@ public class TransactionService implements ITransactionService {
                 transaction.setTotalPaid(0L);
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-            GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(transaction.getInvoiceCode());
+            GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
 
             if (transResult.getReturnCode() == 1 && transResult.getAmount() == orderBill.getTotalPayment()) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) transResult.getAmount());
+                transaction.getZaloPay().setZalopayTransactionId(transResult.getZpTransId());
             } else if (transResult.getReturnCode() == 2) {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .orderStatus(OrderStatus.CANCELED)
@@ -79,8 +79,9 @@ public class TransactionService implements ITransactionService {
                         .orderBill(orderBill)
                         .actor(ActorType.USER)
                         .build());
-                orderBillRepository.save(orderBill);
+                transaction.getZaloPay().setZalopayTransactionId(transResult.getZpTransId());
                 transaction.setTotalPaid(0L);
+                orderBillRepository.save(orderBill);
             }
         }
 

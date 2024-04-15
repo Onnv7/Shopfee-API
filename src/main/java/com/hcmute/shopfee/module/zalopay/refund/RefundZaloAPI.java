@@ -2,12 +2,14 @@ package com.hcmute.shopfee.module.zalopay.refund;
 
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
 import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundRequestDTO;
+import com.hcmute.shopfee.module.zalopay.refund.dto.request.RefundStatusRequestDTO;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -17,11 +19,13 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RefundZaloAPI {
     private final String ORDER_REFUND_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/refund";
+    public static final String REFUND_STATUS_PAYMENT_ENDPOINT = "https://sb-openapi.zalopay.vn/v2/query_refund";
     private final ZaloPay zaloPay;
     public RefundZaloAPI(ZaloPay zaloPay) {
         this.zaloPay = zaloPay;
@@ -76,5 +80,44 @@ public class RefundZaloAPI {
         SimpleDateFormat fmt = new SimpleDateFormat(format);
         fmt.setCalendar(cal);
         return fmt.format(cal.getTimeInMillis());
+    }
+
+    public Map<String, Object> getStatusRefund(String refundId) throws IOException, URISyntaxException, JSONException {
+
+//        String mRefundId = "190308_2553_123456";
+        String timestamp = Long.toString(System.currentTimeMillis()); // miliseconds
+        String data = zaloPay.getAppId() +"|"+ refundId  +"|"+ timestamp; // app_id|m_refund_id|timestamp
+        String mac = Hex.encodeHexString(HmacUtils.hmacSha256(zaloPay.getKey1().getBytes(), data.getBytes()));
+
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("app_id", zaloPay.getAppId()));
+        params.add(new BasicNameValuePair("m_refund_id", refundId));
+        params.add(new BasicNameValuePair("timestamp", timestamp));
+        params.add(new BasicNameValuePair("mac", mac));
+
+        URIBuilder uri = new URIBuilder(REFUND_STATUS_PAYMENT_ENDPOINT);
+        uri.addParameters(params);
+
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost(uri.build());
+        post.setEntity(new UrlEncodedFormEntity(params));
+
+        CloseableHttpResponse res = client.execute(post);
+        BufferedReader rd = new BufferedReader(new InputStreamReader(res.getEntity().getContent()));
+        StringBuilder resultJsonStr = new StringBuilder();
+        String line;
+
+        while ((line = rd.readLine()) != null) {
+
+            resultJsonStr.append(line);
+        }
+
+        JSONObject jsonResult = new JSONObject(resultJsonStr.toString());
+        Map<String, Object> finalResult = new HashMap<>();
+        finalResult.put("return_code", jsonResult.get("return_code"));
+        finalResult.put("return_message", jsonResult.get("return_message"));
+        finalResult.put("sub_return_code", jsonResult.get("sub_return_code"));
+        finalResult.put("sub_return_message", jsonResult.get("sub_return_message"));
+        return finalResult;
     }
 }

@@ -13,7 +13,7 @@ import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.CustomException;
-import com.hcmute.shopfee.repository.database.TransactionRepository;
+import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;

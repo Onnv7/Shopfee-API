@@ -1,7 +1,10 @@
 package com.hcmute.shopfee.module.zalopay.order;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
+import com.hcmute.shopfee.module.zalopay.order.dto.request.CallBackDto;
+import com.hcmute.shopfee.module.zalopay.order.dto.request.CallbackDataRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.request.CreateOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.request.GetOrderZaloPayRequest;
 import com.hcmute.shopfee.module.zalopay.order.dto.response.CreateOrderZaloPayResponse;
@@ -16,8 +19,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,11 +47,11 @@ public class OrderZaloAPI {
             put("app_time", System.currentTimeMillis()); // miliseconds
             put("app_user", createOrderZaloPayRequest.getAppUser());
             put("amount", createOrderZaloPayRequest.getAmount());
-            put("description", "Shopfee - Payment for the order #" + createOrderZaloPayRequest.getOrderId());
+            put("description", "Shopfee - Payment for the order");
             put("bank_code", "");
             put("item", "[]");
             put("embed_data", "{}");
-            put("callback_url", "http://localhost:8080/api/v1/callback");
+            put("callback_url", "https://212c-171-246-220-60.ngrok-free.app/tool/test-get-order-zalopay-callback");
         }};
 
         String data = order.get("app_id") + "|" + order.get("app_trans_id") + "|" + order.get("app_user") + "|" + order.get("amount")
@@ -79,7 +80,7 @@ public class OrderZaloAPI {
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        CreateOrderZaloPayResponse resData =objectMapper.readValue(resultJsonStr.toString(), CreateOrderZaloPayResponse.class);
+        CreateOrderZaloPayResponse resData = objectMapper.readValue(resultJsonStr.toString(), CreateOrderZaloPayResponse.class);
         resData.setInvoiceCode(apptransid);
         return resData;
     }
@@ -118,10 +119,16 @@ public class OrderZaloAPI {
     }
 
     private String getCurrentTimeString(String format) {
-
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
         SimpleDateFormat fmt = new SimpleDateFormat(format);
         fmt.setCalendar(cal);
         return fmt.format(cal.getTimeInMillis());
     }
+
+    public CallbackDataRequest getDataCallBack(String dataJson) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        CallbackDataRequest data = mapper.readValue(dataJson, CallbackDataRequest.class);
+        return data;
+    }
+
 }

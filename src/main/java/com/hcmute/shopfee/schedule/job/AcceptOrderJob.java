@@ -3,7 +3,7 @@ package com.hcmute.shopfee.schedule.job;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
-import com.hcmute.shopfee.entity.sql.database.order.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;

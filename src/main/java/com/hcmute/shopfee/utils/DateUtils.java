@@ -69,8 +69,8 @@ public class DateUtils {
         }
     }
 
-    public static boolean isAfterFromTimeOriginalPlusPeriod(Instant timeOriginal, int period, ChronoUnit unit) {
+    public static boolean nowIsAfterPeriodFromTimeOriginal(Instant timeOriginal, int period, ChronoUnit unit) {
         Instant timeAfterPeriod = timeOriginal.plus(period, unit);
-        return timeOriginal.isAfter(timeAfterPeriod);
+        return Instant.now().isAfter(timeAfterPeriod);
     }
 }

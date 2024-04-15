@@ -18,6 +18,9 @@ import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.MoneyRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
@@ -35,6 +38,7 @@ import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
+import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
 import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
 import com.hcmute.shopfee.service.common.*;
@@ -92,35 +96,48 @@ public class OrderService implements IOrderService {
     private final OrderStateService orderStateService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
 
-    private void buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
+    private TransactionEntity buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
 
         if (paymentType == PaymentType.CASHING) {
             transData = TransactionEntity.builder()
                     .status(PaymentStatus.UNPAID)
                     .totalPaid(0L)
+                    .orderBill(orderBill)
                     .paymentType(PaymentType.CASHING).build();
         } else if (paymentType == PaymentType.VNPAY) {
             PreTransactionInfo paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
-            transData = TransactionEntity.builder()
+            VNPayEntity vnPay = VNPayEntity.builder()
                     .invoiceCode(paymentData.getVnpTxnRef())
                     .timeCode(paymentData.getVnpCreateDate())
+                    .build();
+            transData = TransactionEntity.builder()
                     .status(PaymentStatus.UNPAID)
                     .paymentType(PaymentType.VNPAY)
+                    .vnPay(vnPay)
                     .totalPaid(0L)
+                    .orderBill(orderBill)
                     .paymentUrl(paymentData.getVnpUrl())
                     .build();
+            vnPay.setTransaction(transData);
         } else if (paymentType == PaymentType.ZALOPAY) {
             CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment(), orderBill.getId());
+            ZaloPayEntity zaloPay = ZaloPayEntity.builder()
+                    .transaction(transData)
+                    .appTransactionId(paymentData.getInvoiceCode())
+                    .build();
             transData = TransactionEntity.builder()
-                    .invoiceCode(paymentData.getInvoiceCode())
+                    .zaloPay(zaloPay)
                     .status(PaymentStatus.UNPAID)
                     .paymentUrl(paymentData.getOrderUrl())
                     .paymentType(PaymentType.ZALOPAY)
                     .totalPaid(0L)
+                    .orderBill(orderBill)
                     .build();
+            zaloPay.setTransaction(transData);
         }
-        orderBill.setTransaction(transData);
+//        orderBill.setTransaction(transData);
+        return transData;
     }
 
     private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill, String productCouponCode) {
@@ -130,14 +147,14 @@ public class OrderService implements IOrderService {
         List<String> productIdDiscountList = new ArrayList<>();
         long productDiscountValue = 0;
         MoneyRewardUnit productDiscountUnit = null;
-        if(productCouponCode != null) {
+        if (productCouponCode != null) {
             CouponEntity productCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(productCouponCode, CouponStatus.RELEASED)
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
-            if(productCoupon.getCouponType() != CouponType.PRODUCT) {
+            if (productCoupon.getCouponType() != CouponType.PRODUCT) {
                 throw new CustomException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid");
             }
 
-            if(productCoupon.getCouponReward().getType() == CouponRewardType.MONEY) {
+            if (productCoupon.getCouponReward().getType() == CouponRewardType.MONEY) {
                 productDiscountValue = productCoupon.getCouponReward().getMoneyReward().getValue();
                 productDiscountUnit = productCoupon.getCouponReward().getMoneyReward().getUnit();
 
@@ -202,10 +219,10 @@ public class OrderService implements IOrderService {
 
                 long productSizePrice = sizeItem.getPrice();
                 long productDiscount = 0;
-                if(!productIdDiscountList.isEmpty() && productIdDiscountList.contains(orderItemDto.getProductId())) {
-                    if(productDiscountUnit == MoneyRewardUnit.MONEY) {
+                if (!productIdDiscountList.isEmpty() && productIdDiscountList.contains(orderItemDto.getProductId())) {
+                    if (productDiscountUnit == MoneyRewardUnit.MONEY) {
                         productDiscount = productDiscountValue;
-                    } else if(productDiscountUnit == MoneyRewardUnit.PERCENTAGE) {
+                    } else if (productDiscountUnit == MoneyRewardUnit.PERCENTAGE) {
                         productDiscount = productSizePrice * productDiscountValue / 100;
                     }
                 }
@@ -420,12 +437,12 @@ public class OrderService implements IOrderService {
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
-        if (body.getCoin() == null) {
-            body.setCoin(0L);
-        }
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
+
         if (user.getCoin() < deductCoin) {
             throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
+        } else if (deductCoin > body.getTotal()) {
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "The number of coins used cannot be greater than the total bill");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -478,14 +495,10 @@ public class OrderService implements IOrderService {
                 .user(user)
                 .build();
 
-        if (totalPayment <= deductCoin && deductCoin != 0) {
-            coinHistory.setCoin(-totalPayment);
-            orderBill.setCoin(totalPayment);
-            totalPayment = 0;
-        } else if (deductCoin != 0) {
+        orderBill.setCoin(deductCoin);
+        if (deductCoin != 0) {
             coinHistory.setCoin(-deductCoin);
             totalPayment -= deductCoin;
-            orderBill.setCoin(deductCoin);
         }
 
         // cập nhật lại xu cho user
@@ -496,22 +509,20 @@ public class OrderService implements IOrderService {
             throw new CustomException(ErrorConstant.ORDER_INVALID, "Total order is invalid");
         }
         orderBill.setTotalPayment(totalPayment);
+
+
+        // set giao dịch
+        TransactionEntity transaction = buildTransaction(body.getPaymentType(), request, orderBill);
+        orderBill.setTransaction(transaction);
         orderBill = orderBillRepository.save(orderBill);
+
+        orderSearchService.upsertOrder(orderBill);
 
         // save coin history
         if (deductCoin != 0) {
             coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
             coinHistoryRepository.save(coinHistory);
         }
-
-        // set giao dịch
-        buildTransaction(body.getPaymentType(), request, orderBill);
-        TransactionEntity transaction = orderBill.getTransaction();
-        transaction.setOrderBill(orderBill);
-
-        OrderBillEntity dataSaved2 = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(dataSaved2);
-        transaction = dataSaved2.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -535,11 +546,11 @@ public class OrderService implements IOrderService {
             schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
-        Instant orderAcceptanceScheduleTime = DateUtils.plus(dataSaved2.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
+        Instant orderAcceptanceScheduleTime = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
         // set schedule for accept order
         Map<String, Object> orderAcceptanceScheduleData = new HashMap<String, Object>();
-        orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved2.getId());
+        orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
 
         BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
@@ -565,6 +576,8 @@ public class OrderService implements IOrderService {
 
         if (user.getCoin() < deductCoin) {
             throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "User's coin count is less than the amount posted");
+        } else if (deductCoin > body.getTotal()) {
+            throw new CustomException(ErrorConstant.INVALID_COIN_NUMBER, "The number of coins used cannot be greater than the total bill");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -585,16 +598,10 @@ public class OrderService implements IOrderService {
                 .user(user)
                 .build();
 
-        if (totalPayment <= deductCoin && deductCoin != 0) {
-            orderBill.setCoin(-totalPayment);
-            totalPayment = 0;
-            coinHistory.setCoin(totalPayment);
-
-            coinHistoryRepository.save(coinHistory);
-        } else if (deductCoin != 0) {
-            orderBill.setCoin(-deductCoin);
+        orderBill.setCoin(deductCoin);
+        if (deductCoin != 0) {
             totalPayment -= body.getCoin();
-            orderBill.setCoin(body.getCoin());
+            coinHistory.setCoin(body.getCoin());
         }
 
         // cập nhật lại xu cho user
@@ -607,20 +614,10 @@ public class OrderService implements IOrderService {
 
         // set total payment
         orderBill.setTotalPayment(totalPayment);
-        orderBill = orderBillRepository.save(orderBill);
-
-        // save coin history
-        if (deductCoin != 0) {
-            coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
-            coinHistoryRepository.save(coinHistory);
-        }
-
 
         // set giao dịch
-        buildTransaction(body.getPaymentType(), request, orderBill);
-        TransactionEntity transaction = orderBill.getTransaction();
-        transaction.setOrderBill(orderBill);
-
+        TransactionEntity transaction = buildTransaction(body.getPaymentType(), request, orderBill);
+        orderBill.setTransaction(transaction);
 
         // set sự kiện đơn hàng
         List<OrderEventEntity> orderEventList = new ArrayList<>();
@@ -636,8 +633,7 @@ public class OrderService implements IOrderService {
         BranchEntity branch = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         orderBill.setBranch(branch);
-
-
+        
         // set thong tin nhan hang
         orderBill.setReceiverInformation(ReceiverInformationEntity.builder()
                 .phoneNumber(body.getPhoneNumber())
@@ -647,11 +643,16 @@ public class OrderService implements IOrderService {
                 .build());
 
 
-        OrderBillEntity dataSaved = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(dataSaved);
+        orderBill = orderBillRepository.save(orderBill);
+        orderSearchService.upsertOrder(orderBill);
 
+        // save coin history
+        if (deductCoin != 0) {
+            coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
+            coinHistoryRepository.save(coinHistory);
+        }
 
-        transaction = dataSaved.getTransaction();
+        transaction = orderBill.getTransaction();
 
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -676,10 +677,10 @@ public class OrderService implements IOrderService {
             schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
         }
 
-        Instant newIn = DateUtils.plus(dataSaved.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
+        Instant newIn = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
 
         Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
-        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, dataSaved.getId());
+        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
 
 
@@ -721,11 +722,11 @@ public class OrderService implements IOrderService {
 
         boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), body.getEvent());
 
-        if(!rs) {
+        if (!rs) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
         }
 
-        if(body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
+        if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
             long coinRefunded = 0L;
             TransactionEntity transaction = order.getTransaction();
             if (transaction.getStatus() == PaymentStatus.PAID) {
@@ -787,6 +788,7 @@ public class OrderService implements IOrderService {
         orderBill = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(orderBill);
     }
+
     @Override
     @Transactional
     public void cancelOrder(String orderId, CancelOrderBillRequest body) {
@@ -795,8 +797,8 @@ public class OrderService implements IOrderService {
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
-        boolean rs =  orderStateService.sendMonoEvent(orderId, body.getDescription(), OrderEvent.ORDER_REFUSE);
-        if(!rs) {
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), OrderEvent.ORDER_REFUSE);
+        if (!rs) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY);
         }
 
@@ -954,7 +956,6 @@ public class OrderService implements IOrderService {
         });
         return eventList;
     }
-
 
 
     @Override

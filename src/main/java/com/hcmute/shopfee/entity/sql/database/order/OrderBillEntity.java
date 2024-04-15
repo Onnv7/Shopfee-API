@@ -8,6 +8,7 @@ import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.shipping.ShippingTaskEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,23 +1,26 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.utils.DateUtils;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.hcmute.shopfee.constant.ShopfeeConstant.HOURS_REQUEST_REFUND;
+
 @Data
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
+//@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class GetOrderByIdResponse {
     private String id;
-    //    private String code;
     private String note;
     private List<Product> itemList;
 
@@ -38,7 +41,12 @@ public class GetOrderByIdResponse {
 
     private Branch branch;
     private Boolean needReview;
-//    private String branchAddress;
+    private RefundStatus refundStatus;
+    private enum RefundStatus {
+        CAN_REFUND,
+        REFUNDED,
+        NOT_REFUND
+    }
 
     public static GetOrderByIdResponse fromOrderBillEntity(OrderBillEntity entity) {
         GetOrderByIdResponse order = new GetOrderByIdResponse();
@@ -52,6 +60,13 @@ public class GetOrderByIdResponse {
 
         order.setOrderType(entity.getOrderType());
         order.setCreatedAt(entity.getCreatedAt());
+        if(entity.getOrderRefundRequest() != null) {
+            order.setRefundStatus(RefundStatus.REFUNDED);
+        } else if(DateUtils.nowIsAfterPeriodFromTimeOriginal(entity.getOrderEventList().get(0).getCreatedAt().toInstant(), HOURS_REQUEST_REFUND, ChronoUnit.HOURS)) {
+            order.setRefundStatus(RefundStatus.NOT_REFUND);
+        } else {
+            order.setRefundStatus(RefundStatus.CAN_REFUND);
+        }
 
         List<Product> itemList = new ArrayList<>();
 

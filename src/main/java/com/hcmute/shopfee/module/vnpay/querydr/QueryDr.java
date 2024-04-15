@@ -3,6 +3,7 @@ package com.hcmute.shopfee.module.vnpay.querydr;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.module.vnpay.VNPay;
+import com.hcmute.shopfee.module.vnpay.VNPayUtils;
 import com.hcmute.shopfee.module.vnpay.querydr.response.TransactionInfoQuery;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,7 +27,7 @@ public class QueryDr {
     }
     public TransactionInfoQuery getTransactionInfo(String txnref, String transId, String ipAddress) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        String vnp_RequestId = vnPay.getRandomNumber(8);
+        String vnp_RequestId = VNPayUtils.getRandomNumber(8);
         String vnp_Version = VNP_VERSION;
         String vnp_Command = QUERY_DR;
         String vnp_TmnCode = vnPay.getTmnCode();
@@ -64,7 +65,7 @@ public class QueryDr {
 
         String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" + vnp_TxnRef + "|" + vnp_TransactionDate + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
 
-        String vnp_SecureHash = vnPay.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
 
         vnp_Params.addProperty(VNP_SECURE_HASH_KEY, vnp_SecureHash);
 
@@ -94,7 +95,7 @@ public class QueryDr {
     }
     public TransactionInfoQuery getTransactionInfoTest(String txnref, String transId, String ip) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        String vnp_RequestId = vnPay.getRandomNumber(8);
+        String vnp_RequestId = VNPayUtils.getRandomNumber(8);
         String vnp_Version = VNP_VERSION;
         String vnp_Command = QUERY_DR;
         String vnp_TmnCode = vnPay.getTmnCode();
@@ -132,7 +133,7 @@ public class QueryDr {
 
         String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" + vnp_TxnRef + "|" + vnp_TransactionDate + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
 
-        String vnp_SecureHash = vnPay.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
 
         vnp_Params.addProperty(VNP_SECURE_HASH_KEY, vnp_SecureHash);
 

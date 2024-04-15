@@ -9,7 +9,7 @@ import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
 import com.hcmute.shopfee.dto.sql.RevenueStatisticsQueryDto;
 import com.hcmute.shopfee.enums.TimeUnit;
 import com.hcmute.shopfee.model.CustomException;
-import com.hcmute.shopfee.repository.database.TransactionRepository;
+import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.core.IStatisticsService;
 import lombok.RequiredArgsConstructor;

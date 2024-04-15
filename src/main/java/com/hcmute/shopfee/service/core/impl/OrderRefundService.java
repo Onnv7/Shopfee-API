@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.hcmute.shopfee.constant.ShopfeeConstant.HOURS_REQUEST_REFUND;
+
 @Service
 @RequiredArgsConstructor
 public class OrderRefundService implements IOrderRefundService {
@@ -54,7 +56,7 @@ public class OrderRefundService implements IOrderRefundService {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "It is not possible to submit a refund request without a successful application");
         }
 
-        if (DateUtils.isAfterFromTimeOriginalPlusPeriod(lastEvent.getOrderBill().getCreatedAt().toInstant(), 3, ChronoUnit.HOURS)) {
+        if (DateUtils.nowIsAfterPeriodFromTimeOriginal(lastEvent.getCreatedAt().toInstant(), HOURS_REQUEST_REFUND, ChronoUnit.HOURS)) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
         }
 
