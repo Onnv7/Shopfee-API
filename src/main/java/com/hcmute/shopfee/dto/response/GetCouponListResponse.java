@@ -24,7 +24,7 @@ public class GetCouponListResponse {
         data.setId(entity.getId());
         data.setCode(entity.getCode());
         data.setCouponType(entity.getCouponType());
-        data.setRewardType(entity.getCouponReward().getType());
+        data.setRewardType(entity.getRewardType());
         // TODO xem chỗ isExpired
         if(entity.getExpirationDate() == null) {
             data.setIsExpired(null);

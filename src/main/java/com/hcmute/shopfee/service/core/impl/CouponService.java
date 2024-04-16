@@ -9,7 +9,6 @@ import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
-import com.hcmute.shopfee.entity.sql.database.coupon.CouponRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.CombinationConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.MinPurchaseConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
@@ -21,8 +20,12 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
+import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
+import com.hcmute.shopfee.repository.database.coupon.condition.SubjectConditionRepository;
+import com.hcmute.shopfee.repository.database.coupon.condition.UsageConditionRepository;
+import com.hcmute.shopfee.repository.database.coupon.reward.ProductRewardRepository;
 import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.service.core.ICouponService;
@@ -45,6 +48,10 @@ public class CouponService implements ICouponService {
     private final CategoryRepository categoryRepository;
     private final CouponUsedRepository couponUsedRepository;
     private final CombinationConditionRepository combinationConditionRepository;
+    private final UsageConditionRepository usageConditionRepository;
+    private final CouponConditionRepository couponConditionRepository;
+    private final ProductRewardRepository productRewardRepository;
+    private final SubjectConditionRepository subjectConditionRepository;
 
 
     private MinPurchaseConditionEntity getMinPurchaseConditionEntity(MinPurchaseConditionDto minPurchaseConditionDto, CouponConditionEntity minPurchase) {
@@ -92,19 +99,20 @@ public class CouponService implements ICouponService {
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(CouponStatus.RELEASED);
-
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
+        couponEntity.setRewardType(CouponRewardType.MONEY);
+//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
+//                .type(CouponRewardType.MONEY)
+//                .coupon(couponEntity)
+//                .build();
 
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
-                .couponReward(couponRewardEntity)
+//                .couponReward(couponRewardEntity)
+                .coupon(couponEntity)
                 .value(body.getValueReward())
                 .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
+        couponEntity.setMoneyReward(moneyRewardEntity);
+//        couponEntity.setCouponReward(couponRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -146,63 +154,189 @@ public class CouponService implements ICouponService {
         }
     }
 
+    @Transactional
     @Override
     public void updateShippingCoupon(UpdateShippingCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(body.getStatus());
+        couponEntity.setRewardType(CouponRewardType.MONEY);
+        couponEntity.setCode(body.getCode());
+        couponEntity.setDescription(body.getDescription());
+        couponEntity.setStartDate(body.getStartDate());
+        couponEntity.setExpirationDate(body.getExpirationDate());
 
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
 
-        MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
-                .unit(body.getUnitReward())
-                .couponReward(couponRewardEntity)
-                .value(body.getValueReward())
-                .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
+        MoneyRewardEntity moneyRewardEntity = couponEntity.getMoneyReward();
+        moneyRewardEntity.setUnit(body.getUnitReward());
+        moneyRewardEntity.setValue(body.getValueReward());
 
-        List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
+        couponEntity.setMoneyReward(moneyRewardEntity);
+
 
         // Usage condition
-        if (body.getUsageConditionList() != null) {
-            CouponConditionEntity usage = new CouponConditionEntity();
-            usage.setType(ConditionType.USAGE);
-            usage.setCoupon(couponEntity);
+        List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
+        modifyUsageCondition(usageConditionDtoList, couponEntity);
 
-            List<UsageConditionEntity> usageConditionList = getUsageConditionEntity(body.getUsageConditionList(), usage);
-            usage.setUsageConditionList(usageConditionList);
-            couponConditionEntityList.add(usage);
-        }
 
         // Min purchase
-        if (body.getMinPurchaseCondition() != null) {
-            CouponConditionEntity minPurchase = new CouponConditionEntity();
-            minPurchase.setType(ConditionType.MIN_PURCHASE);
-            minPurchase.setCoupon(couponEntity);
-
-            MinPurchaseConditionEntity minPurchaseConditionEntity = getMinPurchaseConditionEntity(body.getMinPurchaseCondition(), minPurchase);
-            minPurchase.setMinPurchaseCondition(minPurchaseConditionEntity);
-            couponConditionEntityList.add(minPurchase);
-        }
+        MinPurchaseConditionDto minPurchaseConditionDto = body.getMinPurchaseCondition();
+        modifyMinPurchaseCondition(couponEntity, minPurchaseConditionDto);
 
         // Combination
-        if (body.getCombinationConditionList() != null) {
-            CouponConditionEntity combination = new CouponConditionEntity();
-            combination.setType(ConditionType.COMBINATION);
-            combination.setCoupon(couponEntity);
+        List<CombinationConditionDto> combinationConditionDtoList = body.getCombinationConditionList();
+        modifyCombinationCondition(combinationConditionDtoList, couponEntity);
 
-            List<CombinationConditionEntity> combinationConditionEntityList = getCombinationConditionEntity(body.getCombinationConditionList(), combination);
-            combination.setCombinationConditionList(combinationConditionEntityList);
-            couponConditionEntityList.add(combination);
 
-            // Saving coupon
-            couponEntity.setConditionList(couponConditionEntityList);
-            couponRepository.save(couponEntity);
+        // Saving coupon
+        couponRepository.save(couponEntity);
+    }
+
+    private void modifyMinPurchaseCondition(CouponEntity couponEntity, MinPurchaseConditionDto minPurchaseConditionDto) {
+        List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
+        CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.MIN_PURCHASE).findFirst().orElseThrow(
+                () -> new CustomException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
+        );
+        MinPurchaseConditionEntity minPurchaseConditionEntity = condition.getMinPurchaseCondition();
+        minPurchaseConditionEntity.setValue(minPurchaseConditionDto.getValue());
+    }
+
+    private void modifyCombinationCondition(List<CombinationConditionDto> combinationConditionDtoList, CouponEntity couponEntity) {
+        List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
+        CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.COMBINATION).findFirst().orElse(null);
+        if (condition == null) {
+            if (combinationConditionDtoList == null || combinationConditionDtoList.isEmpty()) {
+                return;
+            }
+        }
+
+        List<CombinationConditionEntity> combinationConditionEntityList = condition != null ? condition.getCombinationConditionList() : new ArrayList<>();
+        List<CombinationConditionEntity> newCombinationList = new ArrayList<>();
+
+        for (CombinationConditionDto combinationConditionDto : combinationConditionDtoList) {
+            boolean needInsert = true;
+            for (CombinationConditionEntity combinationConditionEntity : combinationConditionEntityList) {
+                if (combinationConditionEntity.getType() == combinationConditionDto.getType()) {
+                    needInsert = false;
+                }
+            }
+            if (needInsert) {
+                CombinationConditionEntity newCombination = CombinationConditionEntity.builder()
+                        .couponCondition(condition)
+                        .type(combinationConditionDto.getType())
+                        .build();
+                newCombinationList.add(newCombination);
+            }
+        }
+        combinationConditionEntityList.addAll(newCombinationList);
+
+        List<CombinationConditionEntity> deletedUsageList = new ArrayList<>();
+        for (CombinationConditionEntity combinationConditionEntity : combinationConditionEntityList) {
+            boolean needDelete = true;
+            for (CombinationConditionDto combinationConditionDto : combinationConditionDtoList) {
+                if (combinationConditionEntity.getType() == combinationConditionDto.getType()) {
+                    // tìm thấy -> khoong can delete
+                    needDelete = false;
+                    break;
+                }
+            }
+            // neu khong tim thay trong user gui len -> xoa
+            if (needDelete) {
+                deletedUsageList.add(combinationConditionEntity);
+                combinationConditionRepository.delete(combinationConditionEntity);
+            }
+        }
+        combinationConditionEntityList.removeAll(deletedUsageList);
+
+        // neu cac con bi xoa het -> xoa luon usage condition
+        if (combinationConditionEntityList.isEmpty() && condition != null) {
+            conditionEntityList.remove(condition);
+            couponConditionRepository.delete(condition);
+        }
+
+        if (condition == null) {
+            CouponConditionEntity conditionEntity = CouponConditionEntity.builder()
+                    .type(ConditionType.COMBINATION)
+                    .combinationConditionList(combinationConditionEntityList)
+                    .coupon(couponEntity)
+                    .build();
+            for (CombinationConditionEntity combinationCondition : combinationConditionEntityList) {
+                combinationCondition.setCouponCondition(conditionEntity);
+            }
+            conditionEntityList.add(conditionEntity);
+            couponEntity.setConditionList(conditionEntityList);
+        }
+    }
+
+    private void modifyUsageCondition(List<UsageConditionDto> usageConditionDtoList, CouponEntity couponEntity) {
+        List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
+        CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.USAGE).findFirst().orElse(null);
+
+        if (condition == null) {
+            if (usageConditionDtoList == null || usageConditionDtoList.isEmpty()) {
+                return;
+            }
+        }
+        List<UsageConditionEntity> usageConditionEntityList = condition != null ? condition.getUsageConditionList() : new ArrayList<>();
+        List<UsageConditionEntity> newUsageConditionEntityList = new ArrayList<>();
+        for (UsageConditionDto usageConditionDto : usageConditionDtoList) {
+            boolean needInsert = true;
+            for (UsageConditionEntity usageConditionEntity : usageConditionEntityList) {
+                if (usageConditionEntity.getType() == usageConditionDto.getType()) {
+                    // cap nhat lai du lieu
+                    usageConditionEntity.setValue(usageConditionDto.getValue());
+                    needInsert = false;
+                }
+            }
+            if (needInsert) {
+                UsageConditionEntity newUsage = UsageConditionEntity.builder()
+                        .couponCondition(condition)
+                        .type(usageConditionDto.getType())
+                        .value(usageConditionDto.getValue())
+                        .build();
+                newUsageConditionEntityList.add(newUsage);
+            }
+        }
+        usageConditionEntityList.addAll(newUsageConditionEntityList);
+
+        List<UsageConditionEntity> deletedUsageList = new ArrayList<>();
+        for (UsageConditionEntity usageConditionEntity : usageConditionEntityList) {
+            boolean needDelete = true;
+            for (UsageConditionDto usageConditionDto : usageConditionDtoList) {
+                if (usageConditionEntity.getType() == usageConditionDto.getType()) {
+                    // tìm thấy -> khoong can delete -> chi can cap nhat
+                    needDelete = false;
+                    break;
+                }
+            }
+            // neu khong tim thay trong user gui len -> xoa
+            if (needDelete) {
+                deletedUsageList.add(usageConditionEntity);
+                usageConditionRepository.delete(usageConditionEntity);
+            }
+        }
+        usageConditionEntityList.removeAll(deletedUsageList);
+
+        // neu cac con trong usage bi xoa het -> xoa luon usage condition
+        if (usageConditionEntityList.isEmpty() && condition != null) {
+            conditionEntityList.remove(condition);
+            couponConditionRepository.delete(condition);
+        }
+
+        // neu trong db khong co -> chua ton tai -> tao moi condition
+        if (condition == null) {
+            CouponConditionEntity conditionEntity = CouponConditionEntity.builder()
+                    .type(ConditionType.USAGE)
+                    .usageConditionList(usageConditionEntityList)
+                    .coupon(couponEntity)
+                    .build();
+            for (UsageConditionEntity usageCondition : usageConditionEntityList) {
+                usageCondition.setCouponCondition(conditionEntity);
+            }
+            conditionEntityList.add(conditionEntity);
+            couponEntity.setConditionList(conditionEntityList);
         }
     }
 
@@ -211,23 +345,24 @@ public class CouponService implements ICouponService {
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(CouponStatus.RELEASED);
+        couponEntity.setRewardType(CouponRewardType.MONEY);
 
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
+//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
+//                .type(CouponRewardType.MONEY)
+//                .coupon(couponEntity)
+//                .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
         }
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
-//                .targetReward(TargetReward.SHIPPING)
-                .couponReward(couponRewardEntity)
+//                .couponReward(couponRewardEntity)
+                .coupon(couponEntity)
                 .value(body.getValueReward())
                 .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
+        couponEntity.setMoneyReward(moneyRewardEntity);
+//        couponEntity.setCouponReward(couponRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -270,68 +405,38 @@ public class CouponService implements ICouponService {
         couponRepository.save(couponEntity);
     }
 
+    @Transactional
     @Override
     public void updateOrderCoupon(UpdateOrderCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(body.getStatus());
+        couponEntity.setRewardType(CouponRewardType.MONEY);
+        couponEntity.setCode(body.getCode());
+        couponEntity.setDescription(body.getDescription());
+        couponEntity.setStartDate(body.getStartDate());
+        couponEntity.setExpirationDate(body.getExpirationDate());
 
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
-
-        if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
-        }
-        MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
-                .unit(body.getUnitReward())
-//                .targetReward(TargetReward.SHIPPING)
-                .couponReward(couponRewardEntity)
-                .value(body.getValueReward())
-                .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
-
-        List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
+        MoneyRewardEntity moneyRewardEntity = couponEntity.getMoneyReward();
+        moneyRewardEntity.setUnit(body.getUnitReward());
+        moneyRewardEntity.setValue(body.getValueReward());
+        couponEntity.setMoneyReward(moneyRewardEntity);
 
         // Usage condition
-        if (body.getUsageConditionList() != null) {
-            CouponConditionEntity usage = new CouponConditionEntity();
-            usage.setType(ConditionType.USAGE);
-            usage.setCoupon(couponEntity);
-
-            List<UsageConditionEntity> usageConditionList = getUsageConditionEntity(body.getUsageConditionList(), usage);
-            usage.setUsageConditionList(usageConditionList);
-            couponConditionEntityList.add(usage);
-        }
+        List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
+        modifyUsageCondition(usageConditionDtoList, couponEntity);
 
         // Min purchase
-        if (body.getMinPurchaseCondition() != null) {
-            CouponConditionEntity minPurchase = new CouponConditionEntity();
-            minPurchase.setType(ConditionType.MIN_PURCHASE);
-            minPurchase.setCoupon(couponEntity);
-
-            MinPurchaseConditionEntity minPurchaseConditionEntity = getMinPurchaseConditionEntity(body.getMinPurchaseCondition(), minPurchase);
-            minPurchase.setMinPurchaseCondition(minPurchaseConditionEntity);
-            couponConditionEntityList.add(minPurchase);
-        }
+        MinPurchaseConditionDto minPurchaseConditionDto = body.getMinPurchaseCondition();
+        modifyMinPurchaseCondition(couponEntity, minPurchaseConditionDto);
 
         // Combination
-        if (body.getCombinationConditionList() != null) {
-            CouponConditionEntity combination = new CouponConditionEntity();
-            combination.setType(ConditionType.COMBINATION);
-            combination.setCoupon(couponEntity);
-
-            List<CombinationConditionEntity> combinationConditionEntityList = getCombinationConditionEntity(body.getCombinationConditionList(), combination);
-            combination.setCombinationConditionList(combinationConditionEntityList);
-            couponConditionEntityList.add(combination);
-        }
+        List<CombinationConditionDto> combinationConditionDtoList = body.getCombinationConditionList();
+        modifyCombinationCondition(combinationConditionDtoList, couponEntity);
 
         // Saving coupon
-        couponEntity.setConditionList(couponConditionEntityList);
-        System.out.println(couponEntity);
         couponRepository.save(couponEntity);
     }
 
@@ -339,11 +444,12 @@ public class CouponService implements ICouponService {
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
+        couponEntity.setRewardType(CouponRewardType.MONEY);
 
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
+//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
+//                .type(CouponRewardType.MONEY)
+//                .coupon(couponEntity)
+//                .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
@@ -351,12 +457,12 @@ public class CouponService implements ICouponService {
 
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
-//                .targetReward(TargetReward.SHIPPING)
-                .couponReward(couponRewardEntity)
+                .coupon(couponEntity)
+//                .couponReward(couponRewardEntity)
                 .value(body.getValueReward())
                 .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
+        couponEntity.setMoneyReward(moneyRewardEntity);
+//        couponEntity.setCouponReward(couponRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -419,77 +525,34 @@ public class CouponService implements ICouponService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
+        couponEntity.setRewardType(CouponRewardType.MONEY);
+        couponEntity.setCode(body.getCode());
+        couponEntity.setDescription(body.getDescription());
+        couponEntity.setStartDate(body.getStartDate());
+        couponEntity.setExpirationDate(body.getExpirationDate());
 
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.MONEY)
-                .coupon(couponEntity)
-                .build();
-
-        if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
-        }
-
-        MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
-                .unit(body.getUnitReward())
-//                .targetReward(TargetReward.SHIPPING)
-                .couponReward(couponRewardEntity)
-                .value(body.getValueReward())
-                .build();
-        couponRewardEntity.setMoneyReward(moneyRewardEntity);
-        couponEntity.setCouponReward(couponRewardEntity);
-
-        List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
+        MoneyRewardEntity moneyRewardEntity = couponEntity.getMoneyReward();
+        moneyRewardEntity.setUnit(body.getUnitReward());
+        moneyRewardEntity.setValue(body.getValueReward());
+        couponEntity.setMoneyReward(moneyRewardEntity);
 
         // Usage condition
-        if (body.getUsageConditionList() != null) {
-            CouponConditionEntity usage = new CouponConditionEntity();
-            usage.setType(ConditionType.USAGE);
-            usage.setCoupon(couponEntity);
-
-            List<UsageConditionEntity> usageConditionList = getUsageConditionEntity(body.getUsageConditionList(), usage);
-            usage.setUsageConditionList(usageConditionList);
-            couponConditionEntityList.add(usage);
-        }
+        List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
+        modifyUsageCondition(usageConditionDtoList, couponEntity);
 
         // Min purchase
-        if (body.getMinPurchaseCondition() != null) {
-            CouponConditionEntity minPurchase = new CouponConditionEntity();
-            minPurchase.setType(ConditionType.MIN_PURCHASE);
-            minPurchase.setCoupon(couponEntity);
-
-            MinPurchaseConditionEntity minPurchaseConditionEntity = getMinPurchaseConditionEntity(body.getMinPurchaseCondition(), minPurchase);
-            minPurchase.setMinPurchaseCondition(minPurchaseConditionEntity);
-            couponConditionEntityList.add(minPurchase);
-        }
-
+        MinPurchaseConditionDto minPurchaseConditionDto = body.getMinPurchaseCondition();
+        modifyMinPurchaseCondition(couponEntity, minPurchaseConditionDto);
 
         // Combination
-        if (body.getCombinationConditionList() != null) {
-            CouponConditionEntity combination = new CouponConditionEntity();
-            combination.setType(ConditionType.COMBINATION);
-            combination.setCoupon(couponEntity);
+        List<CombinationConditionDto> combinationConditionDtoList = body.getCombinationConditionList();
+        modifyCombinationCondition(combinationConditionDtoList, couponEntity);
 
-            List<CombinationConditionEntity> combinationConditionEntityList = getCombinationConditionEntity(body.getCombinationConditionList(), combination);
-            combination.setCombinationConditionList(combinationConditionEntityList);
-            couponConditionEntityList.add(combination);
-        }
-
-
-        // Target Object
-        if (body.getSubjectConditionList() != null) {
-            CouponConditionEntity targetObject = new CouponConditionEntity();
-            targetObject.setType(ConditionType.SUBJECT);
-            targetObject.setCoupon(couponEntity);
-
-            List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
-            targetObject.setSubjectConditionList(subjectConditionEntityList);
-            couponConditionEntityList.add(targetObject);
-        }
-
+        // Subject condition
+        List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
+        modifySubjectConditionList(body.getSubjectConditionList(), conditionEntityList);
 
         // Saving coupon
-        couponEntity.setConditionList(couponConditionEntityList);
-        System.out.println(couponEntity);
         couponRepository.save(couponEntity);
     }
 
@@ -497,12 +560,13 @@ public class CouponService implements ICouponService {
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
+        couponEntity.setRewardType(CouponRewardType.PRODUCT_GIFT);
 
         // set reward
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.PRODUCT_GIFT)
-                .coupon(couponEntity)
-                .build();
+//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
+//                .type(CouponRewardType.PRODUCT_GIFT)
+//                .coupon(couponEntity)
+//                .build();
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
@@ -513,13 +577,14 @@ public class CouponService implements ICouponService {
                     .productSize(reward.getProductSize())
                     .productName(product.getName())
                     .quantity(reward.getQuantity())
-                    .couponReward(couponRewardEntity)
+                    .coupon(couponEntity)
+//                    .couponReward(couponRewardEntity)
                     .build();
             productRewardEntityList.add(productRewardEntity);
         });
-        couponRewardEntity.setProductRewardList(productRewardEntityList);
 
-        couponEntity.setCouponReward(couponRewardEntity);
+        couponEntity.setProductRewardList(productRewardEntityList);
+//        couponEntity.setCouponReward(couponRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -580,14 +645,19 @@ public class CouponService implements ICouponService {
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
+        couponEntity.setRewardType(CouponRewardType.PRODUCT_GIFT);
+        couponEntity.setCode(body.getCode());
+        couponEntity.setDescription(body.getDescription());
+        couponEntity.setStartDate(body.getStartDate());
+        couponEntity.setExpirationDate(body.getExpirationDate());
 
-        // set reward
-        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-                .type(CouponRewardType.PRODUCT_GIFT)
-                .coupon(couponEntity)
-                .build();
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
+
+        for(ProductRewardEntity oldProductRewardEntity : couponEntity.getProductRewardList()) {
+            productRewardRepository.delete(oldProductRewardEntity);
+        }
+
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
@@ -596,65 +666,54 @@ public class CouponService implements ICouponService {
                     .productSize(reward.getProductSize())
                     .productName(product.getName())
                     .quantity(reward.getQuantity())
-                    .couponReward(couponRewardEntity)
+                    .coupon(couponEntity)
                     .build();
             productRewardEntityList.add(productRewardEntity);
         });
-        couponRewardEntity.setProductRewardList(productRewardEntityList);
 
-        couponEntity.setCouponReward(couponRewardEntity);
+        couponEntity.setProductRewardList(productRewardEntityList);
+
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
         // Usage condition
-        if (body.getUsageConditionList() != null) {
-            CouponConditionEntity usage = new CouponConditionEntity();
-            usage.setType(ConditionType.USAGE);
-            usage.setCoupon(couponEntity);
-
-            List<UsageConditionEntity> usageConditionList = getUsageConditionEntity(body.getUsageConditionList(), usage);
-            usage.setUsageConditionList(usageConditionList);
-            couponConditionEntityList.add(usage);
-        }
+        List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
+        modifyUsageCondition(usageConditionDtoList, couponEntity);
 
         // Min purchase
-        if (body.getMinPurchaseCondition() != null) {
-            CouponConditionEntity minPurchase = new CouponConditionEntity();
-            minPurchase.setType(ConditionType.MIN_PURCHASE);
-            minPurchase.setCoupon(couponEntity);
-
-            MinPurchaseConditionEntity minPurchaseConditionEntity = getMinPurchaseConditionEntity(body.getMinPurchaseCondition(), minPurchase);
-            minPurchase.setMinPurchaseCondition(minPurchaseConditionEntity);
-            couponConditionEntityList.add(minPurchase);
-        }
-
+        MinPurchaseConditionDto minPurchaseConditionDto = body.getMinPurchaseCondition();
+        modifyMinPurchaseCondition(couponEntity, minPurchaseConditionDto);
 
         // Combination
-        if (body.getCombinationConditionList() != null) {
-            CouponConditionEntity combination = new CouponConditionEntity();
-            combination.setType(ConditionType.COMBINATION);
-            combination.setCoupon(couponEntity);
-
-            List<CombinationConditionEntity> combinationConditionEntityList = getCombinationConditionEntity(body.getCombinationConditionList(), combination);
-            combination.setCombinationConditionList(combinationConditionEntityList);
-            couponConditionEntityList.add(combination);
-        }
+        List<CombinationConditionDto> combinationConditionDtoList = body.getCombinationConditionList();
+        modifyCombinationCondition(combinationConditionDtoList, couponEntity);
 
         // Subject condition
-        if (body.getSubjectConditionList() != null) {
-            CouponConditionEntity subjectCondition = new CouponConditionEntity();
-            subjectCondition.setType(ConditionType.SUBJECT);
-            subjectCondition.setCoupon(couponEntity);
+        List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
+        modifySubjectConditionList(body.getSubjectConditionList(), conditionEntityList);
 
-            List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
-            subjectCondition.setSubjectConditionList(subjectConditionEntityList);
-            couponConditionEntityList.add(subjectCondition);
-        }
 
         // Saving coupon
-        couponEntity.setConditionList(couponConditionEntityList);
-        System.out.println(couponEntity);
         couponRepository.save(couponEntity);
+    }
+
+    private void modifySubjectConditionList( List<SubjectConditionDto> subjectConditionDtoList, List<CouponConditionEntity> conditionEntityList) {
+        CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.SUBJECT).findFirst().orElseThrow(
+                () -> new CustomException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
+        );
+        for (SubjectConditionEntity subjectConditionEntity : condition.getSubjectConditionList()) {
+            subjectConditionRepository.delete(subjectConditionEntity);
+        }
+        List<SubjectConditionEntity> subjectConditionEntityList = new ArrayList<>();
+        subjectConditionDtoList.stream().forEach(subject -> {
+           SubjectConditionEntity subjectConditionEntity = SubjectConditionEntity.builder()
+                   .couponCondition(condition)
+                   .value(subject.getValue())
+                   .objectId(subject.getObjectId())
+                   .build();
+            subjectConditionEntityList.add(subjectConditionEntity);
+        });
+        condition.setSubjectConditionList(subjectConditionEntityList);
     }
 
     @Override
@@ -892,6 +951,7 @@ public class CouponService implements ICouponService {
         }
         return couponCardList;
     }
+
     private List<CouponType> checkAndGetNoCouponTypeCombineList(String couponCode) {
         List<CouponType> couponTypeList = Arrays.asList(CouponType.SHIPPING, CouponType.PRODUCT, CouponType.ORDER);
         List<CouponType> data = new ArrayList<>();
@@ -1006,13 +1066,13 @@ public class CouponService implements ICouponService {
             }
         }
         if (couponResult.isValid()) {
-            CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
+//            CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
             CheckCouponInCartResponse.Reward reward = new CheckCouponInCartResponse.Reward();
 
-            if (couponRewardEntity.getType() == CouponRewardType.MONEY) {
-                reward.setMoneyReward(CheckCouponInCartResponse.fromMoneyRewardEntity(couponRewardEntity.getMoneyReward()));
-            } else if (couponRewardEntity.getType() == CouponRewardType.PRODUCT_GIFT) {
-                reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponRewardEntity.getProductRewardList()));
+            if (couponEntity.getRewardType() == CouponRewardType.MONEY) {
+                reward.setMoneyReward(CheckCouponInCartResponse.fromMoneyRewardEntity(couponEntity.getMoneyReward()));
+            } else if (couponEntity.getRewardType() == CouponRewardType.PRODUCT_GIFT) {
+                reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponEntity.getProductRewardList()));
             }
             if (couponEntity.getCouponType() == CouponType.PRODUCT) {
                 for (String subjectId : subjectIdListInCart) {

@@ -40,7 +40,7 @@ public class GetProductGiftCouponDetailByIdResponse {
         data.setStartDate(entity.getStartDate());
         data.setExpirationDate(entity.getExpirationDate());
         List<ProductRewardDto> productRewardList;
-        List<ProductRewardEntity> productRewardEntityList = entity.getCouponReward().getProductRewardList();
+        List<ProductRewardEntity> productRewardEntityList = entity.getProductRewardList();
         if(productRewardEntityList != null) {
             productRewardList = new ArrayList<>();
             for (ProductRewardEntity productRewardEntity: productRewardEntityList) {

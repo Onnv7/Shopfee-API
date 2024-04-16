@@ -36,8 +36,8 @@ public class GetOrderCouponDetailByIdResponse {
         data.setStatus(entity.getStatus());
         data.setStartDate(entity.getStartDate());
         data.setExpirationDate(entity.getExpirationDate());
-        data.setUnitReward(entity.getCouponReward().getMoneyReward().getUnit());
-        data.setValueReward(entity.getCouponReward().getMoneyReward().getValue());
+        data.setUnitReward(entity.getMoneyReward().getUnit());
+        data.setValueReward(entity.getMoneyReward().getValue());
 
         List<CouponConditionEntity>  conditionEntityList = entity.getConditionList();
         for (CouponConditionEntity condition: conditionEntityList) {

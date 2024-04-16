@@ -1,7 +1,10 @@
 package com.hcmute.shopfee.entity.sql.database.coupon;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.enums.CouponRewardType;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
 import jakarta.persistence.*;
@@ -63,23 +66,32 @@ public class CouponEntity {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reward_type", nullable = false)
+    private CouponRewardType rewardType;
+
     // =================================================
 
     @OneToMany(mappedBy = "coupon")
     @JsonManagedReference
     private List<CouponUsedEntity> couponUsedList;
 
-    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private List<CouponConditionEntity> conditionList;
 
-    @OneToOne(mappedBy = "coupon", cascade = {CascadeType.PERSIST})
-    @JsonManagedReference
-    private CouponRewardEntity couponReward;
-
-//    @OneToOne(mappedBy = "coupon")
+//    @OneToOne(mappedBy = "coupon", cascade = {CascadeType.PERSIST})
 //    @JsonManagedReference
-//    private CouponUsedEntity couponUsed;
+//    private CouponRewardEntity couponReward;
+
+
+    @OneToOne(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private MoneyRewardEntity moneyReward;
+
+    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private List<ProductRewardEntity> productRewardList;
 
 
 }

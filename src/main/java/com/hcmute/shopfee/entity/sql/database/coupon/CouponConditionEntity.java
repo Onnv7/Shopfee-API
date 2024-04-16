@@ -46,19 +46,19 @@ public class CouponConditionEntity {
 //    @JsonManagedReference
 //    private EligibilityCustomerConditionEntity applicableCustomerCondition;
 
-    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private List<CombinationConditionEntity> combinationConditionList;
 
-    @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
+    @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private MinPurchaseConditionEntity minPurchaseCondition;
 
-    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private List<SubjectConditionEntity> subjectConditionList;
 
-    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private List<UsageConditionEntity> usageConditionList;
 

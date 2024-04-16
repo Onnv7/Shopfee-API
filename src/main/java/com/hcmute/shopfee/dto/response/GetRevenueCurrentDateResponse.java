@@ -11,9 +11,9 @@ public class GetRevenueCurrentDateResponse {
 
     public static GetRevenueCurrentDateResponse fromRevenueQueryDto(GetRevenueQueryDto revenueQueryDto) {
         GetRevenueCurrentDateResponse data = new GetRevenueCurrentDateResponse();
-        data.setRevenue(revenueQueryDto.getRevenue());
-        data.setRevenueByToday(revenueQueryDto.getRevenueByToday());
-        data.setRevenueByThisMonth(revenueQueryDto.getRevenueByThisMonth());
+        data.setRevenue(revenueQueryDto.getRevenue() != null ? revenueQueryDto.getRevenue() : 0);
+        data.setRevenueByToday(revenueQueryDto.getRevenueByToday() != null ? revenueQueryDto.getRevenueByToday() : 0);
+        data.setRevenueByThisMonth(revenueQueryDto.getRevenueByThisMonth() != null ? revenueQueryDto.getRevenueByThisMonth() : 0);
         return data;
     }
 }

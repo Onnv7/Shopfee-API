@@ -151,6 +151,7 @@ public class UserService implements IUserService {
 
     @Override
     public GetCoinHistoryListResponse getCoinHistoryList(String userId, int page, int size) {
+        SecurityUtils.checkUserId(userId);
         GetCoinHistoryListResponse data = new GetCoinHistoryListResponse();
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<CoinHistoryEntity> coinPage = coinHistoryRepository.findByUser_Id(userId, pageable);

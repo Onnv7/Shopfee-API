@@ -13,35 +13,35 @@ import java.util.List;
 
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
-@Entity
-@Table(name = "coupon_reward")
-@Builder
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+//@Entity
+//@Table(name = "coupon_reward")
+//@Builder
+//@Getter
+//@Setter
+//@NoArgsConstructor
+//@AllArgsConstructor
 public class CouponRewardEntity {
-    @Id
-    @GenericGenerator(name = "coupon_reward_id", strategy = TIME_ID_GENERATOR)
-    @GeneratedValue(generator = "coupon_reward_id")
-    private String id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private CouponRewardType type;
-
-    @OneToOne
-    @JoinColumn(name = "coupon_id")
-    @JsonBackReference
-    private CouponEntity coupon;
-
-    // =================================================================
-    @OneToOne(mappedBy = "couponReward", cascade = {CascadeType.PERSIST})
-    @JsonManagedReference
-    private MoneyRewardEntity moneyReward;
-
-    @OneToMany(mappedBy = "couponReward", cascade = {CascadeType.PERSIST})
-    @JsonManagedReference
-    private List<ProductRewardEntity> productRewardList;
-
+//    @Id
+//    @GenericGenerator(name = "coupon_reward_id", strategy = TIME_ID_GENERATOR)
+//    @GeneratedValue(generator = "coupon_reward_id")
+//    private String id;
+//
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "type", nullable = false)
+//    private CouponRewardType type;
+//
+//    @OneToOne
+//    @JoinColumn(name = "coupon_id")
+//    @JsonBackReference
+//    private CouponEntity coupon;
+//
+//    // =================================================================
+//    @OneToOne(mappedBy = "couponReward", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @JsonManagedReference
+//    private MoneyRewardEntity moneyReward;
+//
+//    @OneToMany(mappedBy = "couponReward", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @JsonManagedReference
+//    private List<ProductRewardEntity> productRewardList;
+//
 }

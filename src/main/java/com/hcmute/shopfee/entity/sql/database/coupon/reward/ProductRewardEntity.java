@@ -2,6 +2,7 @@ package com.hcmute.shopfee.entity.sql.database.coupon.reward;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponRewardEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,8 +35,13 @@ public class ProductRewardEntity {
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
+//    @ManyToOne
+//    @JoinColumn(name = "coupon_reward_id")
+//    @JsonBackReference
+//    private CouponRewardEntity couponReward;
+
     @ManyToOne
-    @JoinColumn(name = "coupon_reward_id")
+    @JoinColumn(name = "coupon_id")
     @JsonBackReference
-    private CouponRewardEntity couponReward;
+    private CouponEntity coupon;
 }
