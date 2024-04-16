@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
@@ -15,6 +16,8 @@ import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
 import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
+import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
+import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.service.common.AuditorAwareService;
@@ -32,6 +35,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import static com.hcmute.shopfee.constant.ShopfeeConstant.REFUND_COIN_ORDER;
+
 @Service
 @RequiredArgsConstructor
 public class TransactionService implements ITransactionService {
@@ -41,6 +46,8 @@ public class TransactionService implements ITransactionService {
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
     private final AuditorAwareService auditorAwareService;
+    private final CoinHistoryRepository coinHistoryRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -107,23 +114,55 @@ public class TransactionService implements ITransactionService {
         transactionRepository.save(trans);
     }
 
-    public boolean refundTransaction(HttpServletRequest request, String transactionId) throws IOException, URISyntaxException {
-        TransactionEntity transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.TRANSACTION_ID_NOT_FOUND + transactionId));
+    @Transactional
+    public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) throws IOException, URISyntaxException {
 
-        if(transaction.getPaymentType() == PaymentType.CASHING) {
+        TransactionEntity transaction = orderBill.getTransaction();
+        if(transaction.isRefunded()) {
+            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Order has been refunded");
+        }
+        if (refundCoin) {
+            long coin = orderBill.getCoin();
+            if (coin > 0) {
+                UserEntity user = orderBill.getUser();
+                CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                        .coin(coin)
+                        .actor(ActorType.AUTOMATIC)
+                        .description(REFUND_COIN_ORDER)
+                        .user(user)
+                        .build();
+                coinHistoryRepository.save(coinHistory);
+
+                user.setCoin(user.getCoin() + coin);
+                userRepository.save(user);
+                transaction.setRefunded(true);
+            }
+        }
+        if(refundMoney) {
+            boolean isRefunded = refundTransaction(null, transaction);
+            if(isRefunded) {
+                transaction.setRefunded(true);
+            } else {
+                throw new CustomException(ErrorConstant.SERVER_ERROR, "The payment side service failed, please try again later");
+            }
+        }
+        transactionRepository.save(transaction);
+    }
+
+    public boolean refundTransaction(HttpServletRequest request, TransactionEntity transaction ) throws IOException, URISyntaxException {
+        if (transaction.getPaymentType() == PaymentType.CASHING) {
             return false;
         }
-        if(transaction.getPaymentType() == PaymentType.VNPAY) {
+        if (transaction.getPaymentType() == PaymentType.VNPAY) {
             Map<String, Object> responseRefund = vnPayService.refundOrder(request, transaction.getVnPay().getTimeCode(), transaction.getVnPay().getInvoiceCode(), transaction.getTotalPaid());
             String responseCode = responseRefund.get(VNPayConstant.VNP_RESPONSE_CODE).toString();
-            if(responseCode.equals("00")) {
+            if (responseCode.equals("00")) {
                 // refund thafnh coong
                 return true;
             } else {
                 return false;
             }
-        } else if(transaction.getPaymentType() == PaymentType.ZALOPAY) {
+        } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             RefundRequestDTO refundRequestDTO = new RefundRequestDTO();
             ZaloPayEntity zaloPay = transaction.getZaloPay();
             refundRequestDTO.setAmount(transaction.getTotalPaid());
@@ -131,7 +170,7 @@ public class TransactionService implements ITransactionService {
             refundRequestDTO.setDescription("");
             Map<String, Object> responseRefund = zaloPayService.sendRefund(refundRequestDTO);
             int returnCode = (int) responseRefund.getOrDefault("return_code", -1);
-            if(returnCode == 1) {
+            if (returnCode == 1) {
                 // refund thafnh coong
                 return true;
             } else {

@@ -152,7 +152,9 @@ public class GetOrderByIdResponse {
             transaction.setId(entity.getId());
             transaction.setStatus(entity.getStatus());
             transaction.setPaymentType(entity.getPaymentType());
-            transaction.setPaymentUrl(entity.getPaymentUrl());
+            String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? entity.getZaloPay().getPaymentUrl() :
+                    transaction.getPaymentType() == PaymentType.VNPAY ? entity.getVnPay().getPaymentUrl() : null;
+            transaction.setPaymentUrl(paymentUrl);
             return transaction;
         }
     }

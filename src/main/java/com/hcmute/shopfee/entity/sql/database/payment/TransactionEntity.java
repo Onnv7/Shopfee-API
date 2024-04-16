@@ -30,19 +30,10 @@ public class TransactionEntity {
     @GeneratedValue(generator = "transaction_id")
     private String id;
 
-    @OneToOne//(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;
-
-//    @Column(name = "invoice_code")
-//    private String invoiceCode;
-//
-//    @Column(name = "time_code")
-//    private String timeCode;
-
-    @Column(name = "payment_url", columnDefinition = "TEXT")
-    private String paymentUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

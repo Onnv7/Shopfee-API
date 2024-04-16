@@ -125,16 +125,23 @@ public class EmployeeService implements IEmployeeService {
 
         String oldBranchId = employee.getBranch().getId();
         if (oldBranchId != null && !oldBranchId.equals(body.getBranchId())){
-            List<EmployeeFCMTokenEntity> employeeFCMTokenList = employeeFCMTokenRepository.findByEmployeeId(employeeId);
-            List<String> deviceTokenList = employeeFCMTokenList.stream().map(EmployeeFCMTokenEntity::getToken).toList();
-            FirebaseMessaging.getInstance().unsubscribeFromTopicAsync(
-                    deviceTokenList,
-                    oldBranchId
-            ).get();
-            FirebaseMessaging.getInstance().subscribeToTopic(
-                    deviceTokenList,
-                    body.getBranchId()
-            );
+            try {
+                List<EmployeeFCMTokenEntity> employeeFCMTokenList = employeeFCMTokenRepository.findByEmployeeId(employeeId);
+                List<String> deviceTokenList = employeeFCMTokenList.stream().map(EmployeeFCMTokenEntity::getToken).toList();
+                // unsubscribe all device which employee use
+                FirebaseMessaging.getInstance().unsubscribeFromTopicAsync(
+                        deviceTokenList,
+                        oldBranchId
+                ).get();
+                // subscribe new branch
+                FirebaseMessaging.getInstance().subscribeToTopic(
+                        deviceTokenList,
+                        body.getBranchId()
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
         modelMapperService.mapNotNull(body, employee);
         employee.setBranch(branchEntity);

@@ -110,6 +110,7 @@ public class OrderService implements IOrderService {
             VNPayEntity vnPay = VNPayEntity.builder()
                     .invoiceCode(paymentData.getVnpTxnRef())
                     .timeCode(paymentData.getVnpCreateDate())
+                    .paymentUrl(paymentData.getVnpUrl())
                     .build();
             transData = TransactionEntity.builder()
                     .status(PaymentStatus.UNPAID)
@@ -117,19 +118,18 @@ public class OrderService implements IOrderService {
                     .vnPay(vnPay)
                     .totalPaid(0L)
                     .orderBill(orderBill)
-                    .paymentUrl(paymentData.getVnpUrl())
                     .build();
             vnPay.setTransaction(transData);
         } else if (paymentType == PaymentType.ZALOPAY) {
             CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment());
             ZaloPayEntity zaloPay = ZaloPayEntity.builder()
                     .transaction(transData)
+                    .paymentUrl(paymentData.getOrderUrl())
                     .appTransactionId(paymentData.getInvoiceCode())
                     .build();
             transData = TransactionEntity.builder()
                     .zaloPay(zaloPay)
                     .status(PaymentStatus.UNPAID)
-                    .paymentUrl(paymentData.getOrderUrl())
                     .paymentType(PaymentType.ZALOPAY)
                     .totalPaid(0L)
                     .orderBill(orderBill)
@@ -530,8 +530,11 @@ public class OrderService implements IOrderService {
                 .transactionId(transaction.getId())
                 .build();
         // set schedule for payment
-        if (transaction.getPaymentUrl() != null && totalPayment > 0) {
-            resData.setPaymentUrl(transaction.getPaymentUrl());
+        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? transaction.getZaloPay().getPaymentUrl() :
+                transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
+        if (paymentUrl != null && totalPayment > 0) {
+            resData.setPaymentUrl(paymentUrl);
+
             Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
 
@@ -539,7 +542,6 @@ public class OrderService implements IOrderService {
                 checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
             } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
                 checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
             }
             checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
             checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
@@ -661,8 +663,10 @@ public class OrderService implements IOrderService {
 
 
         // set schedule for payment
-        if (transaction.getPaymentUrl() != null && totalPayment > 0) {
-            resData.setPaymentUrl(transaction.getPaymentUrl());
+        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? transaction.getZaloPay().getPaymentUrl() :
+                transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
+        if (paymentUrl != null && totalPayment > 0) {
+            resData.setPaymentUrl(paymentUrl);
             Map<String, Object> checkTransactionData = new HashMap<String, Object>();
             Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
 
@@ -806,7 +810,6 @@ public class OrderService implements IOrderService {
 
         long coinRefunded = 0L;
         if (transaction.getStatus() == PaymentStatus.PAID) {
-
             transaction.setRefunded(true);
             coinRefunded += transaction.getTotalPaid();
         } else if (transaction.getStatus() == PaymentStatus.UNPAID && orderBill.getCoin() != null) {

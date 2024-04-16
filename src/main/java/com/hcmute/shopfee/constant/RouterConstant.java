@@ -64,6 +64,7 @@ public class RouterConstant {
     public static final String PATCH_USER_ADD_PHONE_NUMBER_SUB_PATH = USER_ID_PATH + "/add-phone-number";
     public static final String GET_USER_SPENDING_STATISTIC_SUB_PATH = USER_ID_PATH + "/spent-statistics";
     public static final String GET_USER_ORDER_STATISTIC_SUB_PATH = USER_ID_PATH + "/order-statistics";
+    public static final String GET_USER_COIN_HISTORY_SUB_PATH = USER_ID_PATH + "/coin-history";
 
     // ENDPOINT URL ADDRESS =================================================================
     public static final String POST_ADDRESS_CREATE_SUB_PATH = "/user" + USER_ID_PATH;

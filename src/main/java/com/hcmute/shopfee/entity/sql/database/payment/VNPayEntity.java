@@ -22,6 +22,9 @@ public class VNPayEntity {
     @GeneratedValue(generator = "vnpay_id")
     private String id;
 
+    @Column(name = "payment_url", columnDefinition = "TEXT")
+    private String paymentUrl;
+
     @Column(name = "invoice_code")
     private String invoiceCode;
 

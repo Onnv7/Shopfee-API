@@ -156,4 +156,23 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
+    @Operation(summary = USER_GET_COIN_HISTORY_SUM)
+    @GetMapping(path = GET_USER_COIN_HISTORY_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
+    public ResponseEntity<ResponseAPI<GetCoinHistoryListResponse>> getCoinHistoryList(
+            @PathVariable(USER_ID) String userId,
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+    ) {
+        GetCoinHistoryListResponse data = userService.getCoinHistoryList(userId, page, size);
+        ResponseAPI<GetCoinHistoryListResponse> res = ResponseAPI.<GetCoinHistoryListResponse>builder()
+                .timestamp(new Date())
+                .data(data)
+                .message(SuccessConstant.GET)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 }

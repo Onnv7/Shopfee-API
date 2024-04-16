@@ -18,4 +18,5 @@ public interface IUserService {
     void addPhoneNumberToUser(AddPhoneNumberRequest body, String userId);
     GetUserSpendingStatisticsResponse getUserSpendingStatistic(String userId, Date startDate, Date endDate);
     GetUserOrderStatusStatisticsResponse getOrderStatisticByUserId(String userId, UserChartStatisticType chartType);
+    GetCoinHistoryListResponse getCoinHistoryList(String userId, int page, int size);
 }

@@ -22,6 +22,9 @@ public class ZaloPayEntity {
     @GeneratedValue(generator = "zalopay_id")
     private String id;
 
+    @Column(name = "payment_url", columnDefinition = "TEXT")
+    private String paymentUrl;
+
     @Column(name = "app_trans_id")
     private String appTransactionId;
 

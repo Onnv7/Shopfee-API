@@ -50,7 +50,7 @@ public class VNPayRefund {
         SimpleDateFormat formatter = new SimpleDateFormat(VNP_TIME_FORMAT);
 
         String vnp_CreateDate = formatter.format(cld.getTime());
-        String vnp_IpAddr = VNPayUtils.getIpAddress(req);
+        String vnp_IpAddr = "0.0.0.0"; // req != null ? VNPayUtils.getIpAddress(req) : "0.0.0.0";
         JsonObject vnp_Params = new JsonObject ();
 
         vnp_Params.addProperty(VNP_REQ_ID_KEY, vnp_RequestId);

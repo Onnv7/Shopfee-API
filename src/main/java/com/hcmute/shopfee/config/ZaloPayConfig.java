@@ -14,7 +14,6 @@ public class ZaloPayConfig {
     @Value("${zalo_pay.key2}")
     private String KEY2;
 
-
     @Value("${zalo_pay.callback_url}")
     private String CALLBACK_URL;
 

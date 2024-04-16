@@ -46,6 +46,7 @@ public class SwaggerConstant {
     public static final String USER_ADD_PHONE_NUMBER_SUM = "Add phone number by user id";
     public static final String USER_GET_SPENDING_STATISTIC_SUM = "Get user's spending statistics";
     public static final String USER_GET_ORDER_STATISTIC_SUM = "Get user's order statistics";
+    public static final String USER_GET_COIN_HISTORY_SUM = "Get user's coin history list";
     // For address =================================================================
     public static final String ADDRESS_CONTROLLER_TITLE = "ADDRESS MANAGEMENT";
     public static final String ADDRESS_ADD_ADDRESS_BY_ID_SUM = "Add new address for user";

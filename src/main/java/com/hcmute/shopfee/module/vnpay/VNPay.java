@@ -49,7 +49,6 @@ public class VNPay {
     }
 
 
-
     public Map<String, Object> refund(HttpServletRequest req, String timeId, String invoiceCode, long amount) throws IOException {
         return vnpayRefund.refund(req, timeId, amount, invoiceCode, "02");
     }

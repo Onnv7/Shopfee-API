@@ -9,10 +9,12 @@ import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
 import com.hcmute.shopfee.dto.sql.GetUserSpendingStatisticDto;
+import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -42,6 +44,7 @@ public class UserService implements IUserService {
     private final CloudinaryService cloudinaryService;
     private final TransactionRepository transactionRepository;
     private final OrderEventRepository orderEventRepository;
+    private final CoinHistoryRepository coinHistoryRepository;
 
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -117,7 +120,7 @@ public class UserService implements IUserService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
-        if(user.getPhoneNumber() != null) {
+        if (user.getPhoneNumber() != null) {
             throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The user already has a phone number");
         }
         user.setPhoneNumber(body.getPhoneNumber());
@@ -127,7 +130,7 @@ public class UserService implements IUserService {
     @Override
     public GetUserSpendingStatisticsResponse getUserSpendingStatistic(String userId, Date startDate, Date endDate) {
         SecurityUtils.checkUserId(userId);
-        if(!DateUtils.isWithin31Days(startDate, endDate)) {
+        if (!DateUtils.isWithin31Days(startDate, endDate)) {
             throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
         }
         List<GetUserSpendingStatisticDto> dataStatisticsList = transactionRepository.getUserSpendingStatisticsByDate(startDate, endDate, userId);
@@ -138,11 +141,21 @@ public class UserService implements IUserService {
     public GetUserOrderStatusStatisticsResponse getOrderStatisticByUserId(String userId, UserChartStatisticType chartType) {
         SecurityUtils.checkUserId(userId);
         List<GetStatisticByKeyValue> dataList = new ArrayList<>();
-        if(chartType == UserChartStatisticType.ORDER_STATUS) {
+        if (chartType == UserChartStatisticType.ORDER_STATUS) {
             dataList = orderEventRepository.getCountOrderEventStatisticsByUser(userId);
-        } else if(chartType == UserChartStatisticType.PAYMENT_TYPE) {
+        } else if (chartType == UserChartStatisticType.PAYMENT_TYPE) {
             dataList = transactionRepository.getUserPaymentTypeStatistic(userId);
         }
         return GetUserOrderStatusStatisticsResponse.fromOrderStatusStatistics(dataList);
+    }
+
+    @Override
+    public GetCoinHistoryListResponse getCoinHistoryList(String userId, int page, int size) {
+        GetCoinHistoryListResponse data = new GetCoinHistoryListResponse();
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<CoinHistoryEntity> coinPage = coinHistoryRepository.findByUser_Id(userId, pageable);
+        data.setTotalPage(coinPage.getTotalPages());
+        data.setCoinHistoryList(coinPage.getContent());
+        return data;
     }
 }
