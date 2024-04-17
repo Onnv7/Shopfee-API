@@ -96,7 +96,11 @@ public class WebSecurityConfig {
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
 
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); //"http://localhost:3000", "http://tender-grackle-gratefully.ngrok-free.app", "https://tender-grackle-gratefully.ngrok-free.app"
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://admin-shopfee.netlify.app",
+                "https://shopfee.netlify.app",
+                "https://shopfee.surge.sh",
+                "https://admin-shopfee.surge.sh",
+                "http://localhost:3001")); //"http://localhost:3000", "http://tender-grackle-gratefully.ngrok-free.app", "https://tender-grackle-gratefully.ngrok-free.app"
         configuration.setAllowCredentials(true);
 
 

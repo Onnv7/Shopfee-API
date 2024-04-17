@@ -140,6 +140,9 @@ public class ProductService implements IProductService {
         GetProductByIdResponse result = modelMapperService.mapClass(product, GetProductByIdResponse.class);
         result.setImageUrl(product.getImage().getImageUrl());
         result.setCategoryId(product.getCategory().getId());
+        if(product.getType() == ProductType.CAKE) {
+            result.setPrice(product.getPrice());
+        }
         return result;
     }
 

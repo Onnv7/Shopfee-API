@@ -19,11 +19,12 @@ public class GetProductByIdResponse {
     private String id;
     private String name;
     private ProductType type;
-    private List<SizeDto> sizeList;
     private String description;
+    private List<SizeDto> sizeList;
     private List<ToppingDto> toppingList;
     private String categoryId;
     private ProductStatus status;
+    private Long price;
     private String imageUrl;
 
 }
