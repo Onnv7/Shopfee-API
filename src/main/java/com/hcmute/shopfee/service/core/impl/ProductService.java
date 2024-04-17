@@ -36,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -283,18 +284,23 @@ public class ProductService implements IProductService {
 
     @Transactional
     @Override
-    public void updateProductById(UpdateProductRequest body, String id) {
+    public void updateProductById(UpdateProductRequest body, String id, ProductType productType) {
+        if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
+            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
+        } else if (productType == ProductType.CAKE) {
+            if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
+                throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
+            }
+        }
+
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+
 
         modelMapperService.map(body, product);
 
         if (body.getImage() != null) {
             try {
-//                if(product.getImage().getCloudinaryImageId() != null) {
-//                    cloudinaryService.deleteImage(product.getImage().getCloudinaryImageId());
-//                }
-
                 byte[] originalImage = body.getImage().getBytes();
 
                 byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
@@ -313,7 +319,11 @@ public class ProductService implements IProductService {
             }
         }
 
-        product.setPrice(getMinPrice(product.getSizeList()));
+        if(productType == ProductType.CAKE) {
+            product.setPrice(body.getPrice());
+        } else {
+            product.setPrice(getMinPrice(product.getSizeList()));
+        }
 
         CategoryEntity category = categoryRepository.findById(body.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));

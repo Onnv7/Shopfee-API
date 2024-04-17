@@ -20,7 +20,7 @@ public interface IProductService {
     GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus);
     void deleteProductById(String id);
     void deleteSomeProductById(List<String> productIdList);
-    void updateProductById(UpdateProductRequest body, String id);
+    void updateProductById(UpdateProductRequest body, String id, ProductType productType);
     List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity);
     List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity);
     void createBeverageFromFile(MultipartFile file);

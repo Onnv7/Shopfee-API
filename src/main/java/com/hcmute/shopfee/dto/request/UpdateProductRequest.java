@@ -25,6 +25,8 @@ public class UpdateProductRequest implements Serializable {
     @Schema( description = OPTIONAL_DES)
     private MultipartFile image;
 
+    @Schema(example = PRODUCT_PRICE_EX)
+    private Long price;
 
     // example = PRODUCT_SIZE_EX,
     @Schema()
@@ -45,7 +47,6 @@ public class UpdateProductRequest implements Serializable {
     @Schema(example = BOOLEAN_EX)
     @NotNull
     private boolean enabled;
-
 
     @Schema(example = PRODUCT_STATUS_EX)
     @NotNull

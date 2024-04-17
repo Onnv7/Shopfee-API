@@ -41,7 +41,7 @@ public class ProductController {
     @Operation(summary = PRODUCT_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
-    public ResponseEntity<ResponseAPI<?>> createProduct(@ModelAttribute @Valid CreateProductRequest body, @RequestParam("type") ProductType productType) {
+    public ResponseEntity<ResponseAPI<?>> createProduct(@ModelAttribute @Valid CreateProductRequest body, @RequestParam("product_type") ProductType productType) {
         productService.createProduct(body, body.getImage(), productType);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -194,9 +194,10 @@ public class ProductController {
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateProductById(
             @ModelAttribute @Valid UpdateProductRequest body,
-            @PathVariable("productId") String id
+            @PathVariable("productId") String id,
+            @RequestParam("product_type") ProductType productType
     ) {
-        productService.updateProductById(body, id);
+        productService.updateProductById(body, id, productType);
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.UPDATED)
                 .timestamp(new Date())
