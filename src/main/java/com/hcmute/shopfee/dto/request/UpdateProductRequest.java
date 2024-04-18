@@ -30,7 +30,6 @@ public class UpdateProductRequest implements Serializable {
 
     // example = PRODUCT_SIZE_EX,
     @Schema()
-    @NotEmpty
     private List<SizeDto> sizeList;
 
     @Schema(example = PRODUCT_DESCRIPTION_EX)

@@ -19,7 +19,17 @@ public class ErrorResponse<T> {
     @Builder.Default
     private boolean success = false;
     private String message;
-    private String errorCode;
-    private T details;
-    private String stack;
+    private Integer errorCode;
+    private DevResponse<T> devResponse;
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class DevResponse<T> {
+//        private String stack;
+        private String devMessage;
+        private T details;
+    }
 }

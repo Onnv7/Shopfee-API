@@ -7,7 +7,7 @@ import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.Role;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -101,7 +101,7 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
                 Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_HEADER, ""))
                         .ifPresent(orderId -> {
                             OrderBillEntity orderBill = orderBillRepository.findById(orderId.toString())
-                                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
                             OrderEventEntity orderEvent = OrderEventEntity.builder()
                                     .orderStatus(orderStatus)
                                     .description(description)

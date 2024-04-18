@@ -2,10 +2,9 @@ package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
-import com.hcmute.shopfee.utils.RegexUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,7 +49,7 @@ public class ProductSearchService {
 
     public void deleteProduct(String id) {
         ProductIndex productIndex = productSearchRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         productSearchRepository.delete(productIndex);
     }
 

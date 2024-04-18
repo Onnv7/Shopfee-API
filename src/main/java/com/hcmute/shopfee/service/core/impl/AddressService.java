@@ -6,7 +6,7 @@ import com.hcmute.shopfee.dto.response.GetAddressDetailsByIdResponse;
 import com.hcmute.shopfee.dto.response.GetAddressListByUserIdResponse;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.AddressRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.service.core.IAddressService;
@@ -31,11 +31,11 @@ public class AddressService implements IAddressService {
         SecurityUtils.checkUserId(userId);
         AddressEntity data = modelMapperService.mapClass(body, AddressEntity.class);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, USER_ID_NOT_FOUND + userId));
         data.setUser(user);
 
         if (user.getAddressList().size() >= 5) {
-            throw new CustomException(ACTING_INCORRECTLY, "Do not add more than 5 addresses");
+            throw new ShopfeeException(ACTING_INCORRECTLY, "Do not add more than 5 addresses");
         }
         data.setDefault(user.getAddressList().isEmpty());
         return addressRepository.save(data);
@@ -45,7 +45,7 @@ public class AddressService implements IAddressService {
     public void updateAddressById(UpdateAddressRequest body, String addressId) {
         AddressEntity data = modelMapperService.mapClass(body, AddressEntity.class);
         AddressEntity address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
         UserEntity user = address.getUser();
         SecurityUtils.checkUserId(user.getId());
         if (data.isDefault()) {
@@ -64,7 +64,7 @@ public class AddressService implements IAddressService {
     @Override
     public void deleteAddressById(String addressId) {
         AddressEntity address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
 
         UserEntity user = address.getUser();
         SecurityUtils.checkUserId(user.getId());
@@ -83,7 +83,7 @@ public class AddressService implements IAddressService {
 
     @Override
     public GetAddressDetailsByIdResponse getAddressDetailById(String addressId) {
-        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new CustomException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
+        AddressEntity address = addressRepository.findById(addressId).orElseThrow(() -> new ShopfeeException(NOT_FOUND, ADDRESS_ID_NOT_FOUND + addressId));
         SecurityUtils.checkUserId(address.getUser().getId());
         return modelMapperService.mapClass(address, GetAddressDetailsByIdResponse.class);
     }

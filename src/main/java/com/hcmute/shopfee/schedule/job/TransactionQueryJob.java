@@ -8,7 +8,7 @@ import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
 import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
@@ -36,7 +36,7 @@ public class TransactionQueryJob extends QuartzJobBean {
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         JobDataMap data = context.getJobDetail().getJobDataMap();
         TransactionEntity transaction = transactionRepository.findById(data.getString(TRANSACTION_ID)).
-                orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.TRANSACTION_ID_NOT_FOUND + data.getString(TRANSACTION_ID)));
+                orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.TRANSACTION_ID_NOT_FOUND + data.getString(TRANSACTION_ID)));
 
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             GetOrderZaloPayResponse zaloResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());

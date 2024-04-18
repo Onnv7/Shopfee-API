@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.USER_NOT_FOUND;
+import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class CustomEmployeeDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         EmployeeEntity employee = employeeService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND));
 
 
         List<String> roleNames = employee.getRoleList()

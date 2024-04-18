@@ -1,14 +1,10 @@
 package com.hcmute.shopfee.service.redis;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.redis.UserTokenRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,13 +24,13 @@ public class UserTokenRedisService {
     }
     public void deleteByUserIdAndRefreshToken(String userId, String refreshToken) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
         userTokenRepository.delete(entity);
     }
 
     public UserTokenEntity getInfoOfRefreshToken(String refreshToken, String userId) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
         return entity;
     }
 

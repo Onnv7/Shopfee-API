@@ -1,12 +1,7 @@
 package com.hcmute.shopfee.statemachine;
 
 
-import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
-import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.model.CustomException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
@@ -16,10 +11,6 @@ import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
-
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component

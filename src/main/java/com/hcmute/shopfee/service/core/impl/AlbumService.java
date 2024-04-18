@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.response.GetAllImageResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
@@ -34,7 +34,7 @@ public class AlbumService implements IAlbumService {
     @Override
     public void uploadImage(UploadImageRequest body) {
         if(!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
         }
         String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
         String fileName = StringUtils.generateFileName("", "album");
@@ -72,10 +72,10 @@ public class AlbumService implements IAlbumService {
     @Override
     public void deleteImageById(String imageId) {
         AlbumEntity album = albumRepository.findById(imageId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND,ErrorConstant.ALBUM_ID_INVALID + imageId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND,ErrorConstant.ALBUM_ID_INVALID + imageId));
 
         if(album.getProduct() != null || album.getCategory() != null) {
-            throw new CustomException(ErrorConstant.CANT_DELETE);
+            throw new ShopfeeException(ErrorConstant.CANT_DELETE);
         }
         if(orderItemRepository.countOrderItemByImageUrl(album.getImageUrl()) == 0) {
             try {

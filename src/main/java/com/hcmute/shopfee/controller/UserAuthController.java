@@ -8,7 +8,7 @@ import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IUserAuthService;
 import com.hcmute.shopfee.utils.CookieUtils;
@@ -100,11 +100,8 @@ public class UserAuthController {
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
     @PostMapping(path = POST_AUTH_USER_LOGOUT_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_USER)
-    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken,
+    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = true) String refreshToken,
                                                      @RequestBody @Valid UserLogoutRequest body) {
-        if (refreshToken == null) {
-            throw new CustomException(ErrorConstant.NOT_FOUND);
-        }
         userAuthService.logoutUser(body, refreshToken);
 
         ResponseAPI<?> res = ResponseAPI.builder()
@@ -169,9 +166,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
         if (refreshToken == null) {
-            throw new CustomException(ErrorConstant.UNAUTHORIZED, "Token is null");
+            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED, "Token is null");
         }
         RefreshTokenResponse data = userAuthService.refreshToken(refreshToken);
 

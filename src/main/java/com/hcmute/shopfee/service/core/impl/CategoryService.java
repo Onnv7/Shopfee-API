@@ -12,7 +12,7 @@ import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.enums.CategoryStatus;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.service.core.ICategoryService;
@@ -37,13 +37,13 @@ public class CategoryService implements ICategoryService {
     @Override
     public void createCategory(CreateCategoryRequest body) {
         if(!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
         }
 
         String cgrName = body.getName();
         CategoryEntity existedCategory = categoryRepository.findByName(cgrName).orElse(null);
         if (existedCategory != null) {
-            throw new CustomException(ErrorConstant.EXISTED_DATA, "Category already exists");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Category already exists");
         }
         byte[] originalImage;
         try {
@@ -70,7 +70,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public GetCategoryByIdResponse getCategoryById(String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         return GetCategoryByIdResponse.fromCategoryEntity(category);
     }
 
@@ -89,7 +89,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public void updateCategory(UpdateCategoryRequest body, String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         if (body.getImage() != null) {
             try {
                 byte[] originalImage = body.getImage().getBytes();
@@ -118,13 +118,13 @@ public class CategoryService implements ICategoryService {
     @Override
     public void deleteCategoryById(String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
 
         if (category.getProductList().isEmpty()) {
             categoryRepository.delete(category);
             albumRepository.delete(category.getImage());
         } else {
-            throw new CustomException(ErrorConstant.CANT_DELETE);
+            throw new ShopfeeException(ErrorConstant.CANT_DELETE);
         }
     }
 

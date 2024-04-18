@@ -31,7 +31,6 @@ public class CreateProductRequest {
     private MultipartFile image;
 
     @Schema()
-//    @NotEmpty
     private List<SizeDto> sizeList;
 
     @Schema(example = PRODUCT_DESCRIPTION_EX)

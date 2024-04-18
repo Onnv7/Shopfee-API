@@ -13,7 +13,7 @@ import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
@@ -69,7 +69,7 @@ public class UserService implements IUserService {
     public GetUserByIdResponse getUserProfileById(String userId) {
         SecurityUtils.checkUserId(userId);
         UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         return modelMapperService.mapClass(userEntity, GetUserByIdResponse.class);
     }
 
@@ -77,7 +77,7 @@ public class UserService implements IUserService {
     public void updateUserProfile(String userId, UpdateUserRequest body) {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
         modelMapperService.map(body, user);
         userRepository.save(user);
     }
@@ -85,7 +85,7 @@ public class UserService implements IUserService {
     @Override
     public String checkExistedUserByEmail(String email) {
         UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_EMAIL_NOT_FOUND + email));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_EMAIL_NOT_FOUND + email));
         return user.getFullName();
     }
 
@@ -93,12 +93,12 @@ public class UserService implements IUserService {
     public UploadAvatarResponse uploadAvatar(UploadUserAvatarRequest body, String userId) {
         UploadAvatarResponse response = new UploadAvatarResponse();
         if (!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
         }
         try {
             SecurityUtils.checkUserId(userId);
             UserEntity user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
             byte[] imageBytes = body.getImage().getBytes();
             CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.USER_AVATAR_PATH, userId, imageBytes);
@@ -118,10 +118,10 @@ public class UserService implements IUserService {
     public void addPhoneNumberToUser(AddPhoneNumberRequest body, String userId) {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
 
         if (user.getPhoneNumber() != null) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "The user already has a phone number");
+            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "The user already has a phone number");
         }
         user.setPhoneNumber(body.getPhoneNumber());
         userRepository.save(user);
@@ -131,7 +131,7 @@ public class UserService implements IUserService {
     public GetUserSpendingStatisticsResponse getUserSpendingStatistic(String userId, Date startDate, Date endDate) {
         SecurityUtils.checkUserId(userId);
         if (!DateUtils.isWithin31Days(startDate, endDate)) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
         }
         List<GetUserSpendingStatisticDto> dataStatisticsList = transactionRepository.getUserSpendingStatisticsByDate(startDate, endDate, userId);
         return GetUserSpendingStatisticsResponse.fromDatabase(dataStatisticsList, startDate, endDate);

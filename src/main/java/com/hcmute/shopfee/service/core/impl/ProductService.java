@@ -14,7 +14,7 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
@@ -36,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -69,17 +68,17 @@ public class ProductService implements IProductService {
     @Override
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
         if (!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new CustomException(ErrorConstant.IMAGE_INVALID);
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
         }
         if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
         } else if (productType == ProductType.CAKE) {
             if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
-                throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
+                throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
             }
         }
         if (productRepository.findByName(body.getName()).orElse(null) != null) {
-            throw new CustomException(ErrorConstant.EXISTED_DATA, "Product named \"" + body.getName() + "\" already exists");
+            throw new ShopfeeException(ErrorConstant.EXISTED_DATA, "Product named \"" + body.getName() + "\" already exists");
         }
 
         ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
@@ -108,7 +107,7 @@ public class ProductService implements IProductService {
             byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
 
             CategoryEntity categoryEntity = categoryRepository.findById(body.getCategoryId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + body.getCategoryId()));
 
             productEntity.setCategory(categoryEntity);
             CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
@@ -137,7 +136,7 @@ public class ProductService implements IProductService {
     @Override
     public GetProductByIdResponse getProductDetailsById(String id) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductByIdResponse result = modelMapperService.mapClass(product, GetProductByIdResponse.class);
         result.setImageUrl(product.getImage().getImageUrl());
         result.setCategoryId(product.getCategory().getId());
@@ -150,7 +149,7 @@ public class ProductService implements IProductService {
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
         ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
         GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
 
         data.setImageUrl(product.getImage().getImageUrl());
@@ -256,7 +255,7 @@ public class ProductService implements IProductService {
     @Override
     public void deleteProductById(String id) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
 
         if (productRepository.countOrderItem(id) == 0) {
             productRepository.delete(product);
@@ -265,7 +264,7 @@ public class ProductService implements IProductService {
             }
             productSearchService.deleteProduct(id);
         } else {
-            throw new CustomException(ErrorConstant.CANT_DELETE);
+            throw new ShopfeeException(ErrorConstant.CANT_DELETE);
         }
     }
 
@@ -286,15 +285,15 @@ public class ProductService implements IProductService {
     @Override
     public void updateProductById(UpdateProductRequest body, String id, ProductType productType) {
         if ((productType == ProductType.BEVERAGE && (body.getSizeList() == null || body.getPrice() != null))) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Beverage need size and not price");
         } else if (productType == ProductType.CAKE) {
             if (body.getToppingList() != null || body.getSizeList() != null || body.getPrice() == null) {
-                throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
+                throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
             }
         }
 
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
 
 
         modelMapperService.map(body, product);
@@ -326,7 +325,7 @@ public class ProductService implements IProductService {
         }
 
         CategoryEntity category = categoryRepository.findById(body.getCategoryId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
         product.setCategory(category);
 
         productRepository.save(product);
@@ -419,7 +418,7 @@ public class ProductService implements IProductService {
                         break;
                     case 1:
                         CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
+                                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
                     case 2:
@@ -521,7 +520,7 @@ public class ProductService implements IProductService {
                         break;
                     case 1:
                         CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
+                                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
                     case 2:

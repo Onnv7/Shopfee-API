@@ -1,16 +1,10 @@
 package com.hcmute.shopfee.statemachine;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
-import com.hcmute.shopfee.model.CustomException;
-import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.statemachine.StateContext;
+import com.hcmute.shopfee.model.ShopfeeException;
 import org.springframework.statemachine.guard.Guard;
-import org.springframework.stereotype.Component;
 
 public class OrderTypeValidationGuard {
 
@@ -24,7 +18,7 @@ public class OrderTypeValidationGuard {
             if(orderTypeMsg == orderType) {
                 return true;
             }
-            context.getStateMachine().setStateMachineError(new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Guard"));
+            context.getStateMachine().setStateMachineError(new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "Guard"));
             return false;
         };
     }

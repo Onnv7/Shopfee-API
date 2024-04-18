@@ -18,7 +18,7 @@ import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.*;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
@@ -158,7 +158,7 @@ public class CouponService implements ICouponService {
     @Override
     public void updateShippingCoupon(UpdateShippingCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
 
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(body.getStatus());
@@ -197,7 +197,7 @@ public class CouponService implements ICouponService {
     private void modifyMinPurchaseCondition(CouponEntity couponEntity, MinPurchaseConditionDto minPurchaseConditionDto) {
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.MIN_PURCHASE).findFirst().orElseThrow(
-                () -> new CustomException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
+                () -> new ShopfeeException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
         );
         MinPurchaseConditionEntity minPurchaseConditionEntity = condition.getMinPurchaseCondition();
         minPurchaseConditionEntity.setValue(minPurchaseConditionDto.getValue());
@@ -353,7 +353,7 @@ public class CouponService implements ICouponService {
 //                .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
         }
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
@@ -409,7 +409,7 @@ public class CouponService implements ICouponService {
     @Override
     public void updateOrderCoupon(UpdateOrderCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
 
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(body.getStatus());
@@ -452,7 +452,7 @@ public class CouponService implements ICouponService {
 //                .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
-            throw new CustomException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
+            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
         }
 
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
@@ -519,10 +519,11 @@ public class CouponService implements ICouponService {
         couponRepository.save(couponEntity);
     }
 
+    @Transactional
     @Override
     public void updateAmountOffProductCoupon(UpdateProductMoneyCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
         couponEntity.setRewardType(CouponRewardType.MONEY);
@@ -571,7 +572,7 @@ public class CouponService implements ICouponService {
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
                     .productSize(reward.getProductSize())
@@ -639,10 +640,11 @@ public class CouponService implements ICouponService {
         couponRepository.save(couponEntity);
     }
 
+    @Transactional
     @Override
     public void updateGiftProductCoupon(UpdateBuyXGetYCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
         couponEntity.setRewardType(CouponRewardType.PRODUCT_GIFT);
@@ -660,7 +662,7 @@ public class CouponService implements ICouponService {
 
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
                     .productSize(reward.getProductSize())
@@ -699,7 +701,7 @@ public class CouponService implements ICouponService {
 
     private void modifySubjectConditionList( List<SubjectConditionDto> subjectConditionDtoList, List<CouponConditionEntity> conditionEntityList) {
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.SUBJECT).findFirst().orElseThrow(
-                () -> new CustomException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
+                () -> new ShopfeeException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
         );
         for (SubjectConditionEntity subjectConditionEntity : condition.getSubjectConditionList()) {
             subjectConditionRepository.delete(subjectConditionEntity);
@@ -719,9 +721,9 @@ public class CouponService implements ICouponService {
     @Override
     public void deleteCoupon(String couponId) {
         CouponEntity couponCollection = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         if (couponCollection.getStatus() == CouponStatus.UNRELEASED) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Actions cannot be performed on the coupon when it is in the UNRELEASED state");
+            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "Actions cannot be performed on the coupon when it is in the UNRELEASED state");
         }
         couponCollection.setDeleted(true);
         couponRepository.save(couponCollection);
@@ -744,7 +746,7 @@ public class CouponService implements ICouponService {
     public GetReleaseCouponByIdResponse getReleaseCouponById(String couponId) {
 
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         List<CouponConditionDto> conditionDtoData = new ArrayList<>();
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         for (CouponConditionEntity conditionEntity : conditionEntityList) {
@@ -783,28 +785,28 @@ public class CouponService implements ICouponService {
     @Override
     public GetShippingCouponDetailsByIdResponse getShippingCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.SHIPPING)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetShippingCouponDetailsByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetOrderCouponDetailByIdResponse getOrderCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.ORDER)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetOrderCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetProductGiftCouponDetailByIdResponse getProductGiftCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.PRODUCT)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetProductGiftCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
     @Override
     public GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId) {
         CouponEntity coupon = couponRepository.findByIdAndCouponTypeAndIsDeletedFalse(couponId, CouponType.PRODUCT)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_ID_NOT_FOUND + couponId));
         return GetAmountOffProductCouponDetailByIdResponse.fromCouponEntity(coupon);
     }
 
@@ -911,7 +913,7 @@ public class CouponService implements ICouponService {
                             if (item == null) {
                                 // invalid
                                 ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                                        .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                        .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                 subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                                 couponCard.setValid(false);
                             } else {
@@ -922,7 +924,7 @@ public class CouponService implements ICouponService {
                                 if (count < subjectConditionEntity.getValue()) {
                                     // invalid
                                     ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+                                            .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                     subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                                     couponCard.setValid(false);
                                 }
@@ -957,7 +959,7 @@ public class CouponService implements ICouponService {
         List<CouponType> data = new ArrayList<>();
         if (couponCode != null) {
             CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
 
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
 
@@ -990,7 +992,7 @@ public class CouponService implements ICouponService {
     private CheckCouponInCartResponse checkCouponCodeWithOrderItemCart(String couponCode, long totalPayment, String userId, List<OrderItemDto> orderItemDtoList) {
         CheckCouponInCartResponse couponResult = new CheckCouponInCartResponse();
         CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + couponCode));
         couponResult.setCouponType(couponEntity.getCouponType());
 
         CheckCouponInCartResponse.ViolatedCondition violatedCondition = new CheckCouponInCartResponse.ViolatedCondition();
@@ -1041,7 +1043,7 @@ public class CouponService implements ICouponService {
                             .filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId()))
                             .findFirst().orElse(null);
                     ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                            .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
+                            .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
 
                     // trong cart khong co product item thoa man
                     if (item == null) {
@@ -1078,7 +1080,7 @@ public class CouponService implements ICouponService {
                 for (String subjectId : subjectIdListInCart) {
                     if (productIdListInCart.contains(subjectId)) {
                         ProductEntity productEntity = productRepository.findById(subjectId)
-                                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectId));
+                                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectId));
 
                         CheckCouponInCartResponse.SubjectInformation subjectInformation = new CheckCouponInCartResponse.SubjectInformation(subjectId, productEntity.getName());
                         reward.setSubjectInformation(subjectInformation);

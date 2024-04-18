@@ -3,7 +3,7 @@ package com.hcmute.shopfee.module.goong.distancematrix;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.Goong;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import org.springframework.web.client.HttpClientErrorException;
@@ -31,13 +31,13 @@ public class GoongDistanceMatrix {
             return objectMapper.readValue(result, DistanceMatrixResponse.class);
         }
         catch (JsonMappingException e) {
-            throw new CustomException(ErrorConstant.SERVER_ERROR, e.getMessage());
+            throw new ShopfeeException(ErrorConstant.SERVER_ERROR, e.getMessage());
         }
         catch (HttpClientErrorException e) {
-            throw new CustomException(ErrorConstant.NOT_FOUND, "Goong could not find the location with the posted coordinates");
+            throw new ShopfeeException(ErrorConstant.NOT_FOUND, "Goong could not find the location with the posted coordinates");
         }
         catch (Exception e) {
-            throw new CustomException(ErrorConstant.SERVER_ERROR, e.getMessage());
+            throw new ShopfeeException(ErrorConstant.SERVER_ERROR, e.getMessage());
         }
     }
 }

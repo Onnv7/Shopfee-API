@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @SneakyThrows
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userService.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException(ErrorConstant.USER_NOT_FOUND));
+        UserEntity user = userService.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException(ErrorConstant.NOT_FOUND));
 
 
         List<String> roleNames = user.getRoleList()

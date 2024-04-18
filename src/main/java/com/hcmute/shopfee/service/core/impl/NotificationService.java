@@ -9,7 +9,7 @@ import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeFCMTokenEntity;
 import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
@@ -32,7 +32,7 @@ public class NotificationService implements INotificationService {
         UserEntity user = null;
         if (body.getUserId() != null) {
             user = userRepository.findById(body.getUserId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + body.getUserId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + body.getUserId()));
         }
         UserFCMTokenEntity fcmToken = new UserFCMTokenEntity();
         fcmToken.setUser(user);
@@ -48,7 +48,7 @@ public class NotificationService implements INotificationService {
         EmployeeEntity user = null;
         if (body.getEmployeeId() != null) {
             user = employeeRepository.findById(body.getEmployeeId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + body.getEmployeeId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + body.getEmployeeId()));
         }
         EmployeeFCMTokenEntity fcmToken = new EmployeeFCMTokenEntity();
         fcmToken.setEmployee(user);
@@ -63,9 +63,9 @@ public class NotificationService implements INotificationService {
     public void updateUserFcmToken(UpdateFcmTokenRequest body) {
 
         UserFCMTokenEntity fcmToken = userFcmTokenRepository.findById(body.getFcmTokenId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.FCM_TOKEN_ID_NOT_FOUND));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.FCM_TOKEN_ID_NOT_FOUND));
         UserEntity user = userRepository.findById(body.getUserId())
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND));
         fcmToken.setUser(user);
 
         userFcmTokenRepository.save(fcmToken);

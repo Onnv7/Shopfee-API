@@ -3,24 +3,21 @@ package com.hcmute.shopfee.constant;
 public class ErrorConstant {
     public static final String NOT_FOUND = "Not found";
     public static final String EXISTED_DATA = "Data already exists";
-    public static final String IMAGE_INVALID = "Invalid image";
     public static final String CANT_DELETE = "Cannot be deleted because this data is related to other data";
     public static final String DATA_SEND_INVALID = "Data submitted is invalid";
     public static final String ACTING_INCORRECTLY = "Acting incorrectly according to established procedures";
     public static final String FORBIDDEN = "Access is denied";
-    public static final String UNAUTHORIZED = "User is not authorized";
-    public static final String COUPON_INVALID = "Coupon is invalid";
-    public static final String ORDER_INVALID = "Order is invalid";
-    public static final String INVALID_COIN_NUMBER = "Invalid coin number";
-    public static final String VNP_ERROR = "VNPay error";
+    public static final String UNAUTHORIZED = "Client is not authenticated";
     public static final String SERVER_ERROR = "Server error";
 
     // message details =================================================
+    public static final String COUPON_INVALID = "Coupon is invalid";
+    public static final String IMAGE_INVALID = "Invalid image";
     public static final String USER_ID_NOT_FOUND = "User with id ";
     public static final String USER_TOKEN_NOT_FOUND = "User's token with user's id ";
     public static final String EMPLOYEE_TOKEN_NOT_FOUND = "Employee's token with employee's id ";
     public static final String EMPLOYEE_ID_NOT_FOUND = "Employee with id ";
-    public static final String USER_EMAIL_NOT_FOUND = "User with email ";
+    public static final String USER_EMAIL_NOT_FOUND = "User with username ";
     public static final String ADDRESS_ID_NOT_FOUND = "Address with id ";
     public static final String BANNER_ID_NOT_FOUND = "Banner with id ";
     public static final String BRANCH_ID_NOT_FOUND = "Branch with id ";
@@ -39,10 +36,27 @@ public class ErrorConstant {
     public static final String VNPAY_MONEY_INVALID = "Invalid payment amount";
     public static final String ALBUM_ID_INVALID = "Image with id ";
 
-    // others error =================================================
 
-    public static final String USER_NOT_FOUND = "User not found";
-    public static final String REQUEST_BODY_INVALID = "Request body is invalid";
-    public static final String USER_ID_INVALID = "User ID is invalid";
-    public static final String PRINCIPAL_INVALID = "Principle is invalid";
+    public static int getErrorCode(String errorString) {
+        switch (errorString) {
+            case NOT_FOUND:
+                return 104;
+            case EXISTED_DATA:
+                return 105;
+            case CANT_DELETE:
+                return 107;
+            case DATA_SEND_INVALID:
+                return 108;
+            case ACTING_INCORRECTLY:
+                return 109;
+            case FORBIDDEN:
+                return 110;
+            case UNAUTHORIZED:
+                return 111;
+            case SERVER_ERROR:
+                return 112;
+            default:
+                return 115;
+        }
+    }
 }

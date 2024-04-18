@@ -10,7 +10,7 @@ import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Role;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
@@ -64,7 +64,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
             return;
         }
         EmployeeFCMTokenEntity employeeFcmTokenEntity = employeeFCMTokenRepository.findById(fcmTokenId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND,FCM_TOKEN_ID_NOT_FOUND + fcmTokenId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND,FCM_TOKEN_ID_NOT_FOUND + fcmTokenId));
         employeeFcmTokenEntity.setEmployee(employee);
         employeeFCMTokenRepository.save(employeeFcmTokenEntity);
 
@@ -87,7 +87,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         EmployeeEntity employee = employeeRepository.findByUsernameAndIsDeletedFalse(principalAuthenticated.getUsername()).orElse(null);
 
         if (employee.getStatus() == EmployeeStatus.INACTIVE) {
-            throw new CustomException(ErrorConstant.FORBIDDEN, "Your account is inactive");
+            throw new ShopfeeException(ErrorConstant.FORBIDDEN, "Your account is inactive");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -119,7 +119,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
             if(body.getFcmTokenId() != null) {
                 EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
-                        .orElseThrow(() -> new CustomException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+                        .orElseThrow(() -> new ShopfeeException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
                 fcmTokenEntity.setEmployee(null);
                 employeeFCMTokenRepository.save(fcmTokenEntity);
             }
@@ -136,14 +136,14 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         EmployeeTokenEntity token = employeeTokenRedisService.getInfoOfRefreshToken(refreshToken, employeeId);
 
         EmployeeEntity user = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
 
         if (token == null) {
-            throw new CustomException(UNAUTHORIZED, "Token is null");
+            throw new ShopfeeException(UNAUTHORIZED, "Token is null");
         }
         if (token.isUsed()) {
             employeeTokenRedisService.deleteAllTokenByEmployeeId(employeeId);
-            throw new CustomException(FORBIDDEN, TOKEN_STOLEN);
+            throw new ShopfeeException(FORBIDDEN, TOKEN_STOLEN);
         }
 
         List<String> roles = jwt.getClaim(ROLES_CLAIM_KEY).asList(String.class);
@@ -165,15 +165,15 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         List<String> roles = SecurityUtils.getRoleList();
         // manager không thể tạo manager khác
         if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {
-            throw new CustomException(ErrorConstant.FORBIDDEN, "Managers cannot create another manager account");
+            throw new ShopfeeException(ErrorConstant.FORBIDDEN, "Managers cannot create another manager account");
         }
 
         if(SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
             EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
-                    .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + SecurityUtils.getCurrentUserId()));
             // manager không được tạo emlpyee cho chi nhánh khác
             if(!manager.getBranch().getId().equals(body.getBranchId())) {
-                throw new CustomException(ErrorConstant.FORBIDDEN, "Managers cannot create an employee account belonging to another branch");
+                throw new ShopfeeException(ErrorConstant.FORBIDDEN, "Managers cannot create an employee account belonging to another branch");
             }
         }
 
@@ -183,17 +183,17 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(employeeData.getUsername()).orElse(null);
         if (existedEmployee != null) {
-            throw new CustomException(ErrorConstant.EXISTED_DATA, "Username account registered");
+            throw new ShopfeeException(ErrorConstant.EXISTED_DATA, "Username account registered");
         }
 
         Set<RoleEntity> employeeRole = new HashSet<>();
         RoleEntity role = roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name" + roleName));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, "Role with name" + roleName));
         employeeRole.add(role);
         employeeData.setRoleList(employeeRole);
 
         BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
-                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
 
         employeeData.setBranch(branch);
         employeeData.setPassword(passwordEncoder.encode(employeeData.getPassword()));
@@ -205,10 +205,10 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     public void changePasswordProfile(ChangePasswordEmployeeRequest data, String emplId) {
         SecurityUtils.checkUserId(emplId);
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(emplId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
         boolean isValid = passwordEncoder.matches(data.getOldPassword(), employee.getPassword());
         if (!isValid) {
-            throw new CustomException(ErrorConstant.UNAUTHORIZED, WRONG_PASSWORD);
+            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED, WRONG_PASSWORD);
         }
         employee.setPassword(passwordEncoder.encode(data.getNewPassword()));
         employeeRepository.save(employee);
@@ -218,7 +218,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Override
     public void setPasswordByEmployeeId(SetPasswordByEmployeeIdRequest data, String emplId) {
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(emplId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + emplId));
                 employee.setPassword(passwordEncoder.encode(data.getPassword()));
         employeeRepository.save(employee);
     }

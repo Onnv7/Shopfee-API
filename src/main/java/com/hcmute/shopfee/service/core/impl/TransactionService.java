@@ -12,7 +12,7 @@ import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
 import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
@@ -53,7 +53,7 @@ public class TransactionService implements ITransactionService {
     @Override
     public void updateTransaction(String id, HttpServletRequest request) {
         TransactionEntity transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Transaction with id " + id));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Transaction with id " + id));
 
         OrderBillEntity orderBill = transaction.getOrderBill();
         UserEntity user = orderBill.getUser();
@@ -106,7 +106,7 @@ public class TransactionService implements ITransactionService {
     @Override
     public void completeTransaction(String transId) {
         OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
         TransactionEntity trans = orderBill.getTransaction();
         long totalPaid = orderBill.getTotalItemPrice();
         trans.setStatus(PaymentStatus.PAID);
@@ -119,7 +119,7 @@ public class TransactionService implements ITransactionService {
 
         TransactionEntity transaction = orderBill.getTransaction();
         if(transaction.isRefunded()) {
-            throw new CustomException(ErrorConstant.ACTING_INCORRECTLY, "Order has been refunded");
+            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "Order has been refunded");
         }
         if (refundCoin) {
             long coin = orderBill.getCoin();
@@ -143,7 +143,7 @@ public class TransactionService implements ITransactionService {
             if(isRefunded) {
                 transaction.setRefunded(true);
             } else {
-                throw new CustomException(ErrorConstant.SERVER_ERROR, "The payment side service failed, please try again later");
+                throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "The payment side service failed, please try again later");
             }
         }
         transactionRepository.save(transaction);

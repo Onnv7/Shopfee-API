@@ -15,7 +15,7 @@ import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
 import com.hcmute.shopfee.dto.common.vnpay.VNPayPaymentUrl;
@@ -210,7 +210,7 @@ public class ToolController {
         productRepository.save(product);
         Set<RoleEntity> userRole = new HashSet<>();
         RoleEntity role = roleRepository.findByRoleName(Role.ROLE_USER)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, "Role with name"));
         userRole.add(role);
 
 
@@ -250,7 +250,7 @@ public class ToolController {
 
         Set<RoleEntity> employeeRoleList = new HashSet<>();
         RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_WAITER)
-                .orElseThrow(() -> new CustomException(NOT_FOUND, "Role with name"));
+                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, "Role with name"));
         employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()
                 .username("nva6112002")

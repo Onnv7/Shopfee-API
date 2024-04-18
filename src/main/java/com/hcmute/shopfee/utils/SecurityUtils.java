@@ -2,7 +2,7 @@ package com.hcmute.shopfee.utils;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.enums.Role;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -25,17 +25,17 @@ public class SecurityUtils {
     public static void checkUserId(String userId) {
         Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(principal.getClass() != UserPrincipal.class) {
-            throw new CustomException(ErrorConstant.PRINCIPAL_INVALID);
+            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED);
         }
         if(!((UserPrincipal) principal).getUserId().equals(userId)) {
-            throw new CustomException(ErrorConstant.USER_ID_INVALID);
+            throw new ShopfeeException(ErrorConstant.FORBIDDEN);
         }
     }
 
     public static List<String> getRoleList() {
         Object principal =  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(principal.getClass() != UserPrincipal.class) {
-            throw new CustomException(ErrorConstant.PRINCIPAL_INVALID);
+            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED);
         }
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(Object::toString).toList();
     }

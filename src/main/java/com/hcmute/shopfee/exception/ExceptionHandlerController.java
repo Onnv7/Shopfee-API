@@ -1,8 +1,6 @@
 package com.hcmute.shopfee.exception;
 
-import com.auth0.jwt.exceptions.SignatureVerificationException;
-import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.constant.StatusCode;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.hcmute.shopfee.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,107 +21,110 @@ import static com.hcmute.shopfee.constant.ErrorConstant.*;
 @RestControllerAdvice
 @Slf4j
 public class ExceptionHandlerController {
-    @Value("spring.profile.active")
+    @Value("${spring.profiles.active}")
     private String environment;
     private String dev = "dev";
     private String prod = "prod";
 
-    private static final List<String> error404= Arrays.asList(
-            USER_NOT_FOUND,
-            NOT_FOUND
-    );
-    private static final List<String> error409 = Arrays.asList(EXISTED_DATA);
-    private static final List<String> error400= Arrays.asList(
-            CANT_DELETE, IMAGE_INVALID,  DATA_SEND_INVALID,
-            COUPON_INVALID, INVALID_COIN_NUMBER, ORDER_INVALID, ACTING_INCORRECTLY
-    );
-    private static final List<String> error403= Arrays.asList(
-            PRINCIPAL_INVALID, USER_ID_INVALID,
-            FORBIDDEN
-    );
-    private static final List<String> error401= Arrays.asList(
-            UNAUTHORIZED
-    );
-    private static final List<String> error500 = Arrays.asList(VNP_ERROR, SERVER_ERROR);
+    private static final List<String> error404 = List.of(NOT_FOUND);
+    private static final List<String> error400 = Arrays.asList(CANT_DELETE, DATA_SEND_INVALID, ACTING_INCORRECTLY, EXISTED_DATA);
+    private static final List<String> error403 = List.of(FORBIDDEN);
+    private static final List<String> error401 = List.of(UNAUTHORIZED);
+    private static final List<String> error500 = List.of(SERVER_ERROR);
+
 
     @ExceptionHandler({AuthenticationException.class, AccessDeniedException.class})
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex) {
         ex.printStackTrace();
-        ErrorResponse res = ErrorResponse.builder()
-                .message(ex.getMessage())
-                .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
-                .build();
-        return new ResponseEntity<>(res, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse<?>> handleCustomException(CustomException ex) {
-        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-        ex.printStackTrace();
-
-        if(error404.contains(ex.getMessage())) {
-            httpStatus = StatusCode.NOT_FOUND;
-        } else if(error400.contains(ex.getMessage())) {
-            httpStatus = HttpStatus.BAD_REQUEST;
-        } else if(error401.contains(ex.getMessage())) {
+        HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
+        ErrorResponse<Object> res = new ErrorResponse<>();
+        if (ex instanceof AuthenticationException) {
             httpStatus = HttpStatus.UNAUTHORIZED;
-        }else if(error403.contains(ex.getMessage())) {
+            res.setMessage(UNAUTHORIZED);
+        } else if (ex instanceof AccessDeniedException) {
             httpStatus = HttpStatus.FORBIDDEN;
-        } else if(error409.contains(ex.getMessage())) {
-            httpStatus = HttpStatus.CONFLICT;
-        } else if(error500.contains(ex.getMessage())) {
+            res.setMessage(FORBIDDEN);
         }
-        String messageDetails = ex.getDetailMessage() == null ? "" : " - " + ex.getDetailMessage();
-        ErrorResponse res = ErrorResponse.builder()
-                .message(ex.getMessage() + messageDetails)
-                .errorCode(ex.getErrorCode())
-                .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
-                .build();
-        return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);
+        if (environment.equals(dev)) {
+            ErrorResponse.DevResponse<Object> devResponse = ErrorResponse.DevResponse.builder()
+                    .devMessage(ex.getMessage())
+                    .build();
+            res.setDevResponse(devResponse);
+        }
+        return new ResponseEntity<>(res, httpStatus);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    @ExceptionHandler({ShopfeeException.class, MethodArgumentNotValidException.class})
+    public ResponseEntity<ErrorResponse<?>> handleCustomException(Exception ex) {
         ex.printStackTrace();
+        ErrorResponse<Object> res = new ErrorResponse<>();
 
-        ErrorResponse res = ErrorResponse.builder()
-                .message(ErrorConstant.REQUEST_BODY_INVALID)
-                .details(
-                        ex.getFieldErrors().stream()
-                                .map(
-                                        it-> FieldError.builder()
-                                                .field(it.getField())
-                                                .valueReject(it.getRejectedValue())
-                                                .validate(it.getDefaultMessage())
-                                                .build()
-                                ).toList()
-                )
-                .build();
-        return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        if (ex instanceof MethodArgumentNotValidException) {
+            ex.printStackTrace();
+            res.setMessage(DATA_SEND_INVALID);
+            if (environment.equals(dev)) {
+                ErrorResponse.DevResponse devResponse = getDetailDataInvalid((MethodArgumentNotValidException) ex);
+                res.setDevResponse(devResponse);
+            }
+        } else if (ex instanceof ShopfeeException) {
+            res.setMessage(ex.getMessage());
+            if (environment.equals(dev)) {
+                ErrorResponse.DevResponse devResponse = new ErrorResponse.DevResponse();
+                devResponse.setDevMessage(((ShopfeeException) ex).getDevMessage());
+                res.setDevResponse(devResponse);
+            }
+        }
+        HttpStatus httpStatus = getHttpStatus(ex.getMessage());
+        return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         ex.printStackTrace();
-        HttpStatus httpStatus =  HttpStatus.INTERNAL_SERVER_ERROR;
+        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
         ErrorResponse res = new ErrorResponse();
-        if(ex instanceof  BadCredentialsException) {
+        if (ex instanceof AuthenticationException || ex instanceof JWTVerificationException) {
             res.setMessage(ex.getMessage());
             httpStatus = HttpStatus.UNAUTHORIZED;
-        } else if(ex instanceof AccessDeniedException) {
+        } else if (ex instanceof AccessDeniedException) {
             res.setMessage(ex.getMessage());
             httpStatus = HttpStatus.FORBIDDEN;
-        } else if(ex instanceof SignatureVerificationException) {
-            res.setMessage(ex.getMessage());
-            httpStatus = HttpStatus.FORBIDDEN;
-//        } else if(ex instanceof ) {
-//            res.setMessage(ex.getMessage());
-//            httpStatus = HttpStatus.FORBIDDEN;
-        } else {
+        }  else {
             res = ErrorResponse.builder()
                     .message(ex.getMessage())
-                    .stack(environment.equals(dev) ? Arrays.toString(ex.getStackTrace()) : null)
                     .build();
+        }
+        if (environment.equals(dev)) {
+            ErrorResponse.DevResponse devResponse = ErrorResponse.DevResponse.builder()
+                    .build();
+            res.setDevResponse(devResponse);
         }
         return new ResponseEntity<>(res, httpStatus);
     }
+    private static HttpStatus getHttpStatus(String exMessage) {
+        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        if (error404.contains(exMessage)) {
+            httpStatus = HttpStatus.NOT_FOUND;
+        } else if (error400.contains(exMessage)) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+        } else if (error401.contains(exMessage)) {
+            httpStatus = HttpStatus.UNAUTHORIZED;
+        } else if (error403.contains(exMessage)) {
+            httpStatus = HttpStatus.FORBIDDEN;
+        }
+        return httpStatus;
+    }
+
+    private static ErrorResponse.DevResponse getDetailDataInvalid(MethodArgumentNotValidException ex) {
+        ErrorResponse.DevResponse devResponse = ErrorResponse.DevResponse.builder()
+                .details(ex.getFieldErrors().stream().map(it -> FieldError.builder()
+                        .field(it.getField())
+                        .valueReject(it.getRejectedValue())
+                        .validate(it.getDefaultMessage())
+                        .build()).toList())
+                .build();
+        return devResponse;
+    }
+
+
 }

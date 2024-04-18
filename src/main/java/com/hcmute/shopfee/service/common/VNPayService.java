@@ -39,7 +39,7 @@ public class VNPayService {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object>  responseUrl = vnPay.createUrlPayment(request, amount, orderInfo);
-            return objectMapper.readValue(responseUrl.toString(), VNPayPaymentUrl.class);
+            return objectMapper.convertValue(responseUrl, VNPayPaymentUrl.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -55,7 +55,7 @@ public class VNPayService {
             }
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> transactionInfo = vnPay.getTransactionInfo(invoiceCode, timeCode, ipAddress);
-            return objectMapper.readValue(transactionInfo.toString(), TransactionInfoQuery.class);
+            return objectMapper.convertValue(transactionInfo, TransactionInfoQuery.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

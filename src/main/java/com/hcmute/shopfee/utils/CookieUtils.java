@@ -21,7 +21,8 @@ public class CookieUtils {
         HttpHeaders headers = new HttpHeaders();
 
         // TODO: kiem tra expire coookie
-        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + refreshToken + "; Max-Age=" + maxAge.toString() + "; Path=/; Secure; HttpOnly");
+        headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + refreshToken + "; Max-Age=" + maxAge.toString() + "; Path=/; Secure; HttpOnly; SameSite=None");
+
         return headers;
     }
 }

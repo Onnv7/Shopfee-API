@@ -2,10 +2,9 @@ package com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.ahamove.Ahamove;
 import com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee.response.EstimateOrderFeeResponse;
-import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -57,7 +56,7 @@ public class EstimateOrderFee {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(responseBody, EstimateOrderFeeResponse.class);
         } catch (Exception e) {
-            throw new CustomException(ErrorConstant.SERVER_ERROR, "Ahamove error: " + e.getMessage());
+            throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "Ahamove error: " + e.getMessage());
         }
     }
 }

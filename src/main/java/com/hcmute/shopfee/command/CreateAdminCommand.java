@@ -7,7 +7,7 @@ import com.hcmute.shopfee.entity.sql.database.RoleEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.Role;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class CreateAdminCommand implements CommandLineRunner {
         }
         RoleEntity adminRole = roleRepository
                 .findByRoleName(Role.ROLE_ADMIN)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND + Role.ROLE_ADMIN));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, Role.ROLE_ADMIN.name()));
         Set<RoleEntity> roleList = new HashSet<>(Collections.singleton(adminRole));
 
         EmployeeEntity admin = EmployeeEntity.builder()

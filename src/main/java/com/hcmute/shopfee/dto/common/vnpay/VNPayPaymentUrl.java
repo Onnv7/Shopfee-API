@@ -11,4 +11,13 @@ public class VNPayPaymentUrl {
     private String vnpCreateDate;
     @JsonProperty("vnp_TxnRef")
     private String vnpTxnRef;
+
+    public VNPayPaymentUrl() {
+    }
+
+    public VNPayPaymentUrl(String vnpUrl, String vnpCreateDate, String vnpTxnRef) {
+        this.vnpUrl = vnpUrl;
+        this.vnpCreateDate = vnpCreateDate;
+        this.vnpTxnRef = vnpTxnRef;
+    }
 }

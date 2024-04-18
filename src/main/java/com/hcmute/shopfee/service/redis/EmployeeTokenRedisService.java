@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.service.redis;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.model.CustomException;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.repository.redis.EmployeeTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +25,14 @@ public class EmployeeTokenRedisService {
 
     public void deleteByEmployeeIdAndRefreshToken(String employeeId, String refreshToken) {
         EmployeeTokenEntity entity = employeeTokenRepository.findByEmployeeIdAndRefreshToken(employeeId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
         employeeTokenRepository.delete(entity);
     }
 
 
     public EmployeeTokenEntity getInfoOfRefreshToken(String refreshToken, String employeeId) {
         EmployeeTokenEntity entity = employeeTokenRepository.findByEmployeeIdAndRefreshToken(employeeId, refreshToken)
-                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
+                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_TOKEN_NOT_FOUND + employeeId));
         return entity;
     }
 
