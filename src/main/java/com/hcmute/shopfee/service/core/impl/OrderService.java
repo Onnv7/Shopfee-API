@@ -570,6 +570,7 @@ public class OrderService implements IOrderService {
 
         BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
         userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+
         return resData;
     }
 
@@ -700,6 +701,8 @@ public class OrderService implements IOrderService {
         orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
         schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
 
+        BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
+        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
 
         return resData;
     }
@@ -804,6 +807,10 @@ public class OrderService implements IOrderService {
 
         orderBill = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(orderBill);
+
+
+        BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
     @Override
@@ -843,6 +850,9 @@ public class OrderService implements IOrderService {
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);
+
+        BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
     @Override

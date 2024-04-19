@@ -25,4 +25,5 @@ public interface IProductService {
     List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity);
     void createBeverageFromFile(MultipartFile file);
     void createCakeFromFile(MultipartFile file);
+    CheckExistedNameResponse isExistedProductName(String productName);
 }

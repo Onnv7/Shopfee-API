@@ -914,14 +914,17 @@ public class CouponService implements ICouponService {
                     else if (condition.getType() == ConditionType.SUBJECT) {
                         List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
                         List<GetCouponOptionsResponse.SubjectCondition> subjectConditionDataList = new ArrayList<>();
+                        boolean isValid = false;
                         for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
-                            OrderItemDto item = body.getOrderItemList().stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
+                            OrderItemDto item = body.getOrderItemList().stream()
+                                    .filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId()))
+                                    .findFirst().orElse(null);
                             if (item == null) {
                                 // invalid
                                 ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
                                         .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                 subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
-                                couponCard.setValid(false);
+
                             } else {
                                 int count = 0;
                                 for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
@@ -932,11 +935,20 @@ public class CouponService implements ICouponService {
                                     ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
                                             .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subjectConditionEntity.getObjectId()));
                                     subjectConditionDataList.add(new GetCouponOptionsResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
-                                    couponCard.setValid(false);
+
+                                } else {
+                                    isValid = true;
+                                    break;
                                 }
                             }
                         }
-                        couponCard.setSubjectConditionList(subjectConditionDataList);
+
+                        if(isValid) {
+                            couponCard.setSubjectConditionList(null);
+                        } else {
+                            couponCard.setValid(false);
+                            couponCard.setSubjectConditionList(subjectConditionDataList);
+                        }
                     }
                     // check COMBINATION
                     else if (condition.getType() == ConditionType.COMBINATION) {

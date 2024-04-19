@@ -101,6 +101,7 @@ public class RouterConstant {
     public static final String GET_PRODUCT_TOP_RATED_PRODUCTS_SUB_PATH = "/top-rating/{quantity}";
     public static final String GET_PRODUCT_TOP_SELLING_PRODUCTS_SUB_PATH = "/top-selling/{quantity}";
     public static final String POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH = "/import";
+    public static final String POST_PRODUCT_CHECK_NAME_SUB_PATH = "/existed-name";
 
 
     // ENDPOINT EMPLOYEE =================================================================
@@ -127,6 +128,7 @@ public class RouterConstant {
     public static final String PUT_CATEGORY_UPDATE_BY_ID_SUB_PATH = CATEGORY_ID_PATH;
     public static final String DELETE_CATEGORY_BY_ID_SUB_PATH = CATEGORY_ID_PATH;
     public static final String POST_CATEGORY_CREATE_SUB_PATH = "";
+    public static final String GET_CATEGORY_CHECK_NAME_SUB_PATH = "/existed-name";
 
     // ENDPOINT URL ORDER =================================================================
     public static final String POST_ORDER_CREATE_SHIPPING_SUB_PATH = "/shipping";

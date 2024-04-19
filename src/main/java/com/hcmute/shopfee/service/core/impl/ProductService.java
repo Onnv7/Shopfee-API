@@ -140,7 +140,7 @@ public class ProductService implements IProductService {
         GetProductByIdResponse result = modelMapperService.mapClass(product, GetProductByIdResponse.class);
         result.setImageUrl(product.getImage().getImageUrl());
         result.setCategoryId(product.getCategory().getId());
-        if(product.getType() == ProductType.CAKE) {
+        if (product.getType() == ProductType.CAKE) {
             result.setPrice(product.getPrice());
         }
         return result;
@@ -318,7 +318,7 @@ public class ProductService implements IProductService {
             }
         }
 
-        if(productType == ProductType.CAKE) {
+        if (productType == ProductType.CAKE) {
             product.setPrice(body.getPrice());
         } else {
             product.setPrice(getMinPrice(product.getSizeList()));
@@ -561,5 +561,13 @@ public class ProductService implements IProductService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public CheckExistedNameResponse isExistedProductName(String productName) {
+        ProductEntity product = productRepository.findByName(productName).orElse(null);
+        CheckExistedNameResponse data = new CheckExistedNameResponse();
+        data.setExisted(product != null);
+        return data;
     }
 }

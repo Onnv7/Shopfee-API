@@ -121,12 +121,8 @@ public class UserAuthService implements IUserAuthService {
     }
 
     @Override
-    public RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, HttpServletRequest request) {
+    public RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, String idToken) {
         RegisterResponse resData = new RegisterResponse();
-        String idToken = request.getHeader("Id-token");
-        if (idToken == null) {
-            throw new ShopfeeException(NOT_FOUND, "Id token is null");
-        }
         try {
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);
@@ -201,11 +197,7 @@ public class UserAuthService implements IUserAuthService {
     }
 
     @Override
-    public LoginResponse firebaseUserLogin(FirebaseLoginRequest body, HttpServletRequest request) {
-        String idToken = request.getHeader("Id-token");
-        if (idToken == null) {
-            throw new ShopfeeException(NOT_FOUND, "Id token is null");
-        }
+    public LoginResponse firebaseUserLogin(FirebaseLoginRequest body, String idToken) {
         try {
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);

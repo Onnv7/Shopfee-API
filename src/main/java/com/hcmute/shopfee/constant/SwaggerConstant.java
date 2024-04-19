@@ -86,8 +86,8 @@ public class SwaggerConstant {
     public static final String PRODUCT_UPDATE_BY_ID_SUM = "Update product's information by product id";
     public static final String PRODUCT_GET_TOP_RATED_PRODUCTS_SUM = "Get top rated products";
     public static final String PRODUCT_GET_TOP_SELLING_PRODUCTS_SUM = "Get top selling products";
-    public static final String PRODUCT_POST_IMPORT_FILE_TO_CREATE_SUM = "Create product from imported file";
-    public static final String PRODUCT_POST_IMPORT_FILE_TO_CREATE_FOOD_SUM = "Create foods from imported file";
+    public static final String PRODUCT_IMPORT_FILE_TO_CREATE_SUM = "Create product from imported file";
+    public static final String PRODUCT_CHECK_EXISTED_NAME_SUM = "Check product existence by name";
 
     // For category =================================================================
 
@@ -98,6 +98,7 @@ public class SwaggerConstant {
     public static final String CATEGORY_GET_ALL_WITHOUT_DELETED_SUM = "Get all categories without disabled";
     public static final String CATEGORY_UPDATE_BY_ID_SUM = "Update category's information by category id";
     public static final String CATEGORY_DELETE_BY_ID_SUM = "Delete a category by category id";
+    public static final String CATEGORY_CHECK_EXISTED_NAME_SUM = "Check category existence by name";
 
     // For transaction =======================================================
 

@@ -8,9 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface IUserAuthService {
     RegisterResponse registerUser(RegisterUserRequest body);
-    RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, HttpServletRequest request);
+    RegisterResponse firebaseRegisterUser(FirebaseRegisterRequest body, String idToken);
     LoginResponse userLogin(UserLoginRequest body);
-    LoginResponse firebaseUserLogin(FirebaseLoginRequest body, HttpServletRequest request);
+    LoginResponse firebaseUserLogin(FirebaseLoginRequest body, String idToken);
     void logoutUser(UserLogoutRequest body, String refreshToken);
     void sendCodeToRegister(String email);
     void sendCodeToGetPassword(String email);

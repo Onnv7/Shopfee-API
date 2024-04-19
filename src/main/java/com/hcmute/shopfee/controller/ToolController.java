@@ -703,6 +703,7 @@ public class ToolController {
     public String createBeverageExcel() throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet dataSheet = workbook.createSheet("data");
+        Sheet productSheet = workbook.createSheet("product");
 
         Row headerRow = dataSheet.createRow(0);
         String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
@@ -750,21 +751,6 @@ public class ToolController {
         dataSheet.addValidationData(validationStatus);
 
 
-        List<String> validValues = Arrays.asList("A", "B", "C");
-        // Tạo danh sách các giá trị hợp lệ thành một chuỗi
-
-        List<String> invalidValues = Arrays.asList("X", "Y", "Z");
-
-        DataValidationHelper validationHelper = dataSheet.getDataValidationHelper();
-        DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("ISERROR(MATCH(A1, {" + getListFormula(invalidValues) + "}, 1))");
-        CellRangeAddressList addressList = new CellRangeAddressList(1, 1, 0, 0); // Áp dụng cho cột A từ hàng 1 đến hàng cuối cùng
-        DataValidation validation = validationHelper.createValidation(constraint, addressList);
-        validation.setShowErrorBox(true);
-        validation.createErrorBox("Invalid Value", "Please select a valid value from the list: " + validValues);
-
-        // Áp dụng ràng buộc dữ liệu vào sheet
-        dataSheet.addValidationData(validation);
-
         // validate price > 1000
         DataValidationConstraint dvPrice = dvHelper.createNumericConstraint(
                 DataValidationConstraint.ValidationType.INTEGER,
@@ -788,6 +774,28 @@ public class ToolController {
         validationPrice.setSuppressDropDownArrow(false);
         dataSheet.addValidationData(validationPrice);
 
+        // validate product name
+        List<String> productNameList = productRepository.getProductNameList();
+        for (int i = 0; i < productNameList.size(); i++) {
+            Row row = productSheet.createRow(i);
+            row.createCell(0).setCellValue(productNameList.get(i));
+        }
+        String rangeName = "productName";
+        String reference = "product!$A$1:$A$" + (productNameList.size()); // Assuming data starts from row 2
+        Name namedRange = workbook.createName();
+        namedRange.setNameName(rangeName);
+        namedRange.setRefersToFormula(reference);
+
+        CellRangeAddressList addressList2 = new CellRangeAddressList(1, 1, 0, 0); // Assuming column E (index 4)
+        DataValidationConstraint constraint2 = dvHelper.createCustomConstraint("COUNTIF(productName, A2)=0");
+        DataValidation validation2 = dvHelper.createValidation(constraint2, addressList2);
+
+        validation2.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validation2.setShowErrorBox(true);
+        validation2.createErrorBox("Invalid Data", "The entered value is already in the column 'stt'");
+
+        // Apply the validation to the sheet
+        dataSheet.addValidationData(validation2);
         try (FileOutputStream fileOut = new FileOutputStream("beverage.xlsx")) {
             workbook.write(fileOut);
         }

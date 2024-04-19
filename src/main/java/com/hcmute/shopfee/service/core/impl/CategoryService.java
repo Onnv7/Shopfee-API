@@ -5,11 +5,13 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
 import com.hcmute.shopfee.dto.request.UpdateCategoryRequest;
+import com.hcmute.shopfee.dto.response.CheckExistedNameResponse;
 import com.hcmute.shopfee.dto.response.GetCategoryByIdResponse;
 import com.hcmute.shopfee.dto.response.GetCategoryListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleCategoryListResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.enums.CategoryStatus;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -126,6 +128,14 @@ public class CategoryService implements ICategoryService {
         } else {
             throw new ShopfeeException(ErrorConstant.CANT_DELETE);
         }
+    }
+
+    @Override
+    public CheckExistedNameResponse isExistedCategoryName(String categoryName) {
+        CategoryEntity category = categoryRepository.findByName(categoryName).orElse(null);
+        CheckExistedNameResponse data = new CheckExistedNameResponse();
+        data.setExisted(category != null);
+        return data;
     }
 
 

@@ -236,7 +236,7 @@ public class ProductController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = PRODUCT_POST_IMPORT_FILE_TO_CREATE_SUM)
+    @Operation(summary = PRODUCT_IMPORT_FILE_TO_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file, @RequestParam("product_type") ProductType productType) {
@@ -251,5 +251,18 @@ public class ProductController {
                 .timestamp(new Date())
                 .build();
         return new ResponseEntity<>(res, StatusCode.CREATED);
+    }
+
+    @Operation(summary = PRODUCT_CHECK_EXISTED_NAME_SUM)
+    @PostMapping(path = POST_PRODUCT_CHECK_NAME_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    protected ResponseEntity<ResponseAPI<CheckExistedNameResponse>> isExistedProductName(@RequestParam("product_name") String productName) {
+        CheckExistedNameResponse data = productService.isExistedProductName(productName);
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(data)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
     }
 }

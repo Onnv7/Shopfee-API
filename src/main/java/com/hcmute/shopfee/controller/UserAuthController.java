@@ -52,8 +52,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_FIREBASE_REGISTER_SUM)
     @PostMapping(POST_USER_AUTH_FIREBASE_REGISTER_SUB_PATH)
-    public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(@RequestBody @Valid FirebaseRegisterRequest body, HttpServletRequest request) {
-        RegisterResponse resDate = userAuthService.firebaseRegisterUser(body, request);
+    public ResponseEntity<ResponseAPI<RegisterResponse>> firebaseRegisterUser(@RequestBody @Valid FirebaseRegisterRequest body,
+                                                                              @RequestHeader(value = "Id-token", required = true) String idToken) {
+        RegisterResponse resDate = userAuthService.firebaseRegisterUser(body, idToken);
 
         ResponseAPI<RegisterResponse> res = ResponseAPI.<RegisterResponse>builder()
                 .timestamp(new Date())
@@ -82,8 +83,9 @@ public class UserAuthController {
 
     @Operation(summary = USER_AUTH_FIREBASE_LOGIN_SUM)
     @PostMapping(POST_USER_AUTH_FIREBASE_LOGIN_SUB_PATH)
-    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(@RequestBody @Valid FirebaseLoginRequest body, HttpServletRequest request) {
-        LoginResponse data = userAuthService.firebaseUserLogin(body, request);
+    public ResponseEntity<ResponseAPI<LoginResponse>> firebaseLoginUser(@RequestBody @Valid FirebaseLoginRequest body,
+                                                                        @RequestHeader(value = "Id-token", required = true) String idToken) {
+        LoginResponse data = userAuthService.firebaseUserLogin(body, idToken);
         ResponseAPI<LoginResponse> res = ResponseAPI.<LoginResponse>builder()
                 .timestamp(new Date())
                 .success(true)
