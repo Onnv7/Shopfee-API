@@ -358,6 +358,8 @@ public class ProductService implements IProductService {
         return data;
     }
 
+
+    @Transactional
     @Override
     public void createBeverageFromFile(MultipartFile file) {
         InputStream inputStream = null;
@@ -472,7 +474,6 @@ public class ProductService implements IProductService {
         }
         if (product != null) {
             product.setPrice(getMinPrice(product.getSizeList()));
-            System.out.println("Saving product " + product.toString());
             ProductEntity productSaved = productRepository.save(product);
             productSearchService.createProduct(productSaved);
         }
@@ -485,6 +486,8 @@ public class ProductService implements IProductService {
         }
     }
 
+
+    @Transactional
     @Override
     public void createCakeFromFile(MultipartFile file) {
         int success = 0;

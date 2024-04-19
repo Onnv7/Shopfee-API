@@ -72,6 +72,7 @@ public class ExceptionHandlerController {
                 ErrorResponse.DevResponse devResponse = new ErrorResponse.DevResponse();
                 devResponse.setDevMessage(((ShopfeeException) ex).getDevMessage());
                 res.setDevResponse(devResponse);
+                res.setErrorCode(((ShopfeeException) ex).getErrorCode());
             }
         }
         HttpStatus httpStatus = getHttpStatus(ex.getMessage());

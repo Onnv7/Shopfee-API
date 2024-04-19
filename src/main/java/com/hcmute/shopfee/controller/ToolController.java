@@ -44,6 +44,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
@@ -452,7 +456,7 @@ public class ToolController {
     }
 
     @PostMapping("/ZALOPAY-test-get-order")
-    public GetOrderZaloPayResponse getOrderTransactionInformation(@RequestParam("appTransId")  String appTransId) throws IOException, URISyntaxException {
+    public GetOrderZaloPayResponse getOrderTransactionInformation(@RequestParam("appTransId") String appTransId) throws IOException, URISyntaxException {
         return zaloPayService.getOrderTransactionInformation(appTransId);
     }
 
@@ -617,4 +621,187 @@ public class ToolController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/create-excel")
+    public String createExcelt() throws IOException {
+
+        Workbook workbook = new XSSFWorkbook();
+
+        // Create Categories sheet
+        Sheet categoriesSheet = workbook.createSheet("Categories");
+
+        // Create some data for demonstration
+        String[] categoryIds = {"101", "102", "103"};
+        String[] categoryNames = {"Category 1", "Category 2", "Category 3"};
+
+        // Write data to Categories sheet
+        for (int i = 0; i < categoryIds.length; i++) {
+            Row row = categoriesSheet.createRow(i);
+            row.createCell(0).setCellValue(categoryIds[i]);
+            row.createCell(1).setCellValue(categoryNames[i]);
+        }
+
+        // Create Product sheet
+        Sheet productSheet = workbook.createSheet("Products");
+
+        // Create a named range for the first column (Category ID)
+        String rangeName = "CategoryID";
+        String reference = "Categories!$A$1:$A$" + (categoryIds.length); // Assuming data starts from row 2
+        Name namedRange = workbook.createName();
+        namedRange.setNameName(rangeName);
+        namedRange.setRefersToFormula(reference);
+
+        // Set data validation with drop-down list in Product sheet
+        DataValidationHelper dvHelper = productSheet.getDataValidationHelper();
+        DataValidationConstraint dvConstraint = dvHelper.createFormulaListConstraint(rangeName);
+        CellRangeAddressList addressList = new CellRangeAddressList(0, 0, 0, 0); // Assuming the drop-down list is in the first column (A) of the first row
+        DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
+
+        // Set error message for invalid data
+        validation.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
+        // Set error style
+        validation.setShowErrorBox(true);
+        validation.setShowPromptBox(true);
+        validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validation.setSuppressDropDownArrow(true);
+
+        productSheet.addValidationData(validation);
+
+
+        Cell cell = productSheet.createRow(2).createCell(3); // Hàng 3, Cột D (index 3 là cột D)
+        cell.setCellValue("1234"); // Gán giá trị cho ô 3D
+        DataValidationHelper dvHelper2 = productSheet.getDataValidationHelper();
+        DataValidationConstraint dvConstraint2 = dvHelper2.createNumericConstraint(
+                DataValidationConstraint.ValidationType.INTEGER,
+                DataValidationConstraint.OperatorType.GREATER_THAN,
+                "1000",  "999999"); // Minimum value
+
+        CellRangeAddressList addressList2 = new CellRangeAddressList(2, 2, 3, 3); // Hàng 3, Cột D
+        DataValidation validation2 = dvHelper2.createValidation(dvConstraint2, addressList2);
+
+        // Set error message for invalid data
+        validation2.createErrorBox("Invalid Data", "Price must be greater than 1000.");
+
+        // Set error style
+        validation2.setShowErrorBox(true);
+        validation2.setShowPromptBox(true);
+        validation2.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validation2.setSuppressDropDownArrow(true);
+
+        productSheet.addValidationData(validation2);
+
+        // Close the workbook to release resources
+
+        try (FileOutputStream fileOut = new FileOutputStream("categories.xlsx")) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+
+
+        return "ok";
+    }
+    @GetMapping("/create-beverage-excel")
+    public String createBeverageExcel() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet dataSheet = workbook.createSheet("data");
+
+        Row headerRow = dataSheet.createRow(0);
+        String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
+        String[] sizeName = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
+        String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+        for(int i=0; i< firstRow.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(firstRow[i]);
+        }
+
+        // category value drop list
+        List<String> categoryNameList = categoryRepository.getCategoryNameList();
+        DataValidationHelper dvHelper = dataSheet.getDataValidationHelper();
+        DataValidationConstraint dvCategory = dvHelper.createExplicitListConstraint(categoryNameList.toArray(new String[0]));
+        CellRangeAddressList categoryDropListAddress = new CellRangeAddressList(1, 1, 1, 1);
+        DataValidation validationCategoryName = dvHelper.createValidation(dvCategory, categoryDropListAddress);
+
+        validationCategoryName.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
+        validationCategoryName.setShowErrorBox(true);
+        validationCategoryName.setShowPromptBox(true);
+        validationCategoryName.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validationCategoryName.setSuppressDropDownArrow(true);
+        dataSheet.addValidationData(validationCategoryName);
+
+        // size value drop list
+        DataValidationConstraint dvSizeName = dvHelper.createExplicitListConstraint(sizeName);
+        CellRangeAddressList sizeNameDropListAddress = new CellRangeAddressList(1, 1, 5, 5);
+        DataValidation validationSizeName = dvHelper.createValidation(dvSizeName, sizeNameDropListAddress);
+        validationSizeName.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
+        validationSizeName.setShowErrorBox(true);
+        validationSizeName.setShowPromptBox(true);
+        validationSizeName.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validationSizeName.setSuppressDropDownArrow(true);
+        dataSheet.addValidationData(validationSizeName);
+
+        // size value drop list
+        DataValidationConstraint dvStatus = dvHelper.createExplicitListConstraint(statusArray);
+        CellRangeAddressList statusDropListAddress = new CellRangeAddressList(1, 1, 2, 2);
+        DataValidation validationStatus = dvHelper.createValidation(dvStatus, statusDropListAddress);
+        validationStatus.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
+        validationStatus.setShowErrorBox(true);
+        validationStatus.setShowPromptBox(true);
+        validationStatus.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validationStatus.setSuppressDropDownArrow(true);
+        dataSheet.addValidationData(validationStatus);
+
+
+        List<String> validValues = Arrays.asList("A", "B", "C");
+        // Tạo danh sách các giá trị hợp lệ thành một chuỗi
+
+        List<String> invalidValues = Arrays.asList("X", "Y", "Z");
+
+        DataValidationHelper validationHelper = dataSheet.getDataValidationHelper();
+        DataValidationConstraint constraint = validationHelper.createFormulaListConstraint("ISERROR(MATCH(A1, {" + getListFormula(invalidValues) + "}, 1))");
+        CellRangeAddressList addressList = new CellRangeAddressList(1, 1, 0, 0); // Áp dụng cho cột A từ hàng 1 đến hàng cuối cùng
+        DataValidation validation = validationHelper.createValidation(constraint, addressList);
+        validation.setShowErrorBox(true);
+        validation.createErrorBox("Invalid Value", "Please select a valid value from the list: " + validValues);
+
+        // Áp dụng ràng buộc dữ liệu vào sheet
+        dataSheet.addValidationData(validation);
+
+        // validate price > 1000
+        DataValidationConstraint dvPrice = dvHelper.createNumericConstraint(
+                DataValidationConstraint.ValidationType.INTEGER,
+                DataValidationConstraint.OperatorType.GREATER_THAN,
+                "1000", // Minimum value
+                "999999"); // Maximum value
+        CellRangeAddress cellRangeAddress1 = new CellRangeAddress(1, 100, 6, 6); // F:F
+        CellRangeAddress cellRangeAddress2 = new CellRangeAddress(1, 100, 8, 8); // H:H
+
+        CellRangeAddressList priceCellAddress = new CellRangeAddressList();
+
+        priceCellAddress.addCellRangeAddress(cellRangeAddress1);
+        priceCellAddress.addCellRangeAddress(cellRangeAddress2);
+
+//        CellRangeAddressList priceCellAddress = new CellRangeAddressList(1, 1, 6, 6); // Hàng 2, cột C
+        DataValidation validationPrice = dvHelper.createValidation(dvPrice, priceCellAddress);
+        validationPrice.createErrorBox("Invalid Data", "Price must be greater than 1000.");
+        validationPrice.setShowErrorBox(true);
+        validationPrice.setShowPromptBox(true);
+        validationPrice.setErrorStyle(DataValidation.ErrorStyle.STOP);
+        validationPrice.setSuppressDropDownArrow(false);
+        dataSheet.addValidationData(validationPrice);
+
+        try (FileOutputStream fileOut = new FileOutputStream("beverage.xlsx")) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+        return "nice";
+    }
+    private static String getListFormula(List<String> values) {
+        StringBuilder formulaBuilder = new StringBuilder();
+        for (int i = 0; i < values.size(); i++) {
+            if (i > 0) {
+                formulaBuilder.append(",");
+            }
+            formulaBuilder.append("\"").append(values.get(i)).append("\"");
+        }
+        return formulaBuilder.toString();
+    }
 }

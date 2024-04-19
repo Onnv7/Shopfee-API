@@ -105,6 +105,7 @@ public class UserController {
         UploadAvatarResponse data = userService.uploadAvatar(body, userId);
         ResponseAPI<UploadAvatarResponse> res = ResponseAPI.<UploadAvatarResponse>builder()
                 .timestamp(new Date())
+                .data(data)
                 .message(SuccessConstant.UPDATED)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);

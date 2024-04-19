@@ -32,7 +32,7 @@ public class OrderSearchService {
         OrderIndex orderIndex = OrderIndex.builder()
                 .id(orderBillEntity.getId())
 //                .code(orderBillEntity.getCode())
-                .productName(product.getOrderItemList().get(0).getProduct().getName())
+                .productName(product.getName())
                 .customerName(user.getFullName())
                 .recipientName(orderBillEntity.getReceiverInformation().getRecipientName())
                 .phoneNumber(orderBillEntity.getReceiverInformation().getPhoneNumber())

@@ -44,6 +44,7 @@ public class ProductEntity {
     @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private ProductType type;
 

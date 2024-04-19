@@ -192,49 +192,51 @@ public class OrderService implements IOrderService {
                 // Khởi tạo và set các thuộc tính cơ bản
                 ItemDetailEntity itemDetailEntity = new ItemDetailEntity();
                 itemDetailEntity.setOrderItem(item);
-
                 itemDetailEntity.setNote(itemDetail.getNote());
                 itemDetailEntity.setQuantity(itemDetail.getQuantity());
-                itemDetailEntity.setSize(itemDetail.getSize());
 
                 // set topping list cho item detail
-                for (String toppingName : toppingNameList) {
-                    ItemToppingEntity itemTopping = new ItemToppingEntity();
-                    ToppingEntity toppingEntity = toppingList.stream()
-                            .filter(topping -> toppingName.equals(topping.getName()))
-                            .findFirst()
-                            .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Topping with name " + toppingName));
-                    itemTopping.setName(toppingName);
-                    itemTopping.setPrice(toppingEntity.getPrice());
-                    itemTopping.setItemDetail(itemDetailEntity);
-                    itemsToppingList.add(itemTopping);
-                    totalPriceToppings += toppingEntity.getPrice();
+                if (productInfo.getType() == ProductType.BEVERAGE) {
+                    for (String toppingName : toppingNameList) {
+                        ItemToppingEntity itemTopping = new ItemToppingEntity();
+                        ToppingEntity toppingEntity = toppingList.stream()
+                                .filter(topping -> toppingName.equals(topping.getName()))
+                                .findFirst()
+                                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Topping with name " + toppingName));
+                        itemTopping.setName(toppingName);
+                        itemTopping.setPrice(toppingEntity.getPrice());
+                        itemTopping.setItemDetail(itemDetailEntity);
+                        itemsToppingList.add(itemTopping);
+                        totalPriceToppings += toppingEntity.getPrice();
+                    }
+                    itemDetailEntity.setItemToppingList(itemsToppingList);
                 }
-                itemDetailEntity.setItemToppingList(itemsToppingList);
 
                 // set size
-                SizeEntity sizeItem = sizeList.stream()
-                        .filter(it -> it.getSize() == itemDetail.getSize())
-                        .findFirst().orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Product's size with id " + itemDetail.getSize()));
-
-                long productSizePrice = sizeItem.getPrice();
                 long productDiscount = 0;
-                if (!productIdDiscountList.isEmpty() && productIdDiscountList.contains(orderItemDto.getProductId())) {
-                    if (productDiscountUnit == MoneyRewardUnit.MONEY) {
-                        productDiscount = productDiscountValue;
-                    } else if (productDiscountUnit == MoneyRewardUnit.PERCENTAGE) {
-                        productDiscount = productSizePrice * productDiscountValue / 100;
-                    }
+                if (productInfo.getType() == ProductType.BEVERAGE) {
+                    SizeEntity sizeItem = sizeList.stream()
+                            .filter(it -> it.getSize() == itemDetail.getSize())
+                            .findFirst().orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Product's size with id " + itemDetail.getSize()));
+
+                    itemDetailEntity.setSize(itemDetail.getSize());
+                    long productSizePrice = sizeItem.getPrice();
+                    productDiscount = getProductDiscount(productIdDiscountList, orderItemDto.getProductId(), productDiscountUnit, productDiscountValue, productSizePrice);
+                    itemDetailEntity.setPrice(sizeItem.getPrice());
+                    itemDetailEntity.setProductDiscount(productDiscount);
+
+                } else if (productInfo.getType() == ProductType.CAKE) {
+                    itemDetailEntity.setPrice(productInfo.getPrice());
+                    productDiscount = getProductDiscount(productIdDiscountList, orderItemDto.getProductId(), productDiscountUnit, productDiscountValue, productInfo.getPrice());
+                    itemDetailEntity.setProductDiscount(productDiscount);
                 }
-                itemDetailEntity.setPrice(sizeItem.getPrice());
-                itemDetailEntity.setProductDiscount(productDiscount);
+
                 itemsDetailEntityList.add(itemDetailEntity);
-                long productPriceFinal = productSizePrice - productDiscount > 0 ? productSizePrice - productDiscount : 0;
+                long productPriceFinal = itemDetailEntity.getPrice() - productDiscount > 0 ? itemDetailEntity.getPrice() - productDiscount : 0;
                 totalPrice += (long) ((productPriceFinal + totalPriceToppings) * itemDetail.getQuantity());
             }
 
             item.setItemDetailList(itemsDetailEntityList);
-
             item.setOrderBill(orderBill);
             orderItemEntityList.add(item);
         }
@@ -242,6 +244,18 @@ public class OrderService implements IOrderService {
         orderBill.setOrderItemList(orderItemEntityList);
 
         return totalPrice;
+    }
+
+    private long getProductDiscount(List<String> productIdDiscountList, String productId, MoneyRewardUnit productDiscountUnit, long productDiscountValue, long productPrice) {
+        long productDiscount = 0;
+        if (!productIdDiscountList.isEmpty() && productIdDiscountList.contains(productId)) {
+            if (productDiscountUnit == MoneyRewardUnit.MONEY) {
+                productDiscount = productDiscountValue;
+            } else if (productDiscountUnit == MoneyRewardUnit.PERCENTAGE) {
+                productDiscount = productPrice * productDiscountValue / 100;
+            }
+        }
+        return productDiscount;
     }
 
 
@@ -510,7 +524,6 @@ public class OrderService implements IOrderService {
         }
         orderBill.setTotalPayment(totalPayment);
 
-
         // set giao dịch
         TransactionEntity transaction = buildTransaction(body.getPaymentType(), request, orderBill);
         orderBill.setTransaction(transaction);
@@ -635,7 +648,7 @@ public class OrderService implements IOrderService {
         BranchEntity branch = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
         orderBill.setBranch(branch);
-        
+
         // set thong tin nhan hang
         orderBill.setReceiverInformation(ReceiverInformationEntity.builder()
                 .phoneNumber(body.getPhoneNumber())
