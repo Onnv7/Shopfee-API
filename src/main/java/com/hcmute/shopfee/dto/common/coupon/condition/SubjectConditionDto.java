@@ -26,9 +26,10 @@ public class SubjectConditionDto {
     @NotNull
     private Integer value;
 
+    private String productName;
     public static SubjectConditionDto fromSubjectConditionEntity(SubjectConditionEntity entity) {
         SubjectConditionDto data = new SubjectConditionDto();
-//        data.setType(entity.getType());
+        data.setProductName(entity.getProductName());
         data.setValue(entity.getValue());
         data.setObjectId(entity.getObjectId());
         return data;

@@ -71,12 +71,16 @@ public class CouponService implements ICouponService {
         }).toList();
     }
 
-    private List<SubjectConditionEntity> getTargetObjectConditionEntity(List<SubjectConditionDto> subjectConditionDtoList, CouponConditionEntity targetObject) {
+    private List<SubjectConditionEntity> getSubjectConditionEntity(List<SubjectConditionDto> subjectConditionDtoList, CouponConditionEntity couponConditionEntity) {
+
         return subjectConditionDtoList.stream().map(condition -> {
+            ProductEntity productEntity = productRepository.findById(condition.getObjectId())
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + condition.getObjectId()));
             SubjectConditionEntity subjectConditionEntity = new SubjectConditionEntity();
             subjectConditionEntity.setObjectId(condition.getObjectId());
             subjectConditionEntity.setValue(condition.getValue());
-            subjectConditionEntity.setCouponCondition(targetObject);
+            subjectConditionEntity.setProductName(productEntity.getName());
+            subjectConditionEntity.setCouponCondition(couponConditionEntity);
             return subjectConditionEntity;
         }).toList();
     }
@@ -86,6 +90,9 @@ public class CouponService implements ICouponService {
             UsageConditionEntity usageConditionEntity = new UsageConditionEntity();
             usageConditionEntity.setType(condition.getType());
             if (usageConditionEntity.getType() == UsageConditionType.QUANTITY) {
+                if (condition.getValue() == null || condition.getValue() <= 0) {
+                    throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Need to send quantity value for usage condition");
+                }
                 usageConditionEntity.setValue(condition.getValue());
             }
             usageConditionEntity.setCouponCondition(usage);
@@ -286,6 +293,9 @@ public class CouponService implements ICouponService {
             for (UsageConditionEntity usageConditionEntity : usageConditionEntityList) {
                 if (usageConditionEntity.getType() == usageConditionDto.getType()) {
                     // cap nhat lai du lieu
+                    if (usageConditionEntity.getType() == UsageConditionType.QUANTITY && (usageConditionEntity.getValue() == null || usageConditionEntity.getValue() <= 0)) {
+                        throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Need to send quantity value for usage condition");
+                    }
                     usageConditionEntity.setValue(usageConditionDto.getValue());
                     needInsert = false;
                 }
@@ -296,6 +306,9 @@ public class CouponService implements ICouponService {
                         .type(usageConditionDto.getType())
                         .value(usageConditionDto.getValue())
                         .build();
+                if (usageConditionDto.getType() == UsageConditionType.QUANTITY && (usageConditionDto.getValue() == null || usageConditionDto.getValue() <= 0)) {
+                    throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Need to send quantity value for usage condition");
+                }
                 newUsageConditionEntityList.add(newUsage);
             }
         }
@@ -446,10 +459,6 @@ public class CouponService implements ICouponService {
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
 
-//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-//                .type(CouponRewardType.MONEY)
-//                .coupon(couponEntity)
-//                .build();
 
         if (body.getUnitReward() == MoneyRewardUnit.PERCENTAGE && body.getValueReward() > 100) {
             throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Percent cannot have a value greater than 100");
@@ -458,11 +467,10 @@ public class CouponService implements ICouponService {
         MoneyRewardEntity moneyRewardEntity = MoneyRewardEntity.builder()
                 .unit(body.getUnitReward())
                 .coupon(couponEntity)
-//                .couponReward(couponRewardEntity)
                 .value(body.getValueReward())
                 .build();
         couponEntity.setMoneyReward(moneyRewardEntity);
-//        couponEntity.setCouponReward(couponRewardEntity);
+
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -507,7 +515,7 @@ public class CouponService implements ICouponService {
             targetObject.setType(ConditionType.SUBJECT);
             targetObject.setCoupon(couponEntity);
 
-            List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), targetObject);
+            List<SubjectConditionEntity> subjectConditionEntityList = getSubjectConditionEntity(body.getSubjectConditionList(), targetObject);
             targetObject.setSubjectConditionList(subjectConditionEntityList);
             couponConditionEntityList.add(targetObject);
         }
@@ -563,11 +571,6 @@ public class CouponService implements ICouponService {
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.PRODUCT_GIFT);
 
-        // set reward
-//        CouponRewardEntity couponRewardEntity = CouponRewardEntity.builder()
-//                .type(CouponRewardType.PRODUCT_GIFT)
-//                .coupon(couponEntity)
-//                .build();
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
@@ -585,7 +588,6 @@ public class CouponService implements ICouponService {
         });
 
         couponEntity.setProductRewardList(productRewardEntityList);
-//        couponEntity.setCouponReward(couponRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
 
@@ -594,6 +596,7 @@ public class CouponService implements ICouponService {
             CouponConditionEntity usage = new CouponConditionEntity();
             usage.setType(ConditionType.USAGE);
             usage.setCoupon(couponEntity);
+
 
             List<UsageConditionEntity> usageConditionList = getUsageConditionEntity(body.getUsageConditionList(), usage);
             usage.setUsageConditionList(usageConditionList);
@@ -629,7 +632,7 @@ public class CouponService implements ICouponService {
             subjectCondition.setType(ConditionType.SUBJECT);
             subjectCondition.setCoupon(couponEntity);
 
-            List<SubjectConditionEntity> subjectConditionEntityList = getTargetObjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
+            List<SubjectConditionEntity> subjectConditionEntityList = getSubjectConditionEntity(body.getSubjectConditionList(), subjectCondition);
             subjectCondition.setSubjectConditionList(subjectConditionEntityList);
             couponConditionEntityList.add(subjectCondition);
         }
@@ -656,7 +659,7 @@ public class CouponService implements ICouponService {
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
 
-        for(ProductRewardEntity oldProductRewardEntity : couponEntity.getProductRewardList()) {
+        for (ProductRewardEntity oldProductRewardEntity : couponEntity.getProductRewardList()) {
             productRewardRepository.delete(oldProductRewardEntity);
         }
 
@@ -699,7 +702,7 @@ public class CouponService implements ICouponService {
         couponRepository.save(couponEntity);
     }
 
-    private void modifySubjectConditionList( List<SubjectConditionDto> subjectConditionDtoList, List<CouponConditionEntity> conditionEntityList) {
+    private void modifySubjectConditionList(List<SubjectConditionDto> subjectConditionDtoList, List<CouponConditionEntity> conditionEntityList) {
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.SUBJECT).findFirst().orElseThrow(
                 () -> new ShopfeeException(ErrorConstant.SERVER_ERROR, "Error due to missing data during creation process")
         );
@@ -708,11 +711,14 @@ public class CouponService implements ICouponService {
         }
         List<SubjectConditionEntity> subjectConditionEntityList = new ArrayList<>();
         subjectConditionDtoList.stream().forEach(subject -> {
-           SubjectConditionEntity subjectConditionEntity = SubjectConditionEntity.builder()
-                   .couponCondition(condition)
-                   .value(subject.getValue())
-                   .objectId(subject.getObjectId())
-                   .build();
+            ProductEntity productEntity = productRepository.findById(subject.getObjectId())
+                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + subject.getObjectId()));
+            SubjectConditionEntity subjectConditionEntity = SubjectConditionEntity.builder()
+                    .couponCondition(condition)
+                    .productName(productEntity.getName())
+                    .value(subject.getValue())
+                    .objectId(subject.getObjectId())
+                    .build();
             subjectConditionEntityList.add(subjectConditionEntity);
         });
         condition.setSubjectConditionList(subjectConditionEntityList);

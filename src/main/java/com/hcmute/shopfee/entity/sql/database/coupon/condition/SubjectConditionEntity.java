@@ -28,6 +28,8 @@ public class SubjectConditionEntity {
     @Column(name = "object_id", nullable = false)
     private String objectId;
 
+    @Column(name = "object_name", nullable = false)
+    private String productName;
 //    @Enumerated(EnumType.STRING)
 //    @Column(name = "unit", nullable = false)
 //    private UnitObjectType unit;

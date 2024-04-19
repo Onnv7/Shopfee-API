@@ -1,8 +1,10 @@
 package com.hcmute.shopfee.dto.common.coupon.condition;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
 import com.hcmute.shopfee.enums.UsageConditionType;
+import com.hcmute.shopfee.model.ShopfeeException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
