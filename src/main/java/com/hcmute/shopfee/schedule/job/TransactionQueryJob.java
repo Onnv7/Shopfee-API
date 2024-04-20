@@ -43,7 +43,6 @@ public class TransactionQueryJob extends QuartzJobBean {
             if (zaloResult.getReturnCode() == 1) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
-                transactionRepository.save(transaction);
             } else if (zaloResult.getReturnCode() == 2) {
                 transaction.setStatus(PaymentStatus.UNPAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
@@ -63,8 +62,11 @@ public class TransactionQueryJob extends QuartzJobBean {
             if(vnpayResult.getTransactionStatus().equals("00")) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid(Long.valueOf(vnpayResult.getAmount()));
-                transactionRepository.save(transaction);
+            } else {
+                transaction.setStatus(PaymentStatus.UNPAID);
+                transaction.setTotalPaid(0L);
             }
         }
+        transactionRepository.save(transaction);
     }
 }
