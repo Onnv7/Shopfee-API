@@ -254,7 +254,7 @@ public class ProductController {
     }
 
     @Operation(summary = PRODUCT_CHECK_EXISTED_NAME_SUM)
-    @PostMapping(path = POST_PRODUCT_CHECK_NAME_SUB_PATH)
+    @GetMapping(path = GET_PRODUCT_CHECK_NAME_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     protected ResponseEntity<ResponseAPI<CheckExistedNameResponse>> isExistedProductName(@RequestParam("product_name") String productName) {
         CheckExistedNameResponse data = productService.isExistedProductName(productName);

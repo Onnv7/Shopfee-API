@@ -140,7 +140,7 @@ public class OrderService implements IOrderService {
         return transData;
     }
 
-    private long calculateOrderBill(List<OrderItemDto> orderItemList, OrderBillEntity orderBill, String productCouponCode) {
+    private long calculateTotalPriceItem(List<OrderItemDto> orderItemList, OrderBillEntity orderBill, String productCouponCode) {
         long totalPrice = 0;
         List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
         int itemSize = orderItemList.size();
@@ -463,7 +463,7 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.SHIPPING);
 
-        long totalItemPrice = calculateOrderBill(body.getItemList(), orderBill, body.getProductCouponCode());
+        long totalItemPrice = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
         orderBill.setTotalItemPrice(totalItemPrice);
         totalPayment += totalItemPrice;
 
@@ -513,11 +513,11 @@ public class OrderService implements IOrderService {
         if (deductCoin != 0) {
             coinHistory.setCoin(-deductCoin);
             totalPayment -= deductCoin;
+
+
         }
 
-        // cập nhật lại xu cho user
-        user.setCoin(user.getCoin() - orderBill.getCoin());
-        userRepository.save(user);
+
 
         if (totalPayment != body.getTotal()) {
             throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Total order is invalid");
@@ -527,47 +527,37 @@ public class OrderService implements IOrderService {
         // set giao dịch
         TransactionEntity transaction = buildTransaction(body.getPaymentType(), request, orderBill);
         orderBill.setTransaction(transaction);
+
         orderBill = orderBillRepository.save(orderBill);
 
         orderSearchService.upsertOrder(orderBill);
 
-        // save coin history
         if (deductCoin != 0) {
+            // save coin history
             coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
             coinHistoryRepository.save(coinHistory);
-        }
 
+            // cập nhật lại xu cho user
+            user.setCoin(user.getCoin() - orderBill.getCoin());
+            userRepository.save(user);
+        }
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
                 .branchId(orderBill.getBranch().getId())
                 .transactionId(transaction.getId())
                 .build();
-        // set schedule for payment
+
+        // set schedule for payment, transaction
         String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? transaction.getZaloPay().getPaymentUrl() :
                 transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
         if (paymentUrl != null && totalPayment > 0) {
             resData.setPaymentUrl(paymentUrl);
 
-            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
-            Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
-
-            if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
-            } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
-            }
-            checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
-            checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
-            schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
+            schedulerService.setScheduleTransaction(transaction);
         }
+        schedulerService.setAutoCancelOrder(orderBill);
 
-        Instant orderAcceptanceScheduleTime = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
-
-        // set schedule for accept order
-        Map<String, Object> orderAcceptanceScheduleData = new HashMap<String, Object>();
-        orderAcceptanceScheduleData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
-        schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceScheduleData, Date.from(orderAcceptanceScheduleTime));
-
+        // notify
         BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
         userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
 
@@ -586,7 +576,7 @@ public class OrderService implements IOrderService {
 
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(body.getUserId()).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
 
 
@@ -600,7 +590,7 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.ONSITE);
 
-        long totalPriceItem = calculateOrderBill(body.getItemList(), orderBill, body.getProductCouponCode());
+        long totalPriceItem = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
         orderBill.setTotalItemPrice(totalPriceItem);
         totalPayment += totalPriceItem;
 
@@ -620,9 +610,7 @@ public class OrderService implements IOrderService {
             coinHistory.setCoin(body.getCoin());
         }
 
-        // cập nhật lại xu cho user
-        user.setCoin(user.getCoin() - orderBill.getCoin());
-        userRepository.save(user);
+
 
         if (totalPayment != body.getTotal()) {
             throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Total order is invalid");
@@ -666,6 +654,10 @@ public class OrderService implements IOrderService {
         if (deductCoin != 0) {
             coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
             coinHistoryRepository.save(coinHistory);
+
+            // cập nhật lại xu cho user
+            user.setCoin(user.getCoin() - orderBill.getCoin());
+            userRepository.save(user);
         }
 
         transaction = orderBill.getTransaction();
@@ -681,25 +673,9 @@ public class OrderService implements IOrderService {
                 transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
         if (paymentUrl != null && totalPayment > 0) {
             resData.setPaymentUrl(paymentUrl);
-            Map<String, Object> checkTransactionData = new HashMap<String, Object>();
-            Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
-
-            if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
-            } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
-                checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
-            }
-            checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
-            checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
-            schedulerService.setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
+            schedulerService.setScheduleTransaction(transaction);
         }
-
-        Instant newIn = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
-
-        Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
-        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
-        schedulerService.setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
+        schedulerService.setAutoCancelOrder(orderBill);
 
         BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
         userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);

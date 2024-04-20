@@ -1,19 +1,50 @@
 package com.hcmute.shopfee.service.common;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
+import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
+import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
+import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
+import com.hcmute.shopfee.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class SchedulerService {
     private final Scheduler scheduler;
+    public void setScheduleTransaction(TransactionEntity transaction) {
+        Map<String, Object> checkTransactionData = new HashMap<String, Object>();
+        Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
+
+        if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
+        } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
+        }
+        checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
+        checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
+        setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
+    }
+
+    public void setAutoCancelOrder(OrderBillEntity orderBill) {
+        Instant newIn = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
+
+        Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
+        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
+        setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
+    }
 
     public void setScheduler(Class<? extends Job> jobClass, Map<String, Object> data, Date startTime)  {
         try {

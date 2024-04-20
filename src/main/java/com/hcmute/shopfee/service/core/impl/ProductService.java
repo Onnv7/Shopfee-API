@@ -438,6 +438,7 @@ public class ProductService implements IProductService {
                             AlbumEntity newImage = AlbumEntity.builder()
                                     .product(product)
                                     .type(AlbumType.PRODUCT)
+                                    .thumbnailUrl(imageUrl)
                                     .imageUrl(imageUrl)
                                     .build();
                             product.setImage(newImage);
@@ -544,6 +545,7 @@ public class ProductService implements IProductService {
                             AlbumEntity newImage = AlbumEntity.builder()
                                     .product(product)
                                     .type(AlbumType.PRODUCT)
+                                    .thumbnailUrl(imageUrl)
                                     .imageUrl(imageUrl)
                                     .build();
                             product.setImage(newImage);

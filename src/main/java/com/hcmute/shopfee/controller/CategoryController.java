@@ -108,7 +108,7 @@ public class CategoryController {
     }
 
     @Operation(summary = CATEGORY_CHECK_EXISTED_NAME_SUM)
-    @PostMapping(path = GET_CATEGORY_CHECK_NAME_SUB_PATH)
+    @GetMapping(path = GET_CATEGORY_CHECK_NAME_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     protected ResponseEntity<ResponseAPI<CheckExistedNameResponse>> isExistedCategoryName(@RequestParam("category_name") String categoryName) {
         CheckExistedNameResponse data= categoryService.isExistedCategoryName(categoryName);
