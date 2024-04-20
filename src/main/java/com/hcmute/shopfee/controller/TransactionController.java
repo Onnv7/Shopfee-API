@@ -41,18 +41,18 @@ public class TransactionController {
         return new ResponseEntity<>(res, StatusCode.OK);
     }
 
-    @Operation(summary = TRANSACTION_UPDATE_SUCCESS_STATUS_BY_ID_SUM)
-    @PatchMapping(path = PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER)
-    // FIXME: nên để ở order controller: shipper complete => cập nhật trạng thái order + transaction (nếu là cashing)
-    public ResponseEntity<ResponseAPI<?>> completeTransaction(@PathVariable(TRANSACTION_ID) String id) {
-        transactionService.completeTransaction(id);
-        ResponseAPI<?> res = ResponseAPI.builder()
-                .timestamp(new Date())
-                .message(SuccessConstant.UPDATED)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
+//    @Operation(summary = TRANSACTION_UPDATE_SUCCESS_STATUS_BY_ID_SUM)
+//    @PatchMapping(path = PATCH_TRANSACTION_UPDATE_COMPLETE_SUB_PATH)
+//    @PreAuthorize(SecurityConstant.ROLE_WAITER)
+//    // FIXME: nên để ở order controller: shipper complete => cập nhật trạng thái order + transaction (nếu là cashing)
+//    public ResponseEntity<ResponseAPI<?>> completeTransaction(@PathVariable(TRANSACTION_ID) String id) {
+//        transactionService.completeTransaction(id);
+//        ResponseAPI<?> res = ResponseAPI.builder()
+//                .timestamp(new Date())
+//                .message(SuccessConstant.UPDATED)
+//                .build();
+//        return new ResponseEntity<>(res, StatusCode.OK);
+//    }
 
 
 

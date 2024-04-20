@@ -63,12 +63,18 @@ public class TransactionService implements ITransactionService {
         // Goi den VNPay de lay thong tin
         if (transaction.getPaymentType() == PaymentType.VNPAY) {
             TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), request);
-
+            if(!transInfo.getResponseCode().equals("00")) {
+                return;
+            }
             // nếu giao dịch vnpay thành công
             if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount() != null && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalPayment() * 100))) {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(transInfo.getAmount().toString()) / 100);
-            } else {
+            }
+            else if (transInfo.getTransactionStatus().equals("01")) {
+                // giao dich chua xu ly xong -> co the retry
+            }
+            else {
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .orderStatus(OrderStatus.CANCELED)
                         .description("Payment via VNPay failed")
@@ -76,8 +82,8 @@ public class TransactionService implements ITransactionService {
                         .actor(ActorType.USER)
                         .build());
                 orderBillRepository.save(orderBill);
-
                 transaction.setTotalPaid(0L);
+                transaction.setStatus(PaymentStatus.FAILED);
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
@@ -95,7 +101,12 @@ public class TransactionService implements ITransactionService {
                         .build());
                 transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
                 transaction.setTotalPaid(0L);
+                transaction.setStatus(PaymentStatus.FAILED);
                 orderBillRepository.save(orderBill);
+            } else if(transResult.getReturnCode() == 3) {
+                // pending
+                transaction.setTotalPaid(0L);
+                transaction.setStatus(PaymentStatus.UNPAID);
             }
         }
 
@@ -103,16 +114,16 @@ public class TransactionService implements ITransactionService {
         transactionRepository.save(transaction);
     }
 
-    @Override
-    public void completeTransaction(String transId) {
-        OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
-        TransactionEntity trans = orderBill.getTransaction();
-        long totalPaid = orderBill.getTotalItemPrice();
-        trans.setStatus(PaymentStatus.PAID);
-        trans.setTotalPaid(totalPaid);
-        transactionRepository.save(trans);
-    }
+//    @Override
+//    public void completeTransaction(String transId) {
+//        OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
+//                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
+//        TransactionEntity trans = orderBill.getTransaction();
+//        long totalPaid = orderBill.getTotalItemPrice();
+//        trans.setStatus(PaymentStatus.PAID);
+//        trans.setTotalPaid(totalPaid);
+//        transactionRepository.save(trans);
+//    }
 
     @Transactional
     public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) throws IOException, URISyntaxException {

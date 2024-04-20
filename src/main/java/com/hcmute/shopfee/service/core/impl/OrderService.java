@@ -746,6 +746,14 @@ public class OrderService implements IOrderService {
                         .build();
                 coinHistoryRepository.save(coinHistory);
             }
+        } else if(body.getEvent() == OrderEvent.ORDER_FULFILL) {
+            TransactionEntity trans = order.getTransaction();
+            if(trans.getPaymentType() == PaymentType.CASHING) {
+                long totalPaid = order.getTotalItemPrice();
+                trans.setStatus(PaymentStatus.PAID);
+                trans.setTotalPaid(totalPaid);
+                transactionRepository.save(trans);
+            }
         }
 
 

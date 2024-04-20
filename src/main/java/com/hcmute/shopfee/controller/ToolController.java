@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.dto.common.OrderNotificationDto;
@@ -430,11 +431,97 @@ public class ToolController {
     }
 
     @GetMapping("/VNPAY-test-refund")
-    public Map<String, Object> refund(
-            HttpServletRequest request, @RequestParam("timeId") String timeId,
-            @RequestParam("amount") String amount, @RequestParam("invoiceCode") String invoiceCode) throws IOException {
-        return vnPay.refund(request, timeId, invoiceCode, Long.parseLong(amount));
+    public Map<String, Object> refundZalo(HttpServletRequest req, HttpServletResponse resp,
+                                      @RequestParam(VNP_TRANSACTION_DATE_KEY) String transId,
+                                      @RequestParam("amount") String amount,
+                                      @RequestParam(VNP_TXN_REF_KEY) String txnref,
+                                      @RequestParam("refund_type") String type)
+            throws IOException {
+        String vnp_RequestId = VNPayUtils.getRandomNumber(8);
+        String vnp_Version = "2.1.0";
+        String transactionTypeValue = type;
+        String vnp_Command = "refund";
+        String vnp_TmnCode = vnPay.getTmnCode();
+//        02: Giao dịch hoàn trả toàn phần (vnp_TransactionType=02)
+//        03: Giao dịch hoàn trả một phần (vnp_TransactionType=03)
+        // mac dinh = 2, dell ai tra mot phan cho met
+
+        String vnp_TransactionType = transactionTypeValue ;//req.getParameter("vnp_TransactionType")
+        String vnp_TxnRef = txnref;//req.getParameter("order_id");
+        // response từ query trả về từ vnpay ko cần *100, nó đã sẵn nhân 100 rồi
+//        int amount =100 ;//Integer.parseInt(req.getParameter("amount"))*100;//150.000 * 100;10.000.000
+        String vnp_Amount = String.valueOf(Integer.parseInt(amount)*100); //Integer.parseInt(amount);  //String.valueOf(amount);
+        String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
+        String vnp_TransactionNo = "";
+        String vnp_TransactionDate = transId ;//req.getParameter("trans_date"); //
+        String vnp_CreateBy = "ADMIN";//req.getParameter("user");NGUYEN VAN A// ko quan trong
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_CreateDate = formatter.format(cld.getTime());
+
+        String vnp_IpAddr = VNPayUtils.getIpAddress(req);
+
+        JsonObject vnp_Params = new JsonObject ();
+
+        //63562614
+        //20230616094041
+
+        vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
+        vnp_Params.addProperty("vnp_Version", vnp_Version);
+        vnp_Params.addProperty("vnp_Command", vnp_Command);
+        vnp_Params.addProperty("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.addProperty("vnp_TransactionType", vnp_TransactionType);
+        vnp_Params.addProperty("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.addProperty("vnp_Amount", vnp_Amount);
+        vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
+
+        if(vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty())
+        {
+            vnp_Params.addProperty("vnp_TransactionNo", "{get value of vnp_TransactionNo}");
+        }
+
+        vnp_Params.addProperty("vnp_TransactionDate", vnp_TransactionDate);
+        vnp_Params.addProperty("vnp_CreateBy", vnp_CreateBy);
+        vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
+        vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
+
+        String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" +
+                vnp_TransactionType + "|" + vnp_TxnRef + "|" + vnp_Amount + "|" + vnp_TransactionNo + "|"
+                + vnp_TransactionDate + "|" + vnp_CreateBy + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
+
+        String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
+
+        vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
+
+        URL url = new URL (VNPay.vnp_ApiUrl);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(vnp_Params.toString());
+        wr.flush();
+        wr.close();
+        int responseCode = con.getResponseCode();
+        System.out.println("nSending 'POST' request to URL : " + url);
+        System.out.println("Post Data : " + vnp_Params);
+        System.out.println("Response Code : " + responseCode);
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String output;
+        StringBuffer response = new StringBuffer();
+        while ((output = in.readLine()) != null) {
+            response.append(output);
+        }
+        in.close();
+        System.out.println(response.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> transactionInfo =
+                objectMapper.readValue(response.toString(), Map.class);
+        return transactionInfo;
     }
+
 
     @GetMapping("/VNPAY-test-callback")
     public ResponseEntity<Map<String, Object>> doCallBack(@RequestParam Map<String, Object> callBackInfo, HttpServletRequest request) throws UnsupportedEncodingException, JsonProcessingException {
@@ -673,7 +760,7 @@ public class ToolController {
         DataValidationConstraint dvConstraint2 = dvHelper2.createNumericConstraint(
                 DataValidationConstraint.ValidationType.INTEGER,
                 DataValidationConstraint.OperatorType.GREATER_THAN,
-                "1000",  "999999"); // Minimum value
+                "1000", "999999"); // Minimum value
 
         CellRangeAddressList addressList2 = new CellRangeAddressList(2, 2, 3, 3); // Hàng 3, Cột D
         DataValidation validation2 = dvHelper2.createValidation(dvConstraint2, addressList2);
@@ -699,6 +786,7 @@ public class ToolController {
 
         return "ok";
     }
+
     @GetMapping("/create-beverage-excel")
     public String createBeverageExcel() throws IOException {
         Workbook workbook = new XSSFWorkbook();
@@ -709,7 +797,7 @@ public class ToolController {
         String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
         String[] sizeName = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
         String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
-        for(int i=0; i< firstRow.length; i++) {
+        for (int i = 0; i < firstRow.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(firstRow[i]);
         }
@@ -802,6 +890,7 @@ public class ToolController {
         workbook.close();
         return "nice";
     }
+
     private static String getListFormula(List<String> values) {
         StringBuilder formulaBuilder = new StringBuilder();
         for (int i = 0; i < values.size(); i++) {

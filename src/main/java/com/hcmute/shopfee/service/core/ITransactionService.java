@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ITransactionService {
     void updateTransaction(String id, HttpServletRequest request);
-    void completeTransaction(String transId);
+//    void completeTransaction(String transId);
 }

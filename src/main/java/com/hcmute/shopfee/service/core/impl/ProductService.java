@@ -350,6 +350,11 @@ public class ProductService implements IProductService {
         List<GetTopSellingProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopProductBySoldQuantity(quantity);
+        if(productEntityList.size() < quantity) {
+            List<String> productIdList = productEntityList.stream().map(ProductEntity::getId).toList();
+            List<ProductEntity> productMore = productRepository.getProductWithIdNotIn(productIdList, quantity - productEntityList.size());
+            productEntityList.addAll(productMore);
+        }
         for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
             data.add(GetTopSellingProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));

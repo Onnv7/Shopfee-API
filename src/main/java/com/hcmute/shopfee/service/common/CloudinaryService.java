@@ -63,7 +63,6 @@ public class CloudinaryService {
         var file = cloudinary.uploader()
                 .uploadLarge(imageData, Map.of(PUBLIC_ID, fileName, UPLOAD_PRESET, pathName, OVERWRITE, true, "resource_type", "auto"));
         return CloudinaryUploadResponse.fromString(file.toString());
-
     }
 
     public void deleteImage(String publicId) throws IOException {

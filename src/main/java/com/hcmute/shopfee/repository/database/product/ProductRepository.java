@@ -78,6 +78,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     @Query(value = """
             select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
             from product p\s
+            where id not in ?1
+            limit ?2
+            """, nativeQuery = true)
+    List<ProductEntity> getProductWithIdNotIn(List<String> productIdList, int limit);
+
+    @Query(value = """
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
+            from product p\s
             join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star\s
             	  from (select *
             			from product p\s
