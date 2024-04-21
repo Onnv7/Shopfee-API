@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.PaymentType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
@@ -52,7 +53,7 @@ public class SchedulerService {
             Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, startTime);
             scheduler.scheduleJob(jobDetail, trigger);
         } catch(SchedulerException e) {
-            throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "Scheduler service failed");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Scheduler service failed");
         }
     }
 }

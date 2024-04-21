@@ -57,7 +57,6 @@ public class EmployeeAuthController {
     public ResponseEntity<ResponseAPI<?>> logoutEmployee(@RequestBody @Valid EmployeeLogoutRequest body,
                                                          @CookieValue(name = "refreshToken", required = true) String refreshToken) {
 
-
         employeeAuthService.employeeLogout(body, refreshToken);
 
         ResponseAPI res = ResponseAPI.builder()
@@ -72,10 +71,6 @@ public class EmployeeAuthController {
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
     @PostMapping(path = POST_EMPLOYEE_AUTH_REFRESH_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI<RefreshEmployeeTokenResponse>> refreshEmployeeToken(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
-
-        if (refreshToken == null) {
-            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED, "Token is null");
-        }
         RefreshEmployeeTokenResponse data = employeeAuthService.refreshEmployeeToken(refreshToken);
 
         ResponseAPI res = ResponseAPI.builder()

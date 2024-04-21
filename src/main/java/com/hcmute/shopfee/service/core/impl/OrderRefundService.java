@@ -13,6 +13,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
 import com.hcmute.shopfee.enums.AnswerStatus;
 import com.hcmute.shopfee.enums.MediaType;
 import com.hcmute.shopfee.enums.OrderStatus;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderReturnRequestRepository;
@@ -46,18 +47,18 @@ public class OrderRefundService implements IOrderRefundService {
     @Override
     public void createOrderRefundRequest(CreateOrderReturnRequest body, String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND + orderId));
 
         Date currentTime = new Date();
         List<OrderEventEntity> orderEventEntityList = orderBill.getOrderEventList();
         OrderEventEntity lastEvent = orderEventEntityList.get(0);
 
         if (lastEvent.getOrderStatus() != OrderStatus.SUCCEED) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "It is not possible to submit a refund request without a successful application");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "It is not possible to submit a refund request without a successful application");
         }
 
         if (DateUtils.nowIsAfterPeriodFromTimeOriginal(lastEvent.getCreatedAt().toInstant(), HOURS_REQUEST_REFUND, ChronoUnit.HOURS)) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
         }
 
         List<OrderRefundMediaEntity> orderRefundMediaEntityList = new ArrayList<>();
@@ -100,9 +101,9 @@ public class OrderRefundService implements IOrderRefundService {
     @Override
     public void processOrderRefundRequest(AnswerStatus status, String orderId) {
         OrderRefundRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order return request not found"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_REFUND_REQUEST_NOT_FOUND, ErrorConstant.NOT_FOUND + orderId));
         if (orderReturnRequest.getStatus() != AnswerStatus.PENDING) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "The request has already been processed");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "The request has already been processed");
         }
         OrderBillEntity orderBill = orderReturnRequest.getOrderBill();
         orderReturnRequest.setStatus(status);
@@ -120,7 +121,7 @@ public class OrderRefundService implements IOrderRefundService {
     @Override
     public GetOrderRefundResponse getOrderRefundRequest(String orderId) {
         OrderRefundRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order return request not found"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_REFUND_REQUEST_NOT_FOUND, ErrorConstant.NOT_FOUND + orderId));
         return GetOrderRefundResponse.fromOrderRefundRequestEntity(orderReturnRequest);
     }
 }

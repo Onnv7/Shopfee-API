@@ -8,6 +8,7 @@ import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.enums.PaymentType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -28,7 +29,7 @@ public class AcceptOrderJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext context) {
         OrderBillEntity orderBill = orderBillRepository.findById(context.getJobDetail().getJobDataMap().getString(ORDER_BILL_ID))
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + context.getJobDetail().getJobDataMap().getString("orderBillId")));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + context.getJobDetail().getJobDataMap().getString("orderBillId")));
         List<OrderEventEntity> orderEvent = orderBill.getOrderEventList();
         if(orderEvent != null && orderBill.getOrderEventList().get(0).getOrderStatus() == OrderStatus.CREATED) {
             TransactionEntity transaction = orderBill.getTransaction();

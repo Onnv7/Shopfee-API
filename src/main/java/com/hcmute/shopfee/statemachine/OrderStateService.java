@@ -4,6 +4,7 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -77,7 +78,7 @@ public class OrderStateService {
 
     private StateMachine<OrderStatus, OrderEvent> build(String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
         StateMachine<OrderStatus, OrderEvent> sm = stateMachineFactory.getStateMachine(orderBill.getId());
 

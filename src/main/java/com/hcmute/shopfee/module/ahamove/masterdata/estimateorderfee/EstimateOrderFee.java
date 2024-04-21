@@ -2,6 +2,7 @@ package com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.ahamove.Ahamove;
 import com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee.response.EstimateOrderFeeResponse;
@@ -56,7 +57,7 @@ public class EstimateOrderFee {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(responseBody, EstimateOrderFeeResponse.class);
         } catch (Exception e) {
-            throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "Ahamove error: " + e.getMessage());
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Ahamove error: " + e.getMessage());
         }
     }
 }

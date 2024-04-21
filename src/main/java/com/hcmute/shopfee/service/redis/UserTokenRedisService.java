@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.redis;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.redis.UserTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,13 @@ public class UserTokenRedisService {
     }
     public void deleteByUserIdAndRefreshToken(String userId, String refreshToken) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         userTokenRepository.delete(entity);
     }
 
     public UserTokenEntity getInfoOfRefreshToken(String refreshToken, String userId) {
         UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_TOKEN_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         return entity;
     }
 

@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
@@ -49,7 +50,7 @@ public class ProductSearchService {
 
     public void deleteProduct(String id) {
         ProductIndex productIndex = productSearchRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         productSearchRepository.delete(productIndex);
     }
 

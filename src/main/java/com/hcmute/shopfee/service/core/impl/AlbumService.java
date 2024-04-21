@@ -8,6 +8,7 @@ import com.hcmute.shopfee.dto.response.GetAllImageResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND_WITH_INPUT;
+
 @Service
 @RequiredArgsConstructor
 public class AlbumService implements IAlbumService {
@@ -34,7 +37,7 @@ public class AlbumService implements IAlbumService {
     @Override
     public void uploadImage(UploadImageRequest body) {
         if(!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
+            throw new ShopfeeException(ShopfeeErrorCode.IMAGE_INVALID);
         }
         String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
         String fileName = StringUtils.generateFileName("", "album");
@@ -72,10 +75,10 @@ public class AlbumService implements IAlbumService {
     @Override
     public void deleteImageById(String imageId) {
         AlbumEntity album = albumRepository.findById(imageId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND,ErrorConstant.ALBUM_ID_INVALID + imageId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ALBUM_NOT_FOUND, NOT_FOUND_WITH_INPUT + imageId));
 
         if(album.getProduct() != null || album.getCategory() != null) {
-            throw new ShopfeeException(ErrorConstant.CANT_DELETE);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.CANT_DELETE);
         }
         if(orderItemRepository.countOrderItemByImageUrl(album.getImageUrl()) == 0) {
             try {

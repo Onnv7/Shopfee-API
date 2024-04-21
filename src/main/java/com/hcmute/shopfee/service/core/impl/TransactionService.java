@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
@@ -53,7 +54,7 @@ public class TransactionService implements ITransactionService {
     @Override
     public void updateTransaction(String id, HttpServletRequest request) {
         TransactionEntity transaction = transactionRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Transaction with id " + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.TRANSACTION_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
 
         OrderBillEntity orderBill = transaction.getOrderBill();
         UserEntity user = orderBill.getUser();
@@ -130,7 +131,7 @@ public class TransactionService implements ITransactionService {
 
         TransactionEntity transaction = orderBill.getTransaction();
         if(transaction.isRefunded()) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "Order has been refunded");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Order has been refunded");
         }
         if (refundCoin) {
             long coin = orderBill.getCoin();
@@ -154,7 +155,7 @@ public class TransactionService implements ITransactionService {
             if(isRefunded) {
                 transaction.setRefunded(true);
             } else {
-                throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "The payment side service failed, please try again later");
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");
             }
         }
         transactionRepository.save(transaction);

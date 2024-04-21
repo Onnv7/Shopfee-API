@@ -5,6 +5,7 @@ import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ public class CloudinaryService {
         try {
             return cloudinary.url().version(cloudinary.api().resource(publicId, null).get("version")).generate(publicId);
         } catch (Exception e) {
-            throw new ShopfeeException(ErrorConstant.NOT_FOUND);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.NOT_FOUND);
         }
     }
 
@@ -44,7 +45,7 @@ public class CloudinaryService {
                     .version(cloudinary.api().resource(publicId, null).get("version"))
                     .generate(publicId);
         } catch (Exception e) {
-            throw new ShopfeeException(ErrorConstant.NOT_FOUND);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.NOT_FOUND);
         }
     }
 
@@ -55,7 +56,7 @@ public class CloudinaryService {
             Transformation transformation = new Transformation().quality(quality).width(300).height(200);
             return cloudinary.url().resourceType("video").transformation(transformation).format("png").generate(publicId);
         } catch (Exception e) {
-            throw new ShopfeeException(ErrorConstant.NOT_FOUND);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.NOT_FOUND);
         }
     }
 

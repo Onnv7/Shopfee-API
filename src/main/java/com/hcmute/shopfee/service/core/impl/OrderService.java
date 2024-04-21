@@ -25,6 +25,7 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
@@ -39,8 +40,6 @@ import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
-import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
-import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
@@ -58,12 +57,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.USER_ID_NOT_FOUND;
+import static com.hcmute.shopfee.constant.ErrorConstant.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -148,18 +145,16 @@ public class OrderService implements IOrderService {
         long productDiscountValue = 0;
         MoneyRewardUnit productDiscountUnit = null;
         if (productCouponCode != null) {
-            CouponEntity productCoupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(productCouponCode, CouponStatus.RELEASED)
-                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.COUPON_CODE_NOT_FOUND + productCouponCode));
-            if (productCoupon.getCouponType() != CouponType.PRODUCT) {
-                throw new ShopfeeException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid");
-            }
+            CouponEntity productCoupon = couponRepository.findByCodeAndStatusAndCouponTypeAndIsDeletedFalse(productCouponCode, CouponStatus.RELEASED, CouponType.PRODUCT)
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + productCouponCode));
+
 
             if (productCoupon.getRewardType() == CouponRewardType.MONEY) {
                 productDiscountValue = productCoupon.getMoneyReward().getValue();
                 productDiscountUnit = productCoupon.getMoneyReward().getUnit();
 
                 List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT)
-                        .findFirst().orElseThrow(() -> new ShopfeeException(ErrorConstant.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
+                        .findFirst().orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
                 productIdDiscountList = subjectConditionList.stream().map(SubjectConditionEntity::getObjectId).toList();
             }
         }
@@ -169,7 +164,7 @@ public class OrderService implements IOrderService {
             OrderItemDto orderItemDto = orderItemList.get(i);
 
             ProductEntity productInfo = productRepository.findByIdAndStatus(orderItemDto.getProductId(), ProductStatus.AVAILABLE)
-                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_ID_NOT_FOUND + orderItemDto.getProductId()));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + orderItemDto.getProductId()));
 
             OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
             item.setProduct(productInfo);
@@ -202,7 +197,7 @@ public class OrderService implements IOrderService {
                         ToppingEntity toppingEntity = toppingList.stream()
                                 .filter(topping -> toppingName.equals(topping.getName()))
                                 .findFirst()
-                                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Topping with name " + toppingName));
+                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.TOPPING_NOT_FOUND, ErrorConstant.NOT_FOUND + toppingName));
                         itemTopping.setName(toppingName);
                         itemTopping.setPrice(toppingEntity.getPrice());
                         itemTopping.setItemDetail(itemDetailEntity);
@@ -217,7 +212,7 @@ public class OrderService implements IOrderService {
                 if (productInfo.getType() == ProductType.BEVERAGE) {
                     SizeEntity sizeItem = sizeList.stream()
                             .filter(it -> it.getSize() == itemDetail.getSize())
-                            .findFirst().orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Product's size with id " + itemDetail.getSize()));
+                            .findFirst().orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SIZE_NOT_FOUND, ErrorConstant.NOT_FOUND + itemDetail.getSize()));
 
                     itemDetailEntity.setSize(itemDetail.getSize());
                     long productSizePrice = sizeItem.getPrice();
@@ -271,19 +266,19 @@ public class OrderService implements IOrderService {
 
     public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, String userId) {
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Coupon with code " + couponCode));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponCode));
 
         Date currentTime = new Date();
 
         if (coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Coupon is expired");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Coupon is expired");
         }
 
         for (CouponConditionEntity condition : coupon.getConditionList()) {
             if (condition.getType() == ConditionType.MIN_PURCHASE) {
                 if (total < condition.getMinPurchaseCondition().getValue()) {
                     // invalid
-                    throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Min purchase condition " + condition.getMinPurchaseCondition().getValue());
+                    throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Min purchase condition " + condition.getMinPurchaseCondition().getValue());
                 }
             } else if (condition.getType() == ConditionType.USAGE) {
                 for (UsageConditionEntity usageCondition : condition.getUsageConditionList()) {
@@ -291,13 +286,13 @@ public class OrderService implements IOrderService {
                         int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
                         if (usedCount >= usageCondition.getValue()) {
                             // invalid
-                            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
+                            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
                         }
                     } else if (usageCondition.getType() == UsageConditionType.LIMIT_ONE_FOR_USER) {
                         CouponUsedEntity couponUsed = couponUsedRepository.getCouponUsedByUserIdAndCode(userId, coupon.getId()).orElse(null);
                         if (couponUsed != null) {
                             // invalid
-                            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Limit one per an user");
+                            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Limit one per an user");
                         }
                     }
                 }
@@ -305,20 +300,18 @@ public class OrderService implements IOrderService {
 
                 List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
-                    OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst().orElse(null);
-                    if (item == null) {
-                        // invalid
-                        throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Not found subject " + subjectConditionEntity.getObjectId());
-                    } else {
-                        int count = 0;
-                        for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
-                            count += itemDetailDto.getQuantity();
-                        }
-                        if (count < subjectConditionEntity.getValue()) {
-                            // invalid
-                            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
-                        }
+                    OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst()
+                            .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_ITEM_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + subjectConditionEntity.getObjectId()));
+
+                    int count = 0;
+                    for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
+                        count += itemDetailDto.getQuantity();
                     }
+                    if (count < subjectConditionEntity.getValue()) {
+                        // invalid
+                        throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
+                    }
+
                 }
             }
         }
@@ -347,7 +340,7 @@ public class OrderService implements IOrderService {
         cantCombinedCouponTypeList.forEach(it -> {
             if (couponTypeUsingList.contains(it)) {
                 // invalid
-                throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Cant combine coupons");
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Cant combine coupons");
             }
         });
     }
@@ -355,7 +348,7 @@ public class OrderService implements IOrderService {
 
     private CouponUsedEntity createCouponUsedEntity(String couponCode) {
         CouponEntity coupon = couponRepository.findByCodeAndIsDeletedFalse(couponCode)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Coupon with code " + couponCode));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + couponCode));
 
         CouponUsedEntity couponUsed = CouponUsedEntity.builder()
                 .code(couponCode)
@@ -444,19 +437,20 @@ public class OrderService implements IOrderService {
         if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
                 || (body.getTotal() < 2000 && body.getPaymentType() == PaymentType.ZALOPAY)
         ) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
         }
 
 
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
 
         if (user.getCoin() < deductCoin) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
         } else if (deductCoin > body.getTotal()) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -469,7 +463,7 @@ public class OrderService implements IOrderService {
 
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ADDRESS_ID_NOT_FOUND + body.getAddressId()));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ADDRESS_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getAddressId()));
         ReceiverInformationEntity shippingInformation = new ReceiverInformationEntity();
         shippingInformation.fromAddressEntity(address);
 
@@ -518,9 +512,8 @@ public class OrderService implements IOrderService {
         }
 
 
-
         if (totalPayment != body.getTotal()) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Total order is invalid");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Total order is invalid");
         }
         orderBill.setTotalPayment(totalPayment);
 
@@ -571,19 +564,20 @@ public class OrderService implements IOrderService {
 
         if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
                 || (body.getTotal() < 2000 && body.getPaymentType() == PaymentType.ZALOPAY)) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
         }
 
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = userRepository.findById(body.getUserId()).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(body.getUserId())
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
 
 
         if (user.getCoin() < deductCoin) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
         } else if (deductCoin > body.getTotal()) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -611,9 +605,8 @@ public class OrderService implements IOrderService {
         }
 
 
-
         if (totalPayment != body.getTotal()) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Total order is invalid");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Total order is invalid");
         }
 
         // set total payment
@@ -635,7 +628,7 @@ public class OrderService implements IOrderService {
 
         // set chi nhánh đặt hàng
         BranchEntity branch = branchRepository.findById(body.getBranchId())
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + body.getBranchId()));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getBranchId()));
         orderBill.setBranch(branch);
 
         // set thong tin nhan hang
@@ -709,17 +702,17 @@ public class OrderService implements IOrderService {
                 OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING, OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
 
         if (!validOrderEvent.contains(body.getEvent())) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Order event is not valid");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Order event is not valid");
         }
 
         OrderBillEntity order = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
 
         boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), body.getEvent());
 
         if (!rs) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
         if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
@@ -746,9 +739,9 @@ public class OrderService implements IOrderService {
                         .build();
                 coinHistoryRepository.save(coinHistory);
             }
-        } else if(body.getEvent() == OrderEvent.ORDER_FULFILL) {
+        } else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
             TransactionEntity trans = order.getTransaction();
-            if(trans.getPaymentType() == PaymentType.CASHING) {
+            if (trans.getPaymentType() == PaymentType.CASHING) {
                 long totalPaid = order.getTotalItemPrice();
                 trans.setStatus(PaymentStatus.PAID);
                 trans.setTotalPaid(totalPaid);
@@ -772,14 +765,14 @@ public class OrderService implements IOrderService {
     @Override
     public void createCancellationRequest(CreateCancellationDemandRequest body, String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
 
         boolean rs = orderStateService.sendMonoEvent(orderId, "Customer creates a request to cancel the order", OrderEvent.CANCEL_REQUEST);
         if (!rs) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
         CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
@@ -801,13 +794,13 @@ public class OrderService implements IOrderService {
     @Transactional
     public void cancelOrder(String orderId, CancelOrderBillRequest body) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
         boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), OrderEvent.ORDER_REFUSE);
         if (!rs) {
-            throw new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
         TransactionEntity transaction = orderBill.getTransaction();
@@ -844,7 +837,7 @@ public class OrderService implements IOrderService {
         String employeeId = SecurityUtils.getCurrentUserId();
         GetOrderQueueResponse data = new GetOrderQueueResponse();
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + employeeId));
         String branchId = employeeEntity.getBranch().getId();
 
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -862,7 +855,7 @@ public class OrderService implements IOrderService {
 
         GetOrderQueueResponse data = new GetOrderQueueResponse();
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.EMPLOYEE_ID_NOT_FOUND + employeeId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + employeeId));
         String branchId = employeeEntity.getBranch().getId();
 
 
@@ -900,7 +893,7 @@ public class OrderService implements IOrderService {
     @Override
     public GetOrderByIdResponse getOrderDetailsById(String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
         return GetOrderByIdResponse.fromOrderBillEntity(orderBill);
     }
 
@@ -971,7 +964,7 @@ public class OrderService implements IOrderService {
     @Override
     public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_BILL_ID_NOT_FOUND + orderBillId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderBillId));
         if (orderBill.getCancellationRequest() != null) {
             GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
             data.setReason(orderBill.getCancellationRequest().getReason());

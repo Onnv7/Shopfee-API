@@ -8,6 +8,7 @@ import com.hcmute.shopfee.dto.sql.GetRevenueQueryDto;
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
 import com.hcmute.shopfee.dto.sql.RevenueStatisticsQueryDto;
 import com.hcmute.shopfee.enums.TimeUnit;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -28,7 +29,7 @@ public class StatisticsService implements IStatisticsService {
     @Override
     public GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit) {
         if(startDate.compareTo(endDate) > 0) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "The start date must be less than the end date");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The start date must be less than the end date");
         }
         GetRevenueByTimeResponse data= new GetRevenueByTimeResponse();
         String formatTime = "%Y-%m-%d";

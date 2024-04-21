@@ -3,6 +3,8 @@ package com.hcmute.shopfee.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
+import com.hcmute.shopfee.constant.CloudinaryConstant;
+import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.NotificationMessageDto;
 import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
@@ -14,6 +16,7 @@ import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -215,7 +218,7 @@ public class ToolController {
         productRepository.save(product);
         Set<RoleEntity> userRole = new HashSet<>();
         RoleEntity role = roleRepository.findByRoleName(Role.ROLE_USER)
-                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, "Role with name"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + "Role with name"));
         userRole.add(role);
 
 
@@ -255,7 +258,7 @@ public class ToolController {
 
         Set<RoleEntity> employeeRoleList = new HashSet<>();
         RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_WAITER)
-                .orElseThrow(() -> new ShopfeeException(NOT_FOUND, "Role with name"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + "Role with name"));
         employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()
                 .username("nva6112002")
@@ -891,14 +894,9 @@ public class ToolController {
         return "nice";
     }
 
-    private static String getListFormula(List<String> values) {
-        StringBuilder formulaBuilder = new StringBuilder();
-        for (int i = 0; i < values.size(); i++) {
-            if (i > 0) {
-                formulaBuilder.append(",");
-            }
-            formulaBuilder.append("\"").append(values.get(i)).append("\"");
-        }
-        return formulaBuilder.toString();
+    @PostMapping(value = "/test-upload-video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String uploadFileToFolder(@ModelAttribute(name = "file") MultipartFile file) throws IOException {
+        cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, "test-video", file.getBytes());
+        return "uploaded";
     }
 }

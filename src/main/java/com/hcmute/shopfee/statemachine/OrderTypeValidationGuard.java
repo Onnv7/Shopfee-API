@@ -3,6 +3,7 @@ package com.hcmute.shopfee.statemachine;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import org.springframework.statemachine.guard.Guard;
 
@@ -18,7 +19,7 @@ public class OrderTypeValidationGuard {
             if(orderTypeMsg == orderType) {
                 return true;
             }
-            context.getStateMachine().setStateMachineError(new ShopfeeException(ErrorConstant.ACTING_INCORRECTLY, "Guard"));
+            context.getStateMachine().setStateMachineError(new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Guard"));
             return false;
         };
     }

@@ -10,6 +10,7 @@ import com.hcmute.shopfee.dto.response.GetBannerListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
 import com.hcmute.shopfee.entity.sql.database.BannerEntity;
 import com.hcmute.shopfee.enums.BannerStatus;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.BannerRepository;
 import com.hcmute.shopfee.service.core.IBannerService;
@@ -52,7 +53,7 @@ public class BannerService implements IBannerService {
     @Override
     public void updateBannerById(UpdateBannerRequest body, String bannerId) {
         BannerEntity bannerEntity = bannerRepository.findByIdAndIsDeletedFalse(bannerId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + bannerId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BANNER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + bannerId));
         modelMapperService.map(body, bannerEntity);
         if(body.getImage() != null) {
             try {
@@ -77,7 +78,7 @@ public class BannerService implements IBannerService {
     @Override
     public void deleteBannerById(String bannerId) {
         BannerEntity bannerCollection = bannerRepository.findByIdAndIsDeletedFalse(bannerId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + bannerId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BANNER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + bannerId));
         bannerCollection.setDeleted(true);
         bannerRepository.save(bannerCollection);
     }
@@ -94,9 +95,9 @@ public class BannerService implements IBannerService {
     }
 
     @Override
-    public GetBannerDetailResponse getBannerDetailsById(String id) {
-        BannerEntity banner = bannerRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BANNER_ID_NOT_FOUND + id));
+    public GetBannerDetailResponse getBannerDetailsById(String bannerId) {
+        BannerEntity banner = bannerRepository.findByIdAndIsDeletedFalse(bannerId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BANNER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + bannerId));
 
         return modelMapperService.mapClass(banner, GetBannerDetailResponse.class);
     }

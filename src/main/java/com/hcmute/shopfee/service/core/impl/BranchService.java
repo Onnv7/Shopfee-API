@@ -8,6 +8,7 @@ import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.BranchRepository;
@@ -48,7 +49,7 @@ public class BranchService implements IBranchService {
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         int branchListSize = branchEntityList.size();
         if (branchListSize == 0) {
-            throw new ShopfeeException(ErrorConstant.NOT_FOUND, "There are no active branches");
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "There are no active branches");
         }
         BranchEntity nearestBranch = branchEntityList.get(0);
         int minDistance = distanceList.get(0).getValue();
@@ -68,7 +69,7 @@ public class BranchService implements IBranchService {
         }
 
         if (minDistance > OPERATING_RANGE_DISTANCE || timeToCheck.after(nearestBranch.getCloseTime()) || timeToCheck.before(nearestBranch.getOpenTime())) {
-            throw new ShopfeeException(ErrorConstant.NOT_FOUND, "Can't find a branch that can serve your current location and time");
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "Can't find a branch that can serve your current location and time");
         }
 
         return nearestBranch;
@@ -99,7 +100,7 @@ public class BranchService implements IBranchService {
     @Override
     public void updateBranchById(UpdateBranchRequest body, String id) {
         BranchEntity branch = branchRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         if (body.getImage() != null) {
             byte[] originalImage = new byte[0];
             try {
@@ -124,7 +125,7 @@ public class BranchService implements IBranchService {
     @Override
     public void deleteBranchById(String id) {
         BranchEntity branch = branchRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         branchRepository.deleteById(id);
         try {
             cloudinaryService.deleteImage(branch.getImageId());
@@ -153,7 +154,7 @@ public class BranchService implements IBranchService {
     @Override
     public GetBranchDetailByIdResponse getBranchDetailById(String branchId) {
         BranchEntity branch = branchRepository.findById(branchId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + branchId));
         GetBranchDetailByIdResponse data = modelMapperService.mapClass(branch, GetBranchDetailByIdResponse.class);
         data.setOpenTime(DateUtils.getFormatTime(branch.getOpenTime()));
         data.setCloseTime(DateUtils.getFormatTime(branch.getCloseTime()));
@@ -163,7 +164,7 @@ public class BranchService implements IBranchService {
     @Override
     public GetBranchViewByIdResponse getBranchViewById(String branchId) {
         BranchEntity branch = branchRepository.findByIdAndStatus(branchId, BranchStatus.ACTIVE)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.BRANCH_ID_NOT_FOUND + branchId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + branchId));
         return GetBranchViewByIdResponse.fromBranchEntity(branch);
     }
 

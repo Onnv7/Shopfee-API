@@ -11,9 +11,9 @@ import com.hcmute.shopfee.dto.response.GetCategoryListResponse;
 import com.hcmute.shopfee.dto.response.GetVisibleCategoryListResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
-import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.enums.CategoryStatus;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
@@ -38,14 +38,14 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void createCategory(CreateCategoryRequest body) {
-        if(!MediaUtils.isValidImageFile(body.getImage())) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, ErrorConstant.IMAGE_INVALID);
+        if (!MediaUtils.isValidImageFile(body.getImage())) {
+            throw new ShopfeeException(ShopfeeErrorCode.IMAGE_INVALID);
         }
 
         String cgrName = body.getName();
         CategoryEntity existedCategory = categoryRepository.findByName(cgrName).orElse(null);
         if (existedCategory != null) {
-            throw new ShopfeeException(ErrorConstant.DATA_SEND_INVALID, "Category already exists");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Category already exists");
         }
         byte[] originalImage;
         try {
@@ -72,7 +72,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public GetCategoryByIdResponse getCategoryById(String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         return GetCategoryByIdResponse.fromCategoryEntity(category);
     }
 
@@ -91,7 +91,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public void updateCategory(UpdateCategoryRequest body, String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         if (body.getImage() != null) {
             try {
                 byte[] originalImage = body.getImage().getBytes();
@@ -120,13 +120,13 @@ public class CategoryService implements ICategoryService {
     @Override
     public void deleteCategoryById(String id) {
         CategoryEntity category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.CATEGORY_ID_NOT_FOUND + id));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
 
         if (category.getProductList().isEmpty()) {
             categoryRepository.delete(category);
             albumRepository.delete(category.getImage());
         } else {
-            throw new ShopfeeException(ErrorConstant.CANT_DELETE);
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.CANT_DELETE);
         }
     }
 

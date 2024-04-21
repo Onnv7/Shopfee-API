@@ -15,6 +15,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.ReviewInteraction;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
@@ -48,11 +49,11 @@ public class ReviewService implements IReviewService {
     public void createProductReview(CreateReviewRequest body) {
         ProductReviewEntity productReviewEntity = modelMapperService.mapClass(body, ProductReviewEntity.class);
         OrderItemEntity orderItemEntity = orderItemRepository.findById(body.getOrderItemId())
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.ORDER_ITEM_ID_NOT_FOUND + body.getOrderItemId()));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_ITEM_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getOrderItemId()));
         String userId = orderItemEntity.getOrderBill().getUser().getId();
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         user.setCoin(user.getCoin() + 200);
         userRepository.save(user);
 
@@ -72,7 +73,7 @@ public class ReviewService implements IReviewService {
     public void createProductReviewInteraction(String productReviewId, InteractProductReviewRequest body) {
         SecurityUtils.checkUserId(body.getUserId());
         ProductReviewEntity productReviewEntity = productReviewRepository.findById(productReviewId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.PRODUCT_REVIEW_ID_NOT_FOUND + productReviewId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_REVIEW_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + productReviewId));
 
         UserReviewInteractionEntity entity = userReviewInteractionRepository.findByUserIdAndProductReviewId(body.getUserId(), productReviewId)
                 .orElse(null);

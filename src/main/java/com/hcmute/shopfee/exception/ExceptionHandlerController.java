@@ -1,13 +1,13 @@
 package com.hcmute.shopfee.exception;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,16 +38,19 @@ public class ExceptionHandlerController {
         ex.printStackTrace();
         HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
         ErrorResponse<Object> res = new ErrorResponse<>();
+        ErrorResponse.ErrorData errorData = null;
         if (ex instanceof AuthenticationException) {
             httpStatus = HttpStatus.UNAUTHORIZED;
-            res.setMessage(UNAUTHORIZED);
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED);
+
         } else if (ex instanceof AccessDeniedException) {
             httpStatus = HttpStatus.FORBIDDEN;
-            res.setMessage(FORBIDDEN);
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
         }
+        res.setError(errorData);
         if (environment.equals(dev)) {
             ErrorResponse.DevResponse<Object> devResponse = ErrorResponse.DevResponse.builder()
-                    .devMessage(ex.getMessage())
+                    .message(ex.getMessage())
                     .build();
             res.setDevResponse(devResponse);
         }
@@ -61,21 +64,38 @@ public class ExceptionHandlerController {
 
         if (ex instanceof MethodArgumentNotValidException) {
             ex.printStackTrace();
-            res.setMessage(DATA_SEND_INVALID);
+            ErrorResponse.ErrorData errorData = ErrorResponse.ErrorData.builder()
+                    .errorCode(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID.code())
+                    .errorMessage(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID.description())
+                    .subErrorCode(null)
+                    .subErrorMessage(null)
+                    .build();
+            res.setError(errorData);
             if (environment.equals(dev)) {
                 ErrorResponse.DevResponse devResponse = getDetailDataInvalid((MethodArgumentNotValidException) ex);
                 res.setDevResponse(devResponse);
             }
         } else if (ex instanceof ShopfeeException) {
-            res.setMessage(ex.getMessage());
+
+            ShopfeeErrorCode subError = ((ShopfeeException) ex).getSubError();
+
+            ErrorResponse.ErrorData errorData = ErrorResponse.ErrorData.builder()
+                    .errorCode(((ShopfeeException) ex).getError().code())
+                    .errorMessage(((ShopfeeException) ex).getError().description())
+                    .subErrorCode(subError != null ? subError.code() : null)
+                    .subErrorMessage(subError != null ? subError.description() : null)
+                    .build();
+
+            res.setError(errorData);
             if (environment.equals(dev)) {
+
                 ErrorResponse.DevResponse devResponse = new ErrorResponse.DevResponse();
-                devResponse.setDevMessage(((ShopfeeException) ex).getDevMessage());
+                devResponse.setMessage(((ShopfeeException) ex).getDevMessage());
                 res.setDevResponse(devResponse);
                 res.setErrorCode(((ShopfeeException) ex).getErrorCode());
             }
         }
-        HttpStatus httpStatus = getHttpStatus(ex.getMessage());
+        HttpStatus httpStatus = getHttpStatus(res.getError().getErrorMessage());
         return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);
     }
     @ExceptionHandler(Exception.class)
@@ -83,20 +103,22 @@ public class ExceptionHandlerController {
         ex.printStackTrace();
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
+        ErrorResponse.ErrorData errorData = null;
         ErrorResponse res = new ErrorResponse();
         if (ex instanceof AuthenticationException || ex instanceof JWTVerificationException) {
-            res.setMessage(ex.getMessage());
             httpStatus = HttpStatus.UNAUTHORIZED;
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED);
         } else if (ex instanceof AccessDeniedException) {
-            res.setMessage(ex.getMessage());
             httpStatus = HttpStatus.FORBIDDEN;
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
         }  else {
-            res = ErrorResponse.builder()
-                    .message(ex.getMessage())
-                    .build();
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR);
         }
+        res.setError(errorData);
+
         if (environment.equals(dev)) {
             ErrorResponse.DevResponse devResponse = ErrorResponse.DevResponse.builder()
+                    .message(ex.getMessage())
                     .build();
             res.setDevResponse(devResponse);
         }
@@ -126,6 +148,5 @@ public class ExceptionHandlerController {
                 .build();
         return devResponse;
     }
-
 
 }

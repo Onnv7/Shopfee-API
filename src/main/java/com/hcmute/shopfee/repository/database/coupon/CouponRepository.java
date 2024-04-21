@@ -17,6 +17,7 @@ public interface CouponRepository extends JpaRepository<CouponEntity, String> {
     Optional<CouponEntity> findByIdAndIsDeletedFalse(String id);
     Optional<CouponEntity> findByCodeAndIsDeletedFalse(String code);
     Optional<CouponEntity> findByCodeAndStatusAndIsDeletedFalse(String code, CouponStatus status);
+    Optional<CouponEntity> findByCodeAndStatusAndCouponTypeAndIsDeletedFalse(String code,CouponStatus status, CouponType couponType);
     List<CouponEntity> findByIsDeletedFalse();
 
     @Query(value = """

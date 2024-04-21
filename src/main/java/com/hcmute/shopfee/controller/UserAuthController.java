@@ -169,9 +169,7 @@ public class UserAuthController {
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
     @PostMapping(path = POST_USER_AUTH_REFRESH_TOKEN_SUB_PATH)
     public ResponseEntity<ResponseAPI<RefreshTokenResponse>> refreshToken(@CookieValue(name = "refreshToken", required = true) String refreshToken) {
-        if (refreshToken == null) {
-            throw new ShopfeeException(ErrorConstant.UNAUTHORIZED, "Token is null");
-        }
+
         RefreshTokenResponse data = userAuthService.refreshToken(refreshToken);
 
         ResponseAPI<RefreshTokenResponse> res = ResponseAPI.<RefreshTokenResponse>builder()

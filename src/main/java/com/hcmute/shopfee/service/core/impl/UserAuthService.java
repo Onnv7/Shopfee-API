@@ -18,6 +18,7 @@ import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.enums.UserStatus;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.redis.UserTokenEntity;
@@ -33,7 +34,6 @@ import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.redis.UserTokenRedisService;
 import com.hcmute.shopfee.utils.GeneratorUtils;
 import com.hcmute.shopfee.utils.SecurityUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +76,7 @@ public class UserAuthService implements IUserAuthService {
             return;
         }
         UserFCMTokenEntity userFcmTokenEntity = userFcmTokenRepository.findById(fcmTokenId)
-                        .orElseThrow(() -> new ShopfeeException(NOT_FOUND,FCM_TOKEN_ID_NOT_FOUND + fcmTokenId));
+                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + fcmTokenId));
         userFcmTokenEntity.setUser(user);
         userFcmTokenRepository.save(userFcmTokenEntity);
     }
@@ -87,13 +87,13 @@ public class UserAuthService implements IUserAuthService {
         UserEntity userEntity = modelMapperService.mapClass(body, UserEntity.class);
 
         if (userRepository.findByEmail(userEntity.getEmail()).orElse(null) != null) {
-            throw new ShopfeeException(EXISTED_DATA, "Email already registered");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Email already registered");
         }
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(() -> new ShopfeeException(UNAUTHORIZED, "Email has not been verified"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Email has not been verified"));
         if (confirmation.getStatus() != ConfirmationCodeStatus.USED) {
-            throw new ShopfeeException(UNAUTHORIZED, "Email has not been verified");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
 
@@ -103,7 +103,8 @@ public class UserAuthService implements IUserAuthService {
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
 
         Set<RoleEntity> roleList = new HashSet<>();
-        RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
+        RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + Role.ROLE_USER));
         roleList.add(userRole);
         userEntity.setRoleList(roleList);
         userEntity.setStatus(UserStatus.ACTIVE);
@@ -143,7 +144,7 @@ public class UserAuthService implements IUserAuthService {
 
             Set<RoleEntity> roleList = new HashSet<>();
             RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER)
-                    .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Role with name " + Role.ROLE_USER));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + Role.ROLE_USER));
             roleList.add(userRole);
             userEntity.setRoleList(roleList);
             userEntity.setStatus(UserStatus.ACTIVE);
@@ -224,7 +225,7 @@ public class UserAuthService implements IUserAuthService {
         try {
             if(body.getFcmTokenId() != null) {
                 UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
-                        .orElseThrow(() -> new ShopfeeException(NOT_FOUND, FCM_TOKEN_ID_NOT_FOUND + body.getFcmTokenId()));
+                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getFcmTokenId()));
                 fcmTokenEntity.setUser(null);
                 userFcmTokenRepository.save(fcmTokenEntity);
             }
@@ -239,7 +240,7 @@ public class UserAuthService implements IUserAuthService {
     public void sendCodeToRegister(String email) {
         UserEntity user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
-            throw new ShopfeeException(EXISTED_DATA, "Email is already registered");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Email is already registered");
         }
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
@@ -249,7 +250,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void sendCodeToGetPassword(String email) {
         userRepository.findByEmail(email)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "User with email " + email));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + email));
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
         mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
@@ -258,7 +259,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void verifyCodeByEmail(String code, String email) {
         ConfirmationEntity confirmationCollection = confirmationRepository.findByEmail(email)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Confirmation data with email " + email));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CONFIRMATION_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + email));
         Date currentTime = new Date();
 
         if (code.equals(confirmationCollection.getCode()) && currentTime.before(confirmationCollection.getExpireAt())) {
@@ -267,19 +268,19 @@ public class UserAuthService implements IUserAuthService {
             return;
         }
 
-        throw new ShopfeeException(UNAUTHORIZED, "Code is not valid");
+        throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Code is not valid");
     }
 
     @Transactional
     @Override
     public void changePasswordForgot(ChangePasswordRequest body) {
         UserEntity user = userRepository.findByEmail(body.getEmail())
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "User with email " + body.getEmail()));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT+ body.getEmail()));
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
-                .orElseThrow(() -> new ShopfeeException(UNAUTHORIZED, "Email has not been verified"));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Email has not been verified"));
         if (confirmation.getStatus() != ConfirmationCodeStatus.USED) {
-            throw new ShopfeeException(UNAUTHORIZED, "Email has not been verified");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Email has not been verified");
         }
         confirmationRepository.delete(confirmation);
 
@@ -294,14 +295,15 @@ public class UserAuthService implements IUserAuthService {
         String userId = jwt.getSubject().toString();
         UserTokenEntity token = userTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, ErrorConstant.USER_ID_NOT_FOUND + userId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
 
         if (token == null) {
-            throw new ShopfeeException(NOT_FOUND, "There is no token data in the database");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.NOT_FOUND, "There is no token data in the database");
         }
         if (token.isUsed()) {
             userTokenRedisService.deleteAllTokenByUserId(userId);
-            throw new ShopfeeException(FORBIDDEN, TOKEN_STOLEN);
+            throw new ShopfeeException(ShopfeeErrorCode.TOKEN_STOLEN);
         }
         List<String> roles = jwt.getClaim(ROLES_CLAIM_KEY).asList(String.class);
         String newAccessToken = jwtService.issueAccessToken(user.getId(), user.getEmail(), roles);
@@ -320,12 +322,12 @@ public class UserAuthService implements IUserAuthService {
     public void changePasswordProfile(String userId, UpdatePasswordRequest data) {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, USER_ID_NOT_FOUND + userId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
 
         boolean isValid = passwordEncoder.matches(data.getOldPassword(), user.getPassword());
 
         if (!isValid) {
-            throw new ShopfeeException(UNAUTHORIZED, WRONG_PASSWORD);
+            throw new ShopfeeException(ShopfeeErrorCode.WRONG_PASSWORD);
         }
 
         user.setPassword(passwordEncoder.encode(data.getNewPassword()));
