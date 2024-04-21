@@ -5,16 +5,17 @@ import com.hcmute.shopfee.enums.CouponType;
 import com.hcmute.shopfee.enums.UsageConditionType;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Data
 public class GetCouponOptionsResponse {
-    private List<CouponType> noShippingWithCoupon;
+    private List<CouponType> shippingNoCombineBy;
     private List<CouponCard> shippingCouponList;
-    private List<CouponType> noOrderWithCoupon;
+    private List<CouponType> orderNoCombineBy;
     private List<CouponCard> orderCouponList;
-    private List<CouponType> noProductWithCoupon;
+    private List<CouponType> productNoCombineBy;
     private List<CouponCard> productCouponList;
 
     public GetCouponOptionsResponse() {

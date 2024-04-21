@@ -444,7 +444,7 @@ public class CouponService implements ICouponService {
     @Override
     public void updateAmountOffProductCoupon(UpdateProductMoneyCouponRequest body, String couponId) {
         CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND  + couponId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
         couponEntity.setRewardType(CouponRewardType.MONEY);
@@ -489,7 +489,7 @@ public class CouponService implements ICouponService {
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND  + reward.getProductId()));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
                     .productSize(reward.getProductSize())
@@ -532,7 +532,7 @@ public class CouponService implements ICouponService {
 
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND  + reward.getProductId()));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
                     .productId(reward.getProductId())
                     .productSize(reward.getProductSize())
@@ -579,7 +579,7 @@ public class CouponService implements ICouponService {
         List<SubjectConditionEntity> subjectConditionEntityList = new ArrayList<>();
         subjectConditionDtoList.stream().forEach(subject -> {
             ProductEntity productEntity = productRepository.findById(subject.getObjectId())
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND  + subject.getObjectId()));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + subject.getObjectId()));
             SubjectConditionEntity subjectConditionEntity = SubjectConditionEntity.builder()
                     .couponCondition(condition)
                     .productName(productEntity.getName())
@@ -594,7 +594,7 @@ public class CouponService implements ICouponService {
     @Override
     public void deleteCoupon(String couponId) {
         CouponEntity couponCollection = couponRepository.findByIdAndIsDeletedFalse(couponId)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND  + couponId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponId));
         if (couponCollection.getStatus() == CouponStatus.UNRELEASED) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Actions cannot be performed on the coupon when it is in the UNRELEASED state");
         }
@@ -687,32 +687,58 @@ public class CouponService implements ICouponService {
     public GetCouponOptionsResponse getCouponListForCartResponse(GetCouponListForCartRequest body) {
         String userId = SecurityUtils.getCurrentUserId();
         GetCouponOptionsResponse data = new GetCouponOptionsResponse();
+        List<CouponType> noCombineWithShipping = new ArrayList<>();
+        List<CouponType> noCombineWithOrder = new ArrayList<>();
+        List<CouponType> noCombineWithProduct = new ArrayList<>();
 
+        List<CouponType> shippingNoCombineBy = new ArrayList<>();
+        List<CouponType> orderNoCombineBy = new ArrayList<>();
+        List<CouponType> productNoCombineBy = new ArrayList<>();
         List<CouponType> couponTypeList = new ArrayList<>();
 
         if (body.getShippingCouponCode() != null) {
             couponTypeList.add(CouponType.SHIPPING);
-            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getShippingCouponCode());
-            data.setNoShippingWithCoupon(resultList);
+            noCombineWithShipping = checkAndGetNoCouponTypeCombineList(body.getShippingCouponCode());
         }
 
         if (body.getOrderCouponCode() != null) {
             couponTypeList.add(CouponType.ORDER);
-            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getOrderCouponCode());
-            data.setNoOrderWithCoupon(resultList);
+            noCombineWithOrder = checkAndGetNoCouponTypeCombineList(body.getOrderCouponCode());
         }
         if (body.getProductCouponCode() != null) {
             couponTypeList.add(CouponType.PRODUCT);
-            List<CouponType> resultList = checkAndGetNoCouponTypeCombineList(body.getProductCouponCode());
-            data.setNoProductWithCoupon(resultList);
+            noCombineWithProduct = checkAndGetNoCouponTypeCombineList(body.getProductCouponCode());
         }
 
+        if (noCombineWithShipping.contains(CouponType.ORDER)) {
+            orderNoCombineBy.add(CouponType.SHIPPING);
+        }
+        if (noCombineWithShipping.contains(CouponType.PRODUCT)) {
+            productNoCombineBy.add(CouponType.SHIPPING);
+        }
 
-        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, data.getNoShippingWithCoupon() == null, body.getShippingCouponCode());
+        if (noCombineWithOrder.contains(CouponType.SHIPPING)) {
+            shippingNoCombineBy.add(CouponType.ORDER);
+        }
+        if (noCombineWithOrder.contains(CouponType.PRODUCT)) {
+            productNoCombineBy.add(CouponType.ORDER);
+        }
+        if (noCombineWithProduct.contains(CouponType.SHIPPING)) {
+            shippingNoCombineBy.add(CouponType.PRODUCT);
+        }
+        if (noCombineWithProduct.contains(CouponType.ORDER)) {
+            orderNoCombineBy.add(CouponType.PRODUCT);
+        }
+
+        data.setShippingNoCombineBy(shippingNoCombineBy);
+        data.setOrderNoCombineBy(orderNoCombineBy);
+        data.setProductNoCombineBy(productNoCombineBy);
+
+        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, !shippingNoCombineBy.isEmpty(), body.getShippingCouponCode());
         data.setShippingCouponList(shippingCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList, data.getNoOrderWithCoupon() == null, body.getOrderCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList,  !orderNoCombineBy.isEmpty(), body.getOrderCouponCode());
         data.setOrderCouponList(orderCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList, data.getNoProductWithCoupon() == null, body.getProductCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList,  !productNoCombineBy.isEmpty(), body.getProductCouponCode());
         data.setProductCouponList(productCouponCard);
 
         return data;
@@ -842,13 +868,15 @@ public class CouponService implements ICouponService {
     private List<CouponType> checkAndGetNoCouponTypeCombineList(String couponCode) {
         List<CouponType> couponTypeList = Arrays.asList(CouponType.SHIPPING, CouponType.PRODUCT, CouponType.ORDER);
         List<CouponType> data = new ArrayList<>();
+
         if (couponCode != null) {
             CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND  + couponCode));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponCode));
 
             List<CouponType> couponTypeCombinedListOfCoupon = combinationConditionRepository.getCombinationConditionListByCouponCode(couponCode);
 
             for (CouponType couponType : couponTypeList) {
+
                 if (!couponTypeCombinedListOfCoupon.contains(couponType) && couponType != couponEntity.getCouponType()) {
                     data.add(couponType);
                 }
@@ -877,7 +905,7 @@ public class CouponService implements ICouponService {
     private CheckCouponInCartResponse checkCouponCodeWithOrderItemCart(String couponCode, long totalPayment, String userId, List<OrderItemDto> orderItemDtoList) {
         CheckCouponInCartResponse couponResult = new CheckCouponInCartResponse();
         CouponEntity couponEntity = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND  + couponCode));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponCode));
         couponResult.setCouponType(couponEntity.getCouponType());
 
         CheckCouponInCartResponse.ViolatedCondition violatedCondition = new CheckCouponInCartResponse.ViolatedCondition();
@@ -888,6 +916,7 @@ public class CouponService implements ICouponService {
 
         for (CouponConditionEntity conditionEntity : couponConditionEntityList) {
             ConditionType conditionType = conditionEntity.getType();
+            // MIN_PURCHASE
             if (conditionType == ConditionType.MIN_PURCHASE) {
                 long minPurchaseValue = conditionEntity.getMinPurchaseCondition().getValue();
                 if (totalPayment < minPurchaseValue) {
@@ -896,7 +925,9 @@ public class CouponService implements ICouponService {
                     CheckCouponInCartResponse.MinPurchaseCondition minPurchaseCondition = new CheckCouponInCartResponse.MinPurchaseCondition(minPurchaseValue);
                     violatedCondition.setMinPurchaseCondition(minPurchaseCondition);
                 }
-            } else if (conditionType == ConditionType.USAGE) {
+            }
+            // USAGE
+            else if (conditionType == ConditionType.USAGE) {
                 List<UsageConditionEntity> usageConditionEntityList = conditionEntity.getUsageConditionList();
                 List<CheckCouponInCartResponse.UsageCondition> usageConditionList = new ArrayList<>();
                 for (UsageConditionEntity usageCondition : usageConditionEntityList) {
@@ -917,23 +948,25 @@ public class CouponService implements ICouponService {
                     }
                 }
                 violatedCondition.setUsageConditionList(usageConditionList);
-            } else if (conditionType == ConditionType.SUBJECT) {
+            }
+            // SUBJECT
+            else if (conditionType == ConditionType.SUBJECT) {
                 List<SubjectConditionEntity> subjectConditionEntityList = conditionEntity.getSubjectConditionList();
 
                 List<CheckCouponInCartResponse.SubjectCondition> subjectConditionList = new ArrayList<>();
                 productIdListInCart = orderItemDtoList.stream().map(OrderItemDto::getProductId).toList();
                 subjectIdListInCart = subjectConditionEntityList.stream().map(SubjectConditionEntity::getObjectId).toList();
+
+                boolean isValid = false;
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
                     OrderItemDto item = orderItemDtoList.stream()
                             .filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId()))
                             .findFirst().orElse(null);
                     ProductEntity productEntity = productRepository.findById(subjectConditionEntity.getObjectId())
-                            .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND  + subjectConditionEntity.getObjectId()));
-
+                            .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + subjectConditionEntity.getObjectId()));
                     // trong cart khong co product item thoa man
                     if (item == null) {
                         // invalid
-                        couponResult.setValid(false);
                         subjectConditionList.add(new CheckCouponInCartResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
                     }
                     // trong cart co product item thoa man
@@ -944,16 +977,22 @@ public class CouponService implements ICouponService {
                         }
                         if (count < subjectConditionEntity.getValue()) {
                             // invalid
-                            couponResult.setValid(false);
                             subjectConditionList.add(new CheckCouponInCartResponse.SubjectCondition(productEntity.getName(), subjectConditionEntity.getValue()));
+                        } else {
+                            isValid = true;
+                            break;
                         }
                     }
                 }
-                violatedCondition.setSubjectConditionList(subjectConditionList);
+                if (isValid) {
+                    violatedCondition.setSubjectConditionList(null);
+                } else {
+                    couponResult.setValid(false);
+                    violatedCondition.setSubjectConditionList(subjectConditionList);
+                }
             }
         }
         if (couponResult.isValid()) {
-//            CouponRewardEntity couponRewardEntity = couponEntity.getCouponReward();
             CheckCouponInCartResponse.Reward reward = new CheckCouponInCartResponse.Reward();
 
             if (couponEntity.getRewardType() == CouponRewardType.MONEY) {
@@ -965,7 +1004,7 @@ public class CouponService implements ICouponService {
                 for (String subjectId : subjectIdListInCart) {
                     if (productIdListInCart.contains(subjectId)) {
                         ProductEntity productEntity = productRepository.findById(subjectId)
-                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND  + subjectId));
+                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + subjectId));
 
                         CheckCouponInCartResponse.SubjectInformation subjectInformation = new CheckCouponInCartResponse.SubjectInformation(subjectId, productEntity.getName());
                         reward.setSubjectInformation(subjectInformation);
