@@ -12,6 +12,7 @@ import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.enums.ProductSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IProductService;
+import com.hcmute.shopfee.utils.HeaderUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +20,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -264,5 +266,24 @@ public class ProductController {
                 .data(data)
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = PRODUCT_DOWNLOAD_IMPORT_FILE_SUM)
+    @GetMapping(path = GET_PRODUCT_DOWNLOAD_IMPORT_FILE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    protected ResponseEntity<?> downloadImportFile(@RequestParam("product_type") ProductType productType) {
+        byte[] data = {};
+        String fileName = "beverage.xlsx";
+        if(productType == ProductType.BEVERAGE) {
+            data = productService.downloadImportBeverageFile();
+            fileName = "beverage.xlsx";
+        } else if(productType == ProductType.CAKE) {
+           data =productService.downloadImportCakeFile();
+            fileName = "cake.xlsx";
+        }
+        HttpHeaders headers = HeaderUtils.setAttachFile(fileName);
+
+
+        return new ResponseEntity<>(data, headers, StatusCode.OK);
     }
 }

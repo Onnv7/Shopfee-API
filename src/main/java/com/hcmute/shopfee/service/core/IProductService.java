@@ -26,4 +26,6 @@ public interface IProductService {
     void createBeverageFromFile(MultipartFile file);
     void createCakeFromFile(MultipartFile file);
     CheckExistedNameResponse isExistedProductName(String productName);
+    byte[] downloadImportBeverageFile();
+    byte[] downloadImportCakeFile();
 }

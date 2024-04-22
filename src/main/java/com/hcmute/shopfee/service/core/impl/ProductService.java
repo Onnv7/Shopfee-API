@@ -25,11 +25,14 @@ import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.utils.ExcelUtils;
 import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.RegexUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +42,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -425,7 +430,7 @@ public class ProductService implements IProductService {
                         product.setName(cell.getStringCellValue());
                         break;
                     case 1:
-                        CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
+                        CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim())
                                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
@@ -437,7 +442,7 @@ public class ProductService implements IProductService {
                         break;
                     case 4:
                         String imageUrl = cell.getStringCellValue();
-                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl).orElse(null);
+                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
                         if (image != null) {
                             product.setImage(image);
                         } else {
@@ -529,7 +534,7 @@ public class ProductService implements IProductService {
                         product.setName(cell.getStringCellValue());
                         break;
                     case 1:
-                        CategoryEntity category = categoryRepository.findById(cell.getStringCellValue())
+                        CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim())
                                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + cell.getStringCellValue()));
                         product.setCategory(category);
                         break;
@@ -544,7 +549,7 @@ public class ProductService implements IProductService {
                         break;
                     case 5:
                         String imageUrl = cell.getStringCellValue();
-                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl).orElse(null);
+                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
                         if (image != null) {
                             product.setImage(image);
                         } else {
@@ -577,5 +582,158 @@ public class ProductService implements IProductService {
         CheckExistedNameResponse data = new CheckExistedNameResponse();
         data.setExisted(product != null);
         return data;
+    }
+
+    @Override
+    public byte[] downloadImportBeverageFile() {
+        try {
+            int rowEffected = 100;
+            Workbook workbook = new XSSFWorkbook();
+            Sheet dataSheet = workbook.createSheet("data");
+            Sheet productSheet = workbook.createSheet("product");
+
+            Row headerRow = dataSheet.createRow(0);
+            String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
+            String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
+            String[] firstRowData2 = {null, null, null, null, "https://www.facebook.com/", "MEDIUM", "20000", null, null};
+            String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
+            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+            for (int i = 0; i < firstRow.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(firstRow[i]);
+            }
+            // category value drop list
+            List<String> categoryNameList = categoryRepository.getCategoryNameList();
+            ExcelUtils.setDropList(categoryNameList.toArray(new String[0]), dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 1, 1);
+
+            // size value drop list
+            ExcelUtils.setDropList(sizeNameArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 5, 5);
+
+            // size status drop list
+            ExcelUtils.setDropList(statusArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 2, 2);
+
+            // validate price > 1000
+            ExcelUtils.setIntegerConstraint(dataSheet, 999, 9999999, "Invalid Data", "Price must be greater than 999.", 1, rowEffected, 6, 6);
+            ExcelUtils.setIntegerConstraint(dataSheet, 999, 9999999, "Invalid Data", "Price must be greater than 999.", 1, rowEffected, 8, 8);
+
+            // validate product name
+            List<String> productNameList = productRepository.getProductNameList();
+            for (int i = 0; i < productNameList.size(); i++) {
+                Row row = productSheet.createRow(i);
+                row.createCell(0).setCellValue(productNameList.get(i));
+            }
+
+            String rangeName = "productName";
+            String reference = "product!$A$1:$A$" + (productNameList.size());
+            ExcelUtils.setFormulas(workbook, rangeName, reference);
+            ExcelUtils.setCustomConstraint(dataSheet, "COUNTIF(productName, A2)=0", "Invalid Data", "The product name is already in the database", 1, rowEffected, 0, 0);
+
+            // tao data mau
+            Row r1 = dataSheet.createRow(1);
+            Row r2 = dataSheet.createRow(2);
+            for (int i = 0; i < firstRowData1.length; i++) {
+                Cell cell1 = r1.createCell(i);
+                Cell cell2 = r2.createCell(i);
+                if(i == 6 || i == 8) {
+                    if(firstRowData1[i] != null) {
+                        cell1.setCellValue(Long.parseLong(firstRowData1[i]));
+                    }
+                    if(firstRowData2[i] != null) {
+                        cell2.setCellValue(Long.parseLong(firstRowData2[i]));
+
+                    }
+                    continue;
+                }
+                cell1.setCellValue(firstRowData1[i]);
+                cell2.setCellValue(firstRowData2[i]);
+            }
+            for (int i = 0; i <= 4; i++) {
+                dataSheet.addMergedRegion(new CellRangeAddress(1, 2, i, i));
+            }
+            for (Row row : dataSheet) {
+                row.setHeight((short) -1);
+                for (Cell cell : row) {
+                    dataSheet.autoSizeColumn(cell.getColumnIndex());
+                }
+            }
+
+            try (FileOutputStream fileOut = new FileOutputStream("beverage.xlsx")) {
+                workbook.write(fileOut);
+            }
+            workbook.close();
+            File file = new File("./beverage.xlsx");
+            return FileUtils.readFileToByteArray(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public byte[] downloadImportCakeFile() {
+        try {
+            int rowEffected = 100;
+            Workbook workbook = new XSSFWorkbook();
+            Sheet dataSheet = workbook.createSheet("data");
+            Sheet productSheet = workbook.createSheet("product");
+
+            Row headerRow = dataSheet.createRow(0);
+            String[] firstRow = {"Product name", "Category", "Status", "Description", "Price", "Image"};
+            String[] firstRowData1 = {"Cinnamon cone", "Sweet cake", "AVAILABLE", "Cinnamon and sweet cake", "2000", "https://www.facebook.com/"};
+
+            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+            for (int i = 0; i < firstRow.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(firstRow[i]);
+            }
+            // category value drop list
+            List<String> categoryNameList = categoryRepository.getCategoryNameList();
+            ExcelUtils.setDropList(categoryNameList.toArray(new String[0]), dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 1, 1);
+
+
+            // size status drop list
+            ExcelUtils.setDropList(statusArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 2, 2);
+
+            // validate price > 1000
+            ExcelUtils.setIntegerConstraint(dataSheet, 999, 9999999, "Invalid Data", "Price must be greater than 999.", 1, rowEffected, 4, 4);
+
+            // validate product name
+            List<String> productNameList = productRepository.getProductNameList();
+            for (int i = 0; i < productNameList.size(); i++) {
+                Row row = productSheet.createRow(i);
+                row.createCell(0).setCellValue(productNameList.get(i));
+            }
+
+            String rangeName = "productName";
+            String reference = "product!$A$1:$A$" + (productNameList.size());
+            ExcelUtils.setFormulas(workbook, rangeName, reference);
+            ExcelUtils.setCustomConstraint(dataSheet, "COUNTIF(productName, A2)=0", "Invalid Data", "The product name is already in the database", 1, rowEffected, 0, 0);
+
+            // tao data mau
+            Row r1 = dataSheet.createRow(1);
+            for (int i = 0; i < firstRowData1.length; i++) {
+                Cell cell1 = r1.createCell(i);
+                if(i == 4) {
+                    cell1.setCellValue(Long.valueOf(firstRowData1[i]));
+                    continue;
+                }
+                cell1.setCellValue(firstRowData1[i]);
+            }
+
+            for (Row row : dataSheet) {
+                row.setHeight((short) -1);
+                for (Cell cell : row) {
+                    dataSheet.autoSizeColumn(cell.getColumnIndex());
+                }
+            }
+
+            try (FileOutputStream fileOut = new FileOutputStream("cake.xlsx")) {
+                workbook.write(fileOut);
+            }
+            workbook.close();
+            File file = new File("./cake.xlsx");
+            return FileUtils.readFileToByteArray(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

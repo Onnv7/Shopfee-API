@@ -157,7 +157,7 @@ public class UserService implements IUserService {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<CoinHistoryEntity> coinPage = coinHistoryRepository.findByUser_Id(userId, pageable);
         data.setTotalPage(coinPage.getTotalPages());
-        data.setCoinHistoryList(coinPage.getContent());
+        data.setCoinHistoryList(GetCoinHistoryListResponse.fromCoinHistoryEntityList(coinPage.getContent()));
         return data;
     }
 }

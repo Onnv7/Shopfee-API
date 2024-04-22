@@ -13,8 +13,11 @@ import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +33,19 @@ import java.util.Set;
 public class CreateAdminCommand implements CommandLineRunner {
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Value("${app.username_admin}")
+    private String username;
+
+    @Value("${app.password_admin}")
+    private String password;
 
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        EmployeeEntity existedAdmin = employeeRepository.findByUsernameAndIsDeletedFalse("admin").orElse(null);
-        if(existedAdmin != null) {
+        EmployeeEntity existedAdmin = employeeRepository.findByUsernameAndIsDeletedFalse(username).orElse(null);
+        if (existedAdmin != null) {
             log.info("ADMIN IS EXISTED");
             return;
         }
@@ -45,8 +55,8 @@ public class CreateAdminCommand implements CommandLineRunner {
         Set<RoleEntity> roleList = new HashSet<>(Collections.singleton(adminRole));
 
         EmployeeEntity admin = EmployeeEntity.builder()
-                .username("admin")
-                .password("$2a$07$8uAcnHtjJyuBjFq8c73jKuuKj/KbxqT79v7.fpVtzYUUUYvUmzbXG")
+                .username(username)
+                .password(passwordEncoder.encode(password))
                 .firstName("An")
                 .lastName("Nguyen")
                 .status(EmployeeStatus.ACTIVE)

@@ -43,6 +43,7 @@ import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
+import com.hcmute.shopfee.utils.ExcelUtils;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -435,10 +436,10 @@ public class ToolController {
 
     @GetMapping("/VNPAY-test-refund")
     public Map<String, Object> refundZalo(HttpServletRequest req, HttpServletResponse resp,
-                                      @RequestParam(VNP_TRANSACTION_DATE_KEY) String transId,
-                                      @RequestParam("amount") String amount,
-                                      @RequestParam(VNP_TXN_REF_KEY) String txnref,
-                                      @RequestParam("refund_type") String type)
+                                          @RequestParam(VNP_TRANSACTION_DATE_KEY) String transId,
+                                          @RequestParam("amount") String amount,
+                                          @RequestParam(VNP_TXN_REF_KEY) String txnref,
+                                          @RequestParam("refund_type") String type)
             throws IOException {
         String vnp_RequestId = VNPayUtils.getRandomNumber(8);
         String vnp_Version = "2.1.0";
@@ -449,14 +450,14 @@ public class ToolController {
 //        03: Giao dịch hoàn trả một phần (vnp_TransactionType=03)
         // mac dinh = 2, dell ai tra mot phan cho met
 
-        String vnp_TransactionType = transactionTypeValue ;//req.getParameter("vnp_TransactionType")
+        String vnp_TransactionType = transactionTypeValue;//req.getParameter("vnp_TransactionType")
         String vnp_TxnRef = txnref;//req.getParameter("order_id");
         // response từ query trả về từ vnpay ko cần *100, nó đã sẵn nhân 100 rồi
 //        int amount =100 ;//Integer.parseInt(req.getParameter("amount"))*100;//150.000 * 100;10.000.000
-        String vnp_Amount = String.valueOf(Integer.parseInt(amount)*100); //Integer.parseInt(amount);  //String.valueOf(amount);
+        String vnp_Amount = String.valueOf(Integer.parseInt(amount) * 100); //Integer.parseInt(amount);  //String.valueOf(amount);
         String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
         String vnp_TransactionNo = "";
-        String vnp_TransactionDate = transId ;//req.getParameter("trans_date"); //
+        String vnp_TransactionDate = transId;//req.getParameter("trans_date"); //
         String vnp_CreateBy = "ADMIN";//req.getParameter("user");NGUYEN VAN A// ko quan trong
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -465,7 +466,7 @@ public class ToolController {
 
         String vnp_IpAddr = VNPayUtils.getIpAddress(req);
 
-        JsonObject vnp_Params = new JsonObject ();
+        JsonObject vnp_Params = new JsonObject();
 
         //63562614
         //20230616094041
@@ -479,8 +480,7 @@ public class ToolController {
         vnp_Params.addProperty("vnp_Amount", vnp_Amount);
         vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
 
-        if(vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty())
-        {
+        if (vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty()) {
             vnp_Params.addProperty("vnp_TransactionNo", "{get value of vnp_TransactionNo}");
         }
 
@@ -497,8 +497,8 @@ public class ToolController {
 
         vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
 
-        URL url = new URL (VNPay.vnp_ApiUrl);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        URL url = new URL(VNPay.vnp_ApiUrl);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         con.setDoOutput(true);
@@ -792,13 +792,16 @@ public class ToolController {
 
     @GetMapping("/create-beverage-excel")
     public String createBeverageExcel() throws IOException {
+        int rowEffected = 100;
         Workbook workbook = new XSSFWorkbook();
         Sheet dataSheet = workbook.createSheet("data");
         Sheet productSheet = workbook.createSheet("product");
 
         Row headerRow = dataSheet.createRow(0);
         String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
-        String[] sizeName = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
+        String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
+        String[] firstRowData2 = {null, null, null, null, "https://www.facebook.com/", "MEDIUM", "20000", null, null};
+        String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
         String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
         for (int i = 0; i < firstRow.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -807,63 +810,22 @@ public class ToolController {
 
         // category value drop list
         List<String> categoryNameList = categoryRepository.getCategoryNameList();
-        DataValidationHelper dvHelper = dataSheet.getDataValidationHelper();
-        DataValidationConstraint dvCategory = dvHelper.createExplicitListConstraint(categoryNameList.toArray(new String[0]));
-        CellRangeAddressList categoryDropListAddress = new CellRangeAddressList(1, 1, 1, 1);
-        DataValidation validationCategoryName = dvHelper.createValidation(dvCategory, categoryDropListAddress);
+        ExcelUtils.setDropList(categoryNameList.toArray(new String[0]), dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 1, 1);
 
-        validationCategoryName.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
-        validationCategoryName.setShowErrorBox(true);
-        validationCategoryName.setShowPromptBox(true);
-        validationCategoryName.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validationCategoryName.setSuppressDropDownArrow(true);
-        dataSheet.addValidationData(validationCategoryName);
 
         // size value drop list
-        DataValidationConstraint dvSizeName = dvHelper.createExplicitListConstraint(sizeName);
-        CellRangeAddressList sizeNameDropListAddress = new CellRangeAddressList(1, 1, 5, 5);
-        DataValidation validationSizeName = dvHelper.createValidation(dvSizeName, sizeNameDropListAddress);
-        validationSizeName.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
-        validationSizeName.setShowErrorBox(true);
-        validationSizeName.setShowPromptBox(true);
-        validationSizeName.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validationSizeName.setSuppressDropDownArrow(true);
-        dataSheet.addValidationData(validationSizeName);
+        ExcelUtils.setDropList(sizeNameArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 5, 5);
 
-        // size value drop list
-        DataValidationConstraint dvStatus = dvHelper.createExplicitListConstraint(statusArray);
-        CellRangeAddressList statusDropListAddress = new CellRangeAddressList(1, 1, 2, 2);
-        DataValidation validationStatus = dvHelper.createValidation(dvStatus, statusDropListAddress);
-        validationStatus.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
-        validationStatus.setShowErrorBox(true);
-        validationStatus.setShowPromptBox(true);
-        validationStatus.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validationStatus.setSuppressDropDownArrow(true);
-        dataSheet.addValidationData(validationStatus);
+        // size status drop list
+        ExcelUtils.setDropList(statusArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 2, 2);
+
+
 
 
         // validate price > 1000
-        DataValidationConstraint dvPrice = dvHelper.createNumericConstraint(
-                DataValidationConstraint.ValidationType.INTEGER,
-                DataValidationConstraint.OperatorType.GREATER_THAN,
-                "1000", // Minimum value
-                "999999"); // Maximum value
-        CellRangeAddress cellRangeAddress1 = new CellRangeAddress(1, 100, 6, 6); // F:F
-        CellRangeAddress cellRangeAddress2 = new CellRangeAddress(1, 100, 8, 8); // H:H
+        ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 6, 6);
+        ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 8, 8);
 
-        CellRangeAddressList priceCellAddress = new CellRangeAddressList();
-
-        priceCellAddress.addCellRangeAddress(cellRangeAddress1);
-        priceCellAddress.addCellRangeAddress(cellRangeAddress2);
-
-//        CellRangeAddressList priceCellAddress = new CellRangeAddressList(1, 1, 6, 6); // Hàng 2, cột C
-        DataValidation validationPrice = dvHelper.createValidation(dvPrice, priceCellAddress);
-        validationPrice.createErrorBox("Invalid Data", "Price must be greater than 1000.");
-        validationPrice.setShowErrorBox(true);
-        validationPrice.setShowPromptBox(true);
-        validationPrice.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validationPrice.setSuppressDropDownArrow(false);
-        dataSheet.addValidationData(validationPrice);
 
         // validate product name
         List<String> productNameList = productRepository.getProductNameList();
@@ -871,22 +833,32 @@ public class ToolController {
             Row row = productSheet.createRow(i);
             row.createCell(0).setCellValue(productNameList.get(i));
         }
+
         String rangeName = "productName";
-        String reference = "product!$A$1:$A$" + (productNameList.size()); // Assuming data starts from row 2
-        Name namedRange = workbook.createName();
-        namedRange.setNameName(rangeName);
-        namedRange.setRefersToFormula(reference);
+        String reference = "product!$A$1:$A$" + (productNameList.size());
+        ExcelUtils.setFormulas(workbook, rangeName, reference);
+        ExcelUtils.setCustomConstraint(dataSheet, "COUNTIF(productName, A2)=0", "Invalid Data", "The product name is already in the database", 1, rowEffected, 0, 0);
 
-        CellRangeAddressList addressList2 = new CellRangeAddressList(1, 1, 0, 0); // Assuming column E (index 4)
-        DataValidationConstraint constraint2 = dvHelper.createCustomConstraint("COUNTIF(productName, A2)=0");
-        DataValidation validation2 = dvHelper.createValidation(constraint2, addressList2);
-
-        validation2.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validation2.setShowErrorBox(true);
-        validation2.createErrorBox("Invalid Data", "The entered value is already in the column 'stt'");
 
         // Apply the validation to the sheet
-        dataSheet.addValidationData(validation2);
+        Row r1 = dataSheet.createRow(1);
+        Row r2 = dataSheet.createRow(2);
+        for (int i = 0; i < firstRowData1.length; i++) {
+            Cell cell1 = r1.createCell(i);
+            Cell cell2 = r2.createCell(i);
+            cell1.setCellValue(firstRowData1[i]);
+            cell2.setCellValue(firstRowData2[i]);
+        }
+        for (int i = 0; i <= 4; i++) {
+            dataSheet.addMergedRegion(new CellRangeAddress(1, 2, i, i));
+        }
+        for (Row row : dataSheet) {
+            row.setHeight((short) -1);
+            for (Cell cell : row) {
+                dataSheet.autoSizeColumn(cell.getColumnIndex());
+            }
+        }
+
         try (FileOutputStream fileOut = new FileOutputStream("beverage.xlsx")) {
             workbook.write(fileOut);
         }

@@ -4,7 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 
-public class CookieUtils {
+public class HeaderUtils {
     public static String getRefreshToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -22,6 +22,13 @@ public class CookieUtils {
 
         // TODO: kiem tra expire coookie
         headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + refreshToken + "; Max-Age=" + maxAge.toString() + "; Path=/; Secure; HttpOnly; SameSite=None");
+
+        return headers;
+    }
+
+    public static HttpHeaders setAttachFile(String fileName) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
 
         return headers;
     }

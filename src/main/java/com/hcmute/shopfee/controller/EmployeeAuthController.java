@@ -1,6 +1,5 @@
 package com.hcmute.shopfee.controller;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
@@ -8,10 +7,9 @@ import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.enums.Role;
-import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IEmployeeAuthService;
-import com.hcmute.shopfee.utils.CookieUtils;
+import com.hcmute.shopfee.utils.HeaderUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,7 +44,7 @@ public class EmployeeAuthController {
                 .data(data)
                 .message(SuccessConstant.LOGIN)
                 .build();
-        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
 
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
@@ -64,7 +62,7 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.LOGOUT)
                 .build();
 
-        HttpHeaders headers = CookieUtils.setRefreshTokenCookie("", 0L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie("", 0L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
@@ -80,7 +78,7 @@ public class EmployeeAuthController {
                 .build();
 
 
-        HttpHeaders headers = CookieUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 

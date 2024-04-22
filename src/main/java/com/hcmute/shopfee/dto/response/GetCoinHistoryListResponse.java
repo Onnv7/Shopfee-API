@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class GetCoinHistoryListResponse {
     private int totalPage;
-    private List<CoinHistoryEntity> coinHistoryList;
+    private List<CoinHistory> coinHistoryList;
 
     @Data
     private static class CoinHistory {

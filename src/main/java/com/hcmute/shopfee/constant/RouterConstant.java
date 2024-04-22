@@ -102,6 +102,7 @@ public class RouterConstant {
     public static final String GET_PRODUCT_TOP_SELLING_PRODUCTS_SUB_PATH = "/top-selling/{quantity}";
     public static final String POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH = "/import";
     public static final String GET_PRODUCT_CHECK_NAME_SUB_PATH = "/existed-name";
+    public static final String GET_PRODUCT_DOWNLOAD_IMPORT_FILE_SUB_PATH = "/download/import-file";
 
 
     // ENDPOINT EMPLOYEE =================================================================
