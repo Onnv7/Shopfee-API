@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hcmute.shopfee.config.JwtProperties;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,7 +14,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class JwtService {
     public String issueAccessToken(String userId, String email, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(10, ChronoUnit.DAYS)))
+                .withExpiresAt(Instant.now().plus(Duration.of(ShopfeeConstant.ACCESS_TOKEN_EXPIRE_DAY_TIME, ChronoUnit.DAYS)))
                 .withClaim(EMAIL_CLAIM_KEY, email)
                 .withClaim(ROLES_CLAIM_KEY, roles)
                 .sign(Algorithm.HMAC256(properties.getAccessTokenKey()));
@@ -33,7 +33,7 @@ public class JwtService {
     public String issueRefreshToken(String userId, String email, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(7, ChronoUnit.DAYS)))
+                .withExpiresAt(Instant.now().plus(Duration.of(ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME, ChronoUnit.MINUTES)))
                 .withClaim(EMAIL_CLAIM_KEY, email)
                 .withClaim(ROLES_CLAIM_KEY, roles)
                 .sign(Algorithm.HMAC256(properties.getRefreshTokenKey()));

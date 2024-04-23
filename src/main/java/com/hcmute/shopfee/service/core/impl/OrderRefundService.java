@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
 import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
@@ -62,7 +63,7 @@ public class OrderRefundService implements IOrderRefundService {
         }
 
         if (DateUtils.nowIsAfterPeriodFromTimeOriginal(lastEvent.getCreatedAt().toInstant(), HOURS_REQUEST_REFUND, ChronoUnit.HOURS)) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "A refund request cannot be submitted after 30 minutes from the time the order is successfully delivered");
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, ShopfeeConstant.TIMEOUT_REQUEST_REFUND_ERR_MSG);
         }
 
         List<OrderRefundMediaEntity> orderRefundMediaEntityList = new ArrayList<>();

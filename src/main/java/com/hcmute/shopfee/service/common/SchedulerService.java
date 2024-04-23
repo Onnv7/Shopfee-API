@@ -1,12 +1,13 @@
 package com.hcmute.shopfee.service.common;
 
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
-import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
+import com.hcmute.shopfee.schedule.job.RefuseOrderJob;
 import com.hcmute.shopfee.schedule.job.CheckTransactionValidJob;
 import com.hcmute.shopfee.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +29,9 @@ public class SchedulerService {
         Instant checkTransactionTime = transaction.getCreatedAt().toInstant();
 
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-            checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.MINUTES);
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, ShopfeeConstant.TIMEOUT_ZALO_TRANSACTION, ChronoUnit.MINUTES);
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
-            checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, ShopfeeConstant.TIMEOUT_VNPAY_TRANSACTION, ChronoUnit.MINUTES);
         }
         checkTransactionData.put(CheckTransactionValidJob.TRANSACTION_ID, transaction.getId());
         checkTransactionData.put(CheckTransactionValidJob.PAYMENT_TYPE, transaction.getPaymentType());
@@ -39,11 +39,10 @@ public class SchedulerService {
     }
 
     public void setAutoCancelOrder(OrderBillEntity orderBill) {
-        Instant newIn = DateUtils.plus(orderBill.getCreatedAt().toInstant(), 30, ChronoUnit.MINUTES);
-
+        Instant newIn = DateUtils.plus(orderBill.getCreatedAt().toInstant(), ShopfeeConstant.TIMEOUT_REFUSE_ORDER_MINUTES, ChronoUnit.MINUTES);
         Map<String, Object> orderAcceptanceData = new HashMap<String, Object>();
-        orderAcceptanceData.put(AcceptOrderJob.ORDER_BILL_ID, orderBill.getId());
-        setScheduler(AcceptOrderJob.class, orderAcceptanceData, Date.from(newIn));
+        orderAcceptanceData.put(RefuseOrderJob.ORDER_BILL_ID, orderBill.getId());
+        setScheduler(RefuseOrderJob.class, orderAcceptanceData, Date.from(newIn));
     }
 
     public void setScheduler(Class<? extends Job> jobClass, Map<String, Object> data, Date startTime)  {

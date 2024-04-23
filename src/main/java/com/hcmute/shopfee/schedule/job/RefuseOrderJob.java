@@ -6,8 +6,6 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.enums.PaymentStatus;
-import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -16,7 +14,6 @@ import com.hcmute.shopfee.service.common.AuditorAwareService;
 import com.hcmute.shopfee.service.common.VNPayService;
 import com.hcmute.shopfee.service.common.ZaloPayService;
 import com.hcmute.shopfee.service.core.ITransactionService;
-import com.hcmute.shopfee.service.core.impl.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -26,7 +23,7 @@ import java.util.List;
 
 
 @RequiredArgsConstructor
-public class AcceptOrderJob extends QuartzJobBean {
+public class RefuseOrderJob extends QuartzJobBean {
     public static final String ORDER_BILL_ID = "orderBillId";
     private final OrderEventRepository orderEventRepository;
     private final OrderBillRepository orderBillRepository;
