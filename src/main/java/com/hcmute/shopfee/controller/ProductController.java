@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -133,7 +134,7 @@ public class ProductController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetAllVisibleProductResponse resData = productService.getVisibleProductList( minPrice, maxPrice, minStar, productSortType, page, size, key);
+        GetAllVisibleProductResponse resData = productService.getVisibleProductList(minPrice, maxPrice, minStar, productSortType, page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -222,6 +223,7 @@ public class ProductController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+
     @Operation(summary = PRODUCT_GET_TOP_SELLING_PRODUCTS_SUM)
     @GetMapping(path = GET_PRODUCT_TOP_SELLING_PRODUCTS_SUB_PATH)
     public ResponseEntity<ResponseAPI<List<GetTopSellingProductResponse>>> getTopSellingProductQuantityOrder(
@@ -240,17 +242,20 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_IMPORT_FILE_TO_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
-    protected ResponseEntity<ResponseAPI<?>> createProductFromFile(@RequestParam("file") MultipartFile file, @RequestParam("product_type") ProductType productType) {
-        if(productType == ProductType.BEVERAGE) {
-            productService.createBeverageFromFile(file);
-        } else if(productType == ProductType.CAKE) {
-            productService.createCakeFromFile(file);
+//    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    protected ResponseEntity<ResponseAPI<List<CreateProductFromFileErrorResponse>>> createProductFromFile(@RequestParam("file") MultipartFile file
+            , @RequestParam("product_type") ProductType productType, @RequestParam("force") boolean force) {
+        List<CreateProductFromFileErrorResponse> data = new ArrayList<>();
+        if (productType == ProductType.BEVERAGE) {
+            data = productService.createBeverageFromFile(file, force);
+        } else if (productType == ProductType.CAKE) {
+            data = productService.createCakeFromFile(file, force);
         }
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.CREATED)
                 .timestamp(new Date())
+                .data(data)
                 .build();
         return new ResponseEntity<>(res, StatusCode.CREATED);
     }
@@ -274,11 +279,11 @@ public class ProductController {
     protected ResponseEntity<?> downloadImportFile(@RequestParam("product_type") ProductType productType) {
         byte[] data = {};
         String fileName = "beverage.xlsx";
-        if(productType == ProductType.BEVERAGE) {
+        if (productType == ProductType.BEVERAGE) {
             data = productService.downloadImportBeverageFile();
             fileName = "beverage.xlsx";
-        } else if(productType == ProductType.CAKE) {
-           data =productService.downloadImportCakeFile();
+        } else if (productType == ProductType.CAKE) {
+            data = productService.downloadImportCakeFile();
             fileName = "cake.xlsx";
         }
         HttpHeaders headers = HeaderUtils.setAttachFile(fileName);

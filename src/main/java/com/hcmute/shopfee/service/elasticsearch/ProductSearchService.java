@@ -12,11 +12,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductSearchService {
     private final ProductSearchRepository productSearchRepository;
 
+    public void createAllProduct(List<ProductEntity> productEntityList) {
+        for (ProductEntity productEntity : productEntityList) {
+            createProduct(productEntity);
+        }
+    }
     public ProductIndex createProduct(ProductEntity data) {
 
         ProductIndex dataSearch = ProductIndex.builder()

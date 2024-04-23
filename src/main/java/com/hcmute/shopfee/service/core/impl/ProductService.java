@@ -47,7 +47,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +73,15 @@ public class ProductService implements IProductService {
         return min;
     }
 
+    private boolean checkProductData(List<String> listName) {
+        Set<String> uniqueNames = new HashSet<>(listName);
+        if (uniqueNames.size() < listName.size()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType) {
         if (!MediaUtils.isValidImageFile(body.getImage())) {
@@ -83,22 +94,28 @@ public class ProductService implements IProductService {
                 throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Cakes do not need toppings or size, and need a price");
             }
         }
-        if (productRepository.findByName(body.getName()).orElse(null) != null) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Product named \"" + body.getName() + "\" already exists");
+        if (productRepository.findByName(body.getName().trim()).orElse(null) != null) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Product named \"" + body.getName().trim() + "\" already exists");
         }
 
         ProductEntity productEntity = modelMapperService.mapClass(body, ProductEntity.class);
         if (body.getToppingList() != null) {
             List<ToppingEntity> toppingList = ToppingEntity.fromToppingDtoList(body.getToppingList(), productEntity);
+            if (!checkProductData(toppingList.stream().map(it -> it.getName().trim()).toList())) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The topping's name list is duplicated");
+            }
             productEntity.setToppingList(toppingList);
         }
 
         if (body.getSizeList() != null) {
             List<SizeEntity> sizeList = SizeEntity.fromToppingDtoList(body.getSizeList(), productEntity);
+            if (!checkProductData(sizeList.stream().map(it -> it.getSize().name()).toList())) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The size's name list is duplicated");
+            }
             productEntity.setSizeList(sizeList);
         }
         productEntity.setType(productType);
-        productEntity.setName(body.getName());
+        productEntity.setName(body.getName().trim());
         productEntity.setDescription(body.getDescription());
         productEntity.setStatus(body.getStatus());
 
@@ -113,12 +130,12 @@ public class ProductService implements IProductService {
             byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
 
             CategoryEntity categoryEntity = categoryRepository.findById(body.getCategoryId())
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT+ body.getCategoryId()));
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getCategoryId().trim()));
 
             productEntity.setCategory(categoryEntity);
             CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
-                    StringUtils.generateFileName(body.getName(), "product"),
+                    StringUtils.generateFileName(body.getName().trim(), "product"),
                     newImage
             );
 
@@ -133,8 +150,6 @@ public class ProductService implements IProductService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        data.setCode(sequenceService.generateCode(ProductCollection.SEQUENCE_NAME, ProductCollection.PREFIX_CODE, ProductCollection.LENGTH_NUMBER));
-
         ProductEntity dataSaved = productRepository.save(productEntity);
         productSearchService.createProduct(dataSaved);
     }
@@ -356,7 +371,7 @@ public class ProductService implements IProductService {
         List<GetTopSellingProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopProductBySoldQuantity(quantity);
-        if(productEntityList.size() < quantity) {
+        if (productEntityList.size() < quantity) {
             List<String> productIdList = productEntityList.stream().map(ProductEntity::getId).toList();
             List<ProductEntity> productMore = productRepository.getProductWithIdNotIn(productIdList, quantity - productEntityList.size());
             productEntityList.addAll(productMore);
@@ -372,208 +387,406 @@ public class ProductService implements IProductService {
 
     @Transactional
     @Override
-    public void createBeverageFromFile(MultipartFile file) {
-        InputStream inputStream = null;
-        Workbook workbook = null;
+    public List<CreateProductFromFileErrorResponse> createBeverageFromFile(MultipartFile file, boolean force) {
+        List<CreateProductFromFileErrorResponse> data = new ArrayList<>();
+        boolean hasError = false;
         try {
-            inputStream = file.getInputStream();
-            workbook = new XSSFWorkbook(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Sheet sheet = workbook.getSheetAt(0);
+            InputStream inputStream = file.getInputStream();
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
 
-        ProductEntity product = null;
-        List<SizeEntity> sizeEntityList = new ArrayList<>();
-        List<ToppingEntity> toppingEntityList = new ArrayList<>();
-        boolean newProductFlag = true;
-        List<ProductEntity> productEntityList = new ArrayList<>();
-        // đọc từng hàng
-        for (Row row : sheet) {
-            int rowIndex = row.getRowNum();
-            if (rowIndex == 0) {
-                continue;
-            }
+            ProductEntity product = new ProductEntity();
+            List<SizeEntity> sizeEntityList = new ArrayList<>();
+            product.setSizeList(sizeEntityList);
+            List<ToppingEntity> toppingEntityList = new ArrayList<>();
+            product.setToppingList(toppingEntityList);
+            boolean isNewProductValueState = false;
+            List<ProductEntity> productValidList = new ArrayList<>();
 
-            SizeEntity sizeEntity = new SizeEntity();
-            ToppingEntity toppingEntity = new ToppingEntity();
-            if (row.getCell(0).getCellType() == CellType.BLANK) {
-                newProductFlag = false;
-            } else {
-                newProductFlag = true;
-            }
+            boolean dataValidFlag = false;
 
-            if (newProductFlag) {
-                if (product != null) {
-                    product.setPrice(getMinPrice(product.getSizeList()));
-                    System.out.println("Saving product " + product.toString());
-                    ProductEntity productSaved = productRepository.save(product);
-                    productSearchService.createProduct(productSaved);
-                }
-                product = new ProductEntity();
-                product.setType(ProductType.BEVERAGE);
-                sizeEntityList = new ArrayList<>();
-                product.setSizeList(sizeEntityList);
-
-                toppingEntityList = new ArrayList<>();
-                product.setToppingList(toppingEntityList);
-            }
-
-            // đọc từng ô
-            for (Cell cell : row) {
-                int colIndex = cell.getColumnIndex();
-                if (cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().isEmpty())) {
+            // đọc từng hàng
+            for (Row row : sheet) {
+                boolean skip4Col = false;
+                CreateProductFromFileErrorResponse errorRow = new CreateProductFromFileErrorResponse();
+                List<CreateProductFromFileErrorResponse.CellDataError> errorColList = new ArrayList<>();
+                int rowIndex = row.getRowNum();
+                errorRow.setRowIndex(rowIndex);
+                if (rowIndex == 0 || ExcelUtils.haveAnyOneCellWithData(row, 0, 8) == false) {
                     continue;
                 }
-                switch (colIndex) {
-                    case 0:
-                        product.setName(cell.getStringCellValue());
-                        break;
-                    case 1:
-                        CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim())
-                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + cell.getStringCellValue()));
-                        product.setCategory(category);
-                        break;
-                    case 2:
-                        product.setStatus(ProductStatus.valueOf(cell.getStringCellValue()));
-                        break;
-                    case 3:
-                        product.setDescription(cell.getStringCellValue());
-                        break;
-                    case 4:
-                        String imageUrl = cell.getStringCellValue();
-                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
-                        if (image != null) {
-                            product.setImage(image);
-                        } else {
-                            AlbumEntity newImage = AlbumEntity.builder()
-                                    .product(product)
-                                    .type(AlbumType.PRODUCT)
-                                    .thumbnailUrl(imageUrl)
-                                    .imageUrl(imageUrl)
-                                    .build();
-                            product.setImage(newImage);
+
+
+                SizeEntity sizeEntity = new SizeEntity();
+                ToppingEntity toppingEntity = new ToppingEntity();
+
+                if (ExcelUtils.haveAnyOneCellWithData(row, 0, 4)) {
+                    isNewProductValueState = true;
+                } else {
+                    isNewProductValueState = false;
+                }
+                if (isNewProductValueState) {
+                    // row = 1 la dac biet vi isNewProductValueState = true nhung khong the them moi dc
+                    if (rowIndex != 1) {
+                        if ((product.getSizeList() == null || product.getSizeList().isEmpty())) {
+                            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Must have at least 1 size");
+                        } else if (dataValidFlag) {
+                            product.setPrice(getMinPrice(product.getSizeList()));
+                            productValidList.add(product);
+                            System.out.println("Saving product " + product.toString());
                         }
-                        break;
-                    case 5:
-                        sizeEntity.setSize(ProductSize.valueOf(cell.getStringCellValue()));
-                        break;
-                    case 6:
-                        sizeEntity.setPrice((long) cell.getNumericCellValue());
+                    }
 
-                        SizeEntity newEntity = new SizeEntity();
-                        newEntity.setSize(sizeEntity.getSize());
-                        newEntity.setPrice(sizeEntity.getPrice());
-                        newEntity.setProduct(product);
-                        sizeEntityList.add(newEntity);
-                        break;
-                    case 7:
-                        toppingEntity.setName(cell.getStringCellValue());
+                    dataValidFlag = true;
+                    product = new ProductEntity();
+                    product.setType(ProductType.BEVERAGE);
+                    sizeEntityList = new ArrayList<>();
+                    product.setSizeList(sizeEntityList);
+                    toppingEntityList = new ArrayList<>();
+                    product.setToppingList(toppingEntityList);
 
-                        break;
-                    case 8:
-                        toppingEntity.setPrice((long) cell.getNumericCellValue());
+                    List<Integer> colIndexList = ExcelUtils.getColIndexIsNoDataList(row, 0, 4);
+                    if (!colIndexList.isEmpty()) {
+                        skip4Col = true;
+                        for (Integer colIndex : colIndexList) {
+                            if (colIndex != null) {
+                                CreateProductFromFileErrorResponse.CellDataError errorCol = new CreateProductFromFileErrorResponse.CellDataError();
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(8);
+                                errorCol.setColIndex(colIndex);
+                                errorColList.add(errorCol);
+                            }
+                        }
+                    }
 
-                        ToppingEntity newToppingEntity = new ToppingEntity();
-                        newToppingEntity.setProduct(product);
-                        newToppingEntity.setName(toppingEntity.getName());
-                        newToppingEntity.setPrice(toppingEntity.getPrice());
-                        toppingEntityList.add(newToppingEntity);
-                        break;
+                }
+
+                // đọc từng ô
+                for (Cell cell : row) {
+                    int colIndex = cell.getColumnIndex();
+                    CreateProductFromFileErrorResponse.CellDataError errorCol = new CreateProductFromFileErrorResponse.CellDataError();
+                    errorCol.setColIndex(colIndex);
+
+                    // van con dang trong san pham cu
+                    if ((colIndex <= 4 && !isNewProductValueState) || skip4Col) {
+                        continue;
+                    }
+
+                    switch (colIndex) {
+                        case 0:
+                            ProductEntity existedProduct = productRepository.findByName(cell.getStringCellValue().trim()).orElse(null);
+                            if (existedProduct != null) {
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(1);
+                                break;
+                            }
+                            List<String> productName = new ArrayList<>(productValidList.stream().map(ProductEntity::getName).toList());
+
+                            productName.add(cell.getStringCellValue().trim());
+                            if (!checkProductData(productName)) {
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(2);
+                                break;
+                            }
+                            product.setName(cell.getStringCellValue().trim());
+                            break;
+                        case 1:
+                            CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim()).orElse(null);
+                            if (category == null) {
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(3);
+                                break;
+                            }
+                            product.setCategory(category);
+                            break;
+                        case 2:
+                            product.setStatus(ProductStatus.valueOf(cell.getStringCellValue().trim()));
+                            break;
+                        case 3:
+                            product.setDescription(cell.getStringCellValue().trim());
+                            break;
+                        case 4:
+                            String imageUrl = cell.getStringCellValue().trim();
+                            AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
+                            if (image != null) {
+                                if (image.getProduct() != null || image.getCategory() != null) {
+                                    dataValidFlag = false;
+                                    hasError = true;
+                                    errorCol.setErrorCode(4);
+                                    break;
+                                }
+                                product.setImage(image);
+                            } else {
+                                AlbumEntity newImage = AlbumEntity.builder()
+                                        .product(product)
+                                        .type(AlbumType.PRODUCT)
+                                        .thumbnailUrl(imageUrl)
+                                        .imageUrl(imageUrl)
+                                        .build();
+                                product.setImage(newImage);
+                            }
+                            break;
+                        case 5:
+                            if (ExcelUtils.isNoDataCell(cell)) {
+                                continue;
+                            }
+                            if (product.getSizeList() != null && !product.getSizeList().isEmpty()) {
+                                List<String> sizeNameList = new ArrayList<>(product.getSizeList().stream().map(it -> it.getSize().name()).toList());
+                                sizeNameList.add(cell.getStringCellValue().trim());
+                                if (!checkProductData(sizeNameList)) {
+                                    dataValidFlag = false;
+                                    hasError = true;
+                                    errorCol.setErrorCode(5);
+                                    break;
+                                }
+                            }
+
+                            sizeEntity.setSize(ProductSize.valueOf(cell.getStringCellValue().trim()));
+                            break;
+                        case 6:
+                            if (!ExcelUtils.isNoDataCell(cell) && (long) cell.getNumericCellValue() < 1000) {
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(6);
+                                break;
+                            }
+
+                            if (sizeEntity.getSize() == null) {
+                                continue;
+                            }
+                            sizeEntity.setPrice((long) cell.getNumericCellValue());
+
+                            SizeEntity newEntity = new SizeEntity();
+                            newEntity.setSize(sizeEntity.getSize());
+                            newEntity.setPrice(sizeEntity.getPrice());
+                            newEntity.setProduct(product);
+                            sizeEntityList.add(newEntity);
+                            break;
+                        case 7:
+                            if (ExcelUtils.isNoDataCell(cell)) {
+                                continue;
+                            }
+                            if (product.getToppingList() != null && !product.getToppingList().isEmpty()) {
+                                List<String> toppingNameList = new ArrayList<>(product.getToppingList().stream().map(it -> it.getName()).toList());
+                                toppingNameList.add(cell.getStringCellValue().trim());
+                                if (!checkProductData(toppingNameList)) {
+                                    dataValidFlag = false;
+                                    hasError = true;
+                                    errorCol.setErrorCode(7);
+                                    break;
+                                }
+                            }
+
+                            toppingEntity.setName(cell.getStringCellValue().trim());
+                            break;
+                        case 8:
+                            if (toppingEntity.getName() == null) {
+                                continue;
+                            }
+
+                            if (!ExcelUtils.isNoDataCell(cell) && (long) cell.getNumericCellValue() < 1000) {
+                                dataValidFlag = false;
+                                hasError = true;
+                                errorCol.setErrorCode(6);
+                                break;
+                            }
+
+                            toppingEntity.setPrice((long) cell.getNumericCellValue());
+                            ToppingEntity newToppingEntity = new ToppingEntity();
+                            newToppingEntity.setProduct(product);
+                            newToppingEntity.setName(toppingEntity.getName());
+                            newToppingEntity.setPrice(toppingEntity.getPrice());
+                            toppingEntityList.add(newToppingEntity);
+                            break;
+                    }
+
+                    if (errorCol.getErrorCode() != null) {
+                        errorColList.add(errorCol);
+                    }
+                }
+                if (!errorColList.isEmpty()) {
+                    errorRow.setErrorList(errorColList);
+                    data.add(errorRow);
+                }
+                System.out.println(product);
+            }
+
+            if ((product.getSizeList() == null || product.getSizeList().isEmpty())) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Must have at least 1 size");
+            } else if (dataValidFlag) {
+                product.setPrice(getMinPrice(product.getSizeList()));
+                productValidList.add(product);
+            }
+
+            if (force) {
+                productRepository.saveAll(productValidList);
+                productSearchService.createAllProduct(productValidList);
+            } else {
+                if (!hasError) {
+                    productRepository.saveAll(productValidList);
+                    productSearchService.createAllProduct(productValidList);
                 }
             }
-            System.out.println(product);
-        }
-        if (product != null) {
-            product.setPrice(getMinPrice(product.getSizeList()));
-            ProductEntity productSaved = productRepository.save(product);
-            productSearchService.createProduct(productSaved);
-        }
-
-        try {
             inputStream.close();
             workbook.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (IllegalStateException e) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The data is not in the correct format");
+        } catch (ShopfeeException e) {
+            throw new ShopfeeException(e.getError(), e.getDevMessage());
+        } catch (Exception e) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, e.getMessage());
         }
+
+        return data;
     }
 
 
     @Transactional
     @Override
-    public void createCakeFromFile(MultipartFile file) {
+    public List<CreateProductFromFileErrorResponse> createCakeFromFile(MultipartFile file, boolean force) {
         int success = 0;
-        List<ProductEntity> productList = new ArrayList<>();
-        InputStream inputStream = null;
-        Workbook workbook = null;
+        List<CreateProductFromFileErrorResponse> data = new ArrayList<>();
+        List<ProductEntity> productValidList = new ArrayList<>();
         try {
-            inputStream = file.getInputStream();
-            workbook = new XSSFWorkbook(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Sheet sheet = workbook.getSheetAt(0);
+            InputStream inputStream = file.getInputStream();
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0);
 
-        // đọc từng hàng
-        for (Row row : sheet) {
-            int rowIndex = row.getRowNum();
-            if (rowIndex == 0 || row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
-                continue;
-            }
-            ProductEntity product = new ProductEntity();
-            product.setType(ProductType.CAKE);
-
-            // đọc từng ô
-            for (Cell cell : row) {
-                int colIndex = cell.getColumnIndex();
-                if (cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().isEmpty())) {
+            boolean hasError = false;
+            // đọc từng hàng
+            for (Row row : sheet) {
+                boolean rowValid = true;
+                int rowIndex = row.getRowNum();
+                if(rowIndex == 0) {
                     continue;
                 }
-                switch (colIndex) {
-                    case 0:
-                        product.setName(cell.getStringCellValue());
-                        break;
-                    case 1:
-                        CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim())
-                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + cell.getStringCellValue()));
-                        product.setCategory(category);
-                        break;
-                    case 2:
-                        product.setStatus(ProductStatus.valueOf(cell.getStringCellValue()));
-                        break;
-                    case 3:
-                        product.setDescription(cell.getStringCellValue());
-                        break;
-                    case 4:
-                        product.setPrice((long) cell.getNumericCellValue());
-                        break;
-                    case 5:
-                        String imageUrl = cell.getStringCellValue();
-                        AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
-                        if (image != null) {
-                            product.setImage(image);
-                        } else {
-                            AlbumEntity newImage = AlbumEntity.builder()
-                                    .product(product)
-                                    .type(AlbumType.PRODUCT)
-                                    .thumbnailUrl(imageUrl)
-                                    .imageUrl(imageUrl)
-                                    .build();
-                            product.setImage(newImage);
+                CreateProductFromFileErrorResponse errorRow = new CreateProductFromFileErrorResponse();
+                List<CreateProductFromFileErrorResponse.CellDataError> errorColList = new ArrayList<>();
+                errorRow.setErrorList(errorColList);
+                errorRow.setRowIndex(rowIndex);
+
+                ProductEntity product = new ProductEntity();
+                product.setType(ProductType.CAKE);
+                List<Integer> colIndexList = ExcelUtils.getColIndexIsNoDataList(row, 0, 5);
+                if (!colIndexList.isEmpty()) {
+                    for (Integer index : colIndexList) {
+                        if (index != null) {
+                            CreateProductFromFileErrorResponse.CellDataError errorCol = new CreateProductFromFileErrorResponse.CellDataError();
+                            hasError = true;
+                            rowValid = false;
+                            errorCol.setErrorCode(8);
+                            errorCol.setColIndex(index);
+                            errorColList.add(errorCol);
                         }
-                        break;
+                    }
+                    data.add(errorRow);
+                    continue;
+                }
+                // đọc từng ô
+                for (Cell cell : row) {
+                    int colIndex = cell.getColumnIndex();
+
+                    CreateProductFromFileErrorResponse.CellDataError errorCol = new CreateProductFromFileErrorResponse.CellDataError();
+                    errorCol.setColIndex(colIndex);
+                    switch (colIndex) {
+                        case 0:
+                            ProductEntity existedProduct = productRepository.findByName(cell.getStringCellValue().trim()).orElse(null);
+                            if (existedProduct != null) {
+                                hasError = true;
+                                rowValid = false;
+                                errorCol.setErrorCode(1);
+                                break;
+                            }
+                            product.setName(cell.getStringCellValue().trim());
+                            break;
+                        case 1:
+                            CategoryEntity category = categoryRepository.findByName(cell.getStringCellValue().trim()).orElse(null);
+                            if (category == null) {
+                                hasError = true;
+                                rowValid = false;
+                                errorCol.setErrorCode(3);
+                                break;
+                            }
+                            product.setCategory(category);
+                            break;
+                        case 2:
+                            product.setStatus(ProductStatus.valueOf(cell.getStringCellValue()));
+                            break;
+                        case 3:
+                            product.setDescription(cell.getStringCellValue().trim());
+                            break;
+                        case 4:
+                            if ((long) cell.getNumericCellValue() < 1000) {
+                                hasError = true;
+                                rowValid = false;
+                                errorCol.setErrorCode(6);
+                                break;
+                            }
+                            product.setPrice((long) cell.getNumericCellValue());
+                            break;
+                        case 5:
+                            String imageUrl = cell.getStringCellValue().trim();
+                            AlbumEntity image = albumRepository.findByCloudinaryImageIdIsNotNullAndImageUrl(imageUrl.trim()).orElse(null);
+                            if (image != null) {
+                                if (image.getProduct() != null || image.getCategory() != null) {
+                                    hasError = true;
+                                    rowValid = false;
+                                    errorCol.setErrorCode(4);
+                                    break;
+                                }
+                                product.setImage(image);
+                            } else {
+                                AlbumEntity newImage = AlbumEntity.builder()
+                                        .product(product)
+                                        .type(AlbumType.PRODUCT)
+                                        .thumbnailUrl(imageUrl)
+                                        .imageUrl(imageUrl)
+                                        .build();
+                                product.setImage(newImage);
+                            }
+                            break;
+                    }
+                    if (errorCol.getErrorCode() != null) {
+                        errorColList.add(errorCol);
+                    }
+                }
+
+                System.out.println("Saving product " + product);
+                if(rowValid) {
+                    productValidList.add(product);
+                }
+                if(!errorRow.getErrorList().isEmpty()) {
+                    data.add(errorRow);
+                }
+
+                inputStream.close();
+                workbook.close();
+            }
+            if(force) {
+                productRepository.saveAll(productValidList);
+                productSearchService.createAllProduct(productValidList);
+            } else {
+                if(!hasError) {
+                    productRepository.saveAll(productValidList);
+                    productSearchService.createAllProduct(productValidList);
                 }
             }
-            System.out.println("Saving product " + product);
-            ProductEntity productSaved = productRepository.save(product);
-            productSearchService.createProduct(productSaved);
-        }
-        try {
-            inputStream.close();
-            workbook.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (IllegalStateException e) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The data is not in the correct format");
+        } catch (ShopfeeException e) {
+            throw new ShopfeeException(e.getError(), e.getDevMessage());
+        } catch (Exception e) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, e.getMessage());
         }
+        return data;
     }
 
     @Override
@@ -595,7 +808,7 @@ public class ProductService implements IProductService {
             Row headerRow = dataSheet.createRow(0);
             String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
             String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
-            String[] firstRowData2 = {null, null, null, null, "https://www.facebook.com/", "MEDIUM", "20000", null, null};
+            String[] firstRowData2 = {null, null, null, null, null, "MEDIUM", "20000", null, null};
             String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
             String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
             for (int i = 0; i < firstRow.length; i++) {
@@ -634,11 +847,11 @@ public class ProductService implements IProductService {
             for (int i = 0; i < firstRowData1.length; i++) {
                 Cell cell1 = r1.createCell(i);
                 Cell cell2 = r2.createCell(i);
-                if(i == 6 || i == 8) {
-                    if(firstRowData1[i] != null) {
+                if (i == 6 || i == 8) {
+                    if (firstRowData1[i] != null) {
                         cell1.setCellValue(Long.parseLong(firstRowData1[i]));
                     }
-                    if(firstRowData2[i] != null) {
+                    if (firstRowData2[i] != null) {
                         cell2.setCellValue(Long.parseLong(firstRowData2[i]));
 
                     }
@@ -647,6 +860,7 @@ public class ProductService implements IProductService {
                 cell1.setCellValue(firstRowData1[i]);
                 cell2.setCellValue(firstRowData2[i]);
             }
+
             for (int i = 0; i <= 4; i++) {
                 dataSheet.addMergedRegion(new CellRangeAddress(1, 2, i, i));
             }
@@ -712,7 +926,7 @@ public class ProductService implements IProductService {
             Row r1 = dataSheet.createRow(1);
             for (int i = 0; i < firstRowData1.length; i++) {
                 Cell cell1 = r1.createCell(i);
-                if(i == 4) {
+                if (i == 4) {
                     cell1.setCellValue(Long.valueOf(firstRowData1[i]));
                     continue;
                 }

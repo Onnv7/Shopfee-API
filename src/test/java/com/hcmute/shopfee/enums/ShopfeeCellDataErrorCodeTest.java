@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ShopfeeErrorCodeTest {
+class ShopfeeCellDataErrorCodeTest {
     @Test
     public void testEnum() {
         System.out.println(ShopfeeErrorCode.USER_NOT_FOUND);

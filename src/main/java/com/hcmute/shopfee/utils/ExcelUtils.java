@@ -1,9 +1,9 @@
 package com.hcmute.shopfee.utils;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelUtils {
@@ -58,5 +58,38 @@ public class ExcelUtils {
 
         // Apply the validation to the sheet
         sheet.addValidationData(validation2);
+    }
+
+    public static boolean isNoDataCell(Cell cell) {
+        if(cell == null) {
+            return true;
+        }
+        return cell.getCellType() == CellType.BLANK || (cell.getCellType() == CellType.STRING && cell.getStringCellValue().isBlank());
+    }
+
+    public static boolean haveAnyOneCellWithData(Row row, int start, int end) {
+        for(int i = start; i <= end; i ++) {
+            if(!isNoDataCell(row.getCell(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean haveAnyOneCellWithNoData(Row row, int start, int end) {
+        for(int i = start; i <= end; i ++) {
+            if(isNoDataCell(row.getCell(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static List<Integer> getColIndexIsNoDataList(Row row, int start, int end) {
+        List<Integer> result = new ArrayList<>();
+        for(int i = start; i <= end; i ++) {
+            if(isNoDataCell(row.getCell(i))) {
+                result.add(i);
+            }
+        }
+        return result;
     }
 }

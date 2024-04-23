@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -111,7 +112,11 @@ public class ExceptionHandlerController {
         } else if (ex instanceof AccessDeniedException) {
             httpStatus = HttpStatus.FORBIDDEN;
             errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
-        }  else {
+        }  else if(ex instanceof MissingServletRequestParameterException) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID);
+        }
+        else {
             errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR);
         }
         res.setError(errorData);

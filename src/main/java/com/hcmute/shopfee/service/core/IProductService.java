@@ -23,8 +23,8 @@ public interface IProductService {
     void updateProductById(UpdateProductRequest body, String id, ProductType productType);
     List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity);
     List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity);
-    void createBeverageFromFile(MultipartFile file);
-    void createCakeFromFile(MultipartFile file);
+    List<CreateProductFromFileErrorResponse> createBeverageFromFile(MultipartFile file, boolean force);
+    List<CreateProductFromFileErrorResponse>  createCakeFromFile(MultipartFile file, boolean force);
     CheckExistedNameResponse isExistedProductName(String productName);
     byte[] downloadImportBeverageFile();
     byte[] downloadImportCakeFile();

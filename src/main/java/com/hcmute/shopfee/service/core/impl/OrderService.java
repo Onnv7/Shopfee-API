@@ -601,7 +601,7 @@ public class OrderService implements IOrderService {
         orderBill.setCoin(deductCoin);
         if (deductCoin != 0) {
             totalPayment -= body.getCoin();
-            coinHistory.setCoin(body.getCoin());
+            coinHistory.setCoin(-body.getCoin());
         }
 
 
