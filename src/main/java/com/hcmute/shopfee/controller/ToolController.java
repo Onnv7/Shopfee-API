@@ -582,12 +582,6 @@ public class ToolController {
         return "Server IP Address: " + serverIpAddress;
     }
 
-    @PostMapping("/sendNotification")
-    public String sendNotification(@RequestBody NotificationMessageDto body) {
-
-        return firebaseMessagingService.sendNotificationTest(body);
-
-    }
 
     @PostMapping("/sendNotificationTopic")
     public String sendNotificationTopic(@RequestBody NotificationMessageDto body) {

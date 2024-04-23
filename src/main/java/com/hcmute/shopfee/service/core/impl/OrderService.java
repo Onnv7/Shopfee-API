@@ -26,6 +26,7 @@ import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
@@ -42,6 +43,7 @@ import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
+import com.hcmute.shopfee.service.core.ITransactionService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
@@ -92,6 +94,8 @@ public class OrderService implements IOrderService {
     private final FirebaseMessagingService firebaseMessagingService;
     private final OrderStateService orderStateService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
+    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
+    private final ITransactionService transactionService;
 
     private TransactionEntity buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
@@ -705,7 +709,7 @@ public class OrderService implements IOrderService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Order event is not valid");
         }
 
-        OrderBillEntity order = orderBillRepository.findById(orderId)
+        OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
 
@@ -716,33 +720,11 @@ public class OrderService implements IOrderService {
         }
 
         if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
-            long coinRefunded = 0L;
-            TransactionEntity transaction = order.getTransaction();
-            if (transaction.getStatus() == PaymentStatus.PAID) {
-                coinRefunded += transaction.getTotalPaid();
-
-                transaction.setRefunded(true);
-                transactionRepository.save(transaction);
-            }
-            if (order.getCoin() != null) {
-                coinRefunded += order.getCoin();
-            }
-            if (coinRefunded > 0) {
-                UserEntity user = order.getUser();
-                user.setCoin(user.getCoin() + coinRefunded);
-
-                CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
-                        .coin(coinRefunded)
-                        .actor(ActorType.AUTOMATIC)
-                        .user(order.getUser())
-                        .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
-                        .build();
-                coinHistoryRepository.save(coinHistory);
-            }
+            transactionService.refundOrder(orderBill, false, true);
         } else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
-            TransactionEntity trans = order.getTransaction();
+            TransactionEntity trans = orderBill.getTransaction();
             if (trans.getPaymentType() == PaymentType.CASHING) {
-                long totalPaid = order.getTotalItemPrice();
+                long totalPaid = orderBill.getTotalItemPrice();
                 trans.setStatus(PaymentStatus.PAID);
                 trans.setTotalPaid(totalPaid);
                 transactionRepository.save(trans);
@@ -752,12 +734,12 @@ public class OrderService implements IOrderService {
 
         OrderNotificationDto messageDto = OrderNotificationDto.builder()
                 .title("New Order Status")
-                .body(order.getOrderEventList().get(0).getOrderStatus().name())
-                .clientId(order.getUser().getId())
+                .body(orderBill.getOrderEventList().get(0).getOrderStatus().name())
+                .clientId(orderBill.getUser().getId())
                 .build();
-        firebaseMessagingService.sendOrderNotificationToUser(messageDto);
+        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(messageDto);
 
-        OrderBillEntity updatedOrder = orderBillRepository.save(order);
+        OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);
     }
 
@@ -802,28 +784,7 @@ public class OrderService implements IOrderService {
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
-
-        TransactionEntity transaction = orderBill.getTransaction();
-
-        long coinRefunded = 0L;
-        if (transaction.getStatus() == PaymentStatus.PAID) {
-            transaction.setRefunded(true);
-            coinRefunded += transaction.getTotalPaid();
-        } else if (transaction.getStatus() == PaymentStatus.UNPAID && orderBill.getCoin() != null) {
-            coinRefunded += orderBill.getCoin();
-        }
-        if (coinRefunded > 0) {
-            user.setCoin(user.getCoin() + coinRefunded);
-
-            CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
-                    .actor(ActorType.AUTOMATIC)
-                    .coin(coinRefunded)
-                    .user(user)
-                    .description(ShopfeeConstant.COIN_REFUND_CANCELLED_ORDER)
-                    .build();
-            coinHistoryRepository.save(coinHistory);
-        }
-
+        transactionService.refundOrder(orderBill, false, true);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);

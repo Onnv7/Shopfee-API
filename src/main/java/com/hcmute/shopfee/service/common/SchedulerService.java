@@ -1,6 +1,5 @@
 package com.hcmute.shopfee.service.common;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -8,7 +7,7 @@ import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.AcceptOrderJob;
-import com.hcmute.shopfee.schedule.job.TransactionQueryJob;
+import com.hcmute.shopfee.schedule.job.CheckTransactionValidJob;
 import com.hcmute.shopfee.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
@@ -34,9 +33,9 @@ public class SchedulerService {
             checkTransactionTime = DateUtils.plus(checkTransactionTime, 16, ChronoUnit.MINUTES);
             checkTransactionTime = DateUtils.plus(checkTransactionTime, 15, ChronoUnit.SECONDS);
         }
-        checkTransactionData.put(TransactionQueryJob.TRANSACTION_ID, transaction.getId());
-        checkTransactionData.put(TransactionQueryJob.PAYMENT_TYPE, transaction.getPaymentType());
-        setScheduler(TransactionQueryJob.class, checkTransactionData, Date.from(checkTransactionTime));
+        checkTransactionData.put(CheckTransactionValidJob.TRANSACTION_ID, transaction.getId());
+        checkTransactionData.put(CheckTransactionValidJob.PAYMENT_TYPE, transaction.getPaymentType());
+        setScheduler(CheckTransactionValidJob.class, checkTransactionData, Date.from(checkTransactionTime));
     }
 
     public void setAutoCancelOrder(OrderBillEntity orderBill) {

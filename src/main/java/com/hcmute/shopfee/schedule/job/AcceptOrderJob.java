@@ -13,9 +13,14 @@ import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.service.common.AuditorAwareService;
+import com.hcmute.shopfee.service.common.VNPayService;
+import com.hcmute.shopfee.service.common.ZaloPayService;
+import com.hcmute.shopfee.service.core.ITransactionService;
+import com.hcmute.shopfee.service.core.impl.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +31,10 @@ public class AcceptOrderJob extends QuartzJobBean {
     private final OrderEventRepository orderEventRepository;
     private final OrderBillRepository orderBillRepository;
     private final AuditorAwareService auditorAwareService;
+    private final VNPayService vnPayService;
+    private final ZaloPayService zaloPayService;
+    private final ITransactionService transactionService;
+    @Transactional
     @Override
     protected void executeInternal(JobExecutionContext context) {
         OrderBillEntity orderBill = orderBillRepository.findById(context.getJobDetail().getJobDataMap().getString(ORDER_BILL_ID))
@@ -33,24 +42,14 @@ public class AcceptOrderJob extends QuartzJobBean {
         List<OrderEventEntity> orderEvent = orderBill.getOrderEventList();
         if(orderEvent != null && orderBill.getOrderEventList().get(0).getOrderStatus() == OrderStatus.CREATED) {
             TransactionEntity transaction = orderBill.getTransaction();
-            OrderEventEntity newEvent;
-            if(transaction.getPaymentType() != PaymentType.CASHING && transaction.getStatus() == PaymentStatus.UNPAID) {
-                newEvent = OrderEventEntity.builder()
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.CANCELED)
-                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
-                        .description("The order has been canceled due to unpaid payment")
-                        .actor(ActorType.AUTOMATIC)
-                        .build();
-            } else {
-                newEvent = OrderEventEntity.builder()
-                        .orderBill(orderBill)
-                        .orderStatus(OrderStatus.ACCEPTED)
-                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
-                        .description("The order has been automatically accepted")
-                        .actor(ActorType.AUTOMATIC)
-                        .build();
-            }
+            OrderEventEntity newEvent= OrderEventEntity.builder()
+                    .orderBill(orderBill)
+                    .orderStatus(OrderStatus.CANCELED)
+                    .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
+                    .description("The order has been canceled due to unpaid payment")
+                    .actor(ActorType.AUTOMATIC)
+                    .build();
+           transactionService.refundOrder(orderBill, true, true);
             orderBill.getOrderEventList().add(newEvent);
                 orderBillRepository.save(orderBill);
         }

@@ -687,9 +687,9 @@ public class CouponService implements ICouponService {
     public GetCouponOptionsResponse getCouponListForCartResponse(GetCouponListForCartRequest body) {
         String userId = SecurityUtils.getCurrentUserId();
         GetCouponOptionsResponse data = new GetCouponOptionsResponse();
-        List<CouponType> noCombineWithShipping = new ArrayList<>();
-        List<CouponType> noCombineWithOrder = new ArrayList<>();
-        List<CouponType> noCombineWithProduct = new ArrayList<>();
+        List<CouponType> noCombineWithShippingCode = new ArrayList<>();
+        List<CouponType> noCombineWithOrderCode = new ArrayList<>();
+        List<CouponType> noCombineWithProductCode = new ArrayList<>();
 
         List<CouponType> shippingNoCombineBy = new ArrayList<>();
         List<CouponType> orderNoCombineBy = new ArrayList<>();
@@ -698,35 +698,35 @@ public class CouponService implements ICouponService {
 
         if (body.getShippingCouponCode() != null) {
             couponTypeList.add(CouponType.SHIPPING);
-            noCombineWithShipping = checkAndGetNoCouponTypeCombineList(body.getShippingCouponCode());
+            noCombineWithShippingCode = checkAndGetCouponTypeNoCombineListWithCoupon(body.getShippingCouponCode());
         }
 
         if (body.getOrderCouponCode() != null) {
             couponTypeList.add(CouponType.ORDER);
-            noCombineWithOrder = checkAndGetNoCouponTypeCombineList(body.getOrderCouponCode());
+            noCombineWithOrderCode = checkAndGetCouponTypeNoCombineListWithCoupon(body.getOrderCouponCode());
         }
         if (body.getProductCouponCode() != null) {
             couponTypeList.add(CouponType.PRODUCT);
-            noCombineWithProduct = checkAndGetNoCouponTypeCombineList(body.getProductCouponCode());
+            noCombineWithProductCode = checkAndGetCouponTypeNoCombineListWithCoupon(body.getProductCouponCode());
         }
 
-        if (noCombineWithShipping.contains(CouponType.ORDER)) {
+        if (noCombineWithShippingCode.contains(CouponType.ORDER)) {
             orderNoCombineBy.add(CouponType.SHIPPING);
         }
-        if (noCombineWithShipping.contains(CouponType.PRODUCT)) {
+        if (noCombineWithShippingCode.contains(CouponType.PRODUCT)) {
             productNoCombineBy.add(CouponType.SHIPPING);
         }
 
-        if (noCombineWithOrder.contains(CouponType.SHIPPING)) {
+        if (noCombineWithOrderCode.contains(CouponType.SHIPPING)) {
             shippingNoCombineBy.add(CouponType.ORDER);
         }
-        if (noCombineWithOrder.contains(CouponType.PRODUCT)) {
+        if (noCombineWithOrderCode.contains(CouponType.PRODUCT)) {
             productNoCombineBy.add(CouponType.ORDER);
         }
-        if (noCombineWithProduct.contains(CouponType.SHIPPING)) {
+        if (noCombineWithProductCode.contains(CouponType.SHIPPING)) {
             shippingNoCombineBy.add(CouponType.PRODUCT);
         }
-        if (noCombineWithProduct.contains(CouponType.ORDER)) {
+        if (noCombineWithProductCode.contains(CouponType.ORDER)) {
             orderNoCombineBy.add(CouponType.PRODUCT);
         }
 
@@ -734,19 +734,19 @@ public class CouponService implements ICouponService {
         data.setOrderNoCombineBy(orderNoCombineBy);
         data.setProductNoCombineBy(productNoCombineBy);
 
-        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCardOptionsByType(CouponType.SHIPPING, userId, body, couponTypeList, !shippingNoCombineBy.isEmpty(), body.getShippingCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCard(CouponType.SHIPPING, userId, body, couponTypeList, shippingNoCombineBy.isEmpty(), body.getShippingCouponCode());
         data.setShippingCouponList(shippingCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCardOptionsByType(CouponType.ORDER, userId, body, couponTypeList,  !orderNoCombineBy.isEmpty(), body.getOrderCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCard(CouponType.ORDER, userId, body, couponTypeList,  orderNoCombineBy.isEmpty(), body.getOrderCouponCode());
         data.setOrderCouponList(orderCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCardOptionsByType(CouponType.PRODUCT, userId, body, couponTypeList,  !productNoCombineBy.isEmpty(), body.getProductCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCard(CouponType.PRODUCT, userId, body, couponTypeList,  productNoCombineBy.isEmpty(), body.getProductCouponCode());
         data.setProductCouponList(productCouponCard);
 
         return data;
     }
 
-    private List<GetCouponOptionsResponse.CouponCard> checkAndGetCouponCardOptionsByType(
+    private List<GetCouponOptionsResponse.CouponCard> checkAndGetCouponCard(
             CouponType couponType, String userId, GetCouponListForCartRequest body,
-            List<CouponType> couponTypeListInCart, boolean canCombined, String couponCode) {
+            List<CouponType> couponTypeListInCart, boolean couponInCartCanCombineWithThisCouponType, String couponCode) {
         List<GetCouponOptionsResponse.CouponCard> couponCardList = new ArrayList<>();
         List<CouponEntity> couponEntityList = couponRepository.findByStatusAndCouponTypeAndIsDeletedFalse(CouponStatus.RELEASED, couponType);
         for (CouponEntity coupon : couponEntityList) {
@@ -764,7 +764,8 @@ public class CouponService implements ICouponService {
                 continue;
             }
             List<CouponConditionEntity> conditionList = coupon.getConditionList();
-            if (!canCombined) {
+            // canCombined la dkien coupon trong card co the combine voi loai couponType khong
+            if (!couponInCartCanCombineWithThisCouponType) {
                 couponCard.setValid(false);
             } else {
                 for (CouponConditionEntity condition : conditionList) {
@@ -865,7 +866,7 @@ public class CouponService implements ICouponService {
         return couponCardList;
     }
 
-    private List<CouponType> checkAndGetNoCouponTypeCombineList(String couponCode) {
+    private List<CouponType> checkAndGetCouponTypeNoCombineListWithCoupon(String couponCode) {
         List<CouponType> couponTypeList = Arrays.asList(CouponType.SHIPPING, CouponType.PRODUCT, CouponType.ORDER);
         List<CouponType> data = new ArrayList<>();
 

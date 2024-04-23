@@ -126,13 +126,14 @@ public class TransactionService implements ITransactionService {
 //        transactionRepository.save(trans);
 //    }
 
+    @Override
     @Transactional
-    public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) throws IOException, URISyntaxException {
-
+    public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) {
         TransactionEntity transaction = orderBill.getTransaction();
         if(transaction.isRefunded()) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Order has been refunded");
         }
+
         if (refundCoin) {
             long coin = orderBill.getCoin();
             if (coin > 0) {
@@ -144,24 +145,32 @@ public class TransactionService implements ITransactionService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
-
                 user.setCoin(user.getCoin() + coin);
                 userRepository.save(user);
                 transaction.setRefunded(true);
             }
         }
+        if(transaction.getStatus() != PaymentStatus.PAID) {
+            return;
+        }
         if(refundMoney) {
-            boolean isRefunded = refundTransaction(null, transaction);
-            if(isRefunded) {
-                transaction.setRefunded(true);
-            } else {
-                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");
+            try {
+                boolean isRefunded = refundTransaction(null, transaction);
+                if(isRefunded) {
+                    transaction.setRefunded(true);
+                } else {
+                    throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");
+                }
+            } catch (IOException | URISyntaxException e) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Refund error in the system");
+            } catch (Exception e) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Unexpected error");
             }
         }
         transactionRepository.save(transaction);
     }
 
-    public boolean refundTransaction(HttpServletRequest request, TransactionEntity transaction ) throws IOException, URISyntaxException {
+    private boolean refundTransaction(HttpServletRequest request, TransactionEntity transaction ) throws IOException, URISyntaxException {
         if (transaction.getPaymentType() == PaymentType.CASHING) {
             return false;
         }

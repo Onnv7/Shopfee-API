@@ -20,28 +20,6 @@ public class FirebaseMessagingService {
     private final UserFCMTokenRepository userFCMTokenEntityRepository;
 
 
-    public String sendNotificationTest(NotificationMessageDto notificationMessageDto) {
-        Notification notification = Notification.builder()
-                .setTitle(notificationMessageDto.getTitle())
-                .setBody(notificationMessageDto.getBody())
-                .setImage(notificationMessageDto.getImage())
-                .build();
-
-        Message message = Message.builder()
-                .setToken(notificationMessageDto.getRecipientToken())
-                .setNotification(notification)
-                .putAllData(notificationMessageDto.getData())
-                .build();
-
-        try {
-            firebaseMessaging.send(message);
-            return "success FirebaseMessagingException";
-        } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
-            return "error FirebaseMessagingException";
-        }
-    }
-
     public void sendOrderNotificationToBranch(String branchId, String title, String body) {
         Notification notification = Notification.builder()
                 .setTitle(title)
@@ -74,7 +52,5 @@ public class FirebaseMessagingService {
                 userFCMTokenEntityRepository.delete(entity);
             }
         }
-
-
     }
 }

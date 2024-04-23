@@ -24,7 +24,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 @RequiredArgsConstructor
-public class TransactionQueryJob extends QuartzJobBean {
+public class CheckTransactionValidJob extends QuartzJobBean {
     public static final String TRANSACTION_ID = "transactionId";
     public static final String PAYMENT_TYPE = "paymentType";
     private final ZaloPayService zaloPayService;
