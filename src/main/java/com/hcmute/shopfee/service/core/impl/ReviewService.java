@@ -54,8 +54,8 @@ public class ReviewService implements IReviewService {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
-        user.setCoin(user.getCoin() + 200);
-        userRepository.save(user);
+//        user.setCoin(user.getCoin() + 200);
+//        userRepository.save(user);
 
         CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                 .coin(200L)

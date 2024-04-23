@@ -145,8 +145,8 @@ public class TransactionService implements ITransactionService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
-                user.setCoin(user.getCoin() + coin);
-                userRepository.save(user);
+//                user.setCoin(user.getCoin() + coin);
+//                userRepository.save(user);
                 transaction.setRefunded(true);
             }
         }

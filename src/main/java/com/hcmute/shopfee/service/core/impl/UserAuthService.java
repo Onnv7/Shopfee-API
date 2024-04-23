@@ -108,7 +108,7 @@ public class UserAuthService implements IUserAuthService {
         roleList.add(userRole);
         userEntity.setRoleList(roleList);
         userEntity.setStatus(UserStatus.ACTIVE);
-        userEntity.setCoin(0L);
+//        userEntity.setCoin(0L);
         userEntity = userRepository.save(userEntity);
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
         var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
@@ -137,7 +137,7 @@ public class UserAuthService implements IUserAuthService {
                     .email(decodedToken.getEmail())
                     .password(passwordEncoder.encode(decodedToken.getUid()))
                     .avatarUrl(decodedToken.getPicture())
-                    .coin(0L)
+//                    .coin(0L)
                     .firstName(firstname)
                     .lastName(lastname)
                     .build();

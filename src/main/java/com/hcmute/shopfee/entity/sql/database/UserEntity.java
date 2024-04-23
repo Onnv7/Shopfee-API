@@ -65,8 +65,8 @@ public class UserEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "coin", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
-    private Long coin;
+//    @Column(name = "coin", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+//    private Long coin;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

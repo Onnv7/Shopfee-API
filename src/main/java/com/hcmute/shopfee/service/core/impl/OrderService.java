@@ -52,6 +52,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Scheduler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -86,16 +88,17 @@ public class OrderService implements IOrderService {
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
     private final CancellationDemandRepository cancellationDemandRepository;
-    private final Scheduler scheduler;
     private final AhamoveService ahamoveService;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
     private final SchedulerService schedulerService;
-    private final FirebaseMessagingService firebaseMessagingService;
     private final OrderStateService orderStateService;
     private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
     private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
-    private final ITransactionService transactionService;
+
+    @Autowired
+    @Lazy
+    private ITransactionService transactionService;
 
     private TransactionEntity buildTransaction(PaymentType paymentType, HttpServletRequest request, OrderBillEntity orderBill) {
         TransactionEntity transData = new TransactionEntity();
@@ -450,8 +453,8 @@ public class OrderService implements IOrderService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
-
-        if (user.getCoin() < deductCoin) {
+        long userCoin = coinHistoryRepository.getCoinOfUser(userId);
+        if (userCoin < deductCoin) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
         } else if (deductCoin > body.getTotal()) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
@@ -535,8 +538,8 @@ public class OrderService implements IOrderService {
             coinHistoryRepository.save(coinHistory);
 
             // cập nhật lại xu cho user
-            user.setCoin(user.getCoin() - orderBill.getCoin());
-            userRepository.save(user);
+//            user.setCoin(user.getCoin() - orderBill.getCoin());
+//            userRepository.save(user);
         }
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -577,8 +580,8 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
         long deductCoin = body.getCoin() != null ? body.getCoin() : 0L;
 
-
-        if (user.getCoin() < deductCoin) {
+        long userCoin = coinHistoryRepository.getCoinOfUser(userId);
+        if (userCoin < deductCoin) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
         } else if (deductCoin > body.getTotal()) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
@@ -653,8 +656,8 @@ public class OrderService implements IOrderService {
             coinHistoryRepository.save(coinHistory);
 
             // cập nhật lại xu cho user
-            user.setCoin(user.getCoin() - orderBill.getCoin());
-            userRepository.save(user);
+//            user.setCoin(user.getCoin() - orderBill.getCoin());
+//            userRepository.save(user);
         }
 
         transaction = orderBill.getTransaction();

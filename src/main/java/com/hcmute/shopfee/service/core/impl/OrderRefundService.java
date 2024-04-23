@@ -5,20 +5,21 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
 import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
+import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderRefundMediaEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
-import com.hcmute.shopfee.enums.AnswerStatus;
-import com.hcmute.shopfee.enums.MediaType;
-import com.hcmute.shopfee.enums.OrderStatus;
+import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
+import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderReturnRequestRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.core.IOrderRefundService;
+import com.hcmute.shopfee.service.core.ITransactionService;
 import com.hcmute.shopfee.utils.DateUtils;
 import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.StringUtils;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.ShopfeeConstant.HOURS_REQUEST_REFUND;
+import static com.hcmute.shopfee.constant.ShopfeeConstant.REFUND_COIN_ORDER;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,8 @@ public class OrderRefundService implements IOrderRefundService {
     private final OrderBillRepository orderBillRepository;
     private final CloudinaryService cloudinaryService;
     private final OrderReturnRequestRepository orderReturnRequestRepository;
+    private final ITransactionService transactionService;
+    private final CoinHistoryRepository coinHistoryRepository;
 
     @Transactional
     @Override
@@ -98,6 +102,7 @@ public class OrderRefundService implements IOrderRefundService {
         orderBillRepository.save(orderBill);
     }
 
+    @Transactional
     @Override
     public void processOrderRefundRequest(AnswerStatus status, String orderId) {
         OrderRefundRequestEntity orderReturnRequest = orderReturnRequestRepository.findByOrderBill_Id(orderId)
@@ -107,12 +112,21 @@ public class OrderRefundService implements IOrderRefundService {
         }
         OrderBillEntity orderBill = orderReturnRequest.getOrderBill();
         orderReturnRequest.setStatus(status);
-        if (status == AnswerStatus.ACCEPTED) {
-
+        if (status == AnswerStatus.ACCEPTED && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
             UserEntity user = orderBill.getUser();
-            long coinRefunded = orderBill.getCoin() + orderBill.getTotalPayment();
-            user.setCoin(user.getCoin() + coinRefunded);
-            orderBill.getTransaction().setRefunded(true);
+            if(orderBill.getTransaction().getPaymentType() == PaymentType.CASHING) {
+                long coinRefunded = orderBill.getCoin() + orderBill.getTotalPayment();
+                CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
+                        .coin(coinRefunded)
+                        .actor(ActorType.AUTOMATIC)
+                        .description("Refund coins for orders")
+                        .user(user)
+                        .build();
+                coinHistoryRepository.save(coinHistory);
+                orderBill.getTransaction().setRefunded(true);
+            } else {
+                transactionService.refundOrder(orderBill, true, true);
+            }
 
         }
         orderBillRepository.save(orderBill);
