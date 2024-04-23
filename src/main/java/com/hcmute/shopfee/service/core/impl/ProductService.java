@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.service.core.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
@@ -25,6 +26,7 @@ import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.service.redis.ProductRedisService;
 import com.hcmute.shopfee.utils.ExcelUtils;
 import com.hcmute.shopfee.utils.MediaUtils;
 import com.hcmute.shopfee.utils.RegexUtils;
@@ -61,6 +63,7 @@ public class ProductService implements IProductService {
     private final ProductSearchService productSearchService;
     private final ProductReviewRepository productReviewRepository;
     private final AlbumRepository albumRepository;
+    private final ProductRedisService productRedisService;
 
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
@@ -150,8 +153,7 @@ public class ProductService implements IProductService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        ProductEntity dataSaved = productRepository.save(productEntity);
-        productSearchService.createProduct(dataSaved);
+        productRepository.save(productEntity);
     }
 
     @Override
@@ -169,6 +171,16 @@ public class ProductService implements IProductService {
 
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
+
+        try {
+            GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
+            if(dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
+                return dataCache;
+            }
+        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+        }
+
         ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
         GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
@@ -178,6 +190,11 @@ public class ProductService implements IProductService {
         RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
         data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
 
+        try {
+            productRedisService.saveProductView(data);
+        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+        }
         return data;
     }
 
@@ -217,19 +234,30 @@ public class ProductService implements IProductService {
         GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
 
         List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
-        data.setProductList(productList);
 
-        Pageable pageable = PageRequest.of(page - 1, size);
+        PageRequest pageable = PageRequest.of(page - 1, size);
+        try {
+            data = productRedisService.getProductVisibleList(key, pageable, minPrice, maxPrice, minStar);
+            if(data != null) {
+                return data;
+            } else {
+                data = new GetAllVisibleProductResponse();
+            }
+        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+        }
+
 
         if (!key.isBlank()) {
-            Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, page, size);
+            Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, pageable);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();
             for (ProductIndex index : productIndexList) {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(index.getId());
                 productList.add(GetAllVisibleProductResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
             }
-        } else {
+        }
+        else {
             Page<ProductEntity> productPage = null;
             if (minPrice != null && maxPrice != null) {
                 if (productSortType == ProductSortType.PRICE_DESC) {
@@ -249,6 +277,12 @@ public class ProductService implements IProductService {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
                 productList.add(GetAllVisibleProductResponse.ProductCard.fromProductEntity(entity, ratingSummaryQueryDto));
             }
+        }
+        data.setProductList(productList);
+        try {
+            productRedisService.saveProductVisibleList(data, key, pageable, minPrice, maxPrice, minStar);
+        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
         }
         return data;
     }
@@ -283,7 +317,6 @@ public class ProductService implements IProductService {
             if (product.getImage().getCloudinaryImageId() == null) {
                 albumRepository.delete(product.getImage());
             }
-            productSearchService.deleteProduct(id);
         } else {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.CANT_DELETE);
         }
@@ -350,7 +383,6 @@ public class ProductService implements IProductService {
         product.setCategory(category);
 
         productRepository.save(product);
-        productSearchService.upsertProduct(product);
     }
 
     @Override
@@ -624,11 +656,11 @@ public class ProductService implements IProductService {
 
             if (force) {
                 productRepository.saveAll(productValidList);
-                productSearchService.createAllProduct(productValidList);
+//                productSearchService.createAllProduct(productValidList);
             } else {
                 if (!hasError) {
                     productRepository.saveAll(productValidList);
-                    productSearchService.createAllProduct(productValidList);
+//                    productSearchService.createAllProduct(productValidList);
                 }
             }
             inputStream.close();
@@ -770,11 +802,11 @@ public class ProductService implements IProductService {
             }
             if(force) {
                 productRepository.saveAll(productValidList);
-                productSearchService.createAllProduct(productValidList);
+//                productSearchService.createAllProduct(productValidList);
             } else {
                 if(!hasError) {
                     productRepository.saveAll(productValidList);
-                    productSearchService.createAllProduct(productValidList);
+//                    productSearchService.createAllProduct(productValidList);
                 }
             }
         } catch (IOException e) {

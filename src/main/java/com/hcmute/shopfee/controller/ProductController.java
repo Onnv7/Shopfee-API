@@ -242,7 +242,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_IMPORT_FILE_TO_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     protected ResponseEntity<ResponseAPI<List<CreateProductFromFileErrorResponse>>> createProductFromFile(@RequestParam("file") MultipartFile file
             , @RequestParam("product_type") ProductType productType, @RequestParam("force") boolean force) {
         List<CreateProductFromFileErrorResponse> data = new ArrayList<>();

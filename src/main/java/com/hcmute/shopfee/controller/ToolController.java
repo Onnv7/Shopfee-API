@@ -41,6 +41,7 @@ import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
+import com.hcmute.shopfee.service.redis.ProductRedisService;
 import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.ExcelUtils;
@@ -101,6 +102,7 @@ public class ToolController {
     private final EmployeeTokenRedisService employeeTokenRedisService;
     private final BranchRepository branchRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductRedisService productRedisService;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
@@ -864,5 +866,11 @@ public class ToolController {
     public String uploadFileToFolder(@ModelAttribute(name = "file") MultipartFile file) throws IOException {
         cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, "test-video", file.getBytes());
         return "uploaded";
+    }
+
+    @DeleteMapping(value = "/test-delete-redis-key")
+    public String deleteKeysWithPattern(@RequestParam("key") String key) throws IOException {
+        productRedisService.deleteKeysWithPattern(key);
+        return "deleted";
     }
 }

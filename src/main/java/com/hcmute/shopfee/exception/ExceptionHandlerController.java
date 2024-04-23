@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -99,12 +100,13 @@ public class ExceptionHandlerController {
         HttpStatus httpStatus = getHttpStatus(res.getError().getErrorMessage());
         return new ResponseEntity<ErrorResponse<?>>(res, httpStatus);
     }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         ex.printStackTrace();
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        ErrorResponse.ErrorData errorData = null;
+        ErrorResponse.ErrorData errorData =  new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR);
         ErrorResponse res = new ErrorResponse();
         if (ex instanceof AuthenticationException || ex instanceof JWTVerificationException) {
             httpStatus = HttpStatus.UNAUTHORIZED;
@@ -112,13 +114,11 @@ public class ExceptionHandlerController {
         } else if (ex instanceof AccessDeniedException) {
             httpStatus = HttpStatus.FORBIDDEN;
             errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
-        }  else if(ex instanceof MissingServletRequestParameterException) {
+        } else if (ex instanceof MissingServletRequestParameterException || ex instanceof MethodArgumentTypeMismatchException) {
             httpStatus = HttpStatus.BAD_REQUEST;
             errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID);
         }
-        else {
-            errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR);
-        }
+
         res.setError(errorData);
 
         if (environment.equals(dev)) {
@@ -129,6 +129,7 @@ public class ExceptionHandlerController {
         }
         return new ResponseEntity<>(res, httpStatus);
     }
+
     private static HttpStatus getHttpStatus(String exMessage) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         if (error404.contains(exMessage)) {

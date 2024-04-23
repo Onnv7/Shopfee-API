@@ -61,8 +61,8 @@ public class ProductSearchService {
         productSearchRepository.delete(productIndex);
     }
 
-    public Page<ProductIndex> searchVisibleProduct(String key, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<ProductIndex> searchVisibleProduct(String key,  Pageable pageable) {
+//        Pageable pageable = PageRequest.of(page - 1, size);
 //        String textRegex = RegexUtils.generateFilterRegexString(key);
         return productSearchRepository.searchVisibleProduct(key, pageable);
     }

@@ -7,6 +7,7 @@ import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
+import com.hcmute.shopfee.entity.sql.listener.ProductListener;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import jakarta.persistence.*;
@@ -30,7 +31,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, ProductListener.class})
 public class ProductEntity {
     @Id
     @GenericGenerator(name = "product_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
