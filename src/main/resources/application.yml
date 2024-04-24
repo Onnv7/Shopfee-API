@@ -104,36 +104,30 @@ server:
   port: ${SERVER_PORT}
 
 
+#logging:
+#  level:
+#    tracer: TRACE
+#    root: INFO
+#    com.hcmute.shopfee: TRACE
+#    org:
+#      elasticsearch:
+#        index:
+#          search:
+#            slowlog:
+#              query: INFO
+#      hibernate:
+#        SQL: DEBUG
+#        type.descriptor.sql: TRACE
+#        type: TRACE
+#        orm.jdbc.bind: TRACE
+#      springframework:
+#        security: TRACE
+#        data:
+#          elasticsearch:
+#            core: DEBUG
 
-#logging
-#%d{HH:mm:ss} [%thread]
-
-logging:
-  level:
-    tracer: TRACE
-    org:
-      elasticsearch:
-        index:
-          search:
-            slowlog:
-              query: INFO
-      hibernate:
-        SQL: debug
-        type.descriptor.sql: trace
-        type: trace
-        orm.jdbc.bind: trace
-      springframework:
-        security: TRACE
-        data:
-          mongodb.core:
-            MongoTemplate: DEBUG
-            ReactiveMongoTemplate: DEBUG
-          elasticsearch:
-            core: DEBUG
-#          client:
-#            WIRE: trace
-  pattern:
-    console: '[%-5level] %d{HH:mm:ss} %logger{36} - %msg%n'
+#  pattern:
+#    console: '[%-5level] %d{HH:mm:ss} %logger{36} - %msg%n'
 
 # image cloud
 cloudinary:

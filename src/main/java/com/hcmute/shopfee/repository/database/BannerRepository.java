@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface BannerRepository extends JpaRepository<BannerEntity, String> {
-    List<BannerEntity> findByIsDeletedFalseAndStatus(BannerStatus status);
+    List<BannerEntity> findByStatusAndIsDeletedFalse(BannerStatus status);
     Optional<BannerEntity> findByIdAndIsDeletedFalse(String bannerId);
     List<BannerEntity> findByIsDeletedFalse();
 

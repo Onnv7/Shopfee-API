@@ -50,10 +50,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
@@ -89,6 +92,7 @@ import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TXN_REF_KEY;
 @RequestMapping("tool")
 @Tag(name = "tool")
 @RequiredArgsConstructor
+//@Slf4j
 public class ToolController {
     private final ProductSearchRepository productSearchRepository;
     private final OrderSearchService orderSearchService;
@@ -816,8 +820,6 @@ public class ToolController {
         ExcelUtils.setDropList(statusArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 2, 2);
 
 
-
-
         // validate price > 1000
         ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 6, 6);
         ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 8, 8);
@@ -873,16 +875,37 @@ public class ToolController {
         productRedisService.deleteKeysWithPattern(key);
         return "deleted";
     }
+
     @GetMapping(value = "/getProductById")
     public List<ProductEntity> getProductById(@RequestParam("productId") String productId) throws IOException {
         return productRepository.getProductById(productId);
     }
 
     @GetMapping(value = "/getEmployeeTokenValue")
-    public String getProductById(@RequestParam("emplId") String emplId, @RequestParam("token") String token ) throws IOException {
+    public String getProductById(@RequestParam("emplId") String emplId, @RequestParam("token") String token) throws IOException {
         Boolean rs = employeeTokenRedisService.getEmployeeTokenValue(emplId, token);
-        if(rs == null)
+        if (rs == null)
             return "null";
         return String.valueOf(rs.booleanValue());
+    }
+
+    Logger log = LoggerFactory.getLogger(ToolController.class);
+
+    @GetMapping(value = "/testlog")
+    public String testlog(@RequestParam("emplId") String emplId) throws IOException {
+
+        log.error(emplId);
+        log.warn(emplId);
+        log.info(emplId);
+        log.debug(emplId);
+        log.trace(emplId);
+        int b = 14/0;
+        System.out.println(14/0);
+//        try {
+//            int a = 4 / 0;
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//        }
+        return "ok";
     }
 }

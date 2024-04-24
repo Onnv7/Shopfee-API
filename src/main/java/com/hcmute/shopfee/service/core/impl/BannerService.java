@@ -91,7 +91,7 @@ public class BannerService implements IBannerService {
 
     @Override
     public List<GetVisibleBannerListResponse> getVisibleBannerList() {
-        return modelMapperService.mapList(bannerRepository.findByIsDeletedFalseAndStatus(BannerStatus.VISIBLE), GetVisibleBannerListResponse.class);
+        return modelMapperService.mapList(bannerRepository.findByStatusAndIsDeletedFalse(BannerStatus.VISIBLE), GetVisibleBannerListResponse.class);
     }
 
     @Override
