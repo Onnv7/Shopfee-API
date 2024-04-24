@@ -4,6 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.TopicManagementResponse;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
@@ -99,8 +100,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         var accessToken = jwtService.issueAccessToken(principalAuthenticated.getUserId(), principalAuthenticated.getUsername(), roles);
         String refreshToken = jwtService.issueRefreshToken(principalAuthenticated.getUserId(), principalAuthenticated.getUsername(), roles);
 
-        employeeTokenRedisService.createNewEmployeeRefreshToken(refreshToken, principalAuthenticated.getUserId());
-
+        employeeTokenRedisService.saveEmployeeToken(employee.getId(), refreshToken, false);
         updateFcmTokenById(body.getFcmTokenId(), employee);
 
         return EmployeeLoginResponse.builder()
@@ -116,8 +116,6 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     public void employeeLogout(EmployeeLogoutRequest body, String refreshToken) {
         String employeeId = SecurityUtils.getCurrentUserId();
         try {
-            employeeTokenRedisService.deleteByEmployeeIdAndRefreshToken(employeeId, refreshToken);
-
             if(body.getFcmTokenId() != null) {
                 EmployeeFCMTokenEntity fcmTokenEntity = employeeFCMTokenRepository.findById(body.getFcmTokenId())
                         .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND  + body.getFcmTokenId()));
@@ -134,16 +132,16 @@ public class EmployeeAuthService implements IEmployeeAuthService {
         DecodedJWT jwt = jwtService.decodeRefreshToken(refreshToken);
 
         String employeeId = jwt.getSubject().toString();
-        EmployeeTokenEntity token = employeeTokenRedisService.getInfoOfRefreshToken(refreshToken, employeeId);
+        Boolean tokenInfoUsed = employeeTokenRedisService.getEmployeeTokenValue(employeeId, refreshToken);
 
         EmployeeEntity user = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + employeeId));
 
-        if (token == null) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Token is null");
+        if (tokenInfoUsed == null) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, ShopfeeConstant.TOKEN_NOT_FOUND_ERR_MSG);
         }
-        if (token.isUsed()) {
-            employeeTokenRedisService.deleteAllTokenByEmployeeId(employeeId);
+        if (tokenInfoUsed) {
+            employeeTokenRedisService.deleteAllTokenOfEmployee(employeeId);
             throw new ShopfeeException(ShopfeeErrorCode.TOKEN_STOLEN);
         }
 
@@ -151,8 +149,9 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         String newAccessToken = jwtService.issueAccessToken(user.getId(), user.getUsername(), roles);
         String newRefreshToken = jwtService.issueRefreshToken(user.getId(), user.getUsername(), roles);
-        employeeTokenRedisService.updateUsedEmployeeRefreshToken(token);
-        employeeTokenRedisService.createNewEmployeeRefreshToken(newRefreshToken, employeeId);
+
+        employeeTokenRedisService.saveEmployeeToken(employeeId, refreshToken, true);
+        employeeTokenRedisService.saveEmployeeToken(employeeId, newRefreshToken, false);
 
         RefreshEmployeeTokenResponse resData = RefreshEmployeeTokenResponse.builder()
                 .accessToken(newAccessToken)

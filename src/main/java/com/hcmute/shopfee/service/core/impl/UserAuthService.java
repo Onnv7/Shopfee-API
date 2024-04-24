@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
@@ -21,7 +22,6 @@ import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
-import com.hcmute.shopfee.entity.redis.UserTokenEntity;
 import com.hcmute.shopfee.repository.database.ConfirmationRepository;
 import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.RoleRepository;
@@ -51,7 +51,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.*;
+import static com.cloudinary.AccessControlRule.AccessType.token;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
 
 @Service
@@ -72,11 +72,11 @@ public class UserAuthService implements IUserAuthService {
     private PasswordEncoder passwordEncoder;
 
     private void updateFcmTokenById(String fcmTokenId, UserEntity user) {
-        if(fcmTokenId == null) {
+        if (fcmTokenId == null) {
             return;
         }
         UserFCMTokenEntity userFcmTokenEntity = userFcmTokenRepository.findById(fcmTokenId)
-                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + fcmTokenId));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + fcmTokenId));
         userFcmTokenEntity.setUser(user);
         userFcmTokenRepository.save(userFcmTokenEntity);
     }
@@ -113,7 +113,9 @@ public class UserAuthService implements IUserAuthService {
         List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
         var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
         var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
-        userTokenRedisService.createNewUserRefreshToken(refreshToken, userEntity.getId());
+
+        userTokenRedisService.upsertUserToken(userEntity.getId(), refreshToken, false);
+
         resData.setAccessToken(accessToken);
         resData.setRefreshToken(refreshToken);
         resData.setUserId(userEntity.getId());
@@ -155,7 +157,7 @@ public class UserAuthService implements IUserAuthService {
             var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
             var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
 
-            userTokenRedisService.createNewUserRefreshToken(refreshToken, userEntity.getId());
+            userTokenRedisService.upsertUserToken(userEntity.getId(), refreshToken, false);
 
             resData.setAccessToken(accessToken);
             resData.setRefreshToken(refreshToken);
@@ -190,7 +192,7 @@ public class UserAuthService implements IUserAuthService {
         var accessToken = jwtService.issueAccessToken(userId, username, roles);
         String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
 
-        userTokenRedisService.createNewUserRefreshToken(refreshToken, principalAuthenticated.getUserId());
+        userTokenRedisService.upsertUserToken(userId, refreshToken, false);
 
         updateFcmTokenById(body.getFcmTokenId(), user);
 
@@ -210,7 +212,7 @@ public class UserAuthService implements IUserAuthService {
 
             var accessToken = jwtService.issueAccessToken(userId, username, roles);
             String refreshToken = jwtService.issueRefreshToken(userId, username, roles);
-            userTokenRedisService.createNewUserRefreshToken(refreshToken, userId);
+            userTokenRedisService.upsertUserToken(userId, refreshToken, false);
             updateFcmTokenById(body.getFcmTokenId(), user);
             return LoginResponse.builder().accessToken(accessToken).userId(userId).refreshToken(refreshToken).build();
 
@@ -223,13 +225,12 @@ public class UserAuthService implements IUserAuthService {
     public void logoutUser(UserLogoutRequest body, String refreshToken) {
         String userId = SecurityUtils.getCurrentUserId();
         try {
-            if(body.getFcmTokenId() != null) {
+            if (body.getFcmTokenId() != null) {
                 UserFCMTokenEntity fcmTokenEntity = userFcmTokenRepository.findById(body.getFcmTokenId())
                         .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getFcmTokenId()));
                 fcmTokenEntity.setUser(null);
                 userFcmTokenRepository.save(fcmTokenEntity);
             }
-            userTokenRedisService.deleteByUserIdAndRefreshToken(userId, refreshToken);
 
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -275,7 +276,7 @@ public class UserAuthService implements IUserAuthService {
     @Override
     public void changePasswordForgot(ChangePasswordRequest body) {
         UserEntity user = userRepository.findByEmail(body.getEmail())
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT+ body.getEmail()));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getEmail()));
 
         ConfirmationEntity confirmation = confirmationRepository.findByEmailAndCode(body.getEmail(), body.getCode())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, "Email has not been verified"));
@@ -293,23 +294,24 @@ public class UserAuthService implements IUserAuthService {
         DecodedJWT jwt = jwtService.decodeRefreshToken(refreshToken);
 
         String userId = jwt.getSubject().toString();
-        UserTokenEntity token = userTokenRedisService.getInfoOfRefreshToken(refreshToken, userId);
+        Boolean tokenInfo = userTokenRedisService.getUserTokenValue(userId, refreshToken);
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
 
-        if (token == null) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.NOT_FOUND, "There is no token data in the database");
+        if (tokenInfo == null) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED, ShopfeeConstant.TOKEN_NOT_FOUND_ERR_MSG);
         }
-        if (token.isUsed()) {
-            userTokenRedisService.deleteAllTokenByUserId(userId);
+        if (tokenInfo) {
+            userTokenRedisService.deleteAllTokenOfUser(userId);
             throw new ShopfeeException(ShopfeeErrorCode.TOKEN_STOLEN);
         }
         List<String> roles = jwt.getClaim(ROLES_CLAIM_KEY).asList(String.class);
         String newAccessToken = jwtService.issueAccessToken(user.getId(), user.getEmail(), roles);
         String newRefreshToken = jwtService.issueRefreshToken(user.getId(), user.getEmail(), roles);
-        userTokenRedisService.createNewUserRefreshToken(newAccessToken, userId);
-        userTokenRedisService.updateUsedUserRefreshToken(token);
+
+        userTokenRedisService.upsertUserToken(userId, refreshToken, true);
+        userTokenRedisService.upsertUserToken(userId, newRefreshToken, false);
 
         RefreshTokenResponse resData = RefreshTokenResponse.builder()
                 .accessToken(newAccessToken)

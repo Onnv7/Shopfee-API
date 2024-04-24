@@ -1,48 +1,36 @@
 package com.hcmute.shopfee.service.redis;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.entity.redis.UserTokenEntity;
-import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
-import com.hcmute.shopfee.model.ShopfeeException;
-import com.hcmute.shopfee.repository.redis.UserTokenRepository;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class UserTokenRedisService {
-    private final UserTokenRepository userTokenRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+    public static final String PREFIX_KEY_USER_TOKEN = "user_token";
+    public final static String STRING_FORMAT_KEY_USER_TOKEN = PREFIX_KEY_USER_TOKEN + ":%s:%s";
 
-    public void createNewUserRefreshToken(String refreshToken, String userId) {
-        UserTokenEntity data = UserTokenEntity.builder()
-                .refreshToken(refreshToken)
-                .isUsed(false)
-                .userId(userId)
-                .build();
-        userTokenRepository.save(data);
+    private String getKeyUserTokenKey(String userId, String token) {
+        return String.format(STRING_FORMAT_KEY_USER_TOKEN, userId, token);
     }
-    public void deleteByUserIdAndRefreshToken(String userId, String refreshToken) {
-        UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
-        userTokenRepository.delete(entity);
+    public void upsertUserToken(String userId, String token, boolean isUsed) {
+        String key = getKeyUserTokenKey(userId, token);
+        redisTemplate.opsForValue().set(key, isUsed, ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME, TimeUnit.MINUTES);
     }
-
-    public UserTokenEntity getInfoOfRefreshToken(String refreshToken, String userId) {
-        UserTokenEntity entity = userTokenRepository.findByUserIdAndRefreshToken(userId, refreshToken)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
-        return entity;
+    public Boolean getUserTokenValue(String userId, String token) {
+        String key = getKeyUserTokenKey(userId, token);
+        return (Boolean) redisTemplate.opsForValue().get(key);
     }
-
-    public void updateUsedUserRefreshToken(UserTokenEntity oldValue) {
-        oldValue.setUsed(true);
-        userTokenRepository.save(oldValue);
-    }
-    public void deleteAllTokenByUserId(String userId) {
-        List<UserTokenEntity> userTokenEntityList = userTokenRepository.findByUserId(userId);
-        for(UserTokenEntity userTokenEntity : userTokenEntityList) {
-            userTokenRepository.delete(userTokenEntity);
+    public void deleteAllTokenOfUser(String userId) {
+        String pattern = getKeyUserTokenKey(userId, "*");
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (keys != null) {
+            redisTemplate.delete(keys);
         }
     }
 }

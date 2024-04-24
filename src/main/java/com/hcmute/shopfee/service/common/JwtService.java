@@ -25,7 +25,7 @@ public class JwtService {
     public String issueAccessToken(String userId, String email, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(ShopfeeConstant.ACCESS_TOKEN_EXPIRE_DAY_TIME, ChronoUnit.DAYS)))
+                .withExpiresAt(Instant.now().plus(Duration.of(ShopfeeConstant.ACCESS_TOKEN_EXPIRE_MINUTES_TIME, ChronoUnit.MINUTES)))
                 .withClaim(EMAIL_CLAIM_KEY, email)
                 .withClaim(ROLES_CLAIM_KEY, roles)
                 .sign(Algorithm.HMAC256(properties.getAccessTokenKey()));

@@ -723,7 +723,7 @@ public class OrderService implements IOrderService {
         }
 
         if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
-            transactionService.refundOrder(orderBill, false, true);
+            transactionService.refundOrder(orderBill, true, true);
         } else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
             TransactionEntity trans = orderBill.getTransaction();
             if (trans.getPaymentType() == PaymentType.CASHING) {
@@ -787,7 +787,7 @@ public class OrderService implements IOrderService {
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
-        transactionService.refundOrder(orderBill, false, true);
+        transactionService.refundOrder(orderBill, true, true);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);

@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
@@ -43,7 +44,7 @@ public class UserAuthController {
                 .data(resDate)
                 .message(SuccessConstant.CREATED)
                 .build();
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
         return new ResponseEntity<>(res, headers, StatusCode.CREATED);
     }
 
@@ -58,7 +59,7 @@ public class UserAuthController {
                 .data(resDate)
                 .message(SuccessConstant.CREATED)
                 .build();
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
         return new ResponseEntity<>(res, headers, StatusCode.CREATED);
     }
 
@@ -73,7 +74,7 @@ public class UserAuthController {
                 .data(data)
                 .build();
 
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
 
     }
@@ -91,7 +92,7 @@ public class UserAuthController {
                 .build();
 
 
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
 
     }
@@ -108,7 +109,7 @@ public class UserAuthController {
                 .message(SuccessConstant.LOGOUT)
                 .build();
 
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie("", 0L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie("", 0);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 
@@ -175,7 +176,7 @@ public class UserAuthController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), 604800L);
+        HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
         return new ResponseEntity<>(res, headers, StatusCode.OK);
     }
 

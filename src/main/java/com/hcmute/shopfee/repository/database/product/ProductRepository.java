@@ -19,6 +19,12 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Page<ProductEntity> findByCategory_IdAndStatusNot(String categoryId, ProductStatus status, Pageable pageable);
     Page<ProductEntity> findByStatusNot(ProductStatus status, Pageable pageable);
     @Query(value = """
+            select *
+            from product p
+            where p.id = ?1
+            """, nativeQuery = true)
+    List<ProductEntity> getProductById(String productId);
+    @Query(value = """
             select p.name
             from product p
             """, nativeQuery = true)

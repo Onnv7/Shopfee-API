@@ -356,10 +356,10 @@ public class ToolController {
         return ResponseEntity.status(200).body("Ok fine");
     }
 
-    @DeleteMapping(value = "/refresh/{employeeId}")
+    @DeleteMapping(value = "/deleteRefreshToken/{employeeId}")
     public ResponseEntity<String> deleteRefreshToken(@PathVariable("employeeId") String employeeId) {
 //        orderService.checkOrderCoupon(code);
-        employeeTokenRedisService.deleteAllTokenByEmployeeId(employeeId);
+        employeeTokenRedisService.deleteAllTokenOfEmployee(employeeId);
         return ResponseEntity.status(200).body("Ok fine");
     }
 
@@ -872,5 +872,17 @@ public class ToolController {
     public String deleteKeysWithPattern(@RequestParam("key") String key) throws IOException {
         productRedisService.deleteKeysWithPattern(key);
         return "deleted";
+    }
+    @GetMapping(value = "/getProductById")
+    public List<ProductEntity> getProductById(@RequestParam("productId") String productId) throws IOException {
+        return productRepository.getProductById(productId);
+    }
+
+    @GetMapping(value = "/getEmployeeTokenValue")
+    public String getProductById(@RequestParam("emplId") String emplId, @RequestParam("token") String token ) throws IOException {
+        Boolean rs = employeeTokenRedisService.getEmployeeTokenValue(emplId, token);
+        if(rs == null)
+            return "null";
+        return String.valueOf(rs.booleanValue());
     }
 }
