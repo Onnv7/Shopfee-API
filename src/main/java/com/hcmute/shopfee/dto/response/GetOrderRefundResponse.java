@@ -4,6 +4,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
 import com.hcmute.shopfee.enums.AnswerStatus;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -12,6 +13,7 @@ public class GetOrderRefundResponse {
     private String note;
     private AnswerStatus status;
     private List<Media> mediaList;
+    private Date createdAt;
     @Data
     private static class Media {
         private String thumbnailUrl;
@@ -23,6 +25,7 @@ public class GetOrderRefundResponse {
         data.setReason(entity.getReason());
         data.setNote(entity.getNote());
         data.setStatus(entity.getStatus());
+        data.setCreatedAt(entity.getCreatedAt());
         data.setMediaList(entity.getOrderRefundMediaList().stream().map(it -> {
             Media media = new Media();
             media.setMediaUrl(it.getMediaUrl());

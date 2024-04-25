@@ -174,7 +174,7 @@ public class ProductService implements IProductService {
 
         try {
             GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
-            if(dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
+            if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
                 return dataCache;
             }
         } catch (JsonProcessingException e) {
@@ -207,15 +207,17 @@ public class ProductService implements IProductService {
         // TODO: nên check category not hidden
         Page<ProductEntity> productPage = null;
 
-        Pageable pageable = PageRequest.of(page - 1, size);
-        if (minPrice != null && maxPrice != null) {
-            if (productSortType == ProductSortType.PRICE_DESC) {
-                pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
-            } else if (productSortType == ProductSortType.PRICE_ASC) {
-                pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
-            }
-            productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
+        Pageable pageable;
+        if (productSortType == ProductSortType.PRICE_DESC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
+        } else if (productSortType == ProductSortType.PRICE_ASC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
+        } else {
+            pageable = PageRequest.of(page - 1, size);
+        }
 
+        if (minPrice != null && maxPrice != null) {
+            productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
         } else {
             productPage = productRepository.findByCategory_IdAndStatusNot(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
         }
@@ -235,10 +237,18 @@ public class ProductService implements IProductService {
 
         List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
 
-        PageRequest pageable = PageRequest.of(page - 1, size);
+        PageRequest pageable;
+        if (productSortType == ProductSortType.PRICE_DESC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
+        } else if (productSortType == ProductSortType.PRICE_ASC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
+        } else {
+            pageable = PageRequest.of(page - 1, size);
+        }
+
         try {
             data = productRedisService.getProductVisibleList(key, pageable, minPrice, maxPrice, minStar);
-            if(data != null) {
+            if (data != null) {
                 return data;
             } else {
                 data = new GetAllVisibleProductResponse();
@@ -256,21 +266,14 @@ public class ProductService implements IProductService {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(index.getId());
                 productList.add(GetAllVisibleProductResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
             }
-        }
-        else {
+        } else {
             Page<ProductEntity> productPage = null;
             if (minPrice != null && maxPrice != null) {
-                if (productSortType == ProductSortType.PRICE_DESC) {
-                    pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
-                } else if (productSortType == ProductSortType.PRICE_ASC) {
-                    pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
-                }
-
                 productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
             } else {
                 productPage = productRepository.findByStatusNot(ProductStatus.HIDDEN, pageable);
-
             }
+
             data.setTotalPage(productPage.getTotalPages());
             List<ProductEntity> productEntityList = productPage.getContent();
             for (ProductEntity entity : productEntityList) {
@@ -695,7 +698,7 @@ public class ProductService implements IProductService {
             for (Row row : sheet) {
                 boolean rowValid = true;
                 int rowIndex = row.getRowNum();
-                if(rowIndex == 0) {
+                if (rowIndex == 0) {
                     continue;
                 }
                 CreateProductFromFileErrorResponse errorRow = new CreateProductFromFileErrorResponse();
@@ -790,21 +793,21 @@ public class ProductService implements IProductService {
                 }
 
                 System.out.println("Saving product " + product);
-                if(rowValid) {
+                if (rowValid) {
                     productValidList.add(product);
                 }
-                if(!errorRow.getErrorList().isEmpty()) {
+                if (!errorRow.getErrorList().isEmpty()) {
                     data.add(errorRow);
                 }
 
                 inputStream.close();
                 workbook.close();
             }
-            if(force) {
+            if (force) {
                 productRepository.saveAll(productValidList);
 //                productSearchService.createAllProduct(productValidList);
             } else {
-                if(!hasError) {
+                if (!hasError) {
                     productRepository.saveAll(productValidList);
 //                    productSearchService.createAllProduct(productValidList);
                 }
