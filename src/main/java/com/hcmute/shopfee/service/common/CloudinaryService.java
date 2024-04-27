@@ -40,7 +40,7 @@ public class CloudinaryService {
         try {
             String quality = "auto:low";
 
-            Transformation transformation = new Transformation().quality(quality).width(300).height(200);
+            Transformation transformation = new Transformation().quality(quality).width(320).height(320);
             return cloudinary.url().transformation(transformation)
                     .version(cloudinary.api().resource(publicId, null).get("version"))
                     .generate(publicId);

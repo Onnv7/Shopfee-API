@@ -127,10 +127,9 @@ public class ProductService implements IProductService {
         } else if (productType == ProductType.BEVERAGE) {
             productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
         }
-        byte[] originalImage = new byte[0];
+        byte[] originalImage;
         try {
             originalImage = image.getBytes();
-            byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
 
             CategoryEntity categoryEntity = categoryRepository.findById(body.getCategoryId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getCategoryId().trim()));
@@ -139,7 +138,7 @@ public class ProductService implements IProductService {
             CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
                     StringUtils.generateFileName(body.getName().trim(), "product"),
-                    newImage
+                    originalImage
             );
 
             AlbumEntity productImage = AlbumEntity.builder()

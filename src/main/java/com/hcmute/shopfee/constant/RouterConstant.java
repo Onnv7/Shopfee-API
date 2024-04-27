@@ -5,6 +5,7 @@ public class RouterConstant {
     public static final String USER_BASE_PATH = "/api/user";
     public static final String ADDRESS_BASE_PATH = "/api/address";
     public static final String ALBUM_BASE_PATH = "/api/album";
+    public static final String CALLBACK_BASE_PATH = "/api/callback";
     public static final String REVIEW_BASE_PATH = "/api/review";
     public static final String BRANCH_BASE_PATH = "/api/branch";
     public static final String EMPLOYEE_AUTH_BASE_PATH = "/api/auth/employee";

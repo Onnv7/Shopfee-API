@@ -49,44 +49,6 @@ public class ZaloPayService {
             throw new RuntimeException(e);
         }
     }
-    public ZaloCallbackResponse processCallback(CallBackDto body) throws JsonProcessingException {
-        ZaloCallbackResponse response = new ZaloCallbackResponse();
-        String reqMac = ZaloPayUtils.hmacSha256(zaloPay.getKey2(), body.getData());
-        if(reqMac.equals(body.getMac())) {
-            ObjectMapper mapper = new ObjectMapper();
-            CallbackDataRequest dataRequest = mapper.readValue(body.getData(), CallbackDataRequest.class);
-
-            ZaloPayEntity zaloPay = zaloPayRepository.findByAppTransactionId(dataRequest.getAppTransId())
-                    .orElse(null);
-
-            if(zaloPay != null) {
-                TransactionEntity transaction = zaloPay.getTransaction();
-                if(transaction.getOrderBill().getTotalPayment() != dataRequest.getAmount()) {
-                    response.setReturnCode(-1);
-                    response.setReturnMessage("exception");
-                } else {
-                    transaction.setTotalPaid((long) dataRequest.getAmount());
-                    transaction.setStatus(PaymentStatus.PAID);
-                    zaloPay.setZalopayTransactionId(String.valueOf(dataRequest.getZpTransId()));
-
-                    response.setReturnCode(1);
-                    response.setReturnMessage("success");
-
-                    transactionRepository.save(transaction);
-                }
-            } else {
-                response.setReturnCode(-1);
-                response.setReturnMessage("exception");
-            }
-        }
-        else {
-            response.setReturnCode(0);
-            response.setReturnMessage("invalid callback");
-        }
-        return response;
-
-    }
-
 
     public Map<String, Object> sendRefund(RefundRequestDTO request) throws IOException, URISyntaxException {
         return zaloPay.sendRefund(request.getZpTransId(), request.getAmount(), request.getDescription());

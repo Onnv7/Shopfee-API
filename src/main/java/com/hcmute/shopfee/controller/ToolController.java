@@ -37,6 +37,7 @@ import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
 import com.hcmute.shopfee.service.common.*;
+import com.hcmute.shopfee.service.core.impl.CallbackService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
@@ -115,6 +116,7 @@ public class ToolController {
     private final ProductReviewRepository productReviewRepository;
     private final RoleRepository roleRepository;
     private final VNPayService vnPayService;
+    private final CallbackService callbackService;
     private final ZaloPayService zaloPayService;
     private final ZaloPay zaloPay;
     private final FirebaseMessagingService firebaseMessagingService;
@@ -535,7 +537,7 @@ public class ToolController {
     @GetMapping("/VNPAY-test-callback")
     public ResponseEntity<Map<String, Object>> doCallBack(@RequestParam Map<String, Object> callBackInfo, HttpServletRequest request) throws UnsupportedEncodingException, JsonProcessingException {
 
-        vnPayService.processCallback(request);
+        callbackService.processCallback(request);
         System.out.println(callBackInfo);
         return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
     }
@@ -558,7 +560,7 @@ public class ToolController {
 
     @PostMapping("/ZALOPAY-test-callback")
     public ZaloCallbackResponse createZaloPaycallback(@RequestBody CallBackDto body) throws IOException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException {
-        return zaloPayService.processCallback(body);
+        return callbackService.processCallback(body);
     }
 
     @PostMapping("/ZALOPAY-test-refund")
