@@ -115,17 +115,6 @@ public class TransactionService implements ITransactionService {
         transactionRepository.save(transaction);
     }
 
-//    @Override
-//    public void completeTransaction(String transId) {
-//        OrderBillEntity orderBill = orderBillRepository.findByTransaction_Id(transId)
-//                .orElseThrow(() -> new ShopfeeException(ErrorConstant.NOT_FOUND, "Order bill with transaction id " + transId));
-//        TransactionEntity trans = orderBill.getTransaction();
-//        long totalPaid = orderBill.getTotalItemPrice();
-//        trans.setStatus(PaymentStatus.PAID);
-//        trans.setTotalPaid(totalPaid);
-//        transactionRepository.save(trans);
-//    }
-
     @Override
     @Transactional
     public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) {

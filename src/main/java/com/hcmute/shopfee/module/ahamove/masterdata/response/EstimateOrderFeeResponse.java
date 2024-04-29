@@ -1,12 +1,7 @@
-package com.hcmute.shopfee.module.ahamove.masterdata.estimateorderfee.response;
+package com.hcmute.shopfee.module.ahamove.masterdata.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hcmute.shopfee.module.ahamove.Ahamove;
 import lombok.Data;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 @Data
 public class EstimateOrderFeeResponse {

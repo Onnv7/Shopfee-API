@@ -12,9 +12,10 @@ public interface CoinHistoryRepository extends JpaRepository<CoinHistoryEntity, 
     Page<CoinHistoryEntity> findByUser_Id(String userId, Pageable pageable);
 
     @Query(value = """
-            select sum(ch.coin)
+            select COALESCE(sum(ch.coin), 0) as coin
             from coin_history ch
-            join user u on u.id = ch.user_id
+            join `user` u on u.id = ch.user_id
+            where u.id = ?1
             """, nativeQuery = true)
     long getCoinOfUser(String userId);
 }

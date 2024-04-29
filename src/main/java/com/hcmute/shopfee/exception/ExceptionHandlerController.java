@@ -118,7 +118,6 @@ public class ExceptionHandlerController {
             httpStatus = HttpStatus.BAD_REQUEST;
             errorData = new ErrorResponse.ErrorData(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID);
         }
-        log.debug("123debug");
         log.error("Error", ex);
         res.setError(errorData);
 

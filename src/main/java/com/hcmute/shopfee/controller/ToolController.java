@@ -73,9 +73,7 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Time;
@@ -445,28 +443,23 @@ public class ToolController {
     @GetMapping("/VNPAY-test-refund")
     public Map<String, Object> refundZalo(HttpServletRequest req, HttpServletResponse resp,
                                           @RequestParam(VNP_TRANSACTION_DATE_KEY) String transId,
-                                          @RequestParam("amount") String amount,
+                                          @RequestParam("amount") String amount1,
                                           @RequestParam(VNP_TXN_REF_KEY) String txnref,
                                           @RequestParam("refund_type") String type)
             throws IOException {
+        //Command: refund
         String vnp_RequestId = VNPayUtils.getRandomNumber(8);
         String vnp_Version = "2.1.0";
-        String transactionTypeValue = type;
         String vnp_Command = "refund";
         String vnp_TmnCode = vnPay.getTmnCode();
-//        02: Giao dịch hoàn trả toàn phần (vnp_TransactionType=02)
-//        03: Giao dịch hoàn trả một phần (vnp_TransactionType=03)
-        // mac dinh = 2, dell ai tra mot phan cho met
-
-        String vnp_TransactionType = transactionTypeValue;//req.getParameter("vnp_TransactionType")
-        String vnp_TxnRef = txnref;//req.getParameter("order_id");
-        // response từ query trả về từ vnpay ko cần *100, nó đã sẵn nhân 100 rồi
-//        int amount =100 ;//Integer.parseInt(req.getParameter("amount"))*100;//150.000 * 100;10.000.000
-        String vnp_Amount = String.valueOf(Integer.parseInt(amount) * 100); //Integer.parseInt(amount);  //String.valueOf(amount);
+        String vnp_TransactionType = type;
+        String vnp_TxnRef = txnref;
+        long amount = Integer.parseInt(amount1)* 100L;
+        String vnp_Amount = String.valueOf(amount);
         String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
-        String vnp_TransactionNo = "";
-        String vnp_TransactionDate = transId;//req.getParameter("trans_date"); //
-        String vnp_CreateBy = "ADMIN";//req.getParameter("user");NGUYEN VAN A// ko quan trong
+        String vnp_TransactionNo = ""; //Assuming value of the parameter "vnp_TransactionNo" does not exist on your system.
+        String vnp_TransactionDate = transId;
+        String vnp_CreateBy = "name";
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -474,10 +467,7 @@ public class ToolController {
 
         String vnp_IpAddr = VNPayUtils.getIpAddress(req);
 
-        JsonObject vnp_Params = new JsonObject();
-
-        //63562614
-        //20230616094041
+        JsonObject  vnp_Params = new JsonObject ();
 
         vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
         vnp_Params.addProperty("vnp_Version", vnp_Version);
@@ -488,7 +478,8 @@ public class ToolController {
         vnp_Params.addProperty("vnp_Amount", vnp_Amount);
         vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
 
-        if (vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty()) {
+        if(vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty())
+        {
             vnp_Params.addProperty("vnp_TransactionNo", "{get value of vnp_TransactionNo}");
         }
 
@@ -497,16 +488,16 @@ public class ToolController {
         vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
         vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
 
-        String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" +
-                vnp_TransactionType + "|" + vnp_TxnRef + "|" + vnp_Amount + "|" + vnp_TransactionNo + "|"
-                + vnp_TransactionDate + "|" + vnp_CreateBy + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
+        String hash_Data= String.join("|", vnp_RequestId, vnp_Version, vnp_Command, vnp_TmnCode,
+                vnp_TransactionType, vnp_TxnRef, vnp_Amount, vnp_TransactionNo, vnp_TransactionDate,
+                vnp_CreateBy, vnp_CreateDate, vnp_IpAddr, vnp_OrderInfo);
 
         String vnp_SecureHash = VNPayUtils.hmacSHA512(vnPay.getSecretKey(), hash_Data.toString());
 
         vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
 
-        URL url = new URL(VNPay.vnp_ApiUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        URL url = new URL (vnPay.vnp_ApiUrl);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         con.setDoOutput(true);
@@ -527,10 +518,8 @@ public class ToolController {
         }
         in.close();
         System.out.println(response.toString());
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> transactionInfo =
-                objectMapper.readValue(response.toString(), Map.class);
-        return transactionInfo;
+
+        return null;
     }
 
 
