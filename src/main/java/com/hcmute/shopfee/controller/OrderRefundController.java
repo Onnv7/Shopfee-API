@@ -27,7 +27,7 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ORDER_REFUND_BASE_PATH)
-public class OrderReturnController {
+public class OrderRefundController {
     private final IOrderRefundService orderRefundService;
     @Operation(summary = ORDER_RETURN_CREATE_REQUEST_SUM)
     @PostMapping(path = POST_ORDER_REFUND_CREATE_REQUEST_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
