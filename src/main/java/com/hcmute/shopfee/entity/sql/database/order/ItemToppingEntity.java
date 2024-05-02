@@ -26,10 +26,12 @@ public class ItemToppingEntity {
 
     @Column(name = "price", nullable = false)
     private Long price;
-    // =================================================================
 
     @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "item_detail_id", nullable = false)
     private ItemDetailEntity itemDetail;
+    // =================================================================
+
+
 }

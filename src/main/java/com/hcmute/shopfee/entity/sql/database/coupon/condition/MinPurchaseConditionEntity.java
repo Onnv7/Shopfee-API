@@ -21,11 +21,7 @@ public class MinPurchaseConditionEntity {
     @GeneratedValue(generator = "min_purchase_order_condition_id")
     private String id;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "type", nullable = false)
-//    private MiniPurchaseType type;
-
-    @Column(name = "value")
+    @Column(name = "value", nullable = false)
     private Long value;
 
     @OneToOne

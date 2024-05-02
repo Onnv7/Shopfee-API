@@ -38,12 +38,6 @@ public class ProductReviewEntity {
     @Column(name = "created_at")
     private Date createdAt;
 
-
-//    @Temporal(TemporalType.TIMESTAMP)
-//    @LastModifiedDate
-//    @Column(name = "updated_at")
-//    private Date updatedAt;
-
     // =================================================
     @OneToMany(mappedBy = "productReview")
     @JsonManagedReference

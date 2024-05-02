@@ -3,7 +3,6 @@ package com.hcmute.shopfee.entity.sql.database;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
-import com.hcmute.shopfee.entity.sql.database.order.shipping.ShippingTaskEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import jakarta.persistence.*;
@@ -98,7 +97,4 @@ public class EmployeeEntity {
     @JsonManagedReference
     private List<EmployeeFCMTokenEntity> employeeFcmTokenList;
 
-    @OneToMany(mappedBy = "employee")
-    @JsonManagedReference
-    private List<ShippingTaskEntity> shippingTaskList;
 }

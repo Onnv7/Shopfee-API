@@ -28,9 +28,6 @@ public class CouponConditionEntity {
     @GeneratedValue(generator = "coupon_condition_id")
     private String id;
 
-//    @Column(name = "description", nullable = false)
-//    private String description;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private ConditionType type;
@@ -41,10 +38,6 @@ public class CouponConditionEntity {
     private CouponEntity coupon;
 
     // =================================================================
-
-//    @OneToOne(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST})
-//    @JsonManagedReference
-//    private EligibilityCustomerConditionEntity applicableCustomerCondition;
 
     @OneToMany(mappedBy = "couponCondition", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

@@ -28,17 +28,12 @@ public class OrderEventEntity {
     @GeneratedValue(generator = "order_event_id")
     private String id;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus;
 
-//    @Column(name = "time", nullable = false)
-//    private Date time;
-
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "actor", nullable = false)

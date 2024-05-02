@@ -26,11 +26,6 @@ public class MoneyRewardReceivedEntity {
     @Column(name = "unit", nullable = false)
     private MoneyRewardUnit unit;
 
-//    @Column(name = "coupon_type", nullable = false)
-//    private CouponType couponType;
-//    @Column(name = "target_reward", nullable = false)
-//    private TargetReward targetReward;
-
     @Column(name = "value", nullable = false)
     private Integer value;
 
@@ -38,10 +33,4 @@ public class MoneyRewardReceivedEntity {
     @JoinColumn(name = "coupon_reward_received_id")
     @JsonBackReference
     private CouponRewardReceivedEntity couponRewardReceived;
-
-
-//    @OneToOne
-//    @JoinColumn(name = "coupon_used_id")
-//    @JsonBackReference
-//    private CouponUsedEntity couponUsed;
 }

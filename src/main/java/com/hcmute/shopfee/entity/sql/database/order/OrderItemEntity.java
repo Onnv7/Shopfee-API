@@ -54,13 +54,4 @@ public class OrderItemEntity {
     @JsonManagedReference
     private List<ItemDetailEntity> itemDetailList;
 
-
-//    @OneToMany(mappedBy = "orderItem")
-//    @JsonManagedReference
-//    private List<ProductRewardReceivedEntity> productRewardReceivedList;
-//    public void fromOrderItemDto(OrderItemDto orderItemDto) {
-//        this.setQuantity(orderItemDto.getQuantity());
-//        this.setNote(orderItemDto.getNote());
-//        this.setSize(orderItemDto.getSize());
-//    }
 }

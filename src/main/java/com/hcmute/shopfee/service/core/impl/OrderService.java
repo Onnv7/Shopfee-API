@@ -51,7 +51,6 @@ import com.hcmute.shopfee.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -63,8 +62,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Time;
 import java.time.ZoneId;
 import java.util.*;
-
-import static com.hcmute.shopfee.constant.ErrorConstant.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -87,7 +84,7 @@ public class OrderService implements IOrderService {
     private final GoongService goongService;
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
-    private final CancellationDemandRepository cancellationDemandRepository;
+    private final CancellationRequestRepository cancellationRequestRepository;
     private final AhamoveService ahamoveService;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
@@ -765,7 +762,7 @@ public class OrderService implements IOrderService {
                 .orderBill(orderBill)
                 .build();
 
-        cancellationDemandRepository.save(cancellationRequestEntity);
+        cancellationRequestRepository.save(cancellationRequestEntity);
 
         orderBill = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(orderBill);

@@ -7,7 +7,6 @@ import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
-import com.hcmute.shopfee.entity.sql.database.order.shipping.ShippingTaskEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.OrderType;
 import jakarta.persistence.*;
@@ -43,7 +42,7 @@ public class OrderBillEntity {
     private String id;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
     private UserEntity user;
 
@@ -68,7 +67,6 @@ public class OrderBillEntity {
     @Column(name = "total_payment", nullable = false)
     private Long totalPayment;
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type", nullable = false)
     private OrderType orderType;
@@ -77,9 +75,6 @@ public class OrderBillEntity {
     @JoinColumn(name = "branch_id")
     @JsonBackReference
     private BranchEntity branch;
-
-//    @Column(name = "receive_time")
-//    private Date receiveTime;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -120,8 +115,4 @@ public class OrderBillEntity {
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private OrderRefundRequestEntity orderRefundRequest;
-
-    @OneToOne(mappedBy = "orderBill")
-    @JsonManagedReference
-    private ShippingTaskEntity shippingTask;
 }

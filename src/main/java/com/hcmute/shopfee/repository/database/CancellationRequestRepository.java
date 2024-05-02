@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CancellationDemandRepository extends JpaRepository<CancellationRequestEntity, String> {
+public interface CancellationRequestRepository extends JpaRepository<CancellationRequestEntity, String> {
 }

@@ -27,15 +27,11 @@ public class ProductRewardReceivedEntity {
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
-    @Column(name = "product_name")
+    @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @Column(name = "product_size")
+    @Column(name = "product_size", nullable = false)
     private String productSize;
-
-//    @ManyToOne()
-//    @JoinColumn(name = "order_item_id", nullable = false)
-//    private OrderItemEntity orderItem;
 
     @ManyToOne
     @JoinColumn(name = "coupon_reward_received_id")

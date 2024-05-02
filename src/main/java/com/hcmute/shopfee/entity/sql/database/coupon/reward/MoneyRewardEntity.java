@@ -30,11 +30,6 @@ public class MoneyRewardEntity {
     @Column(name = "value", nullable = false)
     private Integer value;
 
-//    @OneToOne
-//    @JoinColumn(name = "coupon_reward_id")
-//    @JsonBackReference
-//    private CouponRewardEntity couponReward;
-
     @OneToOne
     @JoinColumn(name = "coupon_id")
     @JsonBackReference

@@ -26,7 +26,6 @@ public class CombinationConditionEntity {
     @Column(name = "type", nullable = false)
     private CouponType type;
 
-
     @ManyToOne
     @JoinColumn(name = "coupon_condition_id", nullable = false)
     @JsonBackReference

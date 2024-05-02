@@ -35,11 +35,6 @@ public class ProductRewardEntity {
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
-//    @ManyToOne
-//    @JoinColumn(name = "coupon_reward_id")
-//    @JsonBackReference
-//    private CouponRewardEntity couponReward;
-
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     @JsonBackReference

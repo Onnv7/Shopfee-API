@@ -21,18 +21,11 @@ public class SubjectConditionEntity {
     @GeneratedValue(generator = "subject_condition_id")
     private String id;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "object_type", nullable = false)
-//    private TargetType type;
-
     @Column(name = "object_id", nullable = false)
     private String objectId;
 
     @Column(name = "object_name", nullable = false)
     private String productName;
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "unit", nullable = false)
-//    private UnitObjectType unit;
 
     @Column(name = "value", nullable = false)
     private Integer value;

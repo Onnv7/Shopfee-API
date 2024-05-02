@@ -11,7 +11,4 @@ public enum OrderStatus {
     NOT_RECEIVED,
     CANCELED,
     SUCCEED,
-//    ORDER_REFUND_REQUEST,
-//    ORDER_REFUND_ACCEPTED,
-//    ORDER_REFUND_REFUSED
 }
