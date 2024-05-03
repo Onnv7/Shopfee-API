@@ -15,6 +15,7 @@ public class RouterConstant {
     public static final String COUPON_BASE_PATH = "/api/coupon";
     public static final String PRODUCT_BASE_PATH = "/api/product";
     public static final String EMPLOYEE_BASE_PATH = "/api/employee";
+    public static final String MARKETING_BASE_PATH = "/api/marketing";
     public static final String NOTIFICATION_BASE_PATH = "/api/notification";
     public static final String ORDER_BASE_PATH = "/api/order";
     public static final String ORDER_REFUND_BASE_PATH = "/api/order-refund";

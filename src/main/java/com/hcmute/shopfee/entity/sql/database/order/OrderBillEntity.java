@@ -72,7 +72,7 @@ public class OrderBillEntity {
     private OrderType orderType;
 
     @ManyToOne
-    @JoinColumn(name = "branch_id")
+    @JoinColumn(name = "branch_id", nullable = false)
     @JsonBackReference
     private BranchEntity branch;
 

@@ -104,9 +104,9 @@ server:
   port: ${SERVER_PORT}
 
 
-logging:
-  level:
-    org.springframework.web: DEBUG
+#logging:
+#  level:
+#    org.springframework.web: DEBUG
 #    tracer: TRACE
 #    root: INFO
 #    com.hcmute.shopfee: TRACE

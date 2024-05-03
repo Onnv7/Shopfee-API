@@ -55,7 +55,7 @@
     </appender>
 
     <springprofile name="dev">
-        <!-- Logger cho Spring Framework Security -->
+         Logger cho Spring Framework Security
         <logger name="org.springframework.security" level="TRACE">
             <appender-ref ref="CONSOLE"/>
         </logger>
@@ -69,23 +69,25 @@
         <logger name="tracer" level="TRACE">
             <appender-ref ref="CONSOLE"/>
         </logger>
-
-        <logger name="com.hcmute.shopfee">
-            <appender-ref ref="LOG_ERROR_FILE" level="error"/>
+<!--        <root level="info">-->
+<!--            <appender-ref ref="CONSOLE"/>-->
+<!--        </root>-->
+        <logger name="com.hcmute.shopfee.*">
             <appender-ref ref="CONSOLE" level="debug"/>
+            <appender-ref ref="LOG_ERROR_FILE" level="error"/>
         </logger>
     </springprofile>
 
     <springprofile name="prod">
         <logger name="com.hcmute.shopfee">
-            <appender-ref ref="LOG_FILE" level="info"/>
+<!--            <appender-ref ref="LOG_FILE" level="info"/>-->
             <appender-ref ref="LOG_ERROR_FILE" level="error"/>
         </logger>
     </springprofile>
 
-    <logger name="org.springframework" level="info">
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
+<!--    <logger name="org.springframework" level="info">-->
+<!--        <appender-ref ref="LOG_FILE"/>-->
+<!--    </logger>-->
 
 </configuration>
 

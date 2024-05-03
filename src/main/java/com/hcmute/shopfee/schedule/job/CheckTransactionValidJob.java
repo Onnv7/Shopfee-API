@@ -45,8 +45,9 @@ public class CheckTransactionValidJob extends QuartzJobBean {
                 transaction.setStatus(PaymentStatus.PAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
             } else if (zaloResult.getReturnCode() == 2) {
-                transaction.setStatus(PaymentStatus.UNPAID);
-                transaction.setTotalPaid((long) zaloResult.getAmount());
+
+                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setTotalPaid(0L);
 
                 OrderBillEntity orderBill = transaction.getOrderBill();
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
@@ -62,9 +63,9 @@ public class CheckTransactionValidJob extends QuartzJobBean {
             TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), null);
             if(vnpayResult.getTransactionStatus().equals("00")) {
                 transaction.setStatus(PaymentStatus.PAID);
-                transaction.setTotalPaid(Long.valueOf(vnpayResult.getAmount()));
+                transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);
             } else {
-                transaction.setStatus(PaymentStatus.UNPAID);
+                transaction.setStatus(PaymentStatus.FAILED);
                 transaction.setTotalPaid(0L);
             }
         }

@@ -11,7 +11,6 @@ import lombok.Data;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
-@Builder
 public class RegisterUserRequest {
     @Schema(example = EMAIL_EX)
     @Email
