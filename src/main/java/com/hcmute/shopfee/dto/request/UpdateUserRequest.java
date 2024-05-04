@@ -14,7 +14,6 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 
 @Data
-@Builder
 public class UpdateUserRequest {
     @Schema(example = FIRST_NAME_EX)
     @NotBlank

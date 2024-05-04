@@ -294,19 +294,27 @@ public class ProductService implements IProductService {
         Pageable pageable = PageRequest.of(page - 1, size);
         String categoryIdRegex = RegexUtils.generateFilterRegexString(categoryId != null ? categoryId : "");
         String productStatusRegex = RegexUtils.generateFilterRegexString(productStatus != null ? productStatus.toString() : "");
+        GetProductListResponse productList = new GetProductListResponse();
         if (key.isBlank()) {
             Page<ProductEntity> productPage = productRepository.getProductList(categoryIdRegex, productStatusRegex, pageable);
-            GetProductListResponse productList = new GetProductListResponse();
+
             productList.setTotalPage(productPage.getTotalPages());
             productList.setProductList(GetProductListResponse.fromProductEntityList(productPage.getContent()));
-            return productList;
+
         } else {
             Page<ProductIndex> productPage = productSearchService.searchProduct(key, categoryIdRegex, productStatusRegex, page, size);
-            GetProductListResponse resultPage = new GetProductListResponse();
-            resultPage.setTotalPage(productPage.getTotalPages());
-            resultPage.setProductList(modelMapperService.mapList(productPage.getContent(), GetProductListResponse.Product.class));
-            return resultPage;
+
+            productList.setTotalPage(productPage.getTotalPages());
+            productList.setProductList(GetProductListResponse.fromProductIndexList(productPage.getContent()));
+
         }
+
+        for(GetProductListResponse.Product product : productList.getProductList()) {
+            RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
+            product.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+        }
+
+        return productList;
     }
 
     @Override

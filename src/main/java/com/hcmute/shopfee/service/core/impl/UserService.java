@@ -71,7 +71,10 @@ public class UserService implements IUserService {
         SecurityUtils.checkUserId(userId);
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
-        return modelMapperService.mapClass(userEntity, GetUserByIdResponse.class);
+        long coin = coinHistoryRepository.getCoinOfUser(userId);
+        GetUserByIdResponse data = modelMapperService.mapClass(userEntity, GetUserByIdResponse.class);
+        data.setCoin(coin);
+        return data;
     }
 
     @Override

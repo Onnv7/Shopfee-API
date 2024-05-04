@@ -9,6 +9,7 @@ import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
 import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
 import com.hcmute.shopfee.enums.ReviewInteraction;
+import com.hcmute.shopfee.enums.param.ReviewSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IReviewService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,9 +73,11 @@ public class ReviewController {
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+            @Parameter(name = "sort_type", required = false, example = "CREATED_AT_DESC")
+            @RequestParam(name = "sort_type", defaultValue = "CREATED_AT_DESC", required = false) ReviewSortType sortType
     ) {
-        GetProductReviewListResponse resData = reviewService.getProductReviewListByProductId(productId, page, size);
+        GetProductReviewListResponse resData = reviewService.getProductReviewListByProductId(productId, page, size, sortType);
 
         ResponseAPI<GetProductReviewListResponse> res = ResponseAPI.<GetProductReviewListResponse>builder()
                 .message(SuccessConstant.GET)

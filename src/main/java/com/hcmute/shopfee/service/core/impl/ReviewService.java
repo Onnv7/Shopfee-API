@@ -14,8 +14,10 @@ import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ActorType;
+import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.enums.param.ReviewSortType;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -96,9 +99,18 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public GetProductReviewListResponse getProductReviewListByProductId(String productId, int page, int size) {
+    public GetProductReviewListResponse getProductReviewListByProductId(String productId, int page, int size,  ReviewSortType sortType) {
         String userId = SecurityUtils.getCurrentUserId();
+
         Pageable pageable = PageRequest.of(page - 1, size);
+        if(sortType == ReviewSortType.CREATED_AT_ASC || sortType == ReviewSortType.CREATED_AT_DESC) {
+            Sort sort = Sort.by("pr.created_at");
+            pageable = PageRequest.of(page - 1, size, sortType == ReviewSortType.CREATED_AT_DESC ? sort.descending() : sort.ascending());
+        } else if(sortType == ReviewSortType.STAR_DESC || sortType == ReviewSortType.STAR_ASC) {
+            Sort sort = Sort.by("pr.star");
+            pageable = PageRequest.of(page - 1, size, sortType == ReviewSortType.STAR_DESC ? sort.descending() : sort.ascending());
+        }
+
         GetProductReviewListResponse data = new GetProductReviewListResponse();
 
         List<GetProductReviewListResponse.ProductReview> productReviewList = new ArrayList<>();
@@ -124,6 +136,7 @@ public class ReviewService implements IReviewService {
             }
             productReviewList.add(GetProductReviewListResponse.fromProductReviewEntity(productReviewEntity, userDislikeList.size(), userLikeList.size(), interaction));
         }
+
         return data;
     }
 

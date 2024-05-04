@@ -1,5 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
+import com.hcmute.shopfee.dto.common.RatingSummaryDto;
+import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
 import lombok.Data;
@@ -20,6 +22,7 @@ public class GetProductListResponse {
         private Long price;
         private String thumbnailUrl;
         private ProductStatus status;
+        private RatingSummaryDto ratingSummary;
 
         private static Product fromProductEntity(ProductEntity entity) {
             Product data = new Product();
@@ -30,11 +33,28 @@ public class GetProductListResponse {
             data.setStatus(entity.getStatus());
             return data;
         }
+        private static Product fromProductIndex(ProductIndex index) {
+            Product data = new Product();
+            data.setId(index.getId());
+            data.setName(index.getName());
+            data.setPrice(index.getPrice());
+            data.setThumbnailUrl(index.getThumbnailUrl());
+            data.setStatus(index.getStatus());
+            return data;
+        }
     }
     public static List<Product> fromProductEntityList(List<ProductEntity> entityList) {
         List<Product> data= new ArrayList<>();
         for(ProductEntity entity : entityList) {
             data.add(Product.fromProductEntity(entity));
+        }
+        return data;
+    }
+
+    public static List<Product> fromProductIndexList(List<ProductIndex> indexList) {
+        List<Product> data= new ArrayList<>();
+        for(ProductIndex entity : indexList) {
+            data.add(Product.fromProductIndex(entity));
         }
         return data;
     }

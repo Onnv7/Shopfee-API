@@ -1,5 +1,5 @@
 # 1. Introduction
-The Shopfee API is a backend system that handles functionalities/requests to serve the Shopfee food ordering software system using Spring Boot.
+The Shopfee API is a backend system that handles functionalities/requests to serve the Shopfee beverage ordering software system using Spring Boot.
 
 # 2. System Requirements
 - Java version 17, using Maven for package management

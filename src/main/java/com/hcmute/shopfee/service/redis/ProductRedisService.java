@@ -54,7 +54,6 @@ public class ProductRedisService {
     }
 
     private String getKeyForGetProductView(String productId) {
-//        String sortDirection = pageRequest.getSort().getOrderFor("id").getProperty()
         return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VIEW, productId);
     }
 
