@@ -4,7 +4,7 @@ import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
 import com.hcmute.shopfee.dto.request.UpdateUserRequest;
 import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.enums.UserChartStatisticType;
+import com.hcmute.shopfee.enums.param.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 
 import java.sql.Date;

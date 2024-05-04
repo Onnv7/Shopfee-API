@@ -16,25 +16,31 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
     @Query(value = """
             select
-                SUM(case when YEAR(created_at) = YEAR(?1) AND MONTH(created_at) = MONTH(?1) and DATE(t.created_at) = DATE(?1)  then t.total_paid else 0 end) as revenueByToday,
-                SUM(case when YEAR(t.created_at) = YEAR(?1) AND MONTH(created_at) = MONTH(?1) THEN total_paid ELSE 0 END) AS revenueByThisMonth,
+                SUM(case when YEAR(t.created_at) = YEAR(?1) AND MONTH(t.created_at) = MONTH(?1) and DATE(t.created_at) = DATE(?1)  then t.total_paid else 0 end) as revenueByToday,
+                SUM(case when YEAR(t.created_at) = YEAR(?1) AND MONTH(t.created_at) = MONTH(?1) THEN t.total_paid ELSE 0 END) AS revenueByThisMonth,
                 SUM(t.total_paid) as revenue
             from
                 `transaction` t
+                join order_bill ob on ob.id = t.order_bill_id
+                join branch b on b.id = ob.branch_id
             where
                 t.status = 'PAID'
+                and b.id LIKE concat('%', ?2,'%')
             """, nativeQuery = true)
-    GetRevenueQueryDto getRevenueByDate(Date date);
+    GetRevenueQueryDto getRevenueByDate(Date date, String branchId);
 
     @Query(value = """
             select sum(t.total_paid) as revenue, DATE_FORMAT(t.created_at, ?3) as time
-            from `transaction` t\s
+            from `transaction` t
+            join order_bill ob on ob.id = t.order_bill_id
+            JOIN branch b on b.id = ob.branch_id
             where t.status = 'PAID'
-            AND DATE_FORMAT(t.created_at, '%Y-%m-%d') BETWEEN ?1 AND ?2
+            and b.id LIKE concat('%', ?4,'%')
+            and DATE_FORMAT(t.created_at, '%Y-%m-%d') BETWEEN ?1 AND ?2
             group by DATE_FORMAT(t.created_at, ?3)
             ORDER BY time ASC;
             """, nativeQuery = true)
-    List<RevenueStatisticsQueryDto> getRevenueStatistics(java.sql.Date startTime, java.sql.Date endTime, String formatTime);
+    List<RevenueStatisticsQueryDto> getRevenueStatistics(java.sql.Date startTime, java.sql.Date endTime, String formatTime, String branchId);
 
     @Query(value = """
             SELECT DATE_FORMAT(ob.created_at, '%Y-%m-%d') AS time, SUM(t.total_paid) as amount

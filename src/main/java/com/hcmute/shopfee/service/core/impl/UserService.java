@@ -11,7 +11,7 @@ import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
 import com.hcmute.shopfee.dto.sql.GetUserSpendingStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
-import com.hcmute.shopfee.enums.UserChartStatisticType;
+import com.hcmute.shopfee.enums.param.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;

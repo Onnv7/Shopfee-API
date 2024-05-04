@@ -15,6 +15,7 @@ public class GetAllUserResponse {
     @Data
     public static class UserInfo {
         private String id;
+        private String avatarUrl;
         private String firstName;
         private String lastName;
         private Gender gender;
@@ -26,6 +27,7 @@ public class GetAllUserResponse {
 
         public static UserInfo fromUserEntity(UserEntity entity) {
             UserInfo response = new UserInfo();
+            response.setAvatarUrl(entity.getAvatarUrl());
             response.setId(entity.getId());
             response.setFirstName(entity.getFirstName());
             response.setLastName(entity.getLastName());

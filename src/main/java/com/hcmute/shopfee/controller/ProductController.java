@@ -9,7 +9,7 @@ import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
-import com.hcmute.shopfee.enums.ProductSortType;
+import com.hcmute.shopfee.enums.param.ProductSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.utils.HeaderUtils;

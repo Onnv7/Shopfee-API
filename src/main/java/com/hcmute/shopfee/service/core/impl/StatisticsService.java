@@ -1,13 +1,12 @@
 package com.hcmute.shopfee.service.core.impl;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
 import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
 import com.hcmute.shopfee.dto.response.GetStatisticsOfOrderQuantityResponse;
 import com.hcmute.shopfee.dto.sql.GetRevenueQueryDto;
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
 import com.hcmute.shopfee.dto.sql.RevenueStatisticsQueryDto;
-import com.hcmute.shopfee.enums.TimeUnit;
+import com.hcmute.shopfee.enums.param.TimeUnit;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
@@ -27,9 +26,12 @@ public class StatisticsService implements IStatisticsService {
     private final OrderBillRepository orderBillRepository;
 
     @Override
-    public GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit) {
+    public GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit, String branchId) {
         if(startDate.compareTo(endDate) > 0) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The start date must be less than the end date");
+        }
+        if(branchId == null) {
+            branchId = "";
         }
         GetRevenueByTimeResponse data= new GetRevenueByTimeResponse();
         String formatTime = "%Y-%m-%d";
@@ -45,20 +47,26 @@ public class StatisticsService implements IStatisticsService {
             }
         }
 
-        List<RevenueStatisticsQueryDto> revenueStatistics = transactionRepository.getRevenueStatistics(startDate, endDate, formatTime);
+        List<RevenueStatisticsQueryDto> revenueStatistics = transactionRepository.getRevenueStatistics(startDate, endDate, formatTime, branchId);
         data.setRevenueList( GetRevenueByTimeResponse.Revenue.fromRevenueStatisticList(revenueStatistics));
         return data;
     }
 
     @Override
-    public GetRevenueCurrentDateResponse getRevenueCurrentDate() {
-        GetRevenueQueryDto revenueQueryDto = transactionRepository.getRevenueByDate(new Timestamp(System.currentTimeMillis()));
+    public GetRevenueCurrentDateResponse getRevenueCurrentDate(String branchId) {
+        if(branchId == null) {
+            branchId = "";
+        }
+        GetRevenueQueryDto revenueQueryDto = transactionRepository.getRevenueByDate(new Timestamp(System.currentTimeMillis()), branchId);
         return GetRevenueCurrentDateResponse.fromRevenueQueryDto(revenueQueryDto);
     }
 
     @Override
-    public GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity() {
-        GetStatisticOfOrderQuantityQueryDto queryDto = orderBillRepository.getStatisticOfOrderQuantity();
+    public GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity(String branchId) {
+        if(branchId == null) {
+            branchId = "";
+        }
+        GetStatisticOfOrderQuantityQueryDto queryDto = orderBillRepository.getStatisticOfOrderQuantity(branchId);
         return GetStatisticsOfOrderQuantityResponse.fromStatisticOrderQuantityQuery(queryDto);
     }
 }
