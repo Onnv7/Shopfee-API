@@ -91,7 +91,9 @@ public class ProductController {
             @RequestParam(name = "max_price", required = false) @Min(value = 1, message = "max_price must be greater than 0") Long maxPrice,
 
             @Parameter(name = "min_star", required = false, example = "0")
-            @RequestParam(name = "min_star", required = false, defaultValue = "0") @Min(value = 0, message = "Page must be greater than or equal 0") @Max(value = 5, message = "min_star must be lower than or equal 5") int minStar,
+            @RequestParam(name = "min_star", required = false, defaultValue = "0")
+            @Min(value = 0, message = "Page must be greater than or equal 0")
+            @Max(value = 5, message = "min_star must be lower than or equal 5") Integer minStar,
 
             @Parameter(name = "sort_type", required = false, example = "PRICE_DESC")
             @RequestParam(name = "sort_type", required = false) ProductSortType productSortType,

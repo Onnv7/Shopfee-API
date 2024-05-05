@@ -56,13 +56,13 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public ObjectMapper redisObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ISO_DATE_TIME));
-        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME));
-        objectMapper.registerModule(module);
-        return objectMapper;
-    }
+//    @Bean
+//    public ObjectMapper redisObjectMapper() {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        SimpleModule module = new SimpleModule();
+//        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ISO_DATE_TIME));
+//        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME));
+//        objectMapper.registerModule(module);
+//        return objectMapper;
+//    }
 }

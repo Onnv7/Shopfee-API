@@ -6,6 +6,7 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,7 +24,7 @@ public class GetProductsByCategoryIdResponse {
         private String thumbnailUrl;
         private ProductStatus status;
         private RatingSummaryDto ratingSummary;
-        public static ProductCard fromProductEntity(ProductEntity entity, RatingSummaryQueryDto ratingSummaryQueryDto) {
+        public static ProductCard fromProductEntity(ProductEntity entity) {
             ProductCard data = new ProductCard();
             data.setId(entity.getId());
             data.setName(entity.getName());
@@ -31,11 +32,17 @@ public class GetProductsByCategoryIdResponse {
             data.setPrice(entity.getPrice());
             data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
             data.setStatus(entity.getStatus());
-            data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+            data.setRatingSummary(entity.getRatingSummary());
             return data;
         }
     }
 
 
-//    public static List<GetProductsByCategoryIdResponse> fromProductEntityList(ProductEntity)
+    public static List<ProductCard> fromProductEntityList(List<ProductEntity> entityList) {
+        List<ProductCard> data = new ArrayList<ProductCard>();
+        for (ProductEntity entity: entityList) {
+            data.add(ProductCard.fromProductEntity(entity));
+        }
+        return data;
+    }
 }

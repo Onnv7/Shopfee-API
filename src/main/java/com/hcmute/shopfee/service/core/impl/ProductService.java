@@ -17,6 +17,7 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.enums.param.ProductSortType;
+import com.hcmute.shopfee.enums.param.ReviewSortType;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
@@ -199,24 +200,24 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, int minStar, ProductSortType productSortType, int page, int size) {
+    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size) {
         GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
-        List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
-        data.setProductList(productList);
-        // TODO: nên check category not hidden
         Page<ProductEntity> productPage = null;
 
-        Pageable pageable;
+        Pageable pageable = PageRequest.of(page - 1, size);
         if (productSortType == ProductSortType.PRICE_DESC) {
             pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
         } else if (productSortType == ProductSortType.PRICE_ASC) {
             pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
-        } else {
-            pageable = PageRequest.of(page - 1, size);
+        } else if (productSortType == ProductSortType.STAR_ASC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("prd.star").ascending());
+        } else if (productSortType == ProductSortType.STAR_DESC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("prd.star").descending());
         }
 
-        if (minPrice != null && maxPrice != null) {
+
+        if (minPrice != null && maxPrice != null || minStar != null) {
             productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
         } else {
             productPage = productRepository.findByCategory_IdAndStatusNot(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
@@ -224,10 +225,8 @@ public class ProductService implements IProductService {
         data.setTotalPage(productPage.getTotalPages());
 
         List<ProductEntity> productEntityList = productPage.getContent();
-        for (ProductEntity entity : productEntityList) {
-            RatingSummaryQueryDto ratingSummary = productReviewRepository.getRatingSummary(entity.getId());
-            productList.add(GetProductsByCategoryIdResponse.ProductCard.fromProductEntity(entity, ratingSummary));
-        }
+        data.setProductList(GetProductsByCategoryIdResponse.fromProductEntityList(productEntityList));
+
         return data;
     }
 

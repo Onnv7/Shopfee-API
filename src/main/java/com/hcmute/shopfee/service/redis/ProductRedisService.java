@@ -18,7 +18,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ProductRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper redisObjectMapper;
+    private final ObjectMapper redisObjectMapper = new ObjectMapper();
     public final static String STRING_FORMAT_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
     public final static String PATTERN_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
     public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%d:%d:%s:%s:%d:%d:%d";

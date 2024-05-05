@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.sql.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.dto.common.RatingSummaryDto;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
@@ -98,4 +99,21 @@ public class ProductEntity {
     private List<OrderItemEntity> orderItemList;
 
 
+    public RatingSummaryDto getRatingSummary() {
+        RatingSummaryDto data = new RatingSummaryDto(0, 0);
+        int quantity = 0;
+        int starSum = 0;
+        if(orderItemList == null || orderItemList.isEmpty()) {
+            return data;
+        }
+        for(OrderItemEntity orderItem : orderItemList) {
+            if(orderItem.getProductReview() != null) {
+                starSum += orderItem.getProductReview().getStar();
+                quantity++;
+            }
+        }
+        data.setQuantity(quantity);
+        data.setStar((double) starSum /quantity);
+        return data;
+    }
 }

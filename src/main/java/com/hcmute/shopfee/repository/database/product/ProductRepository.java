@@ -90,18 +90,21 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     List<ProductEntity> getProductWithIdNotIn(List<String> productIdList, int limit);
 
     @Query(value = """
-            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
-            from product p\s
-            join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star\s
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id, prd.star
+            from product p
+            join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star
             	  from (select *
-            			from product p\s
-            			where p.category_id = ?1 and p.price between ?2 and ?3 and p.status != 'HIDDEN') as product
-            			left join order_item oi on oi.product_id = product.id\s
-            			left join product_review pr on oi.product_review_id = pr.id\s
+            			from product p
+            			where p.category_id = ?1
+            			and (p.price between ?2 and ?3 or ?2 is null or ?3 is null)
+            			and p.status != 'HIDDEN') as product
+            			left join order_item oi on oi.product_id = product.id
+            			left join product_review pr on oi.product_review_id = pr.id
             			group by product.id ) as prd on prd.product_id = p.id
             where prd.star >= ?4
+            or ?4 is NULL
             """, nativeQuery = true)
-    Page<ProductEntity> getProductByCategoryIdAndFilter(String categoryId, long minPrice, long maxPrice, int minStar, Pageable pageable);
+    Page<ProductEntity> getProductByCategoryIdAndFilter(String categoryId, Long minPrice, Long maxPrice, Integer minStar, Pageable pageable);
 
     @Query(value = """
             select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
