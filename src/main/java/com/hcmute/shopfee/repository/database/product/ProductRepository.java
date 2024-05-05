@@ -107,16 +107,16 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     Page<ProductEntity> getProductByCategoryIdAndFilter(String categoryId, Long minPrice, Long maxPrice, Integer minStar, Pageable pageable);
 
     @Query(value = """
-            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id
+            select p.id, p.created_at, p.description, p.name, p.price, p.status, p.`type`, p.updated_at, p.category_id, p.image_id, prd.star
             from product p
             join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star
                   from (select *
                         from product p
-                        where p.price between ?1 and ?2 and p.status != 'HIDDEN') as product
+                        where (p.price between ?1 and ?2  or ?1 is null or ?2 is null) and p.status != 'HIDDEN') as product
                         left join order_item oi on oi.product_id = product.id
                         left join product_review pr on oi.product_review_id = pr.id
                         group by product.id ) as prd on prd.product_id = p.id
-            where prd.star >= ?3
+            where prd.star >= ?3 or ?3 is NULL
             """, nativeQuery = true)
-    Page<ProductEntity> getAllProductAndFilter(long minPrice, long maxPrice, int minStar, Pageable pageable);
+    Page<ProductEntity> getAllProductAndFilter(Long minPrice, Long maxPrice, Integer minStar, Pageable pageable);
 }

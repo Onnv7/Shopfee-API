@@ -231,18 +231,20 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, int minStar, ProductSortType productSortType, int page, int size, String key) {
+    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key) {
         GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
 
         List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
 
-        PageRequest pageable;
+        PageRequest pageable = PageRequest.of(page - 1, size);
         if (productSortType == ProductSortType.PRICE_DESC) {
             pageable = PageRequest.of(page - 1, size, Sort.by("price").descending());
         } else if (productSortType == ProductSortType.PRICE_ASC) {
             pageable = PageRequest.of(page - 1, size, Sort.by("price").ascending());
-        } else {
-            pageable = PageRequest.of(page - 1, size);
+        } else if (productSortType == ProductSortType.STAR_ASC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("prd.star").ascending());
+        } else if (productSortType == ProductSortType.STAR_DESC) {
+            pageable = PageRequest.of(page - 1, size, Sort.by("prd.star").descending());
         }
 
         try {
@@ -257,7 +259,7 @@ public class ProductService implements IProductService {
         }
 
 
-        if (!key.isBlank()) {
+        if (!key.trim().isEmpty()) {
             Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, pageable);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();
@@ -267,11 +269,12 @@ public class ProductService implements IProductService {
             }
         } else {
             Page<ProductEntity> productPage = null;
-            if (minPrice != null && maxPrice != null) {
-                productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
-            } else {
-                productPage = productRepository.findByStatusNot(ProductStatus.HIDDEN, pageable);
-            }
+            productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
+//            if (minPrice != null && maxPrice != null) {
+//
+//            } else {
+//                productPage = productRepository.findByStatusNot(ProductStatus.HIDDEN, pageable);
+//            }
 
             data.setTotalPage(productPage.getTotalPages());
             List<ProductEntity> productEntityList = productPage.getContent();

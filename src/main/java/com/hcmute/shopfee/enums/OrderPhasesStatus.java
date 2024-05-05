@@ -4,5 +4,6 @@ public enum OrderPhasesStatus {
     WAITING,
     IN_PROCESS,
     CANCELED,
-    SUCCEED
+    SUCCEED,
+    NOT_RECEIVED
 }

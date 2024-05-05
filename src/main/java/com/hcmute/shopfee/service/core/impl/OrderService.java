@@ -892,6 +892,7 @@ public class OrderService implements IOrderService {
             orderStatusList.add(OrderStatus.CREATED.name());
         } else if (orderPhasesStatus == OrderPhasesStatus.IN_PROCESS) {
             List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.DELIVERING.name(),
+                    OrderStatus.PREPARED.name(),
                     OrderStatus.CANCELLATION_REQUEST.name(), OrderStatus.CANCELLATION_REQUEST_ACCEPTED.name(),
                     OrderStatus.CANCELLATION_REQUEST_REFUSED.name());
             orderStatusList.addAll(statusesToAdd);
@@ -899,6 +900,8 @@ public class OrderService implements IOrderService {
             orderStatusList.add(OrderStatus.SUCCEED.name());
         } else if (orderPhasesStatus == OrderPhasesStatus.CANCELED) {
             orderStatusList.add(OrderStatus.CANCELED.name());
+        } else if (orderPhasesStatus == OrderPhasesStatus.NOT_RECEIVED) {
+            orderStatusList.add(OrderStatus.NOT_RECEIVED.name());
         }
         List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.dto.response.GetAllVisibleProductResponse;
 import com.hcmute.shopfee.dto.response.GetProductViewByIdResponse;
 import com.hcmute.shopfee.enums.ProductStatus;
+import com.hcmute.shopfee.enums.param.ProductSortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -21,7 +22,7 @@ public class ProductRedisService {
     private final ObjectMapper redisObjectMapper = new ObjectMapper();
     public final static String STRING_FORMAT_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
     public final static String PATTERN_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
-    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%d:%d:%s:%s:%d:%d:%d";
+    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%d:%d:%s:%s:%s:%d:%d:%d";
     public final static String PATTERN_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:*";
 
     private String getKeyForGetProductVisibleList(PageRequest pageRequest, String keyword, Long minPrice, Long maxPrice, Integer minStar) {
@@ -29,9 +30,14 @@ public class ProductRedisService {
         Sort.Order sortOrder = pageRequest.getSort().getOrderFor("price");
         String sortDirection = "";
         if (sortOrder != null) {
-            sortDirection = sortOrder.getDirection() == Sort.Direction.ASC ? "ASC" : "DESC";
+            sortDirection = sortOrder.getDirection() == Sort.Direction.ASC ? ProductSortType.PRICE_ASC.name() : ProductSortType.PRICE_DESC.name();
         }
-        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE, pageRequest.getPageNumber(), pageRequest.getPageSize(), keyword, sortDirection, minPrice, maxPrice, minStar);
+        Sort.Order sortStarOrder = pageRequest.getSort().getOrderFor("prd.star");
+        String sortStarDirection = "";
+        if (sortStarOrder != null) {
+            sortStarDirection = sortStarOrder.getDirection() == Sort.Direction.ASC ? ProductSortType.STAR_ASC.name() : ProductSortType.STAR_DESC.name();
+        }
+        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE, pageRequest.getPageNumber(), pageRequest.getPageSize(), keyword, sortDirection, sortStarDirection, minPrice, maxPrice, minStar);
     }
 
     public GetAllVisibleProductResponse getProductVisibleList(String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
