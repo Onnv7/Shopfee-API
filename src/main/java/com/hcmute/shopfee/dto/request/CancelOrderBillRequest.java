@@ -8,5 +8,5 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.ORDER_STATUS_DES_EX;
 @Data
 public class CancelOrderBillRequest {
     @Schema(example = ORDER_STATUS_DES_EX)
-    private String description;
+    private String note;
 }

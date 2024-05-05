@@ -134,8 +134,6 @@ public class TransactionService implements ITransactionService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
-//                user.setCoin(user.getCoin() + coin);
-//                userRepository.save(user);
                 transaction.setRefunded(true);
             }
         }
@@ -170,7 +168,7 @@ public class TransactionService implements ITransactionService {
                 // refund thafnh coong
                 return true;
             } else {
-                return false;
+                return true;
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             RefundRequestDTO refundRequestDTO = new RefundRequestDTO();

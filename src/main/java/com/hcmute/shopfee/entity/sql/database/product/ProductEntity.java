@@ -113,7 +113,7 @@ public class ProductEntity {
             }
         }
         data.setQuantity(quantity);
-        data.setStar((double) starSum /quantity);
+        data.setStar(quantity == 0 ? 0 :(double) starSum /quantity);
         return data;
     }
 }

@@ -27,19 +27,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class OrderStateService {
     public static final String ORDER_HEADER = "order_id";
     public static final String ORDER_TYPE_HEADER = "order_type";
-    public static final String DESC_HEADER = "desc";
+    public static final String NOTE_HEADER = "note";
     private final OrderEventRepository orderEventRepository;
     private final StateMachineFactory<OrderStatus, OrderEvent> stateMachineFactory;
     private final OrderBillRepository orderBillRepository;
     private final OrderStateMachineInterceptor orderStateMachineInterceptor;
 
     @Transactional
-    public boolean sendMonoEvent(String orderId, String desc, OrderEvent event) {
+    public boolean sendMonoEvent(String orderId, String note, OrderEvent event) {
         StateMachine<OrderStatus, OrderEvent> sm = build(orderId);
         OrderType orderType = orderBillRepository.getOrderType(orderId);
         Message<OrderEvent> message = MessageBuilder.withPayload(event)
                 .setHeader(ORDER_HEADER, orderId)
-                .setHeader(DESC_HEADER, desc)
+                .setHeader(NOTE_HEADER, note)
                 .setHeader(ORDER_TYPE_HEADER, orderType)
                 .build();
         AtomicBoolean sendSuccess = new AtomicBoolean(true);
@@ -58,7 +58,7 @@ public class OrderStateService {
         OrderType orderType = orderBillRepository.getOrderType(orderId);
         Message<OrderEvent> message = MessageBuilder.withPayload(event)
                 .setHeader(ORDER_HEADER, orderId)
-                .setHeader(DESC_HEADER, desc)
+                .setHeader(NOTE_HEADER, desc)
                 .setHeader(ORDER_TYPE_HEADER, orderType)
                 .build();
         Flux<StateMachineEventResult<OrderStatus, OrderEvent>> se = sm.sendEvent(Mono.just(message)).map(result -> {

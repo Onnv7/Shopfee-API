@@ -703,7 +703,8 @@ public class OrderService implements IOrderService {
     @Override
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
         List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.ORDER_REFUSE, OrderEvent.ORDER_ACCEPT,
-                OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING, OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
+                OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING,
+                OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
 
         if (!validOrderEvent.contains(body.getEvent())) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Order event is not valid");
@@ -713,7 +714,7 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
 
-        boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), body.getEvent());
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), body.getEvent());
 
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
@@ -752,13 +753,13 @@ public class OrderService implements IOrderService {
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
 
-        boolean rs = orderStateService.sendMonoEvent(orderId, "Customer creates a request to cancel the order", OrderEvent.CANCEL_REQUEST);
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.CANCEL_REQUEST);
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
         CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
-                .reason(body.getReason())
+                .reason(body.getNote())
                 .orderBill(orderBill)
                 .build();
 
@@ -780,7 +781,7 @@ public class OrderService implements IOrderService {
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
-        boolean rs = orderStateService.sendMonoEvent(orderId, body.getDescription(), OrderEvent.ORDER_REFUSE);
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.ORDER_REFUSE);
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }

@@ -35,6 +35,9 @@ public class OrderEventEntity {
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "actor", nullable = false)
     private ActorType actor;

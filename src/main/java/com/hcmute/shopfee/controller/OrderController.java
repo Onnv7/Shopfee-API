@@ -274,7 +274,7 @@ public class OrderController {
     @Operation(summary = ORDER_GET_CANCELLATION_SUM)
     @GetMapping(path = GET_ORDER_CANCELLATION_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_WAITER)
-    public ResponseEntity<ResponseAPI<GetCancellationByOrderBillIdRequest>> getCancellationRequestByOrderBillId(@RequestParam(ORDER_ID) String orderId) {
+    public ResponseEntity<ResponseAPI<GetCancellationByOrderBillIdRequest>> getCancellationRequestByOrderBillId(@PathVariable(ORDER_ID) String orderId) {
         GetCancellationByOrderBillIdRequest resData = orderService.getCancellationRequestByOrderBillId(orderId);
         ResponseAPI<GetCancellationByOrderBillIdRequest> res = ResponseAPI.<GetCancellationByOrderBillIdRequest>builder()
                 .timestamp(new Date())

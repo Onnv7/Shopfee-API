@@ -12,6 +12,7 @@ public class GetOrderStatusLineResponse {
     private OrderStatus orderStatus;
     private Date createdAt;
     private String description;
+    private String note;
 //    @JsonProperty("makerByEmployee")
     private ActorType actor;
 
@@ -21,6 +22,7 @@ public class GetOrderStatusLineResponse {
         response.setCreatedAt(entity.getCreatedAt());
         response.setDescription(entity.getDescription());
         response.setActor(entity.getActor());
+        response.setNote(entity.getNote());
         return  response;
     }
 }

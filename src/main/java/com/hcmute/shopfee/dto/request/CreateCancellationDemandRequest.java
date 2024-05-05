@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class CreateCancellationDemandRequest {
-    private String reason;
+    private String note;
 }

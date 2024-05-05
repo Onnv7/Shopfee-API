@@ -25,7 +25,7 @@ import org.springframework.statemachine.state.State;
 import java.util.EnumSet;
 import java.util.Optional;
 
-import static com.hcmute.shopfee.statemachine.OrderStateService.DESC_HEADER;
+import static com.hcmute.shopfee.statemachine.OrderStateService.NOTE_HEADER;
 import static com.hcmute.shopfee.statemachine.OrderStateService.ORDER_HEADER;
 
 @Slf4j
@@ -97,15 +97,17 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
         return context -> {
             Optional.ofNullable(context.getMessage()).ifPresent(msg -> {
                 OrderStatus orderStatus = context.getTarget().getId();
-                String description = msg.getHeaders().getOrDefault(DESC_HEADER, "").toString();
-                ActorType actorType = SecurityUtils.getRoleList().contains(Role.ROLE_USER.name()) ? ActorType.USER : ActorType.EMPLOYEE;
+                String note = msg.getHeaders().getOrDefault(NOTE_HEADER, "").toString();
+                ActorType actorType = SecurityUtils.getRoleList().contains(Role.ROLE_USER.name()) ? ActorType.USER :
+                        SecurityUtils.getRoleList().contains(Role.ROLE_WAITER.name()) ? ActorType.EMPLOYEE : ActorType.AUTOMATIC;
                 Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_HEADER, ""))
                         .ifPresent(orderId -> {
                             OrderBillEntity orderBill = orderBillRepository.findById(orderId.toString())
                                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
                             OrderEventEntity orderEvent = OrderEventEntity.builder()
                                     .orderStatus(orderStatus)
-                                    .description(description)
+                                    .note(note.isBlank() ? null : note)
+                                    .description(context.getEvent().getDescription())
                                     .actor(actorType)
                                     .orderBill(orderBill)
                                     .build();
@@ -115,8 +117,9 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
                             if (orderStatus == OrderStatus.CANCELLATION_REQUEST_ACCEPTED) {
                                 OrderEventEntity orderEvent2 = OrderEventEntity.builder()
                                         .orderStatus(OrderStatus.CANCELED)
-                                        .description("The order has been cancelled")
-                                        .actor(ActorType.AUTOMATIC)
+                                        .note(note.isBlank() ? null : note)
+                                        .description(OrderEvent.ORDER_REFUSE.getDescription())
+                                        .actor(ActorType.EMPLOYEE)
                                         .orderBill(orderBill)
                                         .build();
                                 orderBill.getOrderEventList().add(orderEvent2);
