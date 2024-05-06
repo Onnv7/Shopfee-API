@@ -19,7 +19,7 @@ public interface OrderEventRepository extends JpaRepository<OrderEventEntity, St
             FROM (
             	SELECT 'SUCCEED' AS order_status
             	UNION ALL
-            	SELECT 'CANCEL' AS order_status
+            	SELECT 'CANCELED' AS order_status
             	UNION ALL
             	SELECT 'NOT_RECEIVED' AS order_status
             	) AS s
