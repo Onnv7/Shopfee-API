@@ -176,6 +176,8 @@ public class ProductService implements IProductService {
         try {
             GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
             if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
+                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(dataCache.getId());
+                dataCache.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
                 return dataCache;
             }
         } catch (JsonProcessingException e) {
