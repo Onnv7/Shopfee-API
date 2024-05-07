@@ -108,9 +108,6 @@ public class OrderBillEntity {
     @JsonManagedReference
     private TransactionEntity transaction;
 
-    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.MERGE})
-    @JsonManagedReference
-    private CancellationRequestEntity cancellationRequest;
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

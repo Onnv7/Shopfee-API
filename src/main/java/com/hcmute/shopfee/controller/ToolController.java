@@ -36,6 +36,7 @@ import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
+import com.hcmute.shopfee.schedule.job.RefuseOrderJob;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.impl.CallbackService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
@@ -45,6 +46,7 @@ import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
+import com.hcmute.shopfee.utils.DateUtils;
 import com.hcmute.shopfee.utils.ExcelUtils;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,6 +58,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,9 @@ import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.Calendar;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
@@ -106,6 +111,7 @@ public class ToolController {
     private final BranchRepository branchRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRedisService productRedisService;
+    private final Scheduler scheduler;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
@@ -454,7 +460,7 @@ public class ToolController {
         String vnp_TmnCode = vnPay.getTmnCode();
         String vnp_TransactionType = type;
         String vnp_TxnRef = txnref;
-        long amount = Integer.parseInt(amount1)* 100L;
+        long amount = Integer.parseInt(amount1) * 100L;
         String vnp_Amount = String.valueOf(amount);
         String vnp_OrderInfo = "Hoan tien GD OrderId:" + vnp_TxnRef;
         String vnp_TransactionNo = ""; //Assuming value of the parameter "vnp_TransactionNo" does not exist on your system.
@@ -467,7 +473,7 @@ public class ToolController {
 
         String vnp_IpAddr = VNPayUtils.getIpAddress(req);
 
-        JsonObject  vnp_Params = new JsonObject ();
+        JsonObject vnp_Params = new JsonObject();
 
         vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
         vnp_Params.addProperty("vnp_Version", vnp_Version);
@@ -478,8 +484,7 @@ public class ToolController {
         vnp_Params.addProperty("vnp_Amount", vnp_Amount);
         vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
 
-        if(vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty())
-        {
+        if (vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty()) {
             vnp_Params.addProperty("vnp_TransactionNo", "{get value of vnp_TransactionNo}");
         }
 
@@ -488,7 +493,7 @@ public class ToolController {
         vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
         vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
 
-        String hash_Data= String.join("|", vnp_RequestId, vnp_Version, vnp_Command, vnp_TmnCode,
+        String hash_Data = String.join("|", vnp_RequestId, vnp_Version, vnp_Command, vnp_TmnCode,
                 vnp_TransactionType, vnp_TxnRef, vnp_Amount, vnp_TransactionNo, vnp_TransactionDate,
                 vnp_CreateBy, vnp_CreateDate, vnp_IpAddr, vnp_OrderInfo);
 
@@ -496,8 +501,8 @@ public class ToolController {
 
         vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
 
-        URL url = new URL (vnPay.vnp_ApiUrl);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        URL url = new URL(vnPay.vnp_ApiUrl);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         con.setDoOutput(true);
@@ -804,8 +809,9 @@ public class ToolController {
         log.info(emplId);
         log.debug(emplId);
         log.trace(emplId);
-        int b = 14/0;
-        System.out.println(14/0);
+        int b = 14 / 0;
+        log.debug("debug");
+        System.out.println(14 / 0);
 //        try {
 //            int a = 4 / 0;
 //        } catch (Exception e) {
@@ -815,8 +821,31 @@ public class ToolController {
     }
 
     @GetMapping(value = "/testSchedule")
-    public String testSchedule(@RequestParam("emplId") String emplId) throws IOException {
-
+    public String testSchedule(@RequestParam("timeSecond") int timeSecond) throws IOException, SchedulerException {
+        JobDetail jobDetail = JobBuilder.newJob(HelloWorldJob.class)
+                .withIdentity(UUID.randomUUID().toString(), "group-job-test")
+                .withDescription("Job details description test")
+//                .usingJobData(jobDataMap)
+                .requestRecovery()
+//                .storeDurably()
+                .build();
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .startAt(Date.from(DateUtils.plus(new Date().toInstant(), timeSecond, ChronoUnit.SECONDS))).
+                withSchedule(
+                        SimpleScheduleBuilder.simpleSchedule()
+                                .withRepeatCount(0)
+                                .withIntervalInSeconds(10)
+//                                .withMisfireHandlingInstructionFireNow()
+                ).
+                build();
+        scheduler.scheduleJob(jobDetail, trigger);
         return "ok";
+    }
+
+    public class HelloWorldJob implements Job {
+        @Override
+        public void execute(JobExecutionContext context) throws JobExecutionException {
+            System.out.println("Hello World");
+        }
     }
 }

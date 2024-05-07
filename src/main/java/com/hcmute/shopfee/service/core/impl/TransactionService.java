@@ -134,6 +134,7 @@ public class TransactionService implements ITransactionService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
+                transaction.setStatus(PaymentStatus.REFUNDED);
                 transaction.setRefunded(true);
             }
         }
@@ -144,6 +145,7 @@ public class TransactionService implements ITransactionService {
             try {
                 boolean isRefunded = refundTransaction(null, transaction);
                 if(isRefunded) {
+                    transaction.setStatus(PaymentStatus.REFUNDED);
                     transaction.setRefunded(true);
                 } else {
                     throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");

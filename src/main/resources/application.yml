@@ -106,10 +106,10 @@ server:
 
 #logging:
 #  level:
-#    org.springframework.web: DEBUG
+##    org.springframework.web: DEBUG
 #    tracer: TRACE
-#    root: INFO
-#    com.hcmute.shopfee: TRACE
+##    root: INFO
+##    com.hcmute.shopfee: TRACE
 #    org:
 #      elasticsearch:
 #        index:

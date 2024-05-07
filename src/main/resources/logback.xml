@@ -36,6 +36,11 @@
 
     <appender name="LOG_ERROR_FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
         <file>${FOLDER_NAME}/error.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
@@ -55,27 +60,29 @@
     </appender>
 
     <springprofile name="dev">
-         Logger cho Spring Framework Security
-        <logger name="org.springframework.security" level="TRACE">
+        <root level="info" >
+            <appender-ref ref="CONSOLE"/>
+        </root>
+<!--         Logger cho Spring Framework Security-->
+        <logger name="org.springframework.security" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
 
         <!--    hien thi query sql + tham so-->
-        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE">
+        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
 
         <!--   Logger cho Spring Data Elasticsearch -->
-        <logger name="tracer" level="TRACE">
+        <logger name="tracer" level="TRACE" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
-<!--        <root level="info">-->
-<!--            <appender-ref ref="CONSOLE"/>-->
-<!--        </root>-->
-        <logger name="com.hcmute.shopfee.*">
-            <appender-ref ref="CONSOLE" level="debug"/>
-            <appender-ref ref="LOG_ERROR_FILE" level="error"/>
+
+        <logger name="com.hcmute.shopfee" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" level="DEBUG" />
+            <appender-ref ref="LOG_ERROR_FILE" level="ERROR"/>
         </logger>
+
     </springprofile>
 
     <springprofile name="prod">
@@ -85,9 +92,8 @@
         </logger>
     </springprofile>
 
-<!--    <logger name="org.springframework" level="info">-->
-<!--        <appender-ref ref="LOG_FILE"/>-->
-<!--    </logger>-->
+
+
 
 </configuration>
 

@@ -124,6 +124,7 @@ public class OrderRefundService implements IOrderRefundService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
+                orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
                 orderBill.getTransaction().setRefunded(true);
             } else {
                 transactionService.refundOrder(orderBill, true, true);

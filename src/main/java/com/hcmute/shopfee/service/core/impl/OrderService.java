@@ -84,7 +84,6 @@ public class OrderService implements IOrderService {
     private final GoongService goongService;
     private final CombinationConditionRepository combinationConditionRepository;
     private final BranchService branchService;
-    private final CancellationRequestRepository cancellationRequestRepository;
     private final AhamoveService ahamoveService;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
@@ -758,13 +757,6 @@ public class OrderService implements IOrderService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
-        CancellationRequestEntity cancellationRequestEntity = CancellationRequestEntity.builder()
-                .reason(body.getNote())
-                .orderBill(orderBill)
-                .build();
-
-        cancellationRequestRepository.save(cancellationRequestEntity);
-
         orderBill = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(orderBill);
 
@@ -930,11 +922,11 @@ public class OrderService implements IOrderService {
     public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderBillId));
-        if (orderBill.getCancellationRequest() != null) {
-            GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
-            data.setReason(orderBill.getCancellationRequest().getReason());
-            return data;
-        }
+//        if (orderBill.getCancellationRequest() != null) {
+//            GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
+//            data.setReason(orderBill.getCancellationRequest().getReason());
+//            return data;
+//        }
         return null;
     }
 }
