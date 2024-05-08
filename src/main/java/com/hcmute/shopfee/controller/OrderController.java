@@ -269,18 +269,4 @@ public class OrderController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
-
-
-    @Operation(summary = ORDER_GET_CANCELLATION_SUM)
-    @GetMapping(path = GET_ORDER_CANCELLATION_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER)
-    public ResponseEntity<ResponseAPI<GetCancellationByOrderBillIdRequest>> getCancellationRequestByOrderBillId(@PathVariable(ORDER_ID) String orderId) {
-        GetCancellationByOrderBillIdRequest resData = orderService.getCancellationRequestByOrderBillId(orderId);
-        ResponseAPI<GetCancellationByOrderBillIdRequest> res = ResponseAPI.<GetCancellationByOrderBillIdRequest>builder()
-                .timestamp(new Date())
-                .data(resData)
-                .message(SuccessConstant.GET)
-                .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
-    }
 }

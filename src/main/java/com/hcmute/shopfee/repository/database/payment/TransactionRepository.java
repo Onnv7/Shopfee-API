@@ -5,6 +5,8 @@ import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
 import com.hcmute.shopfee.dto.sql.GetUserSpendingStatisticDto;
 import com.hcmute.shopfee.dto.sql.RevenueStatisticsQueryDto;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
+import com.hcmute.shopfee.enums.TransactionStatus;
+import com.hcmute.shopfee.enums.PaymentType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -78,4 +80,19 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     List<GetStatisticByKeyValue> getUserPaymentTypeStatistic(String userId);
 
 
+    @Query(value = """
+            SELECT t.payment_type
+            FROM `transaction` t
+            join order_bill ob on ob.id = t.order_bill_id
+            WHERE ob.id = ?1
+            """, nativeQuery = true)
+    PaymentType getPaymentTypeByOrderId(String orderId);
+
+    @Query(value = """
+            SELECT t.status
+            FROM `transaction` t
+            join order_bill ob on ob.id = t.order_bill_id
+            WHERE ob.id = ?1
+            """, nativeQuery = true)
+    TransactionStatus getTransactionStatusByOrderId(String orderId);
 }

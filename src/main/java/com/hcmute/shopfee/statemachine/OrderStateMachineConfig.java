@@ -26,7 +26,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import static com.hcmute.shopfee.statemachine.OrderStateService.NOTE_HEADER;
-import static com.hcmute.shopfee.statemachine.OrderStateService.ORDER_HEADER;
+import static com.hcmute.shopfee.statemachine.OrderStateService.ORDER_ID_HEADER;
 
 @Slf4j
 @EnableStateMachineFactory
@@ -51,11 +51,16 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
 
     @Override
     public void configure(StateMachineTransitionConfigurer<OrderStatus, OrderEvent> transitions) throws Exception {
-        OrderTypeValidationGuard orderTypeValidationGuard = new OrderTypeValidationGuard();
+         OrderTypeValidationGuard orderTypeValidationGuard = new OrderTypeValidationGuard();
+
         transitions
-                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.ACCEPTED).event(OrderEvent.ORDER_ACCEPT).action(processOrder())
+                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.PAYMENT_FAILED).action(processOrder()).guard(orderTypeValidationGuard.validateBankingPayment())
+                .and()
+                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.ACCEPTED).event(OrderEvent.ORDER_ACCEPT).action(processOrder()).guard(orderTypeValidationGuard.validateTransaction())
                 .and()
                 .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.ORDER_REFUSE).action(processOrder())
+                .and()
+                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.EMPLOYEE_ORDER_REFUSE).action(processOrder())
                 .and()
                 .withExternal().source(OrderStatus.ACCEPTED).target(OrderStatus.CANCELLATION_REQUEST).event(OrderEvent.CANCEL_REQUEST).action(processOrder())
                 .and()
@@ -97,17 +102,17 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
         return context -> {
             Optional.ofNullable(context.getMessage()).ifPresent(msg -> {
                 OrderStatus orderStatus = context.getTarget().getId();
-                String note = msg.getHeaders().getOrDefault(NOTE_HEADER, "").toString();
+                String note = msg.getHeaders().getOrDefault(NOTE_HEADER, null).toString();
                 ActorType actorType = SecurityUtils.getRoleList().contains(Role.ROLE_USER.name()) ? ActorType.USER :
                         SecurityUtils.getRoleList().contains(Role.ROLE_WAITER.name()) ? ActorType.EMPLOYEE : ActorType.AUTOMATIC;
-                Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_HEADER, ""))
+                Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_ID_HEADER, ""))
                         .ifPresent(orderId -> {
                             OrderBillEntity orderBill = orderBillRepository.findById(orderId.toString())
                                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
                             OrderEventEntity orderEvent = OrderEventEntity.builder()
                                     .orderStatus(orderStatus)
-                                    .note(note.isBlank() ? null : note)
-                                    .description(context.getEvent().getDescription())
+                                    .note(note)
+                                    .description(orderStatus.getResultDescription())
                                     .actor(actorType)
                                     .orderBill(orderBill)
                                     .build();
@@ -117,8 +122,8 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
                             if (orderStatus == OrderStatus.CANCELLATION_REQUEST_ACCEPTED) {
                                 OrderEventEntity orderEvent2 = OrderEventEntity.builder()
                                         .orderStatus(OrderStatus.CANCELED)
-                                        .note(note.isBlank() ? null : note)
-                                        .description(OrderEvent.ORDER_REFUSE.getDescription())
+                                        .note(note)
+                                        .description(OrderStatus.CANCELED.getResultDescription())
                                         .actor(ActorType.EMPLOYEE)
                                         .orderBill(orderBill)
                                         .build();

@@ -4,7 +4,6 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
-import com.hcmute.shopfee.dto.common.OrderNotificationDto;
 import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
@@ -60,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -101,7 +101,7 @@ public class OrderService implements IOrderService {
 
         if (paymentType == PaymentType.CASHING) {
             transData = TransactionEntity.builder()
-                    .status(PaymentStatus.UNPAID)
+                    .status(TransactionStatus.UNPAID)
                     .totalPaid(0L)
                     .orderBill(orderBill)
                     .paymentType(PaymentType.CASHING).build();
@@ -113,7 +113,7 @@ public class OrderService implements IOrderService {
                     .paymentUrl(paymentData.getVnpUrl())
                     .build();
             transData = TransactionEntity.builder()
-                    .status(PaymentStatus.UNPAID)
+                    .status(TransactionStatus.UNPAID)
                     .paymentType(PaymentType.VNPAY)
                     .vnPay(vnPay)
                     .totalPaid(0L)
@@ -129,7 +129,7 @@ public class OrderService implements IOrderService {
                     .build();
             transData = TransactionEntity.builder()
                     .zaloPay(zaloPay)
-                    .status(PaymentStatus.UNPAID)
+                    .status(TransactionStatus.UNPAID)
                     .paymentType(PaymentType.ZALOPAY)
                     .totalPaid(0L)
                     .orderBill(orderBill)
@@ -443,7 +443,6 @@ public class OrderService implements IOrderService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
         }
 
-
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId)
@@ -477,7 +476,7 @@ public class OrderService implements IOrderService {
         List<OrderEventEntity> orderEventList = new ArrayList<>();
         orderEventList.add(OrderEventEntity.builder()
                 .orderStatus(OrderStatus.CREATED)
-                .description("Order created successfully")
+                .description(OrderStatus.CREATED.getResultDescription())
                 .orderBill(orderBill)
                 .actor(ActorType.USER)
                 .build());
@@ -510,10 +509,7 @@ public class OrderService implements IOrderService {
         if (deductCoin != 0) {
             coinHistory.setCoin(-deductCoin);
             totalPayment -= deductCoin;
-
-
         }
-
 
         if (totalPayment != body.getTotal()) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Total order is invalid");
@@ -532,10 +528,6 @@ public class OrderService implements IOrderService {
             // save coin history
             coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
             coinHistoryRepository.save(coinHistory);
-
-            // cập nhật lại xu cho user
-//            user.setCoin(user.getCoin() - orderBill.getCoin());
-//            userRepository.save(user);
         }
         CreateOrderResponse resData = CreateOrderResponse.builder()
                 .orderId(orderBill.getId())
@@ -553,9 +545,10 @@ public class OrderService implements IOrderService {
         }
         schedulerService.setAutoCancelOrder(orderBill);
 
-        // notify
-        BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
-        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        if (transaction.getPaymentType() == PaymentType.CASHING) {
+            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, "Home delivery",orderBill.getId()));
+            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        }
 
         return resData;
     }
@@ -623,7 +616,7 @@ public class OrderService implements IOrderService {
         List<OrderEventEntity> orderEventList = new ArrayList<>();
         orderEventList.add(OrderEventEntity.builder()
                 .orderStatus(OrderStatus.CREATED)
-                .description("Order created successfully")
+                .description(OrderStatus.CREATED.getResultDescription())
                 .actor(ActorType.USER)
                 .orderBill(orderBill)
                 .build());
@@ -650,10 +643,6 @@ public class OrderService implements IOrderService {
         if (deductCoin != 0) {
             coinHistory.setDescription(ShopfeeConstant.DEDUCT_COIN_TO_PAY + orderBill.getId());
             coinHistoryRepository.save(coinHistory);
-
-            // cập nhật lại xu cho user
-//            user.setCoin(user.getCoin() - orderBill.getCoin());
-//            userRepository.save(user);
         }
 
         transaction = orderBill.getTransaction();
@@ -673,9 +662,10 @@ public class OrderService implements IOrderService {
         }
         schedulerService.setAutoCancelOrder(orderBill);
 
-        BranchNotificationDto notificationDto = new BranchNotificationDto(branch.getId(), "A new order", "New shipping order from customer " + userId);
-        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
-
+        if (transaction.getPaymentType() == PaymentType.CASHING) {
+            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, "Take away",orderBill.getId()));
+            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        }
         return resData;
     }
 
@@ -701,7 +691,8 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
-        List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.ORDER_REFUSE, OrderEvent.ORDER_ACCEPT,
+        String employeeId = SecurityUtils.getCurrentUserId();
+        List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.EMPLOYEE_ORDER_REFUSE, OrderEvent.ORDER_ACCEPT,
                 OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING,
                 OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
 
@@ -712,32 +703,30 @@ public class OrderService implements IOrderService {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
 
-
         boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), body.getEvent());
-
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
+        // xu ly hoan tien / xu
         if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
             transactionService.refundOrder(orderBill, true, true);
-        } else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
+        }
+        // cap nhat transaction cashing khi order thanh cong === con banking thi dc cap nhat ngay sau khi CREATED
+        else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
             TransactionEntity trans = orderBill.getTransaction();
             if (trans.getPaymentType() == PaymentType.CASHING) {
                 long totalPaid = orderBill.getTotalItemPrice();
-                trans.setStatus(PaymentStatus.PAID);
+                trans.setStatus(TransactionStatus.PAID);
                 trans.setTotalPaid(totalPaid);
                 transactionRepository.save(trans);
             }
         }
 
-
-        OrderNotificationDto messageDto = OrderNotificationDto.builder()
-                .title("New Order Status")
-                .body(orderBill.getOrderEventList().get(0).getOrderStatus().name())
-                .clientId(orderBill.getUser().getId())
-                .build();
-        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(messageDto);
+        Map<String, Object> message = new HashMap<>();
+        message.put(FirebaseMessagingService.BODY_NOTI_KEY, MessageFormat.format(body.getEvent().getNotificationMsg(), orderId, employeeId));
+        message.put(FirebaseMessagingService.CLIENT_ID_NOTI_KEY, orderBill.getUser().getId());
+        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(message);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);
@@ -915,18 +904,5 @@ public class OrderService implements IOrderService {
             eventList.add(event);
         });
         return eventList;
-    }
-
-
-    @Override
-    public GetCancellationByOrderBillIdRequest getCancellationRequestByOrderBillId(String orderBillId) {
-        OrderBillEntity orderBill = orderBillRepository.findById(orderBillId)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderBillId));
-//        if (orderBill.getCancellationRequest() != null) {
-//            GetCancellationByOrderBillIdRequest data = new GetCancellationByOrderBillIdRequest();
-//            data.setReason(orderBill.getCancellationRequest().getReason());
-//            return data;
-//        }
-        return null;
     }
 }

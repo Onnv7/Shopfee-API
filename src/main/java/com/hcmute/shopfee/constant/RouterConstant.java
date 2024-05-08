@@ -147,7 +147,6 @@ public class RouterConstant {
     public static final String GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH = "/history/user" + USER_ID_PATH;
     public static final String GET_ORDER_STATUS_LINE_SUB_PATH = ORDER_ID_PATH + "/status-line";
     public static final String GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH = "/history/{orderStatus}";
-    public static final String GET_ORDER_CANCELLATION_SUB_PATH = ORDER_ID_PATH + "/cancellation-request";
 
     // ENDPOINT URL ORDER =================================================================
     public static final String POST_ORDER_REFUND_CREATE_REQUEST_SUB_PATH = ORDER_ID_PATH;

@@ -3,7 +3,7 @@ package com.hcmute.shopfee.entity.sql.database.payment;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
-import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.TransactionStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,7 +37,7 @@ public class TransactionEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private PaymentStatus status;
+    private TransactionStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_type", nullable = false)

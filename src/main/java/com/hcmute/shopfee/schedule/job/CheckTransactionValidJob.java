@@ -6,7 +6,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.TransactionStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -42,11 +42,11 @@ public class CheckTransactionValidJob extends QuartzJobBean {
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             GetOrderZaloPayResponse zaloResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
             if (zaloResult.getReturnCode() == 1) {
-                transaction.setStatus(PaymentStatus.PAID);
+                transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
             } else if (zaloResult.getReturnCode() == 2) {
 
-                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setStatus(TransactionStatus.FAILED);
                 transaction.setTotalPaid(0L);
 
                 OrderBillEntity orderBill = transaction.getOrderBill();
@@ -62,10 +62,10 @@ public class CheckTransactionValidJob extends QuartzJobBean {
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
             TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), null);
             if(vnpayResult.getTransactionStatus().equals("00")) {
-                transaction.setStatus(PaymentStatus.PAID);
+                transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);
             } else {
-                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setStatus(TransactionStatus.FAILED);
                 transaction.setTotalPaid(0L);
             }
         }

@@ -125,7 +125,6 @@ public class SwaggerConstant {
     public static final String ORDER_GET_STATUS_LINE_SUM = "Get order status line by order id";
     public static final String ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM = "Get all order history for employee by page and size or search by code, customerName, customerCode, phoneNumber, recipientName";
     public static final String ORDER_GET_LIST_SUM = "Get order list for admin";
-    public static final String ORDER_GET_CANCELLATION_SUM = "Get cancellation order request by order id";
     // For Order return =============================================================
     public static final String ORDER_REFUND_CONTROLLER_TITLE = "ORDER REFUND MANAGEMENT";
     public static final String ORDER_RETURN_CREATE_REQUEST_SUM = "Create a order refund request";

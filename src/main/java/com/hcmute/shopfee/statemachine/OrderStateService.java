@@ -4,10 +4,13 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.OrderType;
+import com.hcmute.shopfee.enums.TransactionStatus;
+import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
+import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -25,22 +28,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @RequiredArgsConstructor
 public class OrderStateService {
-    public static final String ORDER_HEADER = "order_id";
+    public static final String ORDER_ID_HEADER = "order_id";
     public static final String ORDER_TYPE_HEADER = "order_type";
+    public static final String PAYMENT_TYPE_HEADER = "payment_type";
     public static final String NOTE_HEADER = "note";
+    public static final String TRANSACTION_STATUS_HEADER = "transaction_status";
     private final OrderEventRepository orderEventRepository;
     private final StateMachineFactory<OrderStatus, OrderEvent> stateMachineFactory;
     private final OrderBillRepository orderBillRepository;
     private final OrderStateMachineInterceptor orderStateMachineInterceptor;
+    private final TransactionRepository transactionRepository;
 
     @Transactional
     public boolean sendMonoEvent(String orderId, String note, OrderEvent event) {
         StateMachine<OrderStatus, OrderEvent> sm = build(orderId);
         OrderType orderType = orderBillRepository.getOrderType(orderId);
+        PaymentType paymentType = transactionRepository.getPaymentTypeByOrderId(orderId);
+        TransactionStatus transactionStatus = transactionRepository.getTransactionStatusByOrderId(orderId);
         Message<OrderEvent> message = MessageBuilder.withPayload(event)
-                .setHeader(ORDER_HEADER, orderId)
+                .setHeader(ORDER_ID_HEADER, orderId)
+                .setHeader(NOTE_HEADER, note)
                 .setHeader(NOTE_HEADER, note)
                 .setHeader(ORDER_TYPE_HEADER, orderType)
+                .setHeader(TRANSACTION_STATUS_HEADER, transactionStatus)
+                .setHeader(PAYMENT_TYPE_HEADER, paymentType)
                 .build();
         AtomicBoolean sendSuccess = new AtomicBoolean(true);
         Flux<StateMachineEventResult<OrderStatus, OrderEvent>> se = sm.sendEvent(Mono.just(message)).log();
@@ -57,7 +68,7 @@ public class OrderStateService {
         StateMachine<OrderStatus, OrderEvent> sm = build(orderId);
         OrderType orderType = orderBillRepository.getOrderType(orderId);
         Message<OrderEvent> message = MessageBuilder.withPayload(event)
-                .setHeader(ORDER_HEADER, orderId)
+                .setHeader(ORDER_ID_HEADER, orderId)
                 .setHeader(NOTE_HEADER, desc)
                 .setHeader(ORDER_TYPE_HEADER, orderType)
                 .build();

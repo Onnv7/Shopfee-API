@@ -12,7 +12,11 @@ public class BranchNotificationDto {
 
     public BranchNotificationDto() {
     }
-
+    public BranchNotificationDto(String branchId, String body) {
+        this.branchId = branchId;
+        this.title = "Shopfee";
+        this.body = body;
+    }
     public BranchNotificationDto(String branchId, String title, String body) {
         this.branchId = branchId;
         this.title = title;

@@ -1,31 +1,31 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
 import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.enums.ActorType;
-import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.TransactionStatus;
 import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
 import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
-import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
-import com.hcmute.shopfee.service.common.AuditorAwareService;
 import com.hcmute.shopfee.service.common.VNPayService;
 import com.hcmute.shopfee.service.common.ZaloPayService;
-import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.core.ITransactionService;
+import com.hcmute.shopfee.statemachine.OrderEvent;
+import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -42,13 +42,12 @@ import static com.hcmute.shopfee.constant.ShopfeeConstant.REFUND_COIN_ORDER;
 @RequiredArgsConstructor
 public class TransactionService implements ITransactionService {
     private final TransactionRepository transactionRepository;
-    private final IOrderService orderService;
     private final OrderBillRepository orderBillRepository;
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
-    private final AuditorAwareService auditorAwareService;
     private final CoinHistoryRepository coinHistoryRepository;
-    private final UserRepository userRepository;
+    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
+    private final OrderStateService orderStateService;
 
     @Transactional
     @Override
@@ -56,6 +55,7 @@ public class TransactionService implements ITransactionService {
         TransactionEntity transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.TRANSACTION_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
 
+        boolean isSuccess = false;
         OrderBillEntity orderBill = transaction.getOrderBill();
         UserEntity user = orderBill.getUser();
 
@@ -69,48 +69,51 @@ public class TransactionService implements ITransactionService {
             }
             // nếu giao dịch vnpay thành công
             if (transInfo.getTransactionStatus().equals("00") && transInfo.getAmount() != null && transInfo.getAmount().equals(String.valueOf(orderBill.getTotalPayment() * 100))) {
-                transaction.setStatus(PaymentStatus.PAID);
+                transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(transInfo.getAmount().toString()) / 100);
+                isSuccess = true;
             }
             else if (transInfo.getTransactionStatus().equals("01")) {
                 // giao dich chua xu ly xong -> co the retry
             }
             else {
-                orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                        .orderStatus(OrderStatus.CANCELED)
-                        .description("Payment via VNPay failed")
-                        .orderBill(orderBill)
-                        .actor(ActorType.USER)
-                        .build());
+                boolean rs = orderStateService.sendMonoEvent(orderBill.getId(), ShopfeeConstant.PAYMENT_FAILED_MSG, OrderEvent.PAYMENT_FAILED);
+                if (!rs) {
+                    throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
+                }
+
                 orderBillRepository.save(orderBill);
                 transaction.setTotalPaid(0L);
-                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setStatus(TransactionStatus.FAILED);
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
 
             if (transResult.getReturnCode() == 1 && transResult.getAmount() == orderBill.getTotalPayment()) {
-                transaction.setStatus(PaymentStatus.PAID);
+                isSuccess = true;
+                transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid((long) transResult.getAmount());
                 transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
             } else if (transResult.getReturnCode() == 2) {
-                orderBill.getOrderEventList().add(OrderEventEntity.builder()
-                        .orderStatus(OrderStatus.CANCELED)
-                        .description("Payment via ZaloPay failed")
-                        .orderBill(orderBill)
-                        .actor(ActorType.USER)
-                        .build());
+                boolean rs = orderStateService.sendMonoEvent(orderBill.getId(), ShopfeeConstant.PAYMENT_FAILED_MSG, OrderEvent.PAYMENT_FAILED);
+                if (!rs) {
+                    throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
+                }
+
                 transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
                 transaction.setTotalPaid(0L);
-                transaction.setStatus(PaymentStatus.FAILED);
+                transaction.setStatus(TransactionStatus.FAILED);
                 orderBillRepository.save(orderBill);
             } else if(transResult.getReturnCode() == 3) {
                 // pending
                 transaction.setTotalPaid(0L);
-                transaction.setStatus(PaymentStatus.UNPAID);
+                transaction.setStatus(TransactionStatus.UNPAID);
             }
         }
-
+        if(isSuccess && transaction.getPaymentType() != PaymentType.CASHING) {
+            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), ShopfeeConstant.NEW_ORDER_MSG + user.getId());
+            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        }
         // Cập nhật kết quả từ vnpay vào database
         transactionRepository.save(transaction);
     }
@@ -134,18 +137,18 @@ public class TransactionService implements ITransactionService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
-                transaction.setStatus(PaymentStatus.REFUNDED);
+                transaction.setStatus(TransactionStatus.REFUNDED);
                 transaction.setRefunded(true);
             }
         }
-        if(transaction.getStatus() != PaymentStatus.PAID) {
+        if(transaction.getStatus() != TransactionStatus.PAID) {
             return;
         }
         if(refundMoney) {
             try {
                 boolean isRefunded = refundTransaction(null, transaction);
                 if(isRefunded) {
-                    transaction.setStatus(PaymentStatus.REFUNDED);
+                    transaction.setStatus(TransactionStatus.REFUNDED);
                     transaction.setRefunded(true);
                 } else {
                     throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");

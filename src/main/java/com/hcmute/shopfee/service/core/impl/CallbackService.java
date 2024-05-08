@@ -10,7 +10,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
-import com.hcmute.shopfee.enums.PaymentStatus;
+import com.hcmute.shopfee.enums.TransactionStatus;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
@@ -68,14 +68,14 @@ public class CallbackService implements ICallbackService {
                 OrderBillEntity orderBillEntity = vnPayEntity.getTransaction().getOrderBill();
                 TransactionEntity transactionEntity = orderBillEntity.getTransaction();
                 if(orderBillEntity.getTotalPayment() == Long.parseLong((String) fields.get(VNPayConstant.VNP_AMOUNT_KEY))/ 100) {
-                    if(transactionEntity.getStatus() == PaymentStatus.UNPAID) {
+                    if(transactionEntity.getStatus() == TransactionStatus.UNPAID) {
                         if("00".equals(request.getParameter(VNPayConstant.VNP_RESPONSE_CODE))) {
                             transactionEntity.setTotalPaid(orderBillEntity.getTotalPayment());
-                            transactionEntity.setStatus(PaymentStatus.PAID);
+                            transactionEntity.setStatus(TransactionStatus.PAID);
                         }
                         else {
                             transactionEntity.setTotalPaid(orderBillEntity.getTotalPayment());
-                            transactionEntity.setStatus(PaymentStatus.PAID);
+                            transactionEntity.setStatus(TransactionStatus.PAID);
                         }
                         transactionRepository.save(transactionEntity);
                         response.setRspCode("00");
@@ -121,7 +121,7 @@ public class CallbackService implements ICallbackService {
                     response.setReturnMessage("exception");
                 } else {
                     transaction.setTotalPaid((long) dataRequest.getAmount());
-                    transaction.setStatus(PaymentStatus.PAID);
+                    transaction.setStatus(TransactionStatus.PAID);
                     zaloPay.setZalopayTransactionId(String.valueOf(dataRequest.getZpTransId()));
 
                     response.setReturnCode(1);

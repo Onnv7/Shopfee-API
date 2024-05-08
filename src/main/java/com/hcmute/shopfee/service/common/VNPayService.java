@@ -1,17 +1,10 @@
 package com.hcmute.shopfee.service.common;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcmute.shopfee.module.vnpay.VNPayConstant;
-import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
-import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
-import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
 import com.hcmute.shopfee.dto.common.vnpay.VNPayPaymentUrl;
 import com.hcmute.shopfee.dto.common.vnpay.TransactionInfoQuery;
-import com.hcmute.shopfee.dto.common.vnpay.VnpayCallbackResponse;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.repository.database.payment.VNPayRepository;
@@ -20,11 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service

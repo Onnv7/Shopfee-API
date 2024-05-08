@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.ShopfeeConstant.HOURS_REQUEST_REFUND;
-import static com.hcmute.shopfee.constant.ShopfeeConstant.REFUND_COIN_ORDER;
 
 @Service
 @RequiredArgsConstructor
@@ -113,7 +112,7 @@ public class OrderRefundService implements IOrderRefundService {
         }
         OrderBillEntity orderBill = orderReturnRequest.getOrderBill();
         orderReturnRequest.setStatus(status);
-        if (status == AnswerStatus.ACCEPTED && orderBill.getTransaction().getStatus() == PaymentStatus.PAID) {
+        if (status == AnswerStatus.ACCEPTED && orderBill.getTransaction().getStatus() == TransactionStatus.PAID) {
             UserEntity user = orderBill.getUser();
             if(orderBill.getTransaction().getPaymentType() == PaymentType.CASHING) {
                 long coinRefunded = orderBill.getCoin() + orderBill.getTotalPayment();
@@ -124,7 +123,7 @@ public class OrderRefundService implements IOrderRefundService {
                         .user(user)
                         .build();
                 coinHistoryRepository.save(coinHistory);
-                orderBill.getTransaction().setStatus(PaymentStatus.REFUNDED);
+                orderBill.getTransaction().setStatus(TransactionStatus.REFUNDED);
                 orderBill.getTransaction().setRefunded(true);
             } else {
                 transactionService.refundOrder(orderBill, true, true);

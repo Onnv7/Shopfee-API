@@ -1,15 +1,7 @@
 package com.hcmute.shopfee.service.common;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
-import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
-import com.hcmute.shopfee.enums.PaymentStatus;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
-import com.hcmute.shopfee.module.zalopay.ZaloPayUtils;
-import com.hcmute.shopfee.dto.common.zalopay.CallBackDto;
-import com.hcmute.shopfee.dto.common.zalopay.CallbackDataRequest;
-import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
 import com.hcmute.shopfee.dto.common.zalopay.CreateOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;

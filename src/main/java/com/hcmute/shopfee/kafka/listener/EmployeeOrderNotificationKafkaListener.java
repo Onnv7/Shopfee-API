@@ -10,6 +10,8 @@ import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 import static com.hcmute.shopfee.kafka.KafkaConstant.*;
 
 @Service
@@ -19,26 +21,33 @@ public class EmployeeOrderNotificationKafkaListener {
     private final FirebaseMessagingService firebaseMessagingService;
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = EMPLOYEE_ORDER_NOTIFICATION_TOPIC, groupId = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID, id = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID + "-1")
-    public void consumeOrderBranchNotification1(OrderNotificationDto message) {
+    public void consumeOrderBranchNotification1(Map<String, Object> message) {
         log.info("EmployeeOrderNotificationKafkaListener 1 Consumer sending {}", message.toString());
         firebaseMessagingService.sendOrderNotificationToUser(message);
     }
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = EMPLOYEE_ORDER_NOTIFICATION_TOPIC, groupId = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID, id = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID + "-2")
-    public void consumeOrderBranchNotification2(OrderNotificationDto message) {
+    public void consumeOrderBranchNotification2(Map<String, Object> message) {
         log.info("EmployeeOrderNotificationKafkaListener 2 Consumer sending {}", message.toString());
         firebaseMessagingService.sendOrderNotificationToUser(message);
     }
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = EMPLOYEE_ORDER_NOTIFICATION_TOPIC, groupId = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID, id = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID + "-3")
-    public void consumeOrderBranchNotification3(OrderNotificationDto message) {
+    public void consumeOrderBranchNotification3(Map<String, Object> message) {
         log.info("EmployeeOrderNotificationKafkaListener 3 Consumer sending {}", message.toString());
         firebaseMessagingService.sendOrderNotificationToUser(message);
     }
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = EMPLOYEE_ORDER_NOTIFICATION_TOPIC, groupId = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID, id = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID + "-4")
-    public void consumeOrderBranchNotification4(OrderNotificationDto message) {
+    public void consumeOrderBranchNotification4(Map<String, Object> message) {
         log.info("EmployeeOrderNotificationKafkaListener 4 Consumer sending {}", message.toString());
         firebaseMessagingService.sendOrderNotificationToUser(message);
     }
+
+//    @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
+//    @KafkaListener(topics = EMPLOYEE_ORDER_NOTIFICATION_TOPIC, groupId = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID, id = EMPLOYEE_ORDER_NOTIFICATION_GROUP_ID + "-3")
+//    public void consumeOrderBranchNotificationMap(Map<String, Object> message) {
+//        log.info("EmployeeOrderNotificationKafkaListener 3 Consumer sending {}", message.toString());
+//        firebaseMessagingService.sendOrderNotificationToUser(message);
+//    }
 }

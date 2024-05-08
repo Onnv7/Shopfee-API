@@ -143,7 +143,7 @@ public class GetOrderByIdResponse {
     @Data
     private static class Transaction {
         private String id;
-        private PaymentStatus status;
+        private TransactionStatus status;
         private PaymentType paymentType;
         private String paymentUrl;
 

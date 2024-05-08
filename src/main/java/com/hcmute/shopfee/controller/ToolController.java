@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
@@ -36,7 +35,6 @@ import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
-import com.hcmute.shopfee.schedule.job.RefuseOrderJob;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.impl.CallbackService;
 import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
@@ -53,7 +51,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -87,7 +84,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Calendar;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.NOT_FOUND;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TRANSACTION_DATE_KEY;
 import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TXN_REF_KEY;
@@ -320,7 +316,7 @@ public class ToolController {
 
         TransactionEntity transactionEntity = TransactionEntity.builder()
                 .createdAt(new Date())
-                .status(PaymentStatus.UNPAID)
+                .status(TransactionStatus.UNPAID)
                 .totalPaid(0L)
                 .paymentType(PaymentType.VNPAY)
                 .orderBill(orderBill)
