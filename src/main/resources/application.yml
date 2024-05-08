@@ -70,6 +70,10 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: com.hcmute.shopfee.*
+  elasticsearch:
+    host: ${ELASTICSEARCH_HOST}
+    port: ${ELASTICSEARCH_PORT}
+
   cache:
     type: redis
 

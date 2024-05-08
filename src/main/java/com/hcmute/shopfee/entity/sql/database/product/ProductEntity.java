@@ -98,22 +98,4 @@ public class ProductEntity {
     @ToString.Exclude
     private List<OrderItemEntity> orderItemList;
 
-
-    public RatingSummaryDto getRatingSummary() {
-        RatingSummaryDto data = new RatingSummaryDto(0, 0);
-        int quantity = 0;
-        int starSum = 0;
-        if(orderItemList == null || orderItemList.isEmpty()) {
-            return data;
-        }
-        for(OrderItemEntity orderItem : orderItemList) {
-            if(orderItem.getProductReview() != null) {
-                starSum += orderItem.getProductReview().getStar();
-                quantity++;
-            }
-        }
-        data.setQuantity(quantity);
-        data.setStar(quantity == 0 ? 0 :(double) starSum /quantity);
-        return data;
-    }
 }

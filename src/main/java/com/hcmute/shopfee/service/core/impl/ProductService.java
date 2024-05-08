@@ -175,8 +175,8 @@ public class ProductService implements IProductService {
         try {
             GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
             if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
-                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(dataCache.getId());
-                dataCache.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+//                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(dataCache.getId());
+//                dataCache.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
                 return dataCache;
             }
         } catch (JsonProcessingException e) {
@@ -203,7 +203,9 @@ public class ProductService implements IProductService {
     @Override
     public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size) {
         GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
+        List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
+        data.setProductList(productList);
         Page<ProductEntity> productPage = null;
 
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -226,7 +228,10 @@ public class ProductService implements IProductService {
         data.setTotalPage(productPage.getTotalPages());
 
         List<ProductEntity> productEntityList = productPage.getContent();
-        data.setProductList(GetProductsByCategoryIdResponse.fromProductEntityList(productEntityList));
+        for (ProductEntity entity : productEntityList) {
+            RatingSummaryQueryDto ratingSummary = productReviewRepository.getRatingSummary(entity.getId());
+            productList.add(GetProductsByCategoryIdResponse.ProductCard.fromProductEntity(entity, ratingSummary));
+        }
 
         return data;
     }

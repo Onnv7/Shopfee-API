@@ -24,7 +24,7 @@ public class GetProductsByCategoryIdResponse {
         private String thumbnailUrl;
         private ProductStatus status;
         private RatingSummaryDto ratingSummary;
-        public static ProductCard fromProductEntity(ProductEntity entity) {
+        public static ProductCard fromProductEntity(ProductEntity entity, RatingSummaryQueryDto ratingSummaryQueryDto) {
             ProductCard data = new ProductCard();
             data.setId(entity.getId());
             data.setName(entity.getName());
@@ -32,17 +32,9 @@ public class GetProductsByCategoryIdResponse {
             data.setPrice(entity.getPrice());
             data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
             data.setStatus(entity.getStatus());
-            data.setRatingSummary(entity.getRatingSummary());
+            data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
             return data;
         }
     }
 
-
-    public static List<ProductCard> fromProductEntityList(List<ProductEntity> entityList) {
-        List<ProductCard> data = new ArrayList<ProductCard>();
-        for (ProductEntity entity: entityList) {
-            data.add(ProductCard.fromProductEntity(entity));
-        }
-        return data;
-    }
 }

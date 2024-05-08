@@ -889,6 +889,7 @@ public class OrderService implements IOrderService {
         } else if (orderPhasesStatus == OrderPhasesStatus.NOT_RECEIVED) {
             orderStatusList.add(OrderStatus.NOT_RECEIVED.name());
         }
+//        orderStatusList = List.of("sadsd");
         List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
 
         List<GetAllOrderHistoryByUserIdResponse> response = new ArrayList<>();
