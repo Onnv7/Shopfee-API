@@ -2,7 +2,7 @@ package com.hcmute.shopfee.service.core;
 
 import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
 import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
-import com.hcmute.shopfee.enums.AnswerStatus;
+import com.hcmute.shopfee.enums.param.AnswerStatus;
 
 public interface IOrderRefundService {
     void createOrderRefundRequest(CreateOrderReturnRequest body, String orderId);

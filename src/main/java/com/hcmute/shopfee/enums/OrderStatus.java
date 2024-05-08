@@ -6,8 +6,8 @@ public enum OrderStatus {
     CANCELLATION_REQUEST("Order cancellation request submitted"),
     CANCELLATION_REQUEST_REFUSED("Refuse the request to cancel the application"),
     CANCELLATION_REQUEST_ACCEPTED("Accept the request to cancel the order"),
-    PREPARED("Order has been prepared"),
-    DELIVERING("Order is shipping"),
+    PENDING_PICK_UP("Order has been prepared"),
+    IN_DELIVERY("Order is shipping"),
     CANCELED("Order has been cancelled"),
     SUCCEED("Order completed successfully"),
     NOT_RECEIVED("Order failed");

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class OrderStateMachineConfigTest {
 
@@ -35,10 +34,10 @@ class OrderStateMachineConfigTest {
         sm.start();
         System.out.println("=>>>>>>> "+ sm.getState().toString());
 
-        sm.sendEvent(OrderEvent.ORDER_ACCEPT);
+        sm.sendEvent(OrderEvent.ACCEPT_ORDER);
         System.out.println("=>>>>>>> "+ sm.getState().toString());
 
-        sm.sendEvent(OrderEvent.READY_SHIPPING);
+        sm.sendEvent(OrderEvent.PREPARED);
         System.out.println("=>>>>>>> "+ sm.getState().toString());
 
         // =================================================================
@@ -51,7 +50,7 @@ class OrderStateMachineConfigTest {
 
         //  ===========================================================
 
-        sm.sendEvent(OrderEvent.ORDER_FULFILL);
+        sm.sendEvent(OrderEvent.FULFILL);
         System.out.println("=>>>>>>> "+ sm.getState().toString());
     }
 

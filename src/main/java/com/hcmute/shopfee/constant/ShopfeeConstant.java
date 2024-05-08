@@ -24,6 +24,10 @@ public class ShopfeeConstant {
 
     // notification messages
     public static final String NEW_ORDER_MSG = "%s order %s created. Check now";
+    public static final String EMPLOYEE_NOTI_TITLE_MSG = "Shopfee For Employee";
+    public static final String USER_NOTI_TITLE_MSG = "Shopfee";
+    public static final String SHIPPING_ORDER_TITLE_MSG = "Home delivery";
+    public static final String ONSITE_ORDER_TITLE_MSG = "Take away";
 
 
     // Order status description

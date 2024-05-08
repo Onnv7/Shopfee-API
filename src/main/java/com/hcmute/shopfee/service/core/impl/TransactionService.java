@@ -2,10 +2,10 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
-import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
+import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
-import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.UserNotificationKafkaPublisher;
 import com.hcmute.shopfee.module.vnpay.VNPayConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
@@ -46,7 +46,7 @@ public class TransactionService implements ITransactionService {
     private final VNPayService vnPayService;
     private final ZaloPayService zaloPayService;
     private final CoinHistoryRepository coinHistoryRepository;
-    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
+    private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
     private final OrderStateService orderStateService;
 
     @Transactional
@@ -111,8 +111,8 @@ public class TransactionService implements ITransactionService {
             }
         }
         if(isSuccess && transaction.getPaymentType() != PaymentType.CASHING) {
-            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), ShopfeeConstant.NEW_ORDER_MSG + user.getId());
-            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), ShopfeeConstant.NEW_ORDER_MSG + user.getId());
+            userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
         // Cập nhật kết quả từ vnpay vào database
         transactionRepository.save(transaction);
@@ -122,7 +122,7 @@ public class TransactionService implements ITransactionService {
     @Transactional
     public void refundOrder(OrderBillEntity orderBill, boolean refundCoin, boolean refundMoney) {
         TransactionEntity transaction = orderBill.getTransaction();
-        if(transaction.isRefunded()) {
+        if(transaction.getStatus() == TransactionStatus.REFUNDED) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Order has been refunded");
         }
 
@@ -138,7 +138,6 @@ public class TransactionService implements ITransactionService {
                         .build();
                 coinHistoryRepository.save(coinHistory);
                 transaction.setStatus(TransactionStatus.REFUNDED);
-                transaction.setRefunded(true);
             }
         }
         if(transaction.getStatus() != TransactionStatus.PAID) {
@@ -149,7 +148,6 @@ public class TransactionService implements ITransactionService {
                 boolean isRefunded = refundTransaction(null, transaction);
                 if(isRefunded) {
                     transaction.setStatus(TransactionStatus.REFUNDED);
-                    transaction.setRefunded(true);
                 } else {
                     throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "The payment side service failed, please try again later");
                 }

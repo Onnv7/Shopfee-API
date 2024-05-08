@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.kafka.publisher;
 
-import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
+import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.kafka.KafkaConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +12,18 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
-public class UserOrderNotificationKafkaPublisher {
+public class UserNotificationKafkaPublisher {
     @Autowired
     private KafkaTemplate<String, Object> template;
 
-    public void sendNotificationToBranch(BranchNotificationDto message) {
+    public void sendNotificationToBranch(NewOrderMsgData message) {
         CompletableFuture<SendResult<String, Object>> future = template.send(KafkaConstant.USER_ORDER_NOTIFICATION_TOPIC, message);
         future.whenComplete((rs, ex) -> {
             if(ex == null) {
-                log.info("UserOrderNotificationKafkaPublisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
+                log.info("Publisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
                         rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("UserOrderNotificationKafkaPublisher error {}", ex.getMessage());
+                log.error("Publisher error {}", ex.getMessage());
             }
         });
     }

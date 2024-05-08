@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.dto.common;
+package com.hcmute.shopfee.kafka.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderNotificationDto {
+public class OrderStatusMsgData {
     private String clientId;
     private String title;
     private String body;

@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.common.NotificationMessageDto;
-import com.hcmute.shopfee.dto.common.OrderNotificationDto;
-import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
+import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
+import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
@@ -16,8 +15,8 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
-import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
-import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.EmployeeNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.UserNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.vnpay.VNPay;
 import com.hcmute.shopfee.module.vnpay.VNPayUtils;
@@ -120,8 +119,8 @@ public class ToolController {
     private final ZaloPayService zaloPayService;
     private final ZaloPay zaloPay;
     private final FirebaseMessagingService firebaseMessagingService;
-    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
-    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
+    private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
+    private final EmployeeNotificationKafkaPublisher employeeNotificationKafkaPublisher;
     private final OrderStateService orderStateService;
     @Autowired
     private Environment environment;
@@ -581,21 +580,16 @@ public class ToolController {
     }
 
 
-    @PostMapping("/sendNotificationTopic")
-    public String sendNotificationTopic(@RequestBody NotificationMessageDto body) {
-        firebaseMessagingService.sendOrderNotificationToBranch(body.getRecipientToken(), body.getTitle(), body.getBody());
-        return "okoko";
-    }
 
     @PostMapping("/kafka-kafkaSendToBranch")
-    public String kafkaSendToBranch(@RequestBody BranchNotificationDto body) {
-        userOrderNotificationKafkaPublisher.sendNotificationToBranch(body);
+    public String kafkaSendToBranch(@RequestBody NewOrderMsgData body) {
+        userNotificationKafkaPublisher.sendNotificationToBranch(body);
         return "okoko";
     }
 
     @PostMapping("/kafka-kafkaSendToClient")
-    public String kafkaSendToClient(@RequestBody OrderNotificationDto body) {
-        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(body);
+    public String kafkaSendToClient(@RequestBody OrderStatusMsgData body) {
+        employeeNotificationKafkaPublisher.sendNotificationToUserId(body);
         return "okoko";
     }
 
@@ -708,7 +702,7 @@ public class ToolController {
         String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
         String[] firstRowData2 = {null, null, null, null, "https://www.facebook.com/", "MEDIUM", "20000", null, null};
         String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
-        String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+        String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
         for (int i = 0; i < firstRow.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(firstRow[i]);

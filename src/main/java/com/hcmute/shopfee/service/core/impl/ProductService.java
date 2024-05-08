@@ -17,7 +17,6 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.enums.param.ProductSortType;
-import com.hcmute.shopfee.enums.param.ReviewSortType;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
@@ -857,7 +856,7 @@ public class ProductService implements IProductService {
             String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
             String[] firstRowData2 = {null, null, null, null, null, "MEDIUM", "20000", null, null};
             String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
-            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
             for (int i = 0; i < firstRow.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(firstRow[i]);
@@ -941,7 +940,7 @@ public class ProductService implements IProductService {
             String[] firstRow = {"Product name", "Category", "Status", "Description", "Price", "Image"};
             String[] firstRowData1 = {"Cinnamon cone", "Sweet cake", "AVAILABLE", "Cinnamon and sweet cake", "2000", "https://www.facebook.com/"};
 
-            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.OUT_OF_STOCK.name()};
+            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
             for (int i = 0; i < firstRow.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(firstRow[i]);

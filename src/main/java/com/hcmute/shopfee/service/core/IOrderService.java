@@ -2,7 +2,7 @@ package com.hcmute.shopfee.service.core;
 
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
-import com.hcmute.shopfee.enums.OrderPhasesStatus;
+import com.hcmute.shopfee.enums.param.OrderPhasesStatus;
 import com.hcmute.shopfee.enums.OrderStatus;
 import jakarta.servlet.http.HttpServletRequest;
 

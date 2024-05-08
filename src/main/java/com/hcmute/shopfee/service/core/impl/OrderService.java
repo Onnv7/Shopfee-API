@@ -4,7 +4,8 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
-import com.hcmute.shopfee.dto.kafka.BranchNotificationDto;
+import com.hcmute.shopfee.enums.param.OrderPhasesStatus;
+import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.sql.database.*;
@@ -25,8 +26,9 @@ import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
-import com.hcmute.shopfee.kafka.publisher.EmployeeOrderNotificationKafkaPublisher;
-import com.hcmute.shopfee.kafka.publisher.UserOrderNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
+import com.hcmute.shopfee.kafka.publisher.EmployeeNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.UserNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
@@ -89,8 +91,8 @@ public class OrderService implements IOrderService {
     private final ZaloPayService zaloPayService;
     private final SchedulerService schedulerService;
     private final OrderStateService orderStateService;
-    private final UserOrderNotificationKafkaPublisher userOrderNotificationKafkaPublisher;
-    private final EmployeeOrderNotificationKafkaPublisher employeeOrderNotificationKafkaPublisher;
+    private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
+    private final EmployeeNotificationKafkaPublisher employeeNotificationKafkaPublisher;
 
     @Autowired
     @Lazy
@@ -546,8 +548,8 @@ public class OrderService implements IOrderService {
         schedulerService.setAutoCancelOrder(orderBill);
 
         if (transaction.getPaymentType() == PaymentType.CASHING) {
-            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, "Home delivery",orderBill.getId()));
-            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG, orderBill.getId()));
+            userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
 
         return resData;
@@ -663,8 +665,8 @@ public class OrderService implements IOrderService {
         schedulerService.setAutoCancelOrder(orderBill);
 
         if (transaction.getPaymentType() == PaymentType.CASHING) {
-            BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, "Take away",orderBill.getId()));
-            userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.ONSITE_ORDER_TITLE_MSG, orderBill.getId()));
+            userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
         return resData;
     }
@@ -692,9 +694,9 @@ public class OrderService implements IOrderService {
     @Override
     public void insertOrderEventByEmployee(String orderId, UpdateOrderStatusRequest body, HttpServletRequest request) {
         String employeeId = SecurityUtils.getCurrentUserId();
-        List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.EMPLOYEE_ORDER_REFUSE, OrderEvent.ORDER_ACCEPT,
-                OrderEvent.CANCEL_REQUEST_REFUSE, OrderEvent.CANCEL_REQUEST_ACCEPT, OrderEvent.READY_SHIPPING,
-                OrderEvent.START_SHIPPING, OrderEvent.ORDER_BOOM, OrderEvent.ORDER_FULFILL);
+        List<OrderEvent> validOrderEvent = Arrays.asList(OrderEvent.EMPLOYEE_ORDER_REFUSE, OrderEvent.ACCEPT_ORDER,
+                OrderEvent.REFUSE_ORDER_CANCELLATION, OrderEvent.ACCEPT_ORDER_CANCELLATION, OrderEvent.PREPARED,
+                OrderEvent.START_SHIPPING, OrderEvent.BOOM, OrderEvent.FULFILL);
 
         if (!validOrderEvent.contains(body.getEvent())) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Order event is not valid");
@@ -709,11 +711,11 @@ public class OrderService implements IOrderService {
         }
 
         // xu ly hoan tien / xu
-        if (body.getEvent() == OrderEvent.ORDER_REFUSE || body.getEvent() == OrderEvent.CANCEL_REQUEST_ACCEPT) {
+        if (body.getEvent() == OrderEvent.USER_REFUSE || body.getEvent() == OrderEvent.ACCEPT_ORDER_CANCELLATION) {
             transactionService.refundOrder(orderBill, true, true);
         }
         // cap nhat transaction cashing khi order thanh cong === con banking thi dc cap nhat ngay sau khi CREATED
-        else if (body.getEvent() == OrderEvent.ORDER_FULFILL) {
+        else if (body.getEvent() == OrderEvent.FULFILL) {
             TransactionEntity trans = orderBill.getTransaction();
             if (trans.getPaymentType() == PaymentType.CASHING) {
                 long totalPaid = orderBill.getTotalItemPrice();
@@ -723,10 +725,13 @@ public class OrderService implements IOrderService {
             }
         }
 
-        Map<String, Object> message = new HashMap<>();
-        message.put(FirebaseMessagingService.BODY_NOTI_KEY, MessageFormat.format(body.getEvent().getNotificationMsg(), orderId, employeeId));
-        message.put(FirebaseMessagingService.CLIENT_ID_NOTI_KEY, orderBill.getUser().getId());
-        employeeOrderNotificationKafkaPublisher.sendNotificationToUserId(message);
+        OrderStatusMsgData message = OrderStatusMsgData.builder()
+                .clientId(orderBill.getUser().getId())
+                .title(ShopfeeConstant.USER_NOTI_TITLE_MSG)
+                .body(MessageFormat.format(body.getEvent().getNotificationMsg(), orderId, employeeId))
+                .build();
+
+        employeeNotificationKafkaPublisher.sendNotificationToUserId(message);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);
@@ -741,7 +746,7 @@ public class OrderService implements IOrderService {
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
 
-        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.CANCEL_REQUEST);
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.REQUEST_CANCEL);
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
@@ -750,8 +755,8 @@ public class OrderService implements IOrderService {
         orderSearchService.upsertOrder(orderBill);
 
 
-        BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
-        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
     @Override
@@ -762,7 +767,7 @@ public class OrderService implements IOrderService {
 
         UserEntity user = orderBill.getUser();
         SecurityUtils.checkUserId(user.getId());
-        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.ORDER_REFUSE);
+        boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), OrderEvent.USER_REFUSE);
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
@@ -771,8 +776,8 @@ public class OrderService implements IOrderService {
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderSearchService.upsertOrder(updatedOrder);
 
-        BranchNotificationDto notificationDto = new BranchNotificationDto(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
-        userOrderNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
+        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
     @Override
@@ -872,8 +877,8 @@ public class OrderService implements IOrderService {
         if (orderPhasesStatus == OrderPhasesStatus.WAITING) {
             orderStatusList.add(OrderStatus.CREATED.name());
         } else if (orderPhasesStatus == OrderPhasesStatus.IN_PROCESS) {
-            List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.DELIVERING.name(),
-                    OrderStatus.PREPARED.name(),
+            List<String> statusesToAdd = Arrays.asList(OrderStatus.ACCEPTED.name(), OrderStatus.IN_DELIVERY.name(),
+                    OrderStatus.PENDING_PICK_UP.name(),
                     OrderStatus.CANCELLATION_REQUEST.name(), OrderStatus.CANCELLATION_REQUEST_ACCEPTED.name(),
                     OrderStatus.CANCELLATION_REQUEST_REFUSED.name());
             orderStatusList.addAll(statusesToAdd);

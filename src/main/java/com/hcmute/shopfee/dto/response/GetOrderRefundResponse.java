@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
-import com.hcmute.shopfee.enums.AnswerStatus;
+import com.hcmute.shopfee.enums.param.AnswerStatus;
 import lombok.Data;
 
 import java.util.Date;

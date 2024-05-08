@@ -56,34 +56,34 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
         transitions
                 .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.PAYMENT_FAILED).action(processOrder()).guard(orderTypeValidationGuard.validateBankingPayment())
                 .and()
-                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.ACCEPTED).event(OrderEvent.ORDER_ACCEPT).action(processOrder()).guard(orderTypeValidationGuard.validateTransaction())
+                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.ACCEPTED).event(OrderEvent.ACCEPT_ORDER).action(processOrder()).guard(orderTypeValidationGuard.validateTransaction())
                 .and()
-                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.ORDER_REFUSE).action(processOrder())
+                .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.USER_REFUSE).action(processOrder())
                 .and()
                 .withExternal().source(OrderStatus.CREATED).target(OrderStatus.CANCELED).event(OrderEvent.EMPLOYEE_ORDER_REFUSE).action(processOrder())
                 .and()
-                .withExternal().source(OrderStatus.ACCEPTED).target(OrderStatus.CANCELLATION_REQUEST).event(OrderEvent.CANCEL_REQUEST).action(processOrder())
+                .withExternal().source(OrderStatus.ACCEPTED).target(OrderStatus.CANCELLATION_REQUEST).event(OrderEvent.REQUEST_CANCEL).action(processOrder())
                 .and()
-                .withExternal().source(OrderStatus.ACCEPTED).target(OrderStatus.PREPARED).event(OrderEvent.READY_SHIPPING).action(processOrder())
+                .withExternal().source(OrderStatus.ACCEPTED).target(OrderStatus.PENDING_PICK_UP).event(OrderEvent.PREPARED).action(processOrder())
                 .and()
-                .withExternal().source(OrderStatus.CANCELLATION_REQUEST).target(OrderStatus.CANCELLATION_REQUEST_ACCEPTED).event(OrderEvent.CANCEL_REQUEST_ACCEPT).action(processOrder())
+                .withExternal().source(OrderStatus.CANCELLATION_REQUEST).target(OrderStatus.CANCELLATION_REQUEST_ACCEPTED).event(OrderEvent.ACCEPT_ORDER_CANCELLATION).action(processOrder())
 
                 .and()
-                .withExternal().source(OrderStatus.CANCELLATION_REQUEST).target(OrderStatus.CANCELLATION_REQUEST_REFUSED).event(OrderEvent.CANCEL_REQUEST_REFUSE).action(processOrder())
+                .withExternal().source(OrderStatus.CANCELLATION_REQUEST).target(OrderStatus.CANCELLATION_REQUEST_REFUSED).event(OrderEvent.REFUSE_ORDER_CANCELLATION).action(processOrder())
                 .and()
-                .withExternal().source(OrderStatus.CANCELLATION_REQUEST_REFUSED).target(OrderStatus.PREPARED).event(OrderEvent.READY_SHIPPING).action(processOrder())
+                .withExternal().source(OrderStatus.CANCELLATION_REQUEST_REFUSED).target(OrderStatus.PENDING_PICK_UP).event(OrderEvent.PREPARED).action(processOrder())
                 // shipping
                 .and()
-                .withExternal().source(OrderStatus.PREPARED).target(OrderStatus.DELIVERING).event(OrderEvent.START_SHIPPING).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
+                .withExternal().source(OrderStatus.PENDING_PICK_UP).target(OrderStatus.IN_DELIVERY).event(OrderEvent.START_SHIPPING).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
                 .and()
-                .withExternal().source(OrderStatus.DELIVERING).target(OrderStatus.NOT_RECEIVED).event(OrderEvent.ORDER_BOOM).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
+                .withExternal().source(OrderStatus.IN_DELIVERY).target(OrderStatus.NOT_RECEIVED).event(OrderEvent.BOOM).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
                 .and()
-                .withExternal().source(OrderStatus.DELIVERING).target(OrderStatus.SUCCEED).event(OrderEvent.ORDER_FULFILL).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
+                .withExternal().source(OrderStatus.IN_DELIVERY).target(OrderStatus.SUCCEED).event(OrderEvent.FULFILL).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.SHIPPING))
                 // onsite
                 .and()
-                .withExternal().source(OrderStatus.PREPARED).target(OrderStatus.NOT_RECEIVED).event(OrderEvent.ORDER_BOOM).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.ONSITE))
+                .withExternal().source(OrderStatus.PENDING_PICK_UP).target(OrderStatus.NOT_RECEIVED).event(OrderEvent.BOOM).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.ONSITE))
                 .and()
-                .withExternal().source(OrderStatus.PREPARED).target(OrderStatus.SUCCEED).event(OrderEvent.ORDER_FULFILL).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.ONSITE));
+                .withExternal().source(OrderStatus.PENDING_PICK_UP).target(OrderStatus.SUCCEED).event(OrderEvent.FULFILL).action(processOrder()).guard(orderTypeValidationGuard.validateOrderType(OrderType.ONSITE));
 
     }
 

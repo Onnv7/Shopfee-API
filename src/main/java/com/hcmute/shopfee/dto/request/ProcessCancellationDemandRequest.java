@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.request;
 
-import com.hcmute.shopfee.enums.AnswerStatus;
+import com.hcmute.shopfee.enums.param.AnswerStatus;
 import lombok.Data;
 
 @Data

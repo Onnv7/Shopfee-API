@@ -7,7 +7,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
-import com.hcmute.shopfee.dto.kafka.CodeEmailDto;
+import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
@@ -51,7 +51,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static com.cloudinary.AccessControlRule.AccessType.token;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
 
 @Service
@@ -245,7 +244,7 @@ public class UserAuthService implements IUserAuthService {
         }
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
-        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
+        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailMsgData(code, email));
     }
 
     @Override
@@ -254,7 +253,7 @@ public class UserAuthService implements IUserAuthService {
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + email));
         String code = GeneratorUtils.generateRandomCode(6);
         createOrUpdateConfirmationInfo(email, code);
-        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailDto(code, email));
+        mailerKafkaPublisher.sendMessageToCodeEmail(new CodeEmailMsgData(code, email));
     }
 
     @Override

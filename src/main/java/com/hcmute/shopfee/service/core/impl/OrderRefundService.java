@@ -14,6 +14,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderRefundMediaEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderRefundRequestEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.enums.param.AnswerStatus;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -124,7 +125,6 @@ public class OrderRefundService implements IOrderRefundService {
                         .build();
                 coinHistoryRepository.save(coinHistory);
                 orderBill.getTransaction().setStatus(TransactionStatus.REFUNDED);
-                orderBill.getTransaction().setRefunded(true);
             } else {
                 transactionService.refundOrder(orderBill, true, true);
             }
