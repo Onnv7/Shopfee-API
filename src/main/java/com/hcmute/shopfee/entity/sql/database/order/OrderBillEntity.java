@@ -92,7 +92,7 @@ public class OrderBillEntity {
     @OrderBy("createdAt DESC")
     private List<OrderEventEntity> orderEventList;
 
-    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
+    @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<OrderItemEntity> orderItemList;
 

@@ -8,6 +8,7 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.enums.OrderType;
+import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,7 +24,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderSearchService {
     private final OrderSearchRepository orderSearchRepository;
-
+    private final OrderBillRepository orderBillRepository;
+    public void syncOrderIndexAndDatabase() {
+        orderSearchRepository.deleteAll();
+        List<OrderBillEntity> productEntityList = orderBillRepository.findAll();
+        for (OrderBillEntity productEntity : productEntityList) {
+            createOrder(productEntity);
+        }
+    }
+    @Transactional
     public OrderIndex createOrder(OrderBillEntity orderBillEntity) {
         UserEntity user = orderBillEntity.getUser();
 

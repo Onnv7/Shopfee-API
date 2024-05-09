@@ -5,8 +5,11 @@ import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
+import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,8 +21,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductSearchService {
     private final ProductSearchRepository productSearchRepository;
+    @Autowired
+    @Lazy
+    private ProductRepository productRepository;
 
-    public void createAllProduct(List<ProductEntity> productEntityList) {
+    public void syncProductIndexAndDatabase() {
+        productSearchRepository.deleteAll();
+        List<ProductEntity> productEntityList = productRepository.findAll();
         for (ProductEntity productEntity : productEntityList) {
             createProduct(productEntity);
         }

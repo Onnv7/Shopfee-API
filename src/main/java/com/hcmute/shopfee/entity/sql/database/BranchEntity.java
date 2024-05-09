@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
@@ -26,12 +28,12 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class BranchEntity {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_id")
-//    @SequenceGenerator(name = "branch_id", sequenceName = "branch_id", initialValue = 1, allocationSize = 1)
-//    private Long id;
     @Id
-    @GenericGenerator(name = "branch_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "branch_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
+            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "S"),
+            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
+    })
     @GeneratedValue(generator = "branch_id")
     private String id;
 

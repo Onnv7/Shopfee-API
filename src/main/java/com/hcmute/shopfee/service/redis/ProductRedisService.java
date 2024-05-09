@@ -23,7 +23,7 @@ public class ProductRedisService {
     public final static String STRING_FORMAT_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
     public final static String PATTERN_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
     public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%d:%d:%s:%s:%s:%d:%d:%d";
-    public final static String PATTERN_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:*";
+    public final static String PATTERN_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%s";
 
     // get product list
     private String getKeyForGetProductVisibleList(PageRequest pageRequest, String keyword, Long minPrice, Long maxPrice, Integer minStar) {
