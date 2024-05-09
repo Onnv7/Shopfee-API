@@ -33,11 +33,13 @@ public class MailerKafkaListener {
         log.info("Listener 2 consume  {}", message.toString());
         emailService.sendHtmlVerifyCodeToRegister(message.getEmail(), message.getCode());
     }
-    @KafkaListener(topics =  SEND_CODE_EMAIL_TOPIC + "-dlt", groupId = "receive_email")
+
+    @KafkaListener(topics = SEND_CODE_EMAIL_TOPIC + "-dlt", groupId = "receive_email")
     public void consumeSendCodeEmailDLT(CodeEmailMsgData message) {
         log.error("Listener DLT consume  =>>> {}", message.toString());
         emailService.sendHtmlVerifyCodeToRegister(message.getEmail(), message.getCode());
     }
+
     // SEND_USER_BLOCKED_EMAIL_TOPIC
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = SEND_USER_BLOCKED_EMAIL_TOPIC, groupId = SEND_USER_BLOCKED_EMAIL_CONSUMER_GROUP_ID, id = "3")
@@ -45,13 +47,15 @@ public class MailerKafkaListener {
         log.info("Listener 3 consume {}", message.toString());
         emailService.sendUserBlocked(message.getEmail(), message.getUserName());
     }
+
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = SEND_USER_BLOCKED_EMAIL_TOPIC, groupId = SEND_USER_BLOCKED_EMAIL_CONSUMER_GROUP_ID, id = "4")
     public void consumeUserBlockedData2(UserBlockedMsgData message) {
         log.info("Listener 4 consume {}", message.toString());
         emailService.sendUserBlocked(message.getEmail(), message.getUserName());
     }
-    @KafkaListener( topics =  SEND_USER_BLOCKED_EMAIL_TOPIC + "-dlt", groupId = "receive_email")
+
+    @KafkaListener(topics = SEND_USER_BLOCKED_EMAIL_TOPIC + "-dlt", groupId = SEND_USER_BLOCKED_EMAIL_CONSUMER_GROUP_ID + "-dlt")
     public void consumeUserBlockedDataDLT(UserBlockedMsgData message) {
         log.error("Listener DLT consume =>>> {}", message.toString());
         emailService.sendUserBlocked(message.getEmail(), message.getUserName());

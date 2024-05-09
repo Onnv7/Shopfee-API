@@ -7,7 +7,15 @@ import lombok.Data;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 
 @Data
-public class CreateUserFcmTokenRequest {
+public class UpsertUserFcmTokenRequest {
+    public UpsertUserFcmTokenRequest() {
+    }
+
+    public UpsertUserFcmTokenRequest(String userId, String token) {
+        this.userId = userId;
+        this.token = token;
+    }
+
     @Schema(example = OBJECT_ID_EX)
     private String userId;
 

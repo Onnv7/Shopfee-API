@@ -17,6 +17,8 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.enums.param.ProductSortType;
+import com.hcmute.shopfee.kafka.message.TrackingUserProductMsgData;
+import com.hcmute.shopfee.kafka.publisher.TrackingUserProductKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
@@ -28,11 +30,9 @@ import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
-import com.hcmute.shopfee.utils.ExcelUtils;
-import com.hcmute.shopfee.utils.MediaUtils;
-import com.hcmute.shopfee.utils.RegexUtils;
-import com.hcmute.shopfee.utils.StringUtils;
+import com.hcmute.shopfee.utils.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -49,12 +49,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
     private final ProductRepository productRepository;
@@ -65,6 +63,7 @@ public class ProductService implements IProductService {
     private final ProductReviewRepository productReviewRepository;
     private final AlbumRepository albumRepository;
     private final ProductRedisService productRedisService;
+    private final TrackingUserProductKafkaPublisher trackingUserProductKafkaPublisher;
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
@@ -170,28 +169,40 @@ public class ProductService implements IProductService {
 
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
+        boolean isExistInCache = false;
+        GetProductViewByIdResponse data = new GetProductViewByIdResponse();
         try {
             GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
             if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
-                return dataCache;
+                isExistInCache = true;
+                data = dataCache;
             }
         } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
+            log.error(Arrays.toString(e.getStackTrace()));
+        } finally {
+            if (!isExistInCache) {
+                ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
+                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
+                data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
+                data.setImageUrl(product.getImage().getImageUrl());
+                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
+                data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+            }
         }
 
-        ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
-        GetProductViewByIdResponse data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
-
-        data.setImageUrl(product.getImage().getImageUrl());
-
-        RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
-        data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
+        if (SecurityUtils.getCurrentUserId() != null) {
+            TrackingUserProductMsgData msgData = new TrackingUserProductMsgData();
+            msgData.setProductId(data.getId());
+            msgData.setUserId(SecurityUtils.getCurrentUserId());
+            trackingUserProductKafkaPublisher.analystTrackingUserProductData(msgData);
+        }
 
         try {
-            productRedisService.saveProductView(data);
+            if (!isExistInCache) {
+                productRedisService.saveProductView(data);
+            }
         } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
+            log.error(Arrays.toString(e.getStackTrace()));
         }
         return data;
     }
@@ -314,7 +325,7 @@ public class ProductService implements IProductService {
 
         }
 
-        for(GetProductListResponse.Product product : productList.getProductList()) {
+        for (GetProductListResponse.Product product : productList.getProductList()) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
             product.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
         }

@@ -78,6 +78,10 @@
             <appender-ref ref="CONSOLE"/>
         </logger>
 
+        <logger name="com.google.firebase" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
         <logger name="com.hcmute.shopfee" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE" level="DEBUG" />
             <appender-ref ref="LOG_ERROR_FILE" level="ERROR"/>

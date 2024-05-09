@@ -1,6 +1,10 @@
 package com.hcmute.shopfee.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
@@ -592,6 +596,25 @@ public class ToolController {
     @PostMapping("/kafka-kafkaSendToClient")
     public String kafkaSendToClient(@RequestBody OrderStatusMsgData body) {
         employeeNotificationKafkaPublisher.sendNotificationToUserId(body);
+        return "okoko";
+    }
+
+    private final FirebaseMessaging firebaseMessaging;
+    @PostMapping("/test-send-fcm")
+    public String kafkaSendToClient(@RequestParam String fcmToken) {
+        Notification notification = Notification.builder()
+                .setTitle("test tile")
+                .setBody("Body")
+                .build();
+        Message message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(notification)
+                .build();
+        try {
+            firebaseMessaging.send(message);
+        } catch (FirebaseMessagingException e) {
+            e.printStackTrace();
+        }
         return "okoko";
     }
 

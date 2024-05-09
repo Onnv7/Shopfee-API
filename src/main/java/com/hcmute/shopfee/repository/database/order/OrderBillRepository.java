@@ -119,7 +119,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             join order_event oe on ob.id = oe.order_bill_id\s
             JOIN employee e on oe.created_by = e.id\s
             where e.id = ?1\s
-            and oe.order_status = 'PREPARED'
+            and oe.order_status = 'SUCCEED'
             AND oe.created_at >= ?2
             AND oe.created_at <= ?3
             GROUP BY DATE_FORMAT(ob.created_at, '%Y-%m-%d')

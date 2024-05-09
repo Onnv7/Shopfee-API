@@ -8,7 +8,15 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.FCM_TOKEN_EX;
 import static com.hcmute.shopfee.constant.SwaggerConstant.OBJECT_ID_EX;
 
 @Data
-public class CreateEmployeeFcmTokenRequest {
+public class UpsertEmployeeFcmTokenRequest {
+    public UpsertEmployeeFcmTokenRequest() {
+    }
+
+    public UpsertEmployeeFcmTokenRequest(String employeeId, String token) {
+        this.employeeId = employeeId;
+        this.token = token;
+    }
+
     @Schema(example = OBJECT_ID_EX)
     private String employeeId;
 

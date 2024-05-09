@@ -28,6 +28,7 @@ import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.user.UserUsernamePasswordAuthenticationToken;
+import com.hcmute.shopfee.service.core.INotificationService;
 import com.hcmute.shopfee.service.core.IUserAuthService;
 import com.hcmute.shopfee.service.common.JwtService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
@@ -66,6 +67,7 @@ public class UserAuthService implements IUserAuthService {
     private final ConfirmationRepository confirmationRepository;
     private final MailerKafkaPublisher mailerKafkaPublisher;
     private final UserFCMTokenRepository userFcmTokenRepository;
+    private final INotificationService notificationService;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
@@ -74,6 +76,7 @@ public class UserAuthService implements IUserAuthService {
         if (fcmTokenId == null) {
             return;
         }
+
         UserFCMTokenEntity userFcmTokenEntity = userFcmTokenRepository.findById(fcmTokenId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.FCM_TOKEN_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + fcmTokenId));
         userFcmTokenEntity.setUser(user);

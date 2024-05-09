@@ -5,8 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserFCMTokenRepository extends JpaRepository<UserFCMTokenEntity, String> {
     List<UserFCMTokenEntity> findByUser_Id(String userId);
+    Optional<UserFCMTokenEntity> findByToken(String fmcToken);
 }
