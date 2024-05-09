@@ -181,7 +181,12 @@ public class UserAuthService implements IUserAuthService {
 
         var principalAuthenticated = (UserPrincipal) authentication.getPrincipal();
         UserEntity user = userRepository.findByEmail(principalAuthenticated.getUsername()).orElse(null);
-
+        if (user ==  null) {
+            throw new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG);
+        }
+        if (user.getStatus() == UserStatus.BLOCKED) {
+            throw new ShopfeeException(ShopfeeErrorCode.USER_BLOCKED);
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         var roles = authentication.getAuthorities()
                 .stream().map(GrantedAuthority::getAuthority)
@@ -204,6 +209,14 @@ public class UserAuthService implements IUserAuthService {
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);
             UserEntity user = userRepository.findByEmail(decodedToken.getEmail()).orElse(null);
+
+            if (user ==  null) {
+                throw new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG);
+            }
+            if (user.getStatus() == UserStatus.BLOCKED) {
+                throw new ShopfeeException(ShopfeeErrorCode.USER_BLOCKED);
+            }
+
             String userId = user.getId();
             String username = user.getEmail();
 

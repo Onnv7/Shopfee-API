@@ -37,7 +37,9 @@ public class ErrorConstant {
     public static final String ORDER_ITEM_NOT_FOUND = "Order item data not found";
     public static final String PRODUCT_REVIEW_NOT_FOUND = "Product review data not found";
     public static final String TOKEN_STOLEN = "Tokens have been stolen";
+    public static final String USER_BLOCKED_STOLEN = "This account is blocked";
     public static final String WRONG_PASSWORD = "Password is wrong";
+    public static final String CREDENTIAL_WRONG = "Invalid login information";
     public static final String ALBUM_NOT_FOUND = "Image data not found";
     public static final String ADD_MORE_5_ADDRESS = "Do not add more than 5 addresses";
 
