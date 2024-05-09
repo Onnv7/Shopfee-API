@@ -2,6 +2,7 @@ package com.hcmute.shopfee.repository.database.order;
 
 import com.hcmute.shopfee.dto.sql.GetStatisticByKeyValue;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
+import com.hcmute.shopfee.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -39,4 +40,16 @@ public interface OrderEventRepository extends JpaRepository<OrderEventEntity, St
             ) as statistic on statistic.order_status = s.order_status
             """, nativeQuery = true)
     List<GetStatisticByKeyValue> getCountOrderEventStatisticsByUser(String userId);
+
+    @Query(value = """
+            select count(*)
+            from order_bill ob
+            join(select order_bill_id, MAX(created_at) as created_at
+                 from order_event
+                 group by order_bill_id) as last_event on ob.id = last_event.order_bill_id
+            join order_event oe on last_event.created_at = oe.created_at
+            where ob.user_id = ?1
+            and oe.order_status = ?2
+            """, nativeQuery = true)
+    int getCountOrderBillWithStatus(String userId, String status);
 }

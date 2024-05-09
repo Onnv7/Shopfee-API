@@ -69,6 +69,30 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+    @Operation(summary = USER_GET_DETAIL_BY_ID_SUM)
+    @GetMapping(path = GET_USER_DETAILS_BY_ID_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
+    public ResponseEntity<ResponseAPI<GetUserDetailsByIdResponse>> getUserDetail(@PathVariable(USER_ID) String userId) {
+        GetUserDetailsByIdResponse resData = userService.getUserDetail(userId);
+
+        ResponseAPI<GetUserDetailsByIdResponse> res = ResponseAPI.<GetUserDetailsByIdResponse>builder()
+                .message(SuccessConstant.GET)
+                .data(resData)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
+
+    @Operation(summary = USER_CHANGE_STATUS_SUM)
+    @PatchMapping(path = GET_USER_CHANGE_STATUS_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
+    public ResponseEntity<ResponseAPI<?>> changeUserStatus(@PathVariable(USER_ID) String userId, @RequestParam("status") UserStatus status) {
+        userService.changeUserStatus(userId, status);
+
+        ResponseAPI<?> res = ResponseAPI.builder()
+                .message(SuccessConstant.UPDATED)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
 
     @Operation(summary = USER_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_USER_UPDATE_BY_ID_SUB_PATH)

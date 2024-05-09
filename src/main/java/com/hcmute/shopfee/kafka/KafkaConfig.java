@@ -19,4 +19,8 @@ public class KafkaConfig {
     public NewTopic createEmployeeOOrderNotificationTopic() {
         return new NewTopic(KafkaConstant.EMPLOYEE_ORDER_NOTIFICATION_TOPIC,  4, (short) 1);
     }
+    @Bean
+    public NewTopic createUserBlockedEmail() {
+        return new NewTopic(KafkaConstant.SEND_USER_BLOCKED_EMAIL_TOPIC,  2, (short) 1);
+    }
 }

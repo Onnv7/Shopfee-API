@@ -27,7 +27,9 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
+import com.hcmute.shopfee.kafka.message.UserBlockedMsgData;
 import com.hcmute.shopfee.kafka.publisher.EmployeeNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
@@ -93,6 +95,7 @@ public class OrderService implements IOrderService {
     private final OrderStateService orderStateService;
     private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
     private final EmployeeNotificationKafkaPublisher employeeNotificationKafkaPublisher;
+    private final MailerKafkaPublisher mailerKafkaPublisher;
 
     @Autowired
     @Lazy
@@ -704,7 +707,7 @@ public class OrderService implements IOrderService {
 
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
-
+        UserEntity user = orderBill.getUser();
         boolean rs = orderStateService.sendMonoEvent(orderId, body.getNote(), body.getEvent());
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
@@ -722,6 +725,17 @@ public class OrderService implements IOrderService {
                 trans.setStatus(TransactionStatus.PAID);
                 trans.setTotalPaid(totalPaid);
                 transactionRepository.save(trans);
+            }
+        }
+        else if(body.getEvent() == OrderEvent.BOOM) {
+            int boomCount = orderEventRepository.getCountOrderBillWithStatus(user.getId(), OrderStatus.NOT_RECEIVED.name());
+            if(boomCount + 1 >= ShopfeeConstant.ORDER_BOOM_COUNT_LIMIT) {
+                user.setStatus(UserStatus.BLOCKED);
+                userRepository.save(user);
+                UserBlockedMsgData msg = new UserBlockedMsgData();
+                msg.setEmail(user.getEmail());
+                msg.setUserName(user.getFullName());
+                mailerKafkaPublisher.sendBlockedStatus(msg);
             }
         }
 

@@ -38,6 +38,8 @@ public class SwaggerConstant {
     // For user =================================================================
     public static final String USER_CONTROLLER_TITLE = "USER MANAGEMENT";
     public static final String USER_GET_BY_ID_SUM = "Get a user by user id";
+    public static final String USER_GET_DETAIL_BY_ID_SUM = "Get user's details by user id";
+    public static final String USER_CHANGE_STATUS_SUM = "Change status of user";
     public static final String USER_GET_ALL_SUM = "Get all users";
     public static final String USER_CHANGE_PWD_SUM = "Change password by user id";
     public static final String USER_UPDATE_BY_ID_SUM = "Update user's profile by user id";

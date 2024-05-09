@@ -66,7 +66,6 @@ public class ProductService implements IProductService {
     private final AlbumRepository albumRepository;
     private final ProductRedisService productRedisService;
 
-
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
         for (SizeEntity item : sizeList) {
@@ -171,12 +170,9 @@ public class ProductService implements IProductService {
 
     @Override
     public GetProductViewByIdResponse getProductViewById(String id) {
-
         try {
             GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
             if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
-//                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(dataCache.getId());
-//                dataCache.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
                 return dataCache;
             }
         } catch (JsonProcessingException e) {

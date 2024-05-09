@@ -21,6 +21,7 @@ public class ShopfeeConstant {
     public static final int TIMEOUT_REFUSE_ORDER_MINUTES = 30;
     public static final int TIMEOUT_VNPAY_TRANSACTION_MINUTES = 17;
     public static final int TIMEOUT_ZALO_TRANSACTION_MINUTES = 15;
+    public static final int ORDER_BOOM_COUNT_LIMIT = 3;
 
     // notification messages
     public static final String NEW_ORDER_MSG = "%s order %s created. Check now";

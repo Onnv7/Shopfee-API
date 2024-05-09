@@ -12,6 +12,8 @@ import java.sql.Date;
 public interface IUserService {
     GetAllUserResponse getUserList(String key, UserStatus status, int page, int size);
     GetUserByIdResponse getUserProfileById(String userId);
+    GetUserDetailsByIdResponse getUserDetail(String userId);
+    void changeUserStatus(String userId, UserStatus status);
     void updateUserProfile(String userId, UpdateUserRequest body);
     String checkExistedUserByEmail(String email);
     UploadAvatarResponse uploadAvatar(UploadUserAvatarRequest body, String userId);

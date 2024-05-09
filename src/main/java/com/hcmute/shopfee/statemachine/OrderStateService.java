@@ -64,29 +64,6 @@ public class OrderStateService {
         return (!sm.hasStateMachineError() &&  sendSuccess.get());
     }
 
-    public Mono<OrderStatus> sendEventMono(String orderId, String desc, OrderEvent event) {
-        StateMachine<OrderStatus, OrderEvent> sm = build(orderId);
-        OrderType orderType = orderBillRepository.getOrderType(orderId);
-        Message<OrderEvent> message = MessageBuilder.withPayload(event)
-                .setHeader(ORDER_ID_HEADER, orderId)
-                .setHeader(NOTE_HEADER, desc)
-                .setHeader(ORDER_TYPE_HEADER, orderType)
-                .build();
-        Flux<StateMachineEventResult<OrderStatus, OrderEvent>> se = sm.sendEvent(Mono.just(message)).map(result -> {
-            if (result.getResultType() == StateMachineEventResult.ResultType.ACCEPTED) {
-                System.out.println("Sự kiện đã được gửi qua guard");
-            } else {
-                System.out.println("Sự kiện không được gửi qua guard. Lý do: " + result.getMessage());
-            }
-            return result;
-        }).log();
-        se.subscribe();
-
-        Mono<OrderStatus> rs = se.then(Mono.defer(() -> Mono.just(sm.getState().getId())));
-        return rs;
-
-    }
-
     private StateMachine<OrderStatus, OrderEvent> build(String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));

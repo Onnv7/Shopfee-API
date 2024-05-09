@@ -15,7 +15,9 @@ import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.kafka.message.UserBlockedMsgData;
 import com.hcmute.shopfee.kafka.publisher.EmployeeNotificationKafkaPublisher;
+import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.kafka.publisher.UserNotificationKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.vnpay.VNPay;
@@ -593,177 +595,6 @@ public class ToolController {
         return "okoko";
     }
 
-    @GetMapping("/tst-state-machine")
-    public String machine(@RequestParam("orderId") String orderId, @RequestParam("orderEvent") OrderEvent orderEvent) {
-
-        Mono<OrderStatus> rs = orderStateService.sendEventMono(orderId, "Test", orderEvent);
-
-//                .subscribe(rs1 -> {
-//                    System.out.println(rs1);
-//                }, err -> {
-//
-//                    System.out.println(err);
-//                }, () -> {
-//
-//                    System.out.println("err");
-//                });
-        return "okoko";
-    }
-
-
-    @GetMapping("/create-excel")
-    public String createExcelt() throws IOException {
-
-        Workbook workbook = new XSSFWorkbook();
-
-        // Create Categories sheet
-        Sheet categoriesSheet = workbook.createSheet("Categories");
-
-        // Create some data for demonstration
-        String[] categoryIds = {"101", "102", "103"};
-        String[] categoryNames = {"Category 1", "Category 2", "Category 3"};
-
-        // Write data to Categories sheet
-        for (int i = 0; i < categoryIds.length; i++) {
-            Row row = categoriesSheet.createRow(i);
-            row.createCell(0).setCellValue(categoryIds[i]);
-            row.createCell(1).setCellValue(categoryNames[i]);
-        }
-
-        // Create Product sheet
-        Sheet productSheet = workbook.createSheet("Products");
-
-        // Create a named range for the first column (Category ID)
-        String rangeName = "CategoryID";
-        String reference = "Categories!$A$1:$A$" + (categoryIds.length); // Assuming data starts from row 2
-        Name namedRange = workbook.createName();
-        namedRange.setNameName(rangeName);
-        namedRange.setRefersToFormula(reference);
-
-        // Set data validation with drop-down list in Product sheet
-        DataValidationHelper dvHelper = productSheet.getDataValidationHelper();
-        DataValidationConstraint dvConstraint = dvHelper.createFormulaListConstraint(rangeName);
-        CellRangeAddressList addressList = new CellRangeAddressList(0, 0, 0, 0); // Assuming the drop-down list is in the first column (A) of the first row
-        DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
-
-        // Set error message for invalid data
-        validation.createErrorBox("Invalid Data", "Please select a value from the drop-down list.");
-        // Set error style
-        validation.setShowErrorBox(true);
-        validation.setShowPromptBox(true);
-        validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validation.setSuppressDropDownArrow(true);
-
-        productSheet.addValidationData(validation);
-
-
-        Cell cell = productSheet.createRow(2).createCell(3); // Hàng 3, Cột D (index 3 là cột D)
-        cell.setCellValue("1234"); // Gán giá trị cho ô 3D
-        DataValidationHelper dvHelper2 = productSheet.getDataValidationHelper();
-        DataValidationConstraint dvConstraint2 = dvHelper2.createNumericConstraint(
-                DataValidationConstraint.ValidationType.INTEGER,
-                DataValidationConstraint.OperatorType.GREATER_THAN,
-                "1000", "999999"); // Minimum value
-
-        CellRangeAddressList addressList2 = new CellRangeAddressList(2, 2, 3, 3); // Hàng 3, Cột D
-        DataValidation validation2 = dvHelper2.createValidation(dvConstraint2, addressList2);
-
-        // Set error message for invalid data
-        validation2.createErrorBox("Invalid Data", "Price must be greater than 1000.");
-
-        // Set error style
-        validation2.setShowErrorBox(true);
-        validation2.setShowPromptBox(true);
-        validation2.setErrorStyle(DataValidation.ErrorStyle.STOP);
-        validation2.setSuppressDropDownArrow(true);
-
-        productSheet.addValidationData(validation2);
-
-        // Close the workbook to release resources
-
-        try (FileOutputStream fileOut = new FileOutputStream("categories.xlsx")) {
-            workbook.write(fileOut);
-        }
-        workbook.close();
-
-
-        return "ok";
-    }
-
-    @GetMapping("/create-beverage-excel")
-    public String createBeverageExcel() throws IOException {
-        int rowEffected = 100;
-        Workbook workbook = new XSSFWorkbook();
-        Sheet dataSheet = workbook.createSheet("data");
-        Sheet productSheet = workbook.createSheet("product");
-
-        Row headerRow = dataSheet.createRow(0);
-        String[] firstRow = {"Product name", "Category", "Status", "Description", "Image", "Size name", "Size price", "Topping name", "Topping price"};
-        String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
-        String[] firstRowData2 = {null, null, null, null, "https://www.facebook.com/", "MEDIUM", "20000", null, null};
-        String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
-        String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
-        for (int i = 0; i < firstRow.length; i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(firstRow[i]);
-        }
-
-        // category value drop list
-        List<String> categoryNameList = categoryRepository.getCategoryNameList();
-        ExcelUtils.setDropList(categoryNameList.toArray(new String[0]), dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 1, 1);
-
-
-        // size value drop list
-        ExcelUtils.setDropList(sizeNameArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 5, 5);
-
-        // size status drop list
-        ExcelUtils.setDropList(statusArray, dataSheet, "Invalid Data", "Please select a value from the drop-down list.", 1, rowEffected, 2, 2);
-
-
-        // validate price > 1000
-        ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 6, 6);
-        ExcelUtils.setIntegerConstraint(dataSheet, 1000, 9999999, "Invalid Data", "Price must be greater than 1000.", 1, rowEffected, 8, 8);
-
-
-        // validate product name
-        List<String> productNameList = productRepository.getProductNameList();
-        for (int i = 0; i < productNameList.size(); i++) {
-            Row row = productSheet.createRow(i);
-            row.createCell(0).setCellValue(productNameList.get(i));
-        }
-
-        String rangeName = "productName";
-        String reference = "product!$A$1:$A$" + (productNameList.size());
-        ExcelUtils.setFormulas(workbook, rangeName, reference);
-        ExcelUtils.setCustomConstraint(dataSheet, "COUNTIF(productName, A2)=0", "Invalid Data", "The product name is already in the database", 1, rowEffected, 0, 0);
-
-
-        // Apply the validation to the sheet
-        Row r1 = dataSheet.createRow(1);
-        Row r2 = dataSheet.createRow(2);
-        for (int i = 0; i < firstRowData1.length; i++) {
-            Cell cell1 = r1.createCell(i);
-            Cell cell2 = r2.createCell(i);
-            cell1.setCellValue(firstRowData1[i]);
-            cell2.setCellValue(firstRowData2[i]);
-        }
-        for (int i = 0; i <= 4; i++) {
-            dataSheet.addMergedRegion(new CellRangeAddress(1, 2, i, i));
-        }
-        for (Row row : dataSheet) {
-            row.setHeight((short) -1);
-            for (Cell cell : row) {
-                dataSheet.autoSizeColumn(cell.getColumnIndex());
-            }
-        }
-
-        try (FileOutputStream fileOut = new FileOutputStream("beverage.xlsx")) {
-            workbook.write(fileOut);
-        }
-        workbook.close();
-        return "nice";
-    }
-
     @PostMapping(value = "/test-upload-video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String uploadFileToFolder(@ModelAttribute(name = "file") MultipartFile file) throws IOException {
         cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, "test-video", file.getBytes());
@@ -831,7 +662,15 @@ public class ToolController {
         scheduler.scheduleJob(jobDetail, trigger);
         return "ok";
     }
-
+    private final EmailService emailService;
+    private final MailerKafkaPublisher mailerKafkaPublisher;
+    @PostMapping(value = "/test-send-email-block")
+    public String testSendEmailBLoc(@RequestBody UserBlockedMsgData msg) throws IOException {
+        mailerKafkaPublisher.sendBlockedStatus(msg);
+        System.out.println("ádasdasda");
+        log.info("thread");
+        return "ok";
+    }
     public class HelloWorldJob implements Job {
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {

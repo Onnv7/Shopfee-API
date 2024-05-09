@@ -60,6 +60,8 @@ public class RouterConstant {
     public static final String PUT_USER_UPDATE_BY_ID_SUB_PATH = USER_ID_PATH;
     public static final String PATCH_USER_CHANGE_PASSWORD_SUB_PATH = USER_ID_PATH + "/change-password";
     public static final String GET_USER_BY_ID_SUB_PATH = USER_ID_PATH + "/view";
+    public static final String GET_USER_DETAILS_BY_ID_SUB_PATH = USER_ID_PATH + "/details";
+    public static final String GET_USER_CHANGE_STATUS_SUB_PATH = USER_ID_PATH + "/change-status";
     public static final String GET_USER_ALL_SUB_PATH = "";
     public static final String GET_USER_CHECK_EXISTED_SUB_PATH = "/registered";
     public static final String PATCH_USER_UPLOAD_AVATAR_SUB_PATH = USER_ID_PATH + "/upload/avatar";

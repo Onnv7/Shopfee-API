@@ -78,6 +78,24 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public GetUserDetailsByIdResponse getUserDetail(String userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
+        long coin = coinHistoryRepository.getCoinOfUser(userId);
+        GetUserDetailsByIdResponse data = modelMapperService.mapClass(userEntity, GetUserDetailsByIdResponse.class);
+        data.setCoin(coin);
+        return data;
+    }
+
+    @Override
+    public void changeUserStatus(String userId, UserStatus status) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + userId));
+        userEntity.setStatus(status);
+        userRepository.save(userEntity);
+    }
+
+    @Override
     public void updateUserProfile(String userId, UpdateUserRequest body) {
         SecurityUtils.checkUserId(userId);
         UserEntity user = userRepository.findById(userId)
