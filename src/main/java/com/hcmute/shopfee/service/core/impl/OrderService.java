@@ -307,19 +307,25 @@ public class OrderService implements IOrderService {
             } else if (condition.getType() == ConditionType.SUBJECT) {
 
                 List<SubjectConditionEntity> subjectConditionEntityList = condition.getSubjectConditionList();
+                boolean isValid = false;
                 for (SubjectConditionEntity subjectConditionEntity : subjectConditionEntityList) {
                     OrderItemDto item = orderItemList.stream().filter(it -> it.getProductId().equals(subjectConditionEntity.getObjectId())).findFirst()
-                            .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_ITEM_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + subjectConditionEntity.getObjectId()));
+                            .orElse(null);
 
-                    int count = 0;
-                    for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
-                        count += itemDetailDto.getQuantity();
-                    }
-                    if (count < subjectConditionEntity.getValue()) {
-                        // invalid
-                        throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Subject " + subjectConditionEntity.getObjectId() + " quantity " + subjectConditionEntity.getValue());
+                    if (item != null) {
+                        int count = 0;
+                        for (ItemDetailDto itemDetailDto : item.getItemDetailList()) {
+                            count += itemDetailDto.getQuantity();
+                        }
+                        if (count >= subjectConditionEntity.getValue()) {
+                            isValid = true;
+                            break;
+                        }
                     }
 
+                }
+                if(!isValid) {
+                    throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, couponCode + " is invalid with subject condition");
                 }
             }
         }
