@@ -115,7 +115,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_VISIBLE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetAllVisibleProductResponse>> getAllProductsVisible(
+    public ResponseEntity<ResponseAPI<GetProductCardListResponse>> getAllProductsVisible(
             @Parameter(name = "key", description = "Key is name or description or id", required = false, example = "P0001")
             @RequestParam(name = "key", required = false, defaultValue = "") String key,
 
@@ -138,7 +138,7 @@ public class ProductController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        GetAllVisibleProductResponse resData = productService.getVisibleProductList(minPrice, maxPrice, minStar, productSortType, page, size, key);
+        GetProductCardListResponse resData = productService.getVisibleProductList(minPrice, maxPrice, minStar, productSortType, page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -147,7 +147,21 @@ public class ProductController {
                 .build();
         return new ResponseEntity<>(res, StatusCode.OK);
     }
+    @Operation(summary = PRODUCT_GET_USER_TRACKING_SUM)
+    @GetMapping(path = GET_PRODUCT_USER_TRACKING_SUB_PATH)
+    public ResponseEntity<ResponseAPI<GetProductCardListResponse>> getProductUserTracking(
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+    ) {
+        List<GetUserProductTrackingCardResponse> resData = productService.getProductUserTracking(size);
 
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(resData)
+                .build();
+        return new ResponseEntity<>(res, StatusCode.OK);
+    }
     @Operation(summary = PRODUCT_GET_ALL_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)

@@ -1,6 +1,5 @@
 package com.hcmute.shopfee.dto.common;
 
-import com.hcmute.shopfee.dto.response.GetProductViewByIdResponse;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
 import lombok.Data;
 

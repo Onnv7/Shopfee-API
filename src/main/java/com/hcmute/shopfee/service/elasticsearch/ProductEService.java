@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProductSearchService {
+public class ProductEService {
     private final ProductSearchRepository productSearchRepository;
     @Autowired
     @Lazy

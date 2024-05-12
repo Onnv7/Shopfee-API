@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.entity.sql.listener;
 
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
-import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.service.elasticsearch.ProductEService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
@@ -15,20 +15,20 @@ public class ProductListener {
     private final ProductRedisService productRedisService;
     @Autowired
     @Lazy
-    private  ProductSearchService productSearchService;
+    private ProductEService productEService;
 
     @PostPersist
     public void postPersist(ProductEntity entity) {
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VIEW, entity.getId()));
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VISIBLE, "*"));
-        productSearchService.createProduct(entity);
+        productEService.createProduct(entity);
     }
 
     @PostUpdate
     public void postUpdate(ProductEntity entity) {
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VIEW, entity.getId()));
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VISIBLE, "*"));
-        productSearchService.upsertProduct(entity);
+        productEService.upsertProduct(entity);
     }
 
     @PostRemove
@@ -36,6 +36,6 @@ public class ProductListener {
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VIEW, entity.getId()));
         productRedisService.deleteKeysWithPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VISIBLE, "*"));
 
-        productSearchService.deleteProduct(entity.getId());
+        productEService.deleteProduct(entity.getId());
     }
 }

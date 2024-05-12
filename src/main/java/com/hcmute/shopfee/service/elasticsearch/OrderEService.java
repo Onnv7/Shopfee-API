@@ -5,9 +5,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
-import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
-import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderSearchService {
+public class OrderEService {
     private final OrderSearchRepository orderSearchRepository;
     private final OrderBillRepository orderBillRepository;
     public void syncOrderIndexAndDatabase() {

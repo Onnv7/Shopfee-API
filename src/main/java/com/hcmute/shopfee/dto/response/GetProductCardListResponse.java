@@ -10,7 +10,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class GetAllVisibleProductResponse {
+public class GetProductCardListResponse {
     private Integer totalPage;
     private List<ProductCard> productList;
 

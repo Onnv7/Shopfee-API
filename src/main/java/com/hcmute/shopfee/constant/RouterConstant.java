@@ -97,6 +97,7 @@ public class RouterConstant {
     public static final String GET_PRODUCT_VIEW_BY_ID_SUB_PATH = PRODUCT_ID_PATH + "/view";
     public static final String GET_PRODUCT_BY_CATEGORY_ID_SUB_PATH = "/category" + CATEGORY_ID_PATH;
     public static final String GET_PRODUCT_ALL_VISIBLE_SUB_PATH = "/visible";
+    public static final String GET_PRODUCT_USER_TRACKING_SUB_PATH = "/user-tracking";
     public static final String GET_PRODUCT_ALL_SUB_PATH = "";
     public static final String PUT_PRODUCT_UPDATE_BY_ID_SUB_PATH = PRODUCT_ID_PATH;
     public static final String DELETE_PRODUCT_BY_ID_SUB_PATH = PRODUCT_ID_PATH;

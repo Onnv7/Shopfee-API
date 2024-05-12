@@ -3,9 +3,8 @@ package com.hcmute.shopfee.service.redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hcmute.shopfee.dto.response.GetAllVisibleProductResponse;
+import com.hcmute.shopfee.dto.response.GetProductCardListResponse;
 import com.hcmute.shopfee.dto.response.GetProductViewByIdResponse;
-import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.param.ProductSortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -41,14 +40,14 @@ public class ProductRedisService {
         return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE, pageRequest.getPageNumber(), pageRequest.getPageSize(), keyword, sortDirection, sortStarDirection, minPrice, maxPrice, minStar);
     }
 
-    public GetAllVisibleProductResponse getProductVisibleList(String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
+    public GetProductCardListResponse getProductVisibleList(String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
         String key = getKeyForGetProductVisibleList(pageRequest, keyword, minPrice, maxPrice, minStar);
         String json = (String) redisTemplate.opsForValue().get(key);
-        return json != null ? redisObjectMapper.readValue(json, new TypeReference<GetAllVisibleProductResponse>() {
+        return json != null ? redisObjectMapper.readValue(json, new TypeReference<GetProductCardListResponse>() {
         }) : null;
     }
 
-    public void saveProductVisibleList(GetAllVisibleProductResponse productEntityList, String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
+    public void saveProductVisibleList(GetProductCardListResponse productEntityList, String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
         String key = getKeyForGetProductVisibleList(pageRequest, keyword, minPrice, maxPrice, minStar);
         String json = redisObjectMapper.writeValueAsString(productEntityList);
         redisTemplate.opsForValue().set(key, json);

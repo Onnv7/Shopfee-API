@@ -42,24 +42,18 @@ import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.impl.CallbackService;
-import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
-import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.service.elasticsearch.OrderEService;
+import com.hcmute.shopfee.service.elasticsearch.ProductEService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
-import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.DateUtils;
-import com.hcmute.shopfee.utils.ExcelUtils;
 import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +69,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
-import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.net.*;
@@ -100,9 +93,9 @@ import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TXN_REF_KEY;
 //@Slf4j
 public class ToolController {
     private final ProductSearchRepository productSearchRepository;
-    private final OrderSearchService orderSearchService;
+    private final OrderEService orderEService;
     private final ProductRepository productRepository;
-    private final ProductSearchService productSearchService;
+    private final ProductEService productEService;
     private final OrderSearchRepository orderSearchRepository;
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
@@ -426,7 +419,7 @@ public class ToolController {
         productSearchRepository.deleteAll();
         List<ProductEntity> productList = productRepository.findAll();
         for (ProductEntity item : productList) {
-            productSearchService.createProduct(item);
+            productEService.createProduct(item);
         }
         return "okokok";
     }
@@ -436,7 +429,7 @@ public class ToolController {
         orderSearchRepository.deleteAll();
         List<OrderBillEntity> productList = orderBillRepository.findAll();
         for (OrderBillEntity item : productList) {
-            orderSearchService.createOrder(item);
+            orderEService.createOrder(item);
         }
         return "okokok";
     }

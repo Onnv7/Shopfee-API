@@ -9,6 +9,7 @@ import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
+import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -28,7 +29,8 @@ import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.service.elasticsearch.ProductSearchService;
+import com.hcmute.shopfee.service.elasticsearch.ProductEService;
+import com.hcmute.shopfee.service.elasticsearch.TrackingUserProductEService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import com.hcmute.shopfee.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -59,11 +61,12 @@ public class ProductService implements IProductService {
     private final ModelMapperService modelMapperService;
     private final CategoryRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
-    private final ProductSearchService productSearchService;
+    private final ProductEService productEService;
     private final ProductReviewRepository productReviewRepository;
     private final AlbumRepository albumRepository;
     private final ProductRedisService productRedisService;
     private final TrackingUserProductKafkaPublisher trackingUserProductKafkaPublisher;
+    private final TrackingUserProductEService trackingUserProductEService;
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
@@ -244,10 +247,10 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key) {
-        GetAllVisibleProductResponse data = new GetAllVisibleProductResponse();
+    public GetProductCardListResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key) {
+        GetProductCardListResponse data = new GetProductCardListResponse();
 
-        List<GetAllVisibleProductResponse.ProductCard> productList = new ArrayList<>();
+        List<GetProductCardListResponse.ProductCard> productList = new ArrayList<>();
 
         PageRequest pageable = PageRequest.of(page - 1, size);
         if (productSortType == ProductSortType.PRICE_DESC) {
@@ -265,7 +268,7 @@ public class ProductService implements IProductService {
             if (data != null) {
                 return data;
             } else {
-                data = new GetAllVisibleProductResponse();
+                data = new GetProductCardListResponse();
             }
         } catch (JsonProcessingException e) {
 //            throw new RuntimeException(e);
@@ -273,12 +276,12 @@ public class ProductService implements IProductService {
 
 
         if (!key.trim().isEmpty()) {
-            Page<ProductIndex> productIndexPage = productSearchService.searchVisibleProduct(key, pageable);
+            Page<ProductIndex> productIndexPage = productEService.searchVisibleProduct(key, pageable);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();
             for (ProductIndex index : productIndexList) {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(index.getId());
-                productList.add(GetAllVisibleProductResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
+                productList.add(GetProductCardListResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
             }
         } else {
             Page<ProductEntity> productPage = null;
@@ -293,7 +296,7 @@ public class ProductService implements IProductService {
             List<ProductEntity> productEntityList = productPage.getContent();
             for (ProductEntity entity : productEntityList) {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
-                productList.add(GetAllVisibleProductResponse.ProductCard.fromProductEntity(entity, ratingSummaryQueryDto));
+                productList.add(GetProductCardListResponse.ProductCard.fromProductEntity(entity, ratingSummaryQueryDto));
             }
         }
         data.setProductList(productList);
@@ -301,6 +304,22 @@ public class ProductService implements IProductService {
             productRedisService.saveProductVisibleList(data, key, pageable, minPrice, maxPrice, minStar);
         } catch (JsonProcessingException e) {
 //            throw new RuntimeException(e);
+        }
+        return data;
+    }
+
+    @Override
+    public List<GetUserProductTrackingCardResponse> getProductUserTracking(Integer size) {
+        List<GetUserProductTrackingCardResponse> data = new ArrayList<>();
+        String userId = SecurityUtils.getCurrentUserId();
+        List<TrackingUserProductIndex> userProductList = trackingUserProductEService.getProductByUserId(userId, size).getContent();
+        for(TrackingUserProductIndex userProduct : userProductList) {
+            ProductEntity product = productRepository.findByIdAndStatusNot(userProduct.getProductId(), ProductStatus.HIDDEN)
+                    .orElse(null);
+            if(product != null) {
+                RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
+                data.add(GetUserProductTrackingCardResponse.fromProductEntity(product, ratingSummaryQueryDto));
+            }
         }
         return data;
     }
@@ -318,7 +337,7 @@ public class ProductService implements IProductService {
             productList.setProductList(GetProductListResponse.fromProductEntityList(productPage.getContent()));
 
         } else {
-            Page<ProductIndex> productPage = productSearchService.searchProduct(key, categoryIdRegex, productStatusRegex, page, size);
+            Page<ProductIndex> productPage = productEService.searchProduct(key, categoryIdRegex, productStatusRegex, page, size);
 
             productList.setTotalPage(productPage.getTotalPages());
             productList.setProductList(GetProductListResponse.fromProductIndexList(productPage.getContent()));

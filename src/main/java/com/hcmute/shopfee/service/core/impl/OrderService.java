@@ -47,7 +47,7 @@ import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.IOrderService;
 import com.hcmute.shopfee.service.core.ITransactionService;
-import com.hcmute.shopfee.service.elasticsearch.OrderSearchService;
+import com.hcmute.shopfee.service.elasticsearch.OrderEService;
 import com.hcmute.shopfee.statemachine.OrderEvent;
 import com.hcmute.shopfee.statemachine.OrderStateService;
 import com.hcmute.shopfee.utils.*;
@@ -80,7 +80,7 @@ public class OrderService implements IOrderService {
     private final AddressRepository addressRepository;
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
-    private final OrderSearchService orderSearchService;
+    private final OrderEService orderEService;
     private final EmployeeRepository employeeRepository;
     private final OrderEventRepository orderEventRepository;
     private final CouponRepository couponRepository;
@@ -533,7 +533,7 @@ public class OrderService implements IOrderService {
 
         orderBill = orderBillRepository.save(orderBill);
 
-        orderSearchService.upsertOrder(orderBill);
+        orderEService.upsertOrder(orderBill);
 
         if (deductCoin != 0) {
             // save coin history
@@ -648,7 +648,7 @@ public class OrderService implements IOrderService {
 
 
         orderBill = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(orderBill);
+        orderEService.upsertOrder(orderBill);
 
         // save coin history
         if (deductCoin != 0) {
@@ -687,7 +687,7 @@ public class OrderService implements IOrderService {
         GetOrderHistoryForEmployeeResponse data = new GetOrderHistoryForEmployeeResponse();
 
         if (!key.isBlank()) {
-            Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
+            Page<OrderIndex> orderPage = orderEService.searchOrderForAdmin(key, page, size, statusRegex);
             data.setTotalPage(orderPage.getTotalPages());
             data.setOrderList(GetOrderHistoryForEmployeeResponse.fromOrderIndexList(orderPage.getContent()));
             return data;
@@ -754,7 +754,7 @@ public class OrderService implements IOrderService {
         employeeNotificationKafkaPublisher.sendNotificationToUserId(message);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(updatedOrder);
+        orderEService.upsertOrder(updatedOrder);
     }
 
     @Transactional
@@ -772,7 +772,7 @@ public class OrderService implements IOrderService {
         }
 
         orderBill = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(orderBill);
+        orderEService.upsertOrder(orderBill);
 
 
         NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
@@ -794,7 +794,7 @@ public class OrderService implements IOrderService {
         transactionService.refundOrder(orderBill, true, true);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
-        orderSearchService.upsertOrder(updatedOrder);
+        orderEService.upsertOrder(updatedOrder);
 
         NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
         userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
@@ -843,7 +843,7 @@ public class OrderService implements IOrderService {
         String statusRegex = RegexUtils.generateFilterRegexString(status != null ? status.toString() : "");
 
         if (key != null) {
-            Page<OrderIndex> orderPage = orderSearchService.searchOrderForAdmin(key, page, size, statusRegex);
+            Page<OrderIndex> orderPage = orderEService.searchOrderForAdmin(key, page, size, statusRegex);
             GetOrderListResponse resultPage = new GetOrderListResponse();
             resultPage.setTotalPage(orderPage.getTotalPages());
             resultPage.setOrderList(modelMapperService.mapList(orderPage.getContent(), GetOrderListResponse.Order.class));

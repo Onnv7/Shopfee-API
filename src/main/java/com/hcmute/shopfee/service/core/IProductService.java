@@ -16,7 +16,8 @@ public interface IProductService {
     GetProductByIdResponse getProductDetailsById(String id);
     GetProductViewByIdResponse getProductViewById(String id);
     GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size);
-    GetAllVisibleProductResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key);
+    GetProductCardListResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key);
+    List<GetUserProductTrackingCardResponse> getProductUserTracking(Integer size);
     GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus);
     void deleteProductById(String id);
     void deleteSomeProductById(List<String> productIdList);
