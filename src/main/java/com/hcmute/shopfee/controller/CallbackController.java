@@ -1,6 +1,10 @@
 package com.hcmute.shopfee.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.hcmute.shopfee.dto.common.DialogFlowRequest;
+import com.hcmute.shopfee.dto.common.DialogFlowResponse;
 import com.hcmute.shopfee.dto.common.vnpay.VnpayCallbackResponse;
 import com.hcmute.shopfee.dto.common.zalopay.CallBackDto;
 import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
@@ -42,5 +46,10 @@ public class CallbackController {
     @PostMapping("/zalopay")
     public ZaloCallbackResponse doCallBackZaloPay(@RequestBody CallBackDto body) throws IOException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException {
         return callbackService.processCallback(body);
+    }
+
+    @PostMapping("/dialogflow")
+    public DialogFlowResponse doDialogFlow(@RequestBody String body) {
+        return callbackService.processDialogFlow(body);
     }
 }

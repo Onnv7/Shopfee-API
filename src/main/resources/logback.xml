@@ -64,7 +64,7 @@
             <appender-ref ref="CONSOLE"/>
         </root>
 <!--         Logger cho Spring Framework Security-->
-        <logger name="org.springframework.security" level="DEBUG" additivity="false">
+        <logger name="org.springframework.security" level="TRACE" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
 

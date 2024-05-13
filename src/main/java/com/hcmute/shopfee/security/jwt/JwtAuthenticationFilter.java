@@ -35,6 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         try {
+            String uri = request.getRequestURI();
+            if(uri.equals("/api/callback/dialogflow")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             extractTokenFromRequest(request)
                     .map(jwtService::decodeAccessToken) // str -> jwtUtils.decodeAccessToken(str)  jwtUtils::decodeAccessToken
                     .map(jwtService::convert)
