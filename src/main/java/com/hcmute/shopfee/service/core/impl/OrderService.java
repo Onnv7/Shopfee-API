@@ -462,9 +462,8 @@ public class OrderService implements IOrderService {
         long userCoin = coinHistoryRepository.getCoinOfUser(userId);
         if (userCoin < deductCoin) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
-        } else if (deductCoin > body.getTotal()) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
         }
+
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
         orderBill.setUser(user);
@@ -510,6 +509,11 @@ public class OrderService implements IOrderService {
 
         // tính phí vận chuyển
         totalPayment += body.getShippingFee();
+
+        // kiểm tra số coin kh được > tổng tiền trước khi apply coin
+        if (deductCoin > totalPayment) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
+        }
 
         CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                 .actor(ActorType.USER)
@@ -583,8 +587,6 @@ public class OrderService implements IOrderService {
         long userCoin = coinHistoryRepository.getCoinOfUser(userId);
         if (userCoin < deductCoin) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "User's coin count is less than the amount posted");
-        } else if (deductCoin > body.getTotal()) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
         }
 
         OrderBillEntity orderBill = modelMapperService.mapClass(body, OrderBillEntity.class);
@@ -600,6 +602,10 @@ public class OrderService implements IOrderService {
 
         totalPayment -= amountReduced;
 
+        // kiểm tra số coin kh được > tổng tiền trước khi apply coin
+        if (deductCoin > totalPayment) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The number of coins used cannot be greater than the total bill");
+        }
         CoinHistoryEntity coinHistory = CoinHistoryEntity.builder()
                 .actor(ActorType.USER)
                 .user(user)
