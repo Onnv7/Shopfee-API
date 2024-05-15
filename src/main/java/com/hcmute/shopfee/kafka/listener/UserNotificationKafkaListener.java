@@ -42,9 +42,8 @@ public class UserNotificationKafkaListener {
         firebaseMessagingService.sendOrderNotificationToBranch(message);
     }
 
-    @KafkaListener(topics =  USER_ORDER_NOTIFICATION_TOPIC + "-dlt", groupId = USER_ORDER_NOTIFICATION_GROUP_ID + "-dlt")
+    @KafkaListener(topics =  USER_ORDER_NOTIFICATION_TOPIC + "-dlt", groupId = USER_ORDER_NOTIFICATION_GROUP_ID, id = USER_ORDER_NOTIFICATION_GROUP_ID + "-dlt")
     public void consumeSendCodeEmailDLT(NewOrderMsgData message) {
-        log.info("Listener DLT consume DLT =>>> {}", message.toString());
-        firebaseMessagingService.sendOrderNotificationToBranch(message);
+        log.info("Listener {} DLT consume DLT =>>> {}", USER_ORDER_NOTIFICATION_GROUP_ID, message.toString());
     }
 }

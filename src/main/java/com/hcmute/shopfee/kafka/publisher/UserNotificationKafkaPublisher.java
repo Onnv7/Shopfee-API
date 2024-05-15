@@ -23,7 +23,7 @@ public class UserNotificationKafkaPublisher {
                 log.info("Publisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
                         rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("Publisher error {}", ex.getMessage());
+                log.error("Publisher {} error {}", KafkaConstant.USER_ORDER_NOTIFICATION_TOPIC, ex.getMessage());
             }
         });
     }

@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.common;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -10,8 +11,10 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Arrays;
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EmailService {
@@ -44,9 +47,8 @@ public class EmailService {
             helper.setTo(to);
             helper.setText(text, true);
             emailSender.send(message);
-
         } catch (Exception exception) {
-            throw new RuntimeException(exception.getMessage());
+            log.error(Arrays.toString(exception.getStackTrace()));
         }
     }
 

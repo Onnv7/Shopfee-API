@@ -18,6 +18,8 @@ import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.enums.param.ReviewSortType;
+import com.hcmute.shopfee.kafka.message.RatingProductMsgData;
+import com.hcmute.shopfee.kafka.publisher.RatingProductKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.CoinHistoryRepository;
 import com.hcmute.shopfee.repository.database.OrderItemRepository;
@@ -47,6 +49,7 @@ public class ReviewService implements IReviewService {
     private final ProductReviewRepository productReviewRepository;
     private final UserRepository userRepository;
     private final CoinHistoryRepository coinHistoryRepository;
+    private final RatingProductKafkaPublisher ratingProductKafkaPublisher;
 
     @Override
     public void createProductReview(CreateReviewRequest body) {
@@ -70,6 +73,11 @@ public class ReviewService implements IReviewService {
 
         orderItemEntity.setProductReview(productReviewEntity);
         orderItemRepository.save(orderItemEntity);
+        RatingProductMsgData data = new RatingProductMsgData();
+        data.setProductId(orderItemEntity.getProduct().getId());
+        data.setRating(body.getStar());
+        data.setUserId(userId);
+        ratingProductKafkaPublisher.collectRatingProductData(data);
     }
 
     @Override

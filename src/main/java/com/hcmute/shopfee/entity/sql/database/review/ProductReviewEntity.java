@@ -5,6 +5,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -37,6 +38,10 @@ public class ProductReviewEntity {
     @CreatedDate
     @Column(name = "created_at")
     private Date createdAt;
+
+    @CreatedBy
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
 
     // =================================================
     @OneToMany(mappedBy = "productReview")

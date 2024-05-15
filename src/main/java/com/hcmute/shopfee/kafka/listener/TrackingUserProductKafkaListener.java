@@ -41,8 +41,8 @@ public class TrackingUserProductKafkaListener {
         trackingUserClickProductRepository.save(data);
     }
 
-    @KafkaListener(topics = TRACKING_USER_PRODUCT_TOPIC + "-dlt", groupId = TRACKING_USER_PRODUCT_GROUP_ID + "-dlt")
+    @KafkaListener(topics = TRACKING_USER_PRODUCT_TOPIC + "-dlt", groupId = TRACKING_USER_PRODUCT_GROUP_ID, id = TRACKING_USER_PRODUCT_GROUP_ID + "-dlt")
     public void consumeUserBlockedDataDLT(UserBlockedMsgData message) {
-        log.error("Listener DLT consume =>>> {}", message.toString());
+        log.error("Listener {} DLT consume =>>> {}", TRACKING_USER_PRODUCT_GROUP_ID, message.toString());
     }
 }

@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.kafka.publisher;
 
 import com.hcmute.shopfee.kafka.KafkaConstant;
-import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
+import com.hcmute.shopfee.kafka.message.RatingProductMsgData;
 import com.hcmute.shopfee.kafka.message.TrackingUserProductMsgData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +13,17 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
-public class TrackingUserProductKafkaPublisher {
+public class RatingProductKafkaPublisher {
     @Autowired
     private KafkaTemplate<String, Object> template;
-    public void analystTrackingUserProductData(TrackingUserProductMsgData message) {
-        CompletableFuture<SendResult<String, Object>> future = template.send(KafkaConstant.TRACKING_USER_PRODUCT_TOPIC, message);
+    public void collectRatingProductData(RatingProductMsgData message) {
+        CompletableFuture<SendResult<String, Object>> future = template.send(KafkaConstant.RATING_PRODUCT_TOPIC, message);
         future.whenComplete((rs, ex) -> {
             if(ex == null) {
                 log.info("Publisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
                         rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("Publisher {} error {}", KafkaConstant.TRACKING_USER_PRODUCT_TOPIC, ex.getMessage());
+                log.error("Publisher {} error {}", KafkaConstant.RATING_PRODUCT_TOPIC, ex.getMessage());
             }
         });
     }

@@ -2,6 +2,7 @@ package com.hcmute.shopfee.command;
 
 import com.hcmute.shopfee.service.elasticsearch.OrderEService;
 import com.hcmute.shopfee.service.elasticsearch.ProductEService;
+import com.hcmute.shopfee.service.elasticsearch.RatingProductEService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,12 @@ public class SyncDatabaseCommand implements CommandLineRunner {
     @Lazy
     private ProductEService productEService;
     private final OrderEService orderEService;
+    private final RatingProductEService ratingProductEService;
     @Override
     public void run(String... args) throws Exception {
         productEService.syncProductIndexAndDatabase();
         orderEService.syncOrderIndexAndDatabase();
+        ratingProductEService.syncProductIndexAndDatabase();
         clearCacheByPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VIEW, "*"));
         clearCacheByPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VISIBLE, "*"));
     }

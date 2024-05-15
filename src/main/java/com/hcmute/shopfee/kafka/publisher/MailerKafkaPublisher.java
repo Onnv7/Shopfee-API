@@ -24,7 +24,7 @@ public class MailerKafkaPublisher {
                 log.info("Publisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
                         rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("Publisher error {}", ex.getMessage());
+                log.error("Publisher {} error {}", KafkaConstant.SEND_CODE_EMAIL_TOPIC, ex.getMessage());
             }
         });
     }
@@ -36,7 +36,7 @@ public class MailerKafkaPublisher {
                 log.info("Publisher: Topic = {}, Partition = {}, Offset = {}, Message = {}", rs.getRecordMetadata().topic(),
                         rs.getRecordMetadata().partition(), rs.getRecordMetadata().offset(), rs.getProducerRecord().value());
             } else {
-                log.error("Publisher error {}", ex.getMessage());
+                log.error("Publisher {} error {}", KafkaConstant.SEND_USER_BLOCKED_EMAIL_TOPIC, ex.getMessage());
             }
         });
     }

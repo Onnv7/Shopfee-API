@@ -8,6 +8,7 @@ import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
 import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.entity.sql.database.*;
@@ -676,6 +677,18 @@ public class ToolController {
                 ).
                 build();
         scheduler.scheduleJob(jobDetail, trigger);
+        return "ok";
+    }
+
+    @GetMapping(value = "/testKafkaListener")
+    public String testKafkaListener(@RequestParam("loop") int loop) {
+        CodeEmailMsgData data = new CodeEmailMsgData();
+        data.setCode("asdas");
+        data.setEmail("dsa@gmail.com");
+        for(int i = 0; i< loop ; i++) {
+            data.setCode(String.valueOf(i));
+            mailerKafkaPublisher.sendMessageToCodeEmail(data);
+        }
         return "ok";
     }
     private final EmailService emailService;
