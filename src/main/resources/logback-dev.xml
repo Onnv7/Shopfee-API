@@ -1,0 +1,93 @@
+<included>
+
+    <property name="FOLDER_NAME" value="logs"/>
+    <property name="MAX_SIZE_ERROR_FILE" value="100KB"/>
+    <property name="MAX_SIZE_LOG_FILE" value="100KB"/>
+
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %.-25date{ISO8601} %-5level [%.-30thread] %logger{36}: line %L of file %F - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="LOG_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${FOLDER_NAME}/debug.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %.-25date{ISO8601} %-5level [%.-30thread] %logger{36}: line %L of file %F - %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${FOLDER_NAME}/archived/debug.%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE_ERROR_FILE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+
+    </appender>
+
+    <appender name="LOG_ERROR_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${FOLDER_NAME}/error.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>
+                %.-25date{ISO8601} %-5level [%.-30thread] %logger{36}: line %L of file %F - %msg%n
+            </Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${FOLDER_NAME}/archived/error.%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>${MAX_SIZE_ERROR_FILE}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+    <!--         Logger cho Spring Framework Security-->
+    <logger name="org.springframework.security" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!--    hien thi query sql + tham so-->
+    <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!--   Logger cho Spring Data Elasticsearch -->
+    <logger name="tracer" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.google.firebase" level="TRACE" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="org.apache.kafka.clients" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.hcmute.shopfee" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" level="DEBUG"/>
+        <appender-ref ref="LOG_ERROR_FILE" level="ERROR"/>
+    </logger>
+
+
+</included>

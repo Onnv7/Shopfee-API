@@ -94,9 +94,35 @@
     </springprofile>
 
     <springprofile name="prod">
-        <logger name="com.hcmute.shopfee">
-<!--            <appender-ref ref="LOG_FILE" level="info"/>-->
-            <appender-ref ref="LOG_ERROR_FILE" level="error"/>
+        <root level="info" >
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <!--         Logger cho Spring Framework Security-->
+        <logger name="org.springframework.security" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!--    hien thi query sql + tham so-->
+        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!--   Logger cho Spring Data Elasticsearch -->
+        <logger name="tracer" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <logger name="com.google.firebase" level="TRACE" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <logger name="org.apache.kafka.clients" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <logger name="com.hcmute.shopfee" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" level="DEBUG" />
+            <appender-ref ref="LOG_ERROR_FILE" level="ERROR"/>
         </logger>
     </springprofile>
 

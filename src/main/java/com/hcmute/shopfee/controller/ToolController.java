@@ -118,7 +118,6 @@ public class ToolController {
     private final CallbackService callbackService;
     private final ZaloPayService zaloPayService;
     private final ZaloPay zaloPay;
-    private final FirebaseMessagingService firebaseMessagingService;
     private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
     private final EmployeeNotificationKafkaPublisher employeeNotificationKafkaPublisher;
     private final OrderStateService orderStateService;

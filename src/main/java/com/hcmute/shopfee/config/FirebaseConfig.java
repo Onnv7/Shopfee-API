@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Configuration
@@ -22,8 +23,8 @@ public class FirebaseConfig {
     public void initialize() {
         log.info("Connecting to Firebase admin...");
         try {
-            FileInputStream serviceAccount =
-                    new FileInputStream("src/main/resources/firebasePrivateKey.json");
+            InputStream serviceAccount =
+                    FirebaseConfig.class.getClassLoader().getResourceAsStream("firebasePrivateKey.json");
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -42,8 +43,9 @@ public class FirebaseConfig {
 
     @Bean
     FirebaseMessaging firebaseMessaging() throws IOException {
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/firebasePrivateKey.json");
+
+        InputStream serviceAccount =
+                FirebaseConfig.class.getClassLoader().getResourceAsStream("firebasePrivateKey.json");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build();
