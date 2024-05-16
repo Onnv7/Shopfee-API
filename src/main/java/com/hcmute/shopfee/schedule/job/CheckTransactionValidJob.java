@@ -52,16 +52,16 @@ public class CheckTransactionValidJob extends QuartzJobBean {
                 OrderBillEntity orderBill = transaction.getOrderBill();
                 orderBill.getOrderEventList().add(OrderEventEntity.builder()
                         .orderStatus(OrderStatus.CANCELED)
-                        .description("Payment failed, order canceled")
+                        .description(OrderStatus.CANCELED.getResultDescription())
+                        .note("Payment failed, order canceled")
                         .actor(ActorType.AUTOMATIC)
-                        .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
                         .orderBill(orderBill)
                         .build());
                 orderBillRepository.save(orderBill);
             }
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
             TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), null);
-            if(vnpayResult.getTransactionStatus().equals("00")) {
+            if (vnpayResult.getTransactionStatus().equals("00")) {
                 transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);
             } else {

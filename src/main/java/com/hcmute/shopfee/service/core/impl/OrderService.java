@@ -725,8 +725,8 @@ public class OrderService implements IOrderService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
 
-        // xu ly hoan tien / xu
-        if (body.getEvent() == OrderEvent.USER_REFUSE || body.getEvent() == OrderEvent.ACCEPT_ORDER_CANCELLATION) {
+        // xu ly hoan tien / xu khi nhan vien ACCEPT_ORDER_CANCELLATION
+        if (body.getEvent() == OrderEvent.ACCEPT_ORDER_CANCELLATION) {
             transactionService.refundOrder(orderBill, true, true);
         }
         // cap nhat transaction cashing khi order thanh cong === con banking thi dc cap nhat ngay sau khi CREATED
@@ -737,6 +737,11 @@ public class OrderService implements IOrderService {
                 trans.setStatus(TransactionStatus.PAID);
                 trans.setTotalPaid(totalPaid);
                 transactionRepository.save(trans);
+            }
+        }
+        else if(body.getEvent() == OrderEvent.PREPARED) {
+            if(orderBill.getOrderType() == OrderType.ONSITE) {
+                schedulerService.setAutoBoomWhenNoOneReceiveOrder(orderBill.getId(), orderBill.getReceiverInformation().getReceiveTime());
             }
         }
         else if(body.getEvent() == OrderEvent.BOOM) {
@@ -797,6 +802,7 @@ public class OrderService implements IOrderService {
         if (!rs) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
         }
+        // refund tien + xu khi user cancel
         transactionService.refundOrder(orderBill, true, true);
 
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);

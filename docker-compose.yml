@@ -74,8 +74,6 @@ services:
 ##      context: .
 ##      dockerfile: ./Dockerfile
 #    image: on611/shopfee-api:1.0.0
-#    links:
-#      - mysql:mysql
 #    ports:
 #      - 7777:8080
 #    depends_on:

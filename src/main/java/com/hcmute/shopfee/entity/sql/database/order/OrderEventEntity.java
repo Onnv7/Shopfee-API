@@ -43,7 +43,7 @@ public class OrderEventEntity {
     private ActorType actor;
 
     @CreatedBy
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by")
     private String createdBy;
 
     @Temporal(TemporalType.TIMESTAMP)

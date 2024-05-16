@@ -7,6 +7,7 @@ import com.hcmute.shopfee.enums.PaymentType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.schedule.SchedulerUtils;
+import com.hcmute.shopfee.schedule.job.BoomOnsiteOrderJob;
 import com.hcmute.shopfee.schedule.job.RefuseOrderJob;
 import com.hcmute.shopfee.schedule.job.CheckTransactionValidJob;
 import com.hcmute.shopfee.utils.DateUtils;
@@ -24,6 +25,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SchedulerService {
     private final Scheduler scheduler;
+
+    public void setAutoBoomWhenNoOneReceiveOrder(String orderId, Date receiveTime) {
+        Map<String, Object> schedulerData = new HashMap<String, Object>();
+        Instant timeTrigger = DateUtils.plus(receiveTime.toInstant(), ShopfeeConstant.TIME_AFTER_PENDING_PICKUP_MINUTES, ChronoUnit.MINUTES);
+
+        schedulerData.put(BoomOnsiteOrderJob.ORDER_ID, orderId);
+        setScheduler(BoomOnsiteOrderJob.class, schedulerData, Date.from(timeTrigger));
+    }
     public void setScheduleTransaction(TransactionEntity transaction) {
         Map<String, Object> checkTransactionData = new HashMap<String, Object>();
         Instant checkTransactionTime = transaction.getCreatedAt().toInstant();

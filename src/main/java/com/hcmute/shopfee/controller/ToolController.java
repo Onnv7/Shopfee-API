@@ -305,7 +305,7 @@ public class ToolController {
         orderEventEntityList.add(OrderEventEntity.builder()
                 .createdAt(new Date())
                 .actor(ActorType.USER)
-                .description("Create order successfully")
+                .description(OrderStatus.CREATED.getResultDescription())
                 .orderBill(orderBill)
                 .orderStatus(OrderStatus.CREATED)
                 .createdBy("U00000001")

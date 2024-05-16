@@ -42,8 +42,8 @@ public class RefuseOrderJob extends QuartzJobBean {
             OrderEventEntity newEvent= OrderEventEntity.builder()
                     .orderBill(orderBill)
                     .orderStatus(OrderStatus.CANCELED)
-                    .createdBy(auditorAwareService.getCurrentAuditor().orElse("AUTOMATIC"))
-                    .description("The order was canceled because there was no staff to receive the order")
+                    .description(OrderStatus.CANCELED.getResultDescription())
+                    .note("There was no staff to receive the order")
                     .actor(ActorType.AUTOMATIC)
                     .build();
            transactionService.refundOrder(orderBill, true, true);
