@@ -87,7 +87,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_GET_PROFILE_BY_ID_SUM)
     @GetMapping(path = GET_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<GetEmployeeProfileByIdResponse>> getEmployeeProfileById(@PathVariable(EMPLOYEE_ID) String employeeId) {
         GetEmployeeProfileByIdResponse resData = employeeService.getEmployeeProfileById(employeeId);
 
@@ -130,7 +130,7 @@ public class EmployeeController {
 
     @Operation(summary = EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<?>> updateEmployeeProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeProfileRequest body) {
         employeeService.updateEmployeeProfile(body, id);
         ResponseAPI res = ResponseAPI.builder()

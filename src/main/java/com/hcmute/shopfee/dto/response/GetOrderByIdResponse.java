@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;
@@ -42,13 +43,24 @@ public class GetOrderByIdResponse {
     private Branch branch;
     private Boolean needReview;
     private RefundStatus refundStatus;
+    private ImplementationStaff employee;
+    @Data
+    private static class ImplementationStaff {
+        private String id;
+        private String fullName;
+
+        public ImplementationStaff(String id, String fullName) {
+            this.id = id;
+            this.fullName = fullName;
+        }
+    }
     private enum RefundStatus {
         CAN_REFUND,
         REFUNDED,
         NOT_REFUND
     }
 
-    public static GetOrderByIdResponse fromOrderBillEntity(OrderBillEntity entity) {
+    public static GetOrderByIdResponse fromOrderBillEntityAndEmployee(OrderBillEntity entity, EmployeeEntity employeeEntity) {
         GetOrderByIdResponse order = new GetOrderByIdResponse();
         order.setId(entity.getId());
         order.setNote(entity.getNote());
@@ -89,7 +101,8 @@ public class GetOrderByIdResponse {
                 .address(entity.getBranch().getFullAddress())
                 .id(entity.getBranch().getId())
                 .build());
-
+        ImplementationStaff employee = new ImplementationStaff(employeeEntity.getId(), employeeEntity.getFullName());
+        order.setEmployee(employee);
         RewardInformation rewardInformation = new RewardInformation(entity.getOrderDiscount(), entity.getShippingDiscount());
         CouponUsedEntity productCoupon = entity.getCouponUsedList().stream().filter(it -> it.getType() == CouponType.PRODUCT).findFirst().orElse(null);
         if (productCoupon != null) {

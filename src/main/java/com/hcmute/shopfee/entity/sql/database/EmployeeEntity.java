@@ -97,4 +97,9 @@ public class EmployeeEntity {
     @JsonManagedReference
     private List<EmployeeFCMTokenEntity> employeeFcmTokenList;
 
+
+    public String getFullName() {
+        return this.firstName + " " + this.getLastName();
+    }
+
 }

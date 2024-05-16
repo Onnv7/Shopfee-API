@@ -145,8 +145,8 @@ public class SwaggerConstant {
     public static final String EMPLOYEE_GET_BY_ID_SUM = "Get a employee's information by employee id";
     public static final String EMPLOYEE_GET_ALL_SUM = "Get all employees";
     public static final String EMPLOYEE_GET_BY_BRANCH_ID_SUM = "Get employee list by branch id";
-    public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password for employee by employee id for employee";
-    public static final String EMPLOYEE_SET_NEW_PASSWORD_SUM = "Set new password for employee by employee id";
+    public static final String EMPLOYEE_UPDATE_PASSWORD_SUM = "Update new password by employee id";
+    public static final String EMPLOYEE_SET_NEW_PASSWORD_SUM = "Set new password by employee id";
     public static final String EMPLOYEE_GET_ORDER_STATISTIC_SUM = "Get sales data statistics";
     // For Marketing =============================================================
     public static final String MARKETING_CONTROLLER_TITLE = "MARKETING MANAGEMENT";

@@ -868,7 +868,11 @@ public class OrderService implements IOrderService {
     public GetOrderByIdResponse getOrderDetailsById(String orderId) {
         OrderBillEntity orderBill = orderBillRepository.findById(orderId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ORDER_BILL_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + orderId));
-        return GetOrderByIdResponse.fromOrderBillEntity(orderBill);
+
+        OrderEventEntity orderEvent = orderBill.getOrderEventList().stream().filter(event -> event.getOrderStatus() == OrderStatus.ACCEPTED).findFirst().orElse(null);
+        EmployeeEntity employeeEntity = employeeRepository.findById(orderEvent != null ? orderEvent.getCreatedBy() : "")
+                .orElse(null);
+        return GetOrderByIdResponse.fromOrderBillEntityAndEmployee(orderBill, employeeEntity);
     }
 
     @Override
