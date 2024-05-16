@@ -149,6 +149,7 @@ public class ProductController {
     }
     @Operation(summary = PRODUCT_GET_USER_TRACKING_SUM)
     @GetMapping(path = GET_PRODUCT_USER_TRACKING_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_USER)
     public ResponseEntity<ResponseAPI<GetProductCardListResponse>> getProductUserTracking(
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size

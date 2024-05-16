@@ -354,6 +354,7 @@ public class ToolController {
                 .content("Good product")
                 .orderItem(orderItemEntity)
                 .createdAt(new Date())
+                .createdBy(orderBill.getUser().getId())
                 .build();
         orderItemEntity.setProductReview(productReviewEntity);
         productReviewRepository.save(productReviewEntity);

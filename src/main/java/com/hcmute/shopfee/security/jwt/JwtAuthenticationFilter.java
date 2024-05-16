@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -27,9 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Qualifier("handlerExceptionResolver")
     private HandlerExceptionResolver exceptionResolver;
 
-//    public JwtAuthenticationFilter(HandlerExceptionResolver exceptionResolver) {
-//        this.exceptionResolver = exceptionResolver;
-//    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             extractTokenFromRequest(request)
-                    .map(jwtService::decodeAccessToken) // str -> jwtUtils.decodeAccessToken(str)  jwtUtils::decodeAccessToken
+                    .map(jwtService::decodeAccessToken)
                     .map(jwtService::convert)
                     .map(UserPrincipalAuthenticationToken::new)
                     .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication));

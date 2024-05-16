@@ -7,10 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.Mapping;
-import org.springframework.data.elasticsearch.annotations.Setting;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.util.Date;
 
@@ -21,13 +18,15 @@ import java.util.Date;
 @Document(indexName = "tracking_user_click_product")
 public class TrackingUserProductIndex {
     @Id
-    private String id;
-    @Field
+    @Field(type = FieldType.Keyword)
     private String userId;
-    @Field
+
+    @Field(type = FieldType.Keyword)
     private String productId;
-    @Field
+
+    @Field(type = FieldType.Integer)
     private Integer clickCount;
-    @Field
+
+    @Field(type = FieldType.Date)
     private Date lastSeen;
 }
