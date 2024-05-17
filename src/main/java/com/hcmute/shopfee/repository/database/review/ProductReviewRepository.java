@@ -22,7 +22,7 @@ public interface ProductReviewRepository extends JpaRepository<ProductReviewEnti
     RatingSummaryQueryDto getRatingSummary(String productId);
 
     @Query(value = """
-            select pr.id, pr.content, pr.created_at, pr.star
+            select pr.id, pr.content, pr.created_at, pr.star, pr.created_by
             from order_item oi
             join product_review pr on oi.product_review_id = pr.id
             where oi.product_id = ?1

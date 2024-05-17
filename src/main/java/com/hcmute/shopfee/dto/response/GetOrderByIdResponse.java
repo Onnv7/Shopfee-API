@@ -101,8 +101,11 @@ public class GetOrderByIdResponse {
                 .address(entity.getBranch().getFullAddress())
                 .id(entity.getBranch().getId())
                 .build());
-        ImplementationStaff employee = new ImplementationStaff(employeeEntity.getId(), employeeEntity.getFullName());
-        order.setEmployee(employee);
+        if(employeeEntity != null) {
+            ImplementationStaff employee = new ImplementationStaff(employeeEntity.getId(), employeeEntity.getFullName());
+            order.setEmployee(employee);
+        }
+
         RewardInformation rewardInformation = new RewardInformation(entity.getOrderDiscount(), entity.getShippingDiscount());
         CouponUsedEntity productCoupon = entity.getCouponUsedList().stream().filter(it -> it.getType() == CouponType.PRODUCT).findFirst().orElse(null);
         if (productCoupon != null) {
