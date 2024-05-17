@@ -1,5 +1,6 @@
 package com.hcmute.shopfee;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.integration.IntegrationDataSourceScriptDatabaseInitializer;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.TimeZone;
 
 @SpringBootApplication
 @EnableScheduling
@@ -26,8 +28,9 @@ public class ApplicationMain {
     public static void main(String[] args) {
         SpringApplication.run(ApplicationMain.class, args);
     }
-//    @Bean
-//    public IntegrationDataSourceScriptDatabaseInitializer customIntegrationDataSourceInitializer(DataSource dataSource) {
-//        return new IntegrationDataSourceScriptDatabaseInitializer(dataSource, new DatabaseInitializationSettings());
+
+//    @PostConstruct
+//    void started() {
+//        TimeZone.setDefault(TimeZone.getTimeZone("GMT+0"));
 //    }
 }

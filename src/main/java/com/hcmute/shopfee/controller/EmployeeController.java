@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class EmployeeController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_GET_BY_BRANCH_ID_SUM)
@@ -82,7 +83,7 @@ public class EmployeeController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_GET_PROFILE_BY_ID_SUM)
@@ -97,7 +98,7 @@ public class EmployeeController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_GET_BY_ID_SUM)
@@ -111,7 +112,7 @@ public class EmployeeController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
@@ -125,12 +126,12 @@ public class EmployeeController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @Operation(summary = EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM)
+    @Operation(summary = EMPLOYEE_UPDATE_PROFILE_BY_ID_SUM)
     @PatchMapping(path = PATCH_EMPLOYEE_PROFILE_BY_ID_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
+    @PreAuthorize(SecurityConstant.ROLE_WAITER)
     public ResponseEntity<ResponseAPI<?>> updateEmployeeProfile(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeProfileRequest body) {
         employeeService.updateEmployeeProfile(body, id);
         ResponseAPI res = ResponseAPI.builder()
@@ -139,7 +140,7 @@ public class EmployeeController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_DELETE_BY_ID_SUM)
@@ -153,7 +154,7 @@ public class EmployeeController {
                 .message(SuccessConstant.DELETED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_GET_ORDER_STATISTIC_SUM)
@@ -172,7 +173,7 @@ public class EmployeeController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
 }

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class CouponController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = COUPON_UPDATE_SHIPPING_TYPE_SUM)
@@ -53,7 +54,7 @@ public class CouponController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_CREATE_ORDER_TYPE_SUM)
@@ -67,7 +68,7 @@ public class CouponController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = COUPON_UPDATE_ORDER_TYPE_SUM)
@@ -81,7 +82,7 @@ public class CouponController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_CREATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
@@ -95,7 +96,7 @@ public class CouponController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
     @Operation(summary = COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUM)
     @PutMapping(path = PUT_COUPON_UPDATE_AMOUNT_OFF_PRODUCT_TYPE_SUB_PATH)
@@ -108,7 +109,7 @@ public class CouponController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_CREATE_BUY_GET_PRODUCT_GIFT_SUM)
@@ -122,7 +123,7 @@ public class CouponController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = COUPON_UPDATE_BUY_GET_PRODUCT_GIFT_SUM)
@@ -136,7 +137,7 @@ public class CouponController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_DELETE_BY_ID_SUM)
@@ -150,7 +151,7 @@ public class CouponController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = COUPON_GET_RELEASE_LIST_SUM)
@@ -168,7 +169,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = COUPON_GET_RELEASE_BY_ID_SUM)
     @GetMapping(path = GET_COUPON_RELEASE_BY_ID_SUB_PATH)
@@ -181,7 +182,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_LIST_SUM)
@@ -196,7 +197,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_SHIPPING_BY_ID_SUM)
@@ -211,7 +212,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_ORDER_BY_ID_SUM)
@@ -226,7 +227,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_PRODUCT_GIFT_BY_ID_SUM)
@@ -241,7 +242,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_AMOUNT_OFF_PRODUCT_BY_ID_SUM)
@@ -256,7 +257,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_GET_COUPON_LIST_CART_SUM)
@@ -270,7 +271,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = COUPON_CHECK_LIST_IN_CART_SUM)
@@ -285,7 +286,7 @@ public class CouponController {
                 .message(SuccessConstant.GET)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
 

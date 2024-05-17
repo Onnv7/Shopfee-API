@@ -1,19 +1,20 @@
 package com.hcmute.shopfee.service.common;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
+import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.entity.sql.database.SystemNotificationEntity;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
 import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
 import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FirebaseMessagingService {
@@ -32,7 +33,7 @@ public class FirebaseMessagingService {
         try {
             firebaseMessaging.send(message);
         } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
+            log.error(Arrays.toString(e.getStackTrace()));
         }
     }
     public void sendOrderNotificationToUser(OrderStatusMsgData msg) {
@@ -51,6 +52,23 @@ public class FirebaseMessagingService {
             } catch (FirebaseMessagingException e) {
                 userFCMTokenEntityRepository.delete(entity);
             }
+        }
+    }
+
+    public void sendSystemNotification(SystemNotificationEntity msg) {
+        Notification notification = Notification.builder()
+                .setTitle(msg.getTitle())
+                .setBody(msg.getContent())
+                .build();
+        Message message = Message.builder()
+                .setTopic(ShopfeeConstant.SYSTEM_FCM_TOPIC)
+                .setNotification(notification)
+                .build();
+
+        try {
+            firebaseMessaging.send(message);
+        } catch (FirebaseMessagingException e) {
+            log.error(Arrays.toString(e.getStackTrace()));
         }
     }
 }

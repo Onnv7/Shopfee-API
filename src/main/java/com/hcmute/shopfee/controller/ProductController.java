@@ -21,6 +21,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,7 +52,7 @@ public class ProductController {
                 .message(SuccessConstant.CREATED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = PRODUCT_GET_BY_ID_SUM)
@@ -65,7 +66,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_GET_VIEW_BY_ID_SUM)
@@ -77,7 +78,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_GET_BY_CATEGORY_ID_SUM)
@@ -110,7 +111,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(products)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_GET_ALL_OR_SEARCH_ENABLED_SUM)
@@ -145,7 +146,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = PRODUCT_GET_USER_TRACKING_SUM)
     @GetMapping(path = GET_PRODUCT_USER_TRACKING_SUB_PATH)
@@ -161,7 +162,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = PRODUCT_GET_ALL_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
@@ -182,7 +183,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_DELETE_BY_ID_SUM)
@@ -195,7 +196,7 @@ public class ProductController {
                 .message(SuccessConstant.DELETED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_SOME_DELETE_BY_ID_SUM)
@@ -208,7 +209,7 @@ public class ProductController {
                 .message(SuccessConstant.DELETED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_UPDATE_BY_ID_SUM)
@@ -224,7 +225,7 @@ public class ProductController {
                 .message(SuccessConstant.UPDATED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_GET_TOP_RATED_PRODUCTS_SUM)
@@ -240,7 +241,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_GET_TOP_SELLING_PRODUCTS_SUM)
@@ -256,7 +257,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_IMPORT_FILE_TO_CREATE_SUM)
@@ -276,7 +277,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(data)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = PRODUCT_CHECK_EXISTED_NAME_SUM)
@@ -289,7 +290,7 @@ public class ProductController {
                 .timestamp(new Date())
                 .data(data)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = PRODUCT_DOWNLOAD_IMPORT_FILE_SUM)
@@ -308,6 +309,6 @@ public class ProductController {
         HttpHeaders headers = HeaderUtils.setAttachFile(fileName);
 
 
-        return new ResponseEntity<>(data, headers, StatusCode.OK);
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
     }
 }

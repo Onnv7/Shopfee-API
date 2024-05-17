@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class UserAuthController {
                 .message(SuccessConstant.CREATED)
                 .build();
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.CREATED);
+        return new ResponseEntity<>(res, headers, HttpStatus.CREATED);
     }
 
     @Operation(summary = USER_AUTH_FIREBASE_REGISTER_SUM)
@@ -60,7 +61,7 @@ public class UserAuthController {
                 .message(SuccessConstant.CREATED)
                 .build();
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(resDate.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.CREATED);
+        return new ResponseEntity<>(res, headers, HttpStatus.CREATED);
     }
 
     @Operation(summary = USER_AUTH_LOGIN_SUM)
@@ -75,7 +76,7 @@ public class UserAuthController {
                 .build();
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
 
     }
 
@@ -93,7 +94,7 @@ public class UserAuthController {
 
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
 
     }
 
@@ -110,7 +111,7 @@ public class UserAuthController {
                 .build();
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie("", 0);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
     }
 
     @Operation(summary = USER_AUTH_SEND_CODE_TO_EMAIL_TO_REGISTER_SUM)
@@ -121,7 +122,7 @@ public class UserAuthController {
                 .timestamp(new Date())
                 .message(SuccessConstant.SEND_CODE_TO_EMAIL)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
 
@@ -134,7 +135,7 @@ public class UserAuthController {
                 .timestamp(new Date())
                 .message(SuccessConstant.SEND_CODE_TO_EMAIL)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
 
@@ -148,7 +149,7 @@ public class UserAuthController {
                 .message(SuccessConstant.EMAIL_VERIFIED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
 
@@ -161,7 +162,7 @@ public class UserAuthController {
                 .message(SuccessConstant.UPDATED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_AUTH_REFRESH_TOKEN_SUM)
@@ -177,7 +178,7 @@ public class UserAuthController {
                 .build();
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
     }
 
     @Operation(summary = USER_CHANGE_PWD_SUM)
@@ -193,6 +194,6 @@ public class UserAuthController {
                 .success(true)
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

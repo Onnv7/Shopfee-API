@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,7 @@ public class CategoryController {
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = CATEGORY_GET_BY_ID_SUM)
@@ -52,7 +53,7 @@ public class CategoryController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = CATEGORY_GET_ALL_SUM)
@@ -66,7 +67,7 @@ public class CategoryController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = CATEGORY_GET_ALL_WITHOUT_DELETED_SUM)
@@ -78,7 +79,7 @@ public class CategoryController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = CATEGORY_UPDATE_BY_ID_SUM)
@@ -92,7 +93,7 @@ public class CategoryController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = CATEGORY_DELETE_BY_ID_SUM)
@@ -104,7 +105,7 @@ public class CategoryController {
                 .timestamp(new Date())
                 .message(SuccessConstant.DELETED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = CATEGORY_CHECK_EXISTED_NAME_SUM)
@@ -117,6 +118,6 @@ public class CategoryController {
                 .timestamp(new Date())
                 .data(data)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

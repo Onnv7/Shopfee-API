@@ -137,7 +137,7 @@ public class SwaggerConstant {
     // For Employee =============================================================
     public static final String EMPLOYEE_CONTROLLER_TITLE = "EMPLOYEE MANAGEMENT";
     public static final String EMPLOYEE_UPDATE_BY_ID_SUM = "Update employee's information by employee id";
-    public static final String EMPLOYEE_UPDATE__PROFILE_BY_ID_SUM = "Update employee's profile by employee id";
+    public static final String EMPLOYEE_UPDATE_PROFILE_BY_ID_SUM = "Update employee's profile by employee id";
     public static final String EMPLOYEE_UPDATE_PASSWORD_BY_ID_SUM = "Update employee's new password by employee id for admin";
 
     public static final String EMPLOYEE_DELETE_BY_ID_SUM = "Delete a employee by employee id";
@@ -156,6 +156,10 @@ public class SwaggerConstant {
     public static final String NOTIFICATION_CREATE_USER_TOKEN_SUM = "Create a new fcm token for user";
     public static final String NOTIFICATION_CREATE_EMPLOYEE_TOKEN_SUM = "Create a new fcm token for employee";
     public static final String NOTIFICATION_UPDATE_INFORMATION_SUM = "Update information about fcm token";
+    public static final String NOTIFICATION_CREATE_SUM = "Create a new notification";
+    public static final String NOTIFICATION_GET_LIST_SUM = "Get system notification list";
+    public static final String NOTIFICATION_GET_DETAIL_SUM = "Get a detail notification by id";
+    public static final String NOTIFICATION_UPDATE_SUM = "Update a notification";
 
     // For Branch =============================================================
     public static final String BRANCH_CONTROLLER_TITLE = "BRANCH MANAGEMENT";
@@ -241,12 +245,10 @@ public class SwaggerConstant {
     public static final String GENDER_EX = "FEMALE";
     public static final String PHONE_NUMBER_EX = "0123456789";
     public static final String CODE_EX = "0000";
-    public static final String VERIFY_NUMBER_MSG_EX = "Your authentication code is: 0000";
     public static final String USERNAME_EMPLOYEE_EX = "nva6112002";
     public static final String PASSWORD_EMPLOYEE_EX = "112233";
     public static final String RATING_EX = "4";
     public static final String CONTENT_EX = "It's so good";
-    public static final String ORDER_STATUS_EX = "CREATED";
     public static final String ORDER_STATUS_DES_EX = "Order is created";
     public static final String ORDER_EVENT_EX = "ACCEPT_ORDER";
     public static final String PRODUCT_QUANTITY_EX = "3";
@@ -275,20 +277,13 @@ public class SwaggerConstant {
     public static final String BANNER_NAME_EX = "New Product 2024";
     public static final String BANNER_STATUS_EX = "VISIBLE";
     public static final String COUPON_CODE_EX = "XUAN2024";
-    public static final String COUPON_CODE_LIST_EX = "[\"XUAN2024\", \"XUAN2025\"]" ;
     public static final String COUPON_DESCRIPTION_EX = "Sieu sale";
     public static final String COUPON_STATUS_EX = "UNRELEASED";
     public static final String COUPON_CONDITION_DESCRIPTION_EX = "Giam cho don tu 500k";
-    public static final String COUPON_CONDITION_TYPE_EX = "TOTAL_BILL";
     public static final String COUPON_UNIT_EX = "MONEY";
-    public static final String DISCOUNT_TARGET_EX = "ORDER_BILL";
-    public static final String COUPON_MAX_REDUCTION_EX = "5000";
     public static final String DISCOUNT_VALUE_EX = "5000";
-    public static final String OPERATOR_EX = "GREATER";
     public static final String SHIPPING_FEE_EX = "15000";
     public static final String DATE_ISO_EX = "2024-01-14T08:38:00.715Z";
-    public static final String APPLICABLE_CUSTOMER_TYPE = "ALL";
-    public static final String MIN_PURCHASE_TYPE = "NONE";
     public static final String INTEGER_VALUE_EX = "15000";
     public static final String USAGE_CONDITION_EX = "QUANTITY";
     public static final String COMBINATION_CONDITION_EX = "PRODUCT";
@@ -302,4 +297,7 @@ public class SwaggerConstant {
     public static final String REASON_EX = "This is a reason";
     public static final String NOTE_EX = "This is a note";
     public static final String FCM_TOKEN_EX = "ep-xdyteTi6h1O16emTaLy:APA91bF_DJ1hpU_VqOv2olMzTeIn02Jpyjzhnq0mrXzHBhaZwei7RYVKvCK90Kh3wneZRvpJKA9AIGZBX1e20UNrU0QJoJxuP3a3LJB36wXuKTPmkniiGzJYNUQIOINOejCqFGZmGcI3";
+    public static final String TITLE_NOTI_EX = "This is title";
+    public static final String CONTENT_NOTI_EX = "This is title";
+    public static final String IMAGE_URL_NOTI_EX = "https://static1.srcdn.com/wordpress/wp-content/uploads/2023/09/sasauke-on-the-road-to-redemption.jpg";
 }

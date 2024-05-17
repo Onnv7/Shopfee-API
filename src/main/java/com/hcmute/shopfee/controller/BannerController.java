@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,7 +44,7 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
     @Operation(summary = BANNER_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_BANNER_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -56,7 +57,7 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = BANNER_GET_LIST_SUM)
     @GetMapping(path = GET_BANNER_LIST_SUB_PATH)
@@ -70,7 +71,7 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = BANNER_GET_VISIBLE_LIST_SUM)
     @GetMapping(path = GET_BANNER_VISIBLE_LIST_SUB_PATH)
@@ -83,7 +84,7 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = BANNER_GET_DETAILS_BY_ID_LIST_SUM)
     @GetMapping(path = GET_BANNER_DETAILS_BY_ID_SUB_PATH)
@@ -97,7 +98,7 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = BANNER_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_BANNER_BY_ID_SUB_PATH)
@@ -110,6 +111,6 @@ public class BannerController {
                 .success(true)
                 .message(SuccessConstant.DELETED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

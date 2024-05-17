@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.common;
 
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.entity.sql.database.SystemNotificationEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.PaymentType;
@@ -10,6 +11,7 @@ import com.hcmute.shopfee.schedule.SchedulerUtils;
 import com.hcmute.shopfee.schedule.job.BoomOnsiteOrderJob;
 import com.hcmute.shopfee.schedule.job.RefuseOrderJob;
 import com.hcmute.shopfee.schedule.job.CheckTransactionValidJob;
+import com.hcmute.shopfee.schedule.job.SendSystemNotificationJob;
 import com.hcmute.shopfee.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
@@ -25,7 +27,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SchedulerService {
     private final Scheduler scheduler;
-
+    public void setScheduler(Class<? extends Job> jobClass, Map<String, Object> data, Date startTime)  {
+        try {
+            JobDetail jobDetail = SchedulerUtils.buildJobDetail(jobClass, data);
+            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, startTime);
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch(SchedulerException e) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Scheduler service failed");
+        }
+    }
     public void setAutoBoomWhenNoOneReceiveOrder(String orderId, Date receiveTime) {
         Map<String, Object> schedulerData = new HashMap<String, Object>();
         Instant timeTrigger = DateUtils.plus(receiveTime.toInstant(), ShopfeeConstant.TIME_AFTER_PENDING_PICKUP_MINUTES, ChronoUnit.MINUTES);
@@ -54,13 +64,10 @@ public class SchedulerService {
         setScheduler(RefuseOrderJob.class, orderAcceptanceData, Date.from(newIn));
     }
 
-    public void setScheduler(Class<? extends Job> jobClass, Map<String, Object> data, Date startTime)  {
-        try {
-            JobDetail jobDetail = SchedulerUtils.buildJobDetail(jobClass, data);
-            Trigger trigger = SchedulerUtils.buildTrigger(jobDetail, startTime);
-            scheduler.scheduleJob(jobDetail, trigger);
-        } catch(SchedulerException e) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Scheduler service failed");
-        }
+    public void setAutoSendSystemNotification(SystemNotificationEntity notificationEntity) {
+        Instant triggerTime = notificationEntity.getTriggerTime().toInstant();
+        Map<String, Object> notificationData = new HashMap<String, Object>();
+        notificationData.put(SendSystemNotificationJob.NOTIFICATION_ID, notificationEntity.getId());
+        setScheduler(SendSystemNotificationJob.class, notificationData, Date.from(triggerTime));
     }
 }

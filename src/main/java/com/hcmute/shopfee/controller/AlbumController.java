@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +42,7 @@ public class AlbumController {
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = ALBUM_GET_ALL_SUM)
@@ -63,7 +64,7 @@ public class AlbumController {
                 .data(data)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ALBUM_DELETE_BY_ID_SUM)
@@ -75,6 +76,6 @@ public class AlbumController {
                 .timestamp(new Date())
                 .message(SuccessConstant.DELETED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

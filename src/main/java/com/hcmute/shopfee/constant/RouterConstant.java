@@ -47,6 +47,8 @@ public class RouterConstant {
     public static final String ALBUM_ID = "albumId";
     public static final String EMPLOYEE_ID_PATH = "/{employeeId}";
     public static final String EMPLOYEE_ID = "employeeId";
+    public static final String NOTIFICATION_ID_PATH = "/{notificationId}";
+    public static final String NOTIFICATION_ID = "notificationId";
     public static final String ORDER_ID_PATH = "/{orderId}";
     public static final String ORDER_ID = "orderId";
     public static final String CANCELLATION_ID_PATH = "/{cancellationId}";
@@ -125,6 +127,11 @@ public class RouterConstant {
     // ENDPOINT URL NOTIFICATION =================================================================
     public static final String POST_NOTIFICATION_CREATE_USER_TOKEN_SUB_PATH = "/user";
     public static final String POST_NOTIFICATION_CREATE_EMPLOYEE_TOKEN_SUB_PATH = "/employee";
+    public static final String POST_NOTIFICATION_CREATE_SUB_PATH = "";
+    public static final String GET_NOTIFICATION_LIST_SUB_PATH = "";
+    public static final String GET_NOTIFICATION_DETAIL_SUB_PATH = NOTIFICATION_ID_PATH;
+    public static final String GET_NOTIFICATION_VIEW_LIST_SUB_PATH = "view-list";
+    public static final String PUT_NOTIFICATION_UPDATE_SUB_PATH = NOTIFICATION_ID_PATH;
 
     // ENDPOINT URL CATEGORY =================================================================
 

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +39,7 @@ public class OrderRefundController {
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = ORDER_RETURN_PROCESSING_REQUEST_SUM)
@@ -50,7 +51,7 @@ public class OrderRefundController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_RETURN_GET_REQUEST_SUM)
@@ -63,6 +64,6 @@ public class OrderRefundController {
                 .data(data)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

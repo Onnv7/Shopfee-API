@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class EmployeeAuthController {
                 .build();
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
 
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
     }
 
     @Operation(summary = AUTH_EMPLOYEE_LOGOUT_SUM)
@@ -64,7 +65,7 @@ public class EmployeeAuthController {
                 .build();
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie("", 0);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
     }
 
     @Operation(summary = AUTH_REFRESH_EMPLOYEE_TOKEN_SUM)
@@ -80,7 +81,7 @@ public class EmployeeAuthController {
 
 
         HttpHeaders headers = HeaderUtils.setRefreshTokenCookie(data.getRefreshToken(), ShopfeeConstant.REFRESH_TOKEN_EXPIRE_MINUTES_TIME);
-        return new ResponseEntity<>(res, headers, StatusCode.OK);
+        return new ResponseEntity<>(res, headers, HttpStatus.OK);
     }
 
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
@@ -93,7 +94,7 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.CREATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = EMPLOYEE_UPDATE_PASSWORD_SUM)
@@ -107,7 +108,7 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = EMPLOYEE_SET_NEW_PASSWORD_SUM)
@@ -121,6 +122,6 @@ public class EmployeeAuthController {
                 .message(SuccessConstant.UPDATED)
                 .build();
 
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

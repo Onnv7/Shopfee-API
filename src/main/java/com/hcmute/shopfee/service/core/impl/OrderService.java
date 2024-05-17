@@ -643,6 +643,10 @@ public class OrderService implements IOrderService {
         BranchEntity branch = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getBranchId()));
         orderBill.setBranch(branch);
+        Date receiveTime = body.getReceiveTime();
+        if(receiveTime.before(new Date()) || !DateUtils.isInRangeTime(receiveTime.toInstant(), branch.getOpenTime(), branch.getCloseTime())) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Pick-up time is invalid");
+        }
 
         // set thong tin nhan hang
         orderBill.setReceiverInformation(ReceiverInformationEntity.builder()

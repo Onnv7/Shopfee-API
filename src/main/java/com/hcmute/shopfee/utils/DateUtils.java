@@ -7,8 +7,10 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class DateUtils {
+    public static final String GMT_7 = "GMT+7";
     public static Date createBeginingOfDate() {
         Calendar calBegin = Calendar.getInstance();
         calBegin.set(Calendar.HOUR_OF_DAY, 0);
@@ -72,5 +74,14 @@ public class DateUtils {
     public static boolean nowIsAfterPeriodFromTimeOriginal(Instant timeOriginal, int period, ChronoUnit unit) {
         Instant timeAfterPeriod = timeOriginal.plus(period, unit);
         return Instant.now().isAfter(timeAfterPeriod);
+    }
+
+    public static boolean isInRangeTime(Instant date,  Time start, Time end) {
+        if(LocalTime.ofInstant(date, ZoneId.of(GMT_7)).isBefore(start.toLocalTime()) ||
+                LocalTime.ofInstant(date, ZoneId.of(GMT_7)).isAfter(end.toLocalTime())
+        ) {
+            return false;
+        }
+        return true;
     }
 }

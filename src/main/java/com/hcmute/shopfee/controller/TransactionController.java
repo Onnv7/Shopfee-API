@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class TransactionController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
 //    @Operation(summary = TRANSACTION_UPDATE_SUCCESS_STATUS_BY_ID_SUM)
@@ -51,7 +52,7 @@ public class TransactionController {
 //                .timestamp(new Date())
 //                .message(SuccessConstant.UPDATED)
 //                .build();
-//        return new ResponseEntity<>(res, StatusCode.OK);
+//        return new ResponseEntity<>(res, HttpStatus.OK);
 //    }
 
 

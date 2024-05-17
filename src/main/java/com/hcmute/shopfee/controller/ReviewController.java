@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,7 +50,7 @@ public class ReviewController {
                 .message(SuccessConstant.CREATED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = REVIEW_CREATE_INTERACTION_FOR_PRODUCT_SUM)
@@ -63,7 +64,7 @@ public class ReviewController {
                 .message(SuccessConstant.CREATED)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = REVIEW_GET_PRODUCT_TYPE_SUM)
@@ -84,7 +85,7 @@ public class ReviewController {
                 .data(resData)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = REVIEW_GET_PRODUCT_STATISTICS_SUM)
@@ -97,6 +98,6 @@ public class ReviewController {
                 .data(resData)
                 .timestamp(new Date())
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

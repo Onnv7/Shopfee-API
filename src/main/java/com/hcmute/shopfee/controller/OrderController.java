@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,7 +45,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = ORDER_CREATE_ONSITE_SUM)
@@ -57,7 +58,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
     @Operation(summary = ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM)
     @GetMapping(path = GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH)
@@ -78,7 +79,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
     @Operation(summary = ORDER_UPDATE_EVENT_SUM)
@@ -94,7 +95,7 @@ public class OrderController {
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
     @Operation(summary = ORDER_UPDATE_CANCEL_EVENT_SUM)
@@ -110,7 +111,7 @@ public class OrderController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = ORDER_CREATE_CANCELLATION_REQUEST_SUM)
     @PostMapping(path = POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH)
@@ -125,7 +126,7 @@ public class OrderController {
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.CREATED);
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
 //    @Operation(summary = ORDER_UPDATE_CANCELLATION_REQUEST_SUM)
@@ -141,7 +142,7 @@ public class OrderController {
 //                .timestamp(new Date())
 //                .message(SuccessConstant.UPDATED)
 //                .build();
-//        return new ResponseEntity<>(res, StatusCode.OK);
+//        return new ResponseEntity<>(res, HttpStatus.OK);
 //    }
 
     @Operation(summary = ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM)
@@ -166,7 +167,7 @@ public class OrderController {
                 .data(dataRes)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_LIST_SUM)
@@ -188,7 +189,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_DETAILS_BY_ID_SUM)
@@ -201,7 +202,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_ORDER_ITEM_REVIEW_SUM)
@@ -214,7 +215,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_SHIPPING_FEE_SUM)
@@ -231,7 +232,7 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM)
@@ -252,7 +253,7 @@ public class OrderController {
                 .data(savedData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = ORDER_GET_STATUS_LINE_SUM)
@@ -266,6 +267,6 @@ public class OrderController {
                 .data(resData)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

@@ -41,6 +41,7 @@ public class ErrorConstant {
     public static final String WRONG_PASSWORD = "Password is wrong";
     public static final String CREDENTIAL_WRONG = "Invalid login information";
     public static final String ALBUM_NOT_FOUND = "Image data not found";
+    public static final String NOTIFICATION_NOT_FOUND = "Notification data not found";
     public static final String ADD_MORE_5_ADDRESS = "Do not add more than 5 addresses";
 
     // dev message

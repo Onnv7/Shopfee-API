@@ -54,6 +54,7 @@ import com.hcmute.shopfee.utils.HandleFileUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.slf4j.Logger;
@@ -77,8 +78,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Calendar;
@@ -580,7 +580,6 @@ public class ToolController {
     }
 
 
-
     @PostMapping("/kafka-kafkaSendToBranch")
     public String kafkaSendToBranch(@RequestBody NewOrderMsgData body) {
         userNotificationKafkaPublisher.sendNotificationToBranch(body);
@@ -594,6 +593,7 @@ public class ToolController {
     }
 
     private final FirebaseMessaging firebaseMessaging;
+
     @PostMapping("/test-send-fcm")
     public String kafkaSendToClient(@RequestParam String fcmToken) {
         Notification notification = Notification.builder()
@@ -610,6 +610,25 @@ public class ToolController {
             e.printStackTrace();
         }
         return "okoko";
+    }
+
+    @Data
+    public static class TestDate {
+        private Date date;
+        private java.sql.Date sqlDate;
+        private LocalDate localDate;
+        private LocalTime localTime;
+        private LocalDateTime localDateTime;
+    }
+
+    @PostMapping("/dateTime")
+    public Date dateTime(@RequestBody TestDate dateTime) {
+        BranchEntity branch = branchRepository.findById("S001")
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT));
+        if(!DateUtils.isInRangeTime(dateTime.getDate().toInstant(), branch.getOpenTime(), branch.getCloseTime())) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Pick-up hours are not within store operating hours");
+        }
+        return dateTime.getDate();
     }
 
     @PostMapping(value = "/test-upload-video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -685,14 +704,16 @@ public class ToolController {
         CodeEmailMsgData data = new CodeEmailMsgData();
         data.setCode("asdas");
         data.setEmail("dsa@gmail.com");
-        for(int i = 0; i< loop ; i++) {
+        for (int i = 0; i < loop; i++) {
             data.setCode(String.valueOf(i));
             mailerKafkaPublisher.sendMessageToCodeEmail(data);
         }
         return "ok";
     }
+
     private final EmailService emailService;
     private final MailerKafkaPublisher mailerKafkaPublisher;
+
     @PostMapping(value = "/test-send-email-block")
     public String testSendEmailBLoc(@RequestBody UserBlockedMsgData msg) throws IOException {
         mailerKafkaPublisher.sendBlockedStatus(msg);
@@ -700,6 +721,7 @@ public class ToolController {
         log.info("thread");
         return "ok";
     }
+
     public class HelloWorldJob implements Job {
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {

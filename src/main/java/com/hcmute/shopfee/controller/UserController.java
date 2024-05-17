@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,7 +54,7 @@ public class UserController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
 
@@ -67,7 +68,7 @@ public class UserController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = USER_GET_DETAIL_BY_ID_SUM)
     @GetMapping(path = GET_USER_DETAILS_BY_ID_SUB_PATH)
@@ -79,7 +80,7 @@ public class UserController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_CHANGE_STATUS_SUM)
@@ -91,7 +92,7 @@ public class UserController {
         ResponseAPI<?> res = ResponseAPI.builder()
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_UPDATE_BY_ID_SUM)
@@ -107,7 +108,7 @@ public class UserController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_CHECK_EXISTED_BY_EMAIL_SUM)
@@ -119,7 +120,7 @@ public class UserController {
                 .message(SuccessConstant.GET)
                 .data(result)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_UPLOAD_AVATAR_BY_USER_ID_SUM)
@@ -132,7 +133,7 @@ public class UserController {
                 .data(data)
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_ADD_PHONE_NUMBER_SUM)
@@ -144,7 +145,7 @@ public class UserController {
                 .timestamp(new Date())
                 .message(SuccessConstant.UPDATED)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_GET_SPENDING_STATISTIC_SUM)
@@ -163,7 +164,7 @@ public class UserController {
                 .data(data)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_GET_ORDER_STATISTIC_SUM)
@@ -179,7 +180,7 @@ public class UserController {
                 .data(data)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = USER_GET_COIN_HISTORY_SUM)
@@ -198,6 +199,6 @@ public class UserController {
                 .data(data)
                 .message(SuccessConstant.GET)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

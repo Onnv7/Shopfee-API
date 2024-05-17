@@ -2,7 +2,10 @@ spring:
   #environment
   profiles:
     active: dev
-
+#  jackson:
+#    serialization:
+#      write_dates_as_timestamps: false
+#    time-zone: GMT+0
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${SQL_HOST:localhost}:${SQL_PORT:3306}/shopfee?createDatabaseIfNotExist=true

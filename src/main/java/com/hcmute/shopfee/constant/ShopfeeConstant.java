@@ -25,6 +25,8 @@ public class ShopfeeConstant {
     public static final int ORDER_BOOM_COUNT_LIMIT = 3;
 
     // notification messages
+
+    public static final String SYSTEM_FCM_TOPIC = "system_notification";
     public static final String NEW_ORDER_MSG = "%s order %s created. Check now";
     public static final String EMPLOYEE_NOTI_TITLE_MSG = "Shopfee For Employee";
     public static final String USER_NOTI_TITLE_MSG = "Shopfee";

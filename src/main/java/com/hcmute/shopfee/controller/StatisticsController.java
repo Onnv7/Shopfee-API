@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +44,7 @@ public class StatisticsController {
                 .message(SuccessConstant.GET)
                 .data(revenue)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = STATISTICS_GET_ORDER_QUANTITY_BY_STAGE_SUM)
@@ -57,7 +58,7 @@ public class StatisticsController {
                 .message(SuccessConstant.GET)
                 .data(resData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @Operation(summary = STATISTICS_GET_REVENUE_BY_TIME_SUM)
@@ -79,6 +80,6 @@ public class StatisticsController {
                 .message(SuccessConstant.GET)
                 .data(newData)
                 .build();
-        return new ResponseEntity<>(res, StatusCode.OK);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

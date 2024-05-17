@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -69,6 +70,9 @@ public class BranchEntity {
 
     @Column(name = "open_time", nullable = false)
     private Time openTime;
+
+    @Column(name = "open_time1")
+    private LocalTime openTime1;
 
     @Column(name = "close_time", nullable = false)
     private Time closeTime;
