@@ -24,11 +24,11 @@ public class UpdateEmployeeProfileRequest {
     private Gender gender;
 
     @Schema(example = PHONE_NUMBER_EX)
-    @NotBlank
     @Pattern(regexp = PHONE_NUMBER_REGEX)
     private String phoneNumber;
 
     @Schema(example = EMAIL_EX)
-    @NotBlank
     private String email;
+
+
 }
