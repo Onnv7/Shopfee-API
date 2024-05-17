@@ -19,6 +19,7 @@ public class DateUtils {
         return calBegin.getTime();
     }
 
+
     public static String formatYYYYMMDD(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return  sdf.format(date);
@@ -45,6 +46,11 @@ public class DateUtils {
 
     public static Time getCurrentTime(ZoneId zone) {
         LocalTime localTime = LocalTime.now(zone);
+        return Time.valueOf(localTime);
+    }
+
+    public static Time getCurrentTime() {
+        LocalTime localTime = LocalTime.now(ZoneId.of(GMT_7));
         return Time.valueOf(localTime);
     }
 

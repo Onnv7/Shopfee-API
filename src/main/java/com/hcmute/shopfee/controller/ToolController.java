@@ -619,6 +619,7 @@ public class ToolController {
         private LocalDate localDate;
         private LocalTime localTime;
         private LocalDateTime localDateTime;
+        private Time time;
     }
 
     @PostMapping("/dateTime")

@@ -493,7 +493,7 @@ public class OrderService implements IOrderService {
         orderBill.setOrderEventList(orderEventList);
 
         // set chi nhánh xử lý đơn
-        Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
+        Time currentTime = DateUtils.getCurrentTime();
         BranchEntity branch = branchService.getNearestBranchAndValidateTime(address.getLatitude(), address.getLongitude(), currentTime);
         orderBill.setBranch(branch);
 
@@ -901,7 +901,7 @@ public class OrderService implements IOrderService {
         int branchSize = branchEntityList.size();
 
 
-        Time currentTime = DateUtils.getCurrentTime(ZoneId.of("GMT+7"));
+        Time currentTime = DateUtils.getCurrentTime();
         BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
 
         int shippingFee = ahamoveService.getShippingFee(lat, lng, branchEntity.getLatitude(), branchEntity.getLongitude());

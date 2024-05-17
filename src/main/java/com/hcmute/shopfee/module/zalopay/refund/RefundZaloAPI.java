@@ -3,6 +3,7 @@ package com.hcmute.shopfee.module.zalopay.refund;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hcmute.shopfee.module.zalopay.ZaloPay;
 import com.hcmute.shopfee.module.zalopay.ZaloPayUtils;
+import com.hcmute.shopfee.utils.DateUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -75,7 +76,7 @@ public class RefundZaloAPI {
     }
     private String getCurrentTimeString(String format) {
 
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone(DateUtils.GMT_7));
         SimpleDateFormat fmt = new SimpleDateFormat(format);
         fmt.setCalendar(cal);
         return fmt.format(cal.getTimeInMillis());
