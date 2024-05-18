@@ -3,16 +3,14 @@ package com.hcmute.shopfee.entity.sql.database;
 import com.hcmute.shopfee.enums.BannerStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "banner")
@@ -24,7 +22,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class BannerEntity {
     @Id
-    @GenericGenerator(name = "banner_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "banner_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "banner_id")
     private String id;
 

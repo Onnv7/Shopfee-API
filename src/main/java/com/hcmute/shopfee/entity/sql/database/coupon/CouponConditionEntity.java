@@ -6,14 +6,13 @@ import com.hcmute.shopfee.entity.sql.database.coupon.condition.CombinationCondit
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.MinPurchaseConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.ConditionType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
-
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "coupon_condition")
@@ -24,7 +23,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class CouponConditionEntity {
     @Id
-    @GenericGenerator(name = "coupon_condition_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "coupon_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_condition_id")
     private String id;
 

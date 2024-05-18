@@ -1,11 +1,10 @@
 package com.hcmute.shopfee.entity.sql.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "address")
@@ -16,7 +15,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class AddressEntity {
     @Id
-    @GenericGenerator(name = "address_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "address_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "address_id")
     private String id;
 

@@ -10,7 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Set;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 
 @Entity
@@ -22,7 +22,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 public class RoleEntity {
 
     @Id
-    @GenericGenerator(name = "role_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "role_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "role_id")
     private String id;
 
@@ -32,4 +32,7 @@ public class RoleEntity {
 
     @ManyToMany(mappedBy = "roleList")
     private Set<UserEntity> userList;
+
+    @ManyToMany(mappedBy = "roleList")
+    private Set<EmployeeEntity> employeeList;
 }

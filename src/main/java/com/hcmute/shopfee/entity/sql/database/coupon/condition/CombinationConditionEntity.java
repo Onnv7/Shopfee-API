@@ -2,12 +2,12 @@ package com.hcmute.shopfee.entity.sql.database.coupon.condition;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.CouponType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "combination_condition")
@@ -18,7 +18,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class CombinationConditionEntity {
     @Id
-    @GenericGenerator(name = "combination_condition_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "combination_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "combination_condition_id")
     private String id;
 

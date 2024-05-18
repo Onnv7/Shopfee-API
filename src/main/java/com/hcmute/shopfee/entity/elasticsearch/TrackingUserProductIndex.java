@@ -19,6 +19,9 @@ import java.util.Date;
 public class TrackingUserProductIndex {
     @Id
     @Field(type = FieldType.Keyword)
+    private String id;
+
+    @Field(type = FieldType.Keyword)
     private String userId;
 
     @Field(type = FieldType.Keyword)

@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.sql.database;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,12 +14,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
-
-import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "branch")
@@ -30,7 +27,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class BranchEntity {
     @Id
-    @GenericGenerator(name = "branch_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+    @GenericGenerator(name = "branch_id", type = StringPrefixedSequenceGenerator.class, parameters = {
             @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
             @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "S"),
             @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
@@ -71,9 +68,6 @@ public class BranchEntity {
     @Column(name = "open_time", nullable = false)
     private Time openTime;
 
-    @Column(name = "open_time1")
-    private LocalTime openTime1;
-
     @Column(name = "close_time", nullable = false)
     private Time closeTime;
 
@@ -100,6 +94,12 @@ public class BranchEntity {
     @OneToMany(mappedBy = "branch")
     @JsonManagedReference
     private List<EmployeeEntity> employeeList;
+
+    @OneToMany(mappedBy = "branch", cascade = {CascadeType.REMOVE})
+    @JsonManagedReference
+    private List<BranchProductEntity> branchProductList;
+
+    // ========================================
 
     public String getFullAddress() {
         return this.getDetail() + " " + this.getWard() + " " + this.getDistrict() + " " + this.getProvince();

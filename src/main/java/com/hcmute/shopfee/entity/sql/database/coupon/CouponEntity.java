@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.CouponRewardType;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
@@ -17,8 +18,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
-
 @Entity
 @Table(name = "coupon")
 @Builder
@@ -29,7 +28,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class CouponEntity {
     @Id
-    @GenericGenerator(name = "coupon_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "coupon_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_id")
     private String id;
 

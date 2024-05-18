@@ -22,7 +22,6 @@ public class HeaderUtils {
         HttpHeaders headers = new HttpHeaders();
         String maxAge = String.valueOf(minutes * 60);
 
-        // TODO: kiem tra expire coookie
         headers.add(HttpHeaders.SET_COOKIE, "refreshToken=" + refreshToken + "; Max-Age=" + maxAge + "; Path=/; Secure; HttpOnly; SameSite=None");
 
         return headers;

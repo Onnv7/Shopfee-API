@@ -7,11 +7,17 @@ import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
+import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.BranchStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import com.hcmute.shopfee.repository.database.BranchRepository;
+import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
+import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.GoongService;
 import com.hcmute.shopfee.service.core.IBranchService;
@@ -24,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.Time;
@@ -40,6 +47,8 @@ public class BranchService implements IBranchService {
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
     private final GoongService goongService;
+    private final ProductRepository productRepository;
+    private final BranchProductRepository branchProductRepository;
 
     public BranchEntity getNearestBranchAndValidateTime(Double lat, Double lng, Time timeToCheck) {
         // TODO: xem có status thì check status cửa hàng
@@ -76,6 +85,7 @@ public class BranchService implements IBranchService {
 
     }
 
+    @Transactional
     @Override
     public void createBranch(CreateBranchRequest body) throws ExecutionException, InterruptedException {
         BranchEntity branch = modelMapperService.mapClass(body, BranchEntity.class);
@@ -94,7 +104,15 @@ public class BranchService implements IBranchService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        branchRepository.save(branch);
+        branch = branchRepository.save(branch);
+        List<ProductEntity> productEntityList = productRepository.findAll();
+        for(ProductEntity product : productEntityList) {
+            BranchProductId branchProductId = new BranchProductId(branch.getId(), product.getId());
+            BranchProductEntity branchProductEntity = new BranchProductEntity();
+            branchProductEntity.setId(branchProductId);
+            branchProductEntity.setStatus(BranchProductStatus.AVAILABLE);
+            branchProductRepository.save(branchProductEntity);
+        }
     }
 
     @Override
@@ -121,12 +139,15 @@ public class BranchService implements IBranchService {
         branchRepository.save(branch);
     }
 
-    // TODO: branch hiện đăng xóa cứng
     @Override
-    public void deleteBranchById(String id) {
-        BranchEntity branch = branchRepository.findById(id)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
-        branchRepository.deleteById(id);
+    public void deleteBranchById(String branchId) {
+        BranchEntity branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + branchId));
+        if(branchRepository.countEmployeeByBranch(branchId) > 0 || branchRepository.countOrderBillByBranch(branchId) > 0) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.CANT_DELETE);
+        }
+
+        branchRepository.deleteById(branchId);
         try {
             cloudinaryService.deleteImage(branch.getImageId());
         } catch (IOException e) {

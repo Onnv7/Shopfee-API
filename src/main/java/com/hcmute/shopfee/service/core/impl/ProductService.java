@@ -11,7 +11,10 @@ import com.hcmute.shopfee.dto.response.*;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
 import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
+import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.SizeEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ToppingEntity;
@@ -23,7 +26,9 @@ import com.hcmute.shopfee.kafka.publisher.TrackingUserProductKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
+import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
+import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.service.core.IProductService;
@@ -57,6 +62,8 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
+    private final BranchProductRepository branchProductRepository;
+    private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
     private final ModelMapperService modelMapperService;
     private final CategoryRepository categoryRepository;
@@ -154,7 +161,20 @@ public class ProductService implements IProductService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        productRepository.save(productEntity);
+
+        productEntity = productRepository.save(productEntity);
+        String productId = productEntity.getId();
+        List<BranchEntity> branchList = branchRepository.findAll();
+        for (BranchEntity branch : branchList) {
+            BranchProductEntity branchProductEntity = new BranchProductEntity();
+            BranchProductId branchProductId = new BranchProductId(branch.getId(), productId);
+            branchProductEntity.setId(branchProductId);
+            branchProductEntity.setBranch(branch);
+            branchProductEntity.setProduct(productEntity);
+            branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
+
+            branchProductRepository.save(branchProductEntity);
+        }
     }
 
     @Override
@@ -171,12 +191,12 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetProductViewByIdResponse getProductViewById(String id) {
+    public GetProductViewByIdResponse getProductViewById(String productId, String branchId) {
         boolean isExistInCache = false;
         GetProductViewByIdResponse data = new GetProductViewByIdResponse();
         try {
-            GetProductViewByIdResponse dataCache = productRedisService.getProductView(id);
-            if (dataCache != null && dataCache.getStatus() != ProductStatus.HIDDEN) {
+            GetProductViewByIdResponse dataCache = productRedisService.getProductView(productId, branchId);
+            if (dataCache != null) {
                 isExistInCache = true;
                 data = dataCache;
             }
@@ -184,34 +204,36 @@ public class ProductService implements IProductService {
             log.error(Arrays.toString(e.getStackTrace()));
         } finally {
             if (!isExistInCache) {
-                ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.HIDDEN)
-                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
+                ProductEntity product = productRepository.findByIdAndStatusNot(productId, ProductStatus.INACTIVE)
+                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + productId));
                 data = modelMapperService.mapClass(product, GetProductViewByIdResponse.class);
+                if (branchId != null) {
+                    data.setStatus(product.getBranchProduct(branchId).getStatus());
+                }
                 data.setImageUrl(product.getImage().getImageUrl());
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
                 data.setRatingSummary(RatingSummaryDto.fromRatingSummaryDto(ratingSummaryQueryDto));
             }
         }
 
-        if (SecurityUtils.getCurrentUserId() != null) {
-            TrackingUserProductMsgData msgData = new TrackingUserProductMsgData();
-            msgData.setProductId(data.getId());
-            msgData.setUserId(SecurityUtils.getCurrentUserId());
-            trackingUserProductKafkaPublisher.analystTrackingUserProductData(msgData);
-        }
-
         try {
             if (!isExistInCache) {
-                productRedisService.saveProductView(data);
+                productRedisService.saveProductView(data, branchId);
             }
-        } catch (JsonProcessingException e) {
+            if (SecurityUtils.getCurrentUserId() != null) {
+                TrackingUserProductMsgData msgData = new TrackingUserProductMsgData();
+                msgData.setProductId(data.getId());
+                msgData.setUserId(SecurityUtils.getCurrentUserId());
+                trackingUserProductKafkaPublisher.analystTrackingUserProductData(msgData);
+            }
+        } catch (Exception e) {
             log.error(Arrays.toString(e.getStackTrace()));
         }
         return data;
     }
 
     @Override
-    public GetProductsByCategoryIdResponse getProductsByCategoryId(String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size) {
+    public GetProductsByCategoryIdResponse getProductsByCategoryId(String branchId, String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size) {
         GetProductsByCategoryIdResponse data = new GetProductsByCategoryIdResponse();
         List<GetProductsByCategoryIdResponse.ProductCard> productList = new ArrayList<>();
 
@@ -230,24 +252,29 @@ public class ProductService implements IProductService {
         }
 
 
+        // co filter
         if (minPrice != null && maxPrice != null || minStar != null) {
             productPage = productRepository.getProductByCategoryIdAndFilter(categoryId, minPrice, maxPrice, minStar, pageable);
         } else {
-            productPage = productRepository.findByCategory_IdAndStatusNot(categoryId, ProductStatus.HIDDEN, PageRequest.of(page - 1, size));
+            productPage = productRepository.findByCategory_IdAndStatusNot(categoryId, ProductStatus.INACTIVE, PageRequest.of(page - 1, size));
         }
         data.setTotalPage(productPage.getTotalPages());
 
         List<ProductEntity> productEntityList = productPage.getContent();
         for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummary = productReviewRepository.getRatingSummary(entity.getId());
-            productList.add(GetProductsByCategoryIdResponse.ProductCard.fromProductEntity(entity, ratingSummary));
+            GetProductsByCategoryIdResponse.ProductCard productCard = GetProductsByCategoryIdResponse.ProductCard.fromProductEntity(entity, ratingSummary);
+            if (branchId != null) {
+                productCard.setStatus(entity.getBranchProduct(branchId).getStatus());
+            }
+            productList.add(productCard);
         }
 
         return data;
     }
 
     @Override
-    public GetProductCardListResponse getVisibleProductList(Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key) {
+    public GetProductCardListResponse getVisibleProductList(String branchId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key) {
         GetProductCardListResponse data = new GetProductCardListResponse();
 
         List<GetProductCardListResponse.ProductCard> productList = new ArrayList<>();
@@ -264,18 +291,20 @@ public class ProductService implements IProductService {
         }
 
         try {
-            data = productRedisService.getProductVisibleList(key, pageable, minPrice, maxPrice, minStar);
+            data = productRedisService.getProductVisibleList(branchId, key, pageable, minPrice, maxPrice, minStar);
             if (data != null) {
                 return data;
-            } else {
-                data = new GetProductCardListResponse();
             }
         } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
+            log.error(Arrays.toString(e.getStackTrace()));
+        } finally {
+            data = new GetProductCardListResponse();
         }
 
 
         if (!key.trim().isEmpty()) {
+            // TODO: xem lai xem save branh product vao elasticsearch dc khong?
+            // neu luu dc thi xem lai fromProductIndex va set Status luon -> bo loop "set status theo cua hang"
             Page<ProductIndex> productIndexPage = productEService.searchVisibleProduct(key, pageable);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();
@@ -283,14 +312,11 @@ public class ProductService implements IProductService {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(index.getId());
                 productList.add(GetProductCardListResponse.ProductCard.fromProductIndex(index, ratingSummaryQueryDto));
             }
+
         } else {
             Page<ProductEntity> productPage = null;
             productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
-//            if (minPrice != null && maxPrice != null) {
-//
-//            } else {
-//                productPage = productRepository.findByStatusNot(ProductStatus.HIDDEN, pageable);
-//            }
+
 
             data.setTotalPage(productPage.getTotalPages());
             List<ProductEntity> productEntityList = productPage.getContent();
@@ -299,9 +325,21 @@ public class ProductService implements IProductService {
                 productList.add(GetProductCardListResponse.ProductCard.fromProductEntity(entity, ratingSummaryQueryDto));
             }
         }
+        // set status theo cua hang
+        if (branchId != null) {
+            for (GetProductCardListResponse.ProductCard productCard : productList) {
+                String productId = productCard.getId();
+                BranchProductId branchProductId = new BranchProductId(branchId, productId);
+                BranchProductEntity branchProductEntity = branchProductRepository.findById(branchProductId)
+                        .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, String.format("Product %s was not found in branch %s", productId, branchId)));
+                productCard.setStatus(branchProductEntity.getStatus());
+            }
+        }
+
         data.setProductList(productList);
+
         try {
-            productRedisService.saveProductVisibleList(data, key, pageable, minPrice, maxPrice, minStar);
+            productRedisService.saveProductVisibleList(data, branchId, key, pageable, minPrice, maxPrice, minStar);
         } catch (JsonProcessingException e) {
 //            throw new RuntimeException(e);
         }
@@ -309,16 +347,16 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<GetUserProductTrackingCardResponse> getProductUserTracking(Integer size) {
+    public List<GetUserProductTrackingCardResponse> getProductUserTracking(String branchId, Integer size) {
         List<GetUserProductTrackingCardResponse> data = new ArrayList<>();
         String userId = SecurityUtils.getCurrentUserId();
         List<TrackingUserProductIndex> userProductList = trackingUserProductEService.getProductByUserId(userId, size).getContent();
-        for(TrackingUserProductIndex userProduct : userProductList) {
-            ProductEntity product = productRepository.findByIdAndStatusNot(userProduct.getProductId(), ProductStatus.HIDDEN)
+        for (TrackingUserProductIndex userProduct : userProductList) {
+            ProductEntity product = productRepository.findByIdAndStatusNot(userProduct.getProductId(), ProductStatus.INACTIVE)
                     .orElse(null);
-            if(product != null) {
+            if (product != null) {
                 RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
-                data.add(GetUserProductTrackingCardResponse.fromProductEntity(product, ratingSummaryQueryDto));
+                data.add(GetUserProductTrackingCardResponse.fromProductEntity(product, ratingSummaryQueryDto, branchId));
             }
         }
         return data;
@@ -431,20 +469,20 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity) {
+    public List<GetTopRatedProductResponse> getTopRatedProductQuantityOrder(int quantity, String branchId) {
         List<GetTopRatedProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopRatingProduct(quantity);
         for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
-            data.add(GetTopRatedProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
+            data.add(GetTopRatedProductResponse.fromProductEntity(entity, ratingSummaryQueryDto, branchId));
         }
 
         return data;
     }
 
     @Override
-    public List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity) {
+    public List<GetTopSellingProductResponse> getTopSellingProductQuantityOrder(int quantity, String branchId) {
         List<GetTopSellingProductResponse> data = new ArrayList<>();
 
         List<ProductEntity> productEntityList = productRepository.getTopProductBySoldQuantity(quantity);
@@ -455,7 +493,7 @@ public class ProductService implements IProductService {
         }
         for (ProductEntity entity : productEntityList) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(entity.getId());
-            data.add(GetTopSellingProductResponse.fromProductEntity(entity, ratingSummaryQueryDto));
+            data.add(GetTopSellingProductResponse.fromProductEntity(entity, ratingSummaryQueryDto, branchId));
         }
 
         return data;
@@ -698,16 +736,15 @@ public class ProductService implements IProductService {
                 product.setPrice(getMinPrice(product.getSizeList()));
                 productValidList.add(product);
             }
-
+            List<ProductEntity> productEntityList = new ArrayList<>();
             if (force) {
-                productRepository.saveAll(productValidList);
-//                productSearchService.createAllProduct(productValidList);
+                productEntityList = productRepository.saveAll(productValidList);
             } else {
                 if (!hasError) {
-                    productRepository.saveAll(productValidList);
-//                    productSearchService.createAllProduct(productValidList);
+                    productEntityList = productRepository.saveAll(productValidList);
                 }
             }
+            saveProductStatusByBranch(productEntityList);
             inputStream.close();
             workbook.close();
         } catch (IOException e) {
@@ -842,18 +879,19 @@ public class ProductService implements IProductService {
                     data.add(errorRow);
                 }
 
-                inputStream.close();
-                workbook.close();
+
             }
+            inputStream.close();
+            workbook.close();
+            List<ProductEntity> productEntityList = new ArrayList<>();
             if (force) {
-                productRepository.saveAll(productValidList);
-//                productSearchService.createAllProduct(productValidList);
+                productEntityList = productRepository.saveAll(productValidList);
             } else {
                 if (!hasError) {
-                    productRepository.saveAll(productValidList);
-//                    productSearchService.createAllProduct(productValidList);
+                    productEntityList = productRepository.saveAll(productValidList);
                 }
             }
+            saveProductStatusByBranch(productEntityList);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (IllegalStateException e) {
@@ -864,6 +902,23 @@ public class ProductService implements IProductService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, e.getMessage());
         }
         return data;
+    }
+
+    private void saveProductStatusByBranch(List<ProductEntity> productEntityList) {
+        List<BranchEntity> branchList = branchRepository.findAll();
+        for (ProductEntity productEntity : productEntityList) {
+            String productId = productEntity.getId();
+            for (BranchEntity branch : branchList) {
+                BranchProductEntity branchProductEntity = new BranchProductEntity();
+                BranchProductId branchProductId = new BranchProductId(branch.getId(), productId);
+                branchProductEntity.setId(branchProductId);
+                branchProductEntity.setBranch(branch);
+                branchProductEntity.setProduct(productEntity);
+                branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
+
+                branchProductRepository.save(branchProductEntity);
+            }
+        }
     }
 
     @Override
@@ -887,7 +942,7 @@ public class ProductService implements IProductService {
             String[] firstRowData1 = {"Milk", "Milk tea", "AVAILABLE", "Delicious milk tea", "https://www.facebook.com/", "SMALL", "15000", "Flan", "2000"};
             String[] firstRowData2 = {null, null, null, null, null, "MEDIUM", "20000", null, null};
             String[] sizeNameArray = {ProductSize.SMALL.name(), ProductSize.MEDIUM.name(), ProductSize.LARGE.name()};
-            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
+            String[] statusArray = {ProductStatus.ACTIVE.name(), ProductStatus.INACTIVE.name()};
             for (int i = 0; i < firstRow.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(firstRow[i]);
@@ -971,7 +1026,7 @@ public class ProductService implements IProductService {
             String[] firstRow = {"Product name", "Category", "Status", "Description", "Price", "Image"};
             String[] firstRowData1 = {"Cinnamon cone", "Sweet cake", "AVAILABLE", "Cinnamon and sweet cake", "2000", "https://www.facebook.com/"};
 
-            String[] statusArray = {ProductStatus.AVAILABLE.name(), ProductStatus.HIDDEN.name(), ProductStatus.TEMPORARY_SUSPENDED.name()};
+            String[] statusArray = {ProductStatus.ACTIVE.name(), ProductStatus.INACTIVE.name()};
             for (int i = 0; i < firstRow.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(firstRow[i]);

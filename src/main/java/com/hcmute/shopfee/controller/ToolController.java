@@ -8,6 +8,8 @@ import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
 import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
@@ -37,6 +39,7 @@ import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
+import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
@@ -187,7 +190,7 @@ public class ToolController {
                         .imageUrl("imageUrl")
                         .thumbnailUrl("thumbnailUrl")
                         .build())
-                .status(ProductStatus.AVAILABLE)
+                .status(ProductStatus.ACTIVE)
                 .name("Product")
                 .build();
         sizeEntityList.add(SizeEntity.builder()
@@ -223,6 +226,15 @@ public class ToolController {
         product.setSizeList(sizeEntityList);
 
         productRepository.save(product);
+
+        BranchProductId branchProductId = new BranchProductId(branchEntity.getId(), product.getId());
+        BranchProductEntity branchProductEntity = new BranchProductEntity();
+        branchProductEntity.setId(branchProductId);
+        branchProductEntity.setBranch(branchEntity);
+        branchProductEntity.setProduct(product);
+        branchProductEntity.setStatus(BranchProductStatus.AVAILABLE);
+        branchProductRepository.save(branchProductEntity);
+
         Set<RoleEntity> userRole = new HashSet<>();
         RoleEntity role = roleRepository.findByRoleName(Role.ROLE_USER)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + "Role with name"));
@@ -714,6 +726,8 @@ public class ToolController {
 
     private final EmailService emailService;
     private final MailerKafkaPublisher mailerKafkaPublisher;
+    @Autowired
+    private BranchProductRepository branchProductRepository;
 
     @PostMapping(value = "/test-send-email-block")
     public String testSendEmailBLoc(@RequestBody UserBlockedMsgData msg) throws IOException {

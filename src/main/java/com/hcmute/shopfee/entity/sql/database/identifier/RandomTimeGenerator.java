@@ -6,7 +6,7 @@ import org.hibernate.id.IdentifierGenerator;
 
 import java.io.Serializable;
 
-public class IdGenerator implements IdentifierGenerator {
+public class RandomTimeGenerator implements IdentifierGenerator {
 
 
     @Override

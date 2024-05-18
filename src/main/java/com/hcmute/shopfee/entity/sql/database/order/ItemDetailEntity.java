@@ -2,6 +2,7 @@ package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.ProductSize;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +10,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "item_detail")
@@ -21,7 +21,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 public class ItemDetailEntity {
 
     @Id
-    @GenericGenerator(name = "item_detail_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "item_detail_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "item_detail_id")
     private String id;
 

@@ -64,7 +64,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.text.MessageFormat;
-import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -171,7 +170,7 @@ public class OrderService implements IOrderService {
         for (int i = 0; i < itemSize; i++) {
             OrderItemDto orderItemDto = orderItemList.get(i);
 
-            ProductEntity productInfo = productRepository.findByIdAndStatus(orderItemDto.getProductId(), ProductStatus.AVAILABLE)
+            ProductEntity productInfo = productRepository.findByIdAndStatus(orderItemDto.getProductId(), ProductStatus.ACTIVE)
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + orderItemDto.getProductId()));
 
             OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);

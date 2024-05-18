@@ -31,9 +31,9 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class OrderBillEntity {
-    //    @GenericGenerator(name = "order_bill_id", strategy = TIME_ID_GENERATOR)
+    //    @GenericGenerator(name = "order_bill_id", type = IdGenerator.class)
     @Id
-    @GenericGenerator(name = "order_bill_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+    @GenericGenerator(name = "order_bill_id", type = StringPrefixedSequenceGenerator.class, parameters = {
             @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
             @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "OB"),
             @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%09d")

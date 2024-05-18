@@ -2,12 +2,11 @@ package com.hcmute.shopfee.entity.sql.database.coupon_used.reward;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "money_reward_received")
@@ -18,7 +17,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class MoneyRewardReceivedEntity {
     @Id
-    @GenericGenerator(name = "money_reward_received_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "money_reward_received_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "money_reward_received_id")
     private String id;
 

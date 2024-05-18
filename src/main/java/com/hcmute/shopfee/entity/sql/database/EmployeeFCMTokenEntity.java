@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "fcm_token_employee")
@@ -16,7 +16,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class EmployeeFCMTokenEntity {
     @Id
-    @GenericGenerator(name = "fcm_token_employee_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "fcm_token_employee_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "fcm_token_employee_id")
     private String id;
 

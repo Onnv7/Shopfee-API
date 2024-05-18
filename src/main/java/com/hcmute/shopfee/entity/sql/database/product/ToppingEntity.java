@@ -2,14 +2,13 @@ package com.hcmute.shopfee.entity.sql.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.dto.common.ToppingDto;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "topping")
@@ -20,7 +19,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class ToppingEntity {
     @Id
-    @GenericGenerator(name = "size_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "size_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "size_id")
     private String id;
 

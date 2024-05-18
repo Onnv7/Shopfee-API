@@ -24,4 +24,21 @@ public interface BranchRepository extends JpaRepository<BranchEntity, String> {
     Page<BranchEntity> findByStatus(BranchStatus status, Pageable pageable);
     List<BranchEntity> findByStatus(BranchStatus status);
     Optional<BranchEntity> findByIdAndStatus(String id, BranchStatus status);
+
+    @Query(value = """
+            SELECT count(*)
+            FROM branch b
+            join order_bill ob on ob.branch_id = b.id
+            where b.id = ?1
+            """, nativeQuery = true)
+    int countOrderBillByBranch(String branchId);
+
+    @Query(value = """
+            SELECT count(*)
+            FROM branch b
+            join employee e on e.branch_id = b.id
+            where b.id = ?1
+            """, nativeQuery = true)
+    int countEmployeeByBranch(String branchId);
+
 }

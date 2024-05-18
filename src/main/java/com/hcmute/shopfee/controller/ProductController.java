@@ -71,8 +71,12 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_GET_VIEW_BY_ID_SUM)
     @GetMapping(path = GET_PRODUCT_VIEW_BY_ID_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetProductViewByIdResponse>> getProductViewById(@PathVariable(PRODUCT_ID) String id) {
-        GetProductViewByIdResponse resData = productService.getProductViewById(id);
+    public ResponseEntity<ResponseAPI<GetProductViewByIdResponse>> getProductViewById(
+            @PathVariable(PRODUCT_ID) String productId,
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
+    ) {
+        GetProductViewByIdResponse resData = productService.getProductViewById(productId, branchId);
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
                 .timestamp(new Date())
@@ -102,9 +106,13 @@ public class ProductController {
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+
+
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
     ) {
-        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(categoryId, minPrice, maxPrice, minStar, productSortType, page, size);
+        GetProductsByCategoryIdResponse products = productService.getProductsByCategoryId(branchId, categoryId, minPrice, maxPrice, minStar, productSortType, page, size);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -137,9 +145,12 @@ public class ProductController {
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
     ) {
-        GetProductCardListResponse resData = productService.getVisibleProductList(minPrice, maxPrice, minStar, productSortType, page, size, key);
+        GetProductCardListResponse resData = productService.getVisibleProductList(branchId, minPrice, maxPrice, minStar, productSortType, page, size, key);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -151,11 +162,13 @@ public class ProductController {
     @Operation(summary = PRODUCT_GET_USER_TRACKING_SUM)
     @GetMapping(path = GET_PRODUCT_USER_TRACKING_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_USER)
-    public ResponseEntity<ResponseAPI<GetProductCardListResponse>> getProductUserTracking(
+    public ResponseEntity<ResponseAPI<List<GetUserProductTrackingCardResponse>>> getProductUserTracking(
             @Parameter(name = "size", required = true, example = "10")
-            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
     ) {
-        List<GetUserProductTrackingCardResponse> resData = productService.getProductUserTracking(size);
+        List<GetUserProductTrackingCardResponse> resData = productService.getProductUserTracking(branchId, size);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -232,9 +245,12 @@ public class ProductController {
     @GetMapping(path = GET_PRODUCT_TOP_RATED_PRODUCTS_SUB_PATH)
     public ResponseEntity<ResponseAPI<List<GetTopRatedProductResponse>>> getTopRatedProductQuantityOrder(
             @Parameter(name = "quantity", required = true, example = "10")
-            @PathVariable("quantity") @Min(value = 1, message = "Page must be greater than 0") int itemQuantity
+            @PathVariable("quantity") @Min(value = 1, message = "Page must be greater than 0") int itemQuantity,
+
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
     ) {
-        List<GetTopRatedProductResponse> resData = productService.getTopRatedProductQuantityOrder(itemQuantity);
+        List<GetTopRatedProductResponse> resData = productService.getTopRatedProductQuantityOrder(itemQuantity, branchId);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
@@ -248,9 +264,12 @@ public class ProductController {
     @GetMapping(path = GET_PRODUCT_TOP_SELLING_PRODUCTS_SUB_PATH)
     public ResponseEntity<ResponseAPI<List<GetTopSellingProductResponse>>> getTopSellingProductQuantityOrder(
             @Parameter(name = "quantity", required = true, example = "10")
-            @PathVariable("quantity") @Min(value = 1, message = "Page must be greater than 0") int itemQuantity
+            @PathVariable("quantity") @Min(value = 1, message = "Page must be greater than 0") int itemQuantity,
+
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId
     ) {
-        List<GetTopSellingProductResponse> resData = productService.getTopSellingProductQuantityOrder(itemQuantity);
+        List<GetTopSellingProductResponse> resData = productService.getTopSellingProductQuantityOrder(itemQuantity, branchId);
 
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)

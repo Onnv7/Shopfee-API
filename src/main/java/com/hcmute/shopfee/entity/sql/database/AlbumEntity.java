@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "album")
@@ -24,7 +24,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class AlbumEntity {
     @Id
-    @GenericGenerator(name = "album_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "album_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "album_id")
     private String id;
 

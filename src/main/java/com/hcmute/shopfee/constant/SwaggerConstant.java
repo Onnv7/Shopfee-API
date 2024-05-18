@@ -265,7 +265,7 @@ public class SwaggerConstant {
     public static final String PAYMENT_TYPE_EX = "VNPAY";
     public static final String REVIEW_DES_EX = "Good service";
     public static final String BOOLEAN_EX = "false";
-    public static final String PRODUCT_STATUS_EX = "HIDDEN";
+    public static final String PRODUCT_STATUS_EX = "INACTIVE";
     public static final String USERNAME_EX = "nva6112002";
     public static final String REFRESH_TOKEN_EX = "wesaferg534vbdrbtgertyrrw6b456ertbvw354t";
     public static final String PROVINCE_EX = "Binh Duong";

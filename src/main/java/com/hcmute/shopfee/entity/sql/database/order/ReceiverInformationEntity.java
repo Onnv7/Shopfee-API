@@ -8,7 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "receiver_information")
@@ -19,7 +19,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class ReceiverInformationEntity {
     @Id
-    @GenericGenerator(name = "receiver_information_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "receiver_information_id")
     private String id;
 

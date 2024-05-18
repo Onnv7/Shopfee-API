@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.MoneyRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.CouponRewardType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 
 @Entity
 @Table(name = "coupon_reward_received")
@@ -22,7 +22,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @AllArgsConstructor
 public class CouponRewardReceivedEntity {
     @Id
-    @GenericGenerator(name = "coupon_reward_received_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "coupon_reward_received_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_reward_received_id")
     private String id;
 

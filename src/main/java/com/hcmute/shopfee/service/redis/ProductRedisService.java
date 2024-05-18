@@ -19,13 +19,13 @@ import java.util.Set;
 public class ProductRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper redisObjectMapper = new ObjectMapper();
-    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
+    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VIEW = "get_product_view:%s:%s";
     public final static String PATTERN_KEY_GET_PRODUCT_VIEW = "get_product_view:%s";
-    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%d:%d:%s:%s:%s:%d:%d:%d";
+    public final static String STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%s:%d:%d:%s:%s:%s:%d:%d:%d";
     public final static String PATTERN_KEY_GET_PRODUCT_VISIBLE = "get_product_visible:%s";
 
     // get product list
-    private String getKeyForGetProductVisibleList(PageRequest pageRequest, String keyword, Long minPrice, Long maxPrice, Integer minStar) {
+    private String getKeyForGetProductVisibleList(PageRequest pageRequest, String branchId, String keyword, Long minPrice, Long maxPrice, Integer minStar) {
 //        String sortDirection = pageRequest.getSort().getOrderFor("id").getProperty()
         Sort.Order sortOrder = pageRequest.getSort().getOrderFor("price");
         String sortDirection = "";
@@ -37,18 +37,18 @@ public class ProductRedisService {
         if (sortStarOrder != null) {
             sortStarDirection = sortStarOrder.getDirection() == Sort.Direction.ASC ? ProductSortType.STAR_ASC.name() : ProductSortType.STAR_DESC.name();
         }
-        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE, pageRequest.getPageNumber(), pageRequest.getPageSize(), keyword, sortDirection, sortStarDirection, minPrice, maxPrice, minStar);
+        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VISIBLE, branchId, pageRequest.getPageNumber(), pageRequest.getPageSize(), keyword, sortDirection, sortStarDirection, minPrice, maxPrice, minStar);
     }
 
-    public GetProductCardListResponse getProductVisibleList(String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
-        String key = getKeyForGetProductVisibleList(pageRequest, keyword, minPrice, maxPrice, minStar);
+    public GetProductCardListResponse getProductVisibleList(String branchId, String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
+        String key = getKeyForGetProductVisibleList(pageRequest, branchId, keyword, minPrice, maxPrice, minStar);
         String json = (String) redisTemplate.opsForValue().get(key);
         return json != null ? redisObjectMapper.readValue(json, new TypeReference<GetProductCardListResponse>() {
         }) : null;
     }
 
-    public void saveProductVisibleList(GetProductCardListResponse productEntityList, String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
-        String key = getKeyForGetProductVisibleList(pageRequest, keyword, minPrice, maxPrice, minStar);
+    public void saveProductVisibleList(GetProductCardListResponse productEntityList, String branchId, String keyword, PageRequest pageRequest, Long minPrice, Long maxPrice, Integer minStar) throws JsonProcessingException {
+        String key = getKeyForGetProductVisibleList(pageRequest, branchId, keyword, minPrice, maxPrice, minStar);
         String json = redisObjectMapper.writeValueAsString(productEntityList);
         redisTemplate.opsForValue().set(key, json);
 
@@ -60,18 +60,18 @@ public class ProductRedisService {
     }
 
     // product view
-    private String getKeyForGetProductView(String productId) {
-        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VIEW, productId);
+    private String getKeyForGetProductView(String productId, String branchId) {
+        return String.format(STRING_FORMAT_KEY_GET_PRODUCT_VIEW, branchId, productId);
     }
 
-    public void saveProductView(GetProductViewByIdResponse product) throws JsonProcessingException {
-        String key = getKeyForGetProductView(product.getId());
+    public void saveProductView(GetProductViewByIdResponse product, String branchId) throws JsonProcessingException {
+        String key = getKeyForGetProductView(product.getId(), branchId);
         String json = redisObjectMapper.writeValueAsString(product);
         redisTemplate.opsForValue().set(key, json);
     }
 
-    public GetProductViewByIdResponse getProductView(String productId) throws JsonProcessingException {
-        String key = getKeyForGetProductView(productId);
+    public GetProductViewByIdResponse getProductView(String productId, String branchId) throws JsonProcessingException {
+        String key = getKeyForGetProductView(productId, branchId);
         String json = (String) redisTemplate.opsForValue().get(key);
         return json != null ? redisObjectMapper.readValue(json, new TypeReference<GetProductViewByIdResponse>() {
         }) : null;

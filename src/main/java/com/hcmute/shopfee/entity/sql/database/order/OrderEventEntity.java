@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import jakarta.persistence.*;
@@ -12,8 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
-
 @Entity
 @Table(name = "order_event")
 @Builder
@@ -24,7 +23,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners({AuditingEntityListener.class}) //, OrderEventListener.class
 public class OrderEventEntity {
     @Id
-    @GenericGenerator(name = "order_event_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "order_event_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "order_event_id")
     private String id;
 

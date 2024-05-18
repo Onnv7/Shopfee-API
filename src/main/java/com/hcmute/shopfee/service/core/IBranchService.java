@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 public interface IBranchService {
     void createBranch(CreateBranchRequest body) throws ExecutionException, InterruptedException;
     void updateBranchById(UpdateBranchRequest body, String id);
-    void deleteBranchById(String id);
+    void deleteBranchById(String branchId);
     GetAllBranchResponse getBranchList(int page, int size);
     GetBranchNearestResponse getBranchNearest(Double latitude, Double longitude, Time time);
     GetBranchDetailByIdResponse getBranchDetailById(String branchId);

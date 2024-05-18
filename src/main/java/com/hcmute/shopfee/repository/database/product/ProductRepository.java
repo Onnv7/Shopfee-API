@@ -54,7 +54,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             	join item_detail id ON oi.id = id.order_item_id
             	join product p on p.id = oi.product_id
             	join order_bill ob on ob.id = oi.order_bill_id
-            	where p.status != 'HIDDEN'
+            	where p.status != 'INACTIVE'
             		and ob.created_at >= DATE_SUB(CURDATE(), INTERVAL 4 WEEK)
             		and DATE_FORMAT(ob.created_at, '%Y-%m-%d') <= CURDATE()
             	group by oi.product_id
@@ -72,10 +72,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             	from product p
             	join order_item oi on p.id = oi.product_id
             	join product_review pr on oi.product_review_id = pr.id
-            	where p.status != 'HIDDEN'
+            	where p.status != 'INACTIVE'
             	group by p.id
             ) as top_product on p.id = top_product.id
-            where p.status != 'HIDDEN'
+            where p.status != 'INACTIVE'
             order by top_product.star desc
             limit ?1
             """, nativeQuery = true)
@@ -97,7 +97,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             			from product p
             			where p.category_id = ?1
             			and (p.price between ?2 and ?3 or ?2 is null or ?3 is null)
-            			and p.status != 'HIDDEN') as product
+            			and p.status != 'INACTIVE') as product
             			left join order_item oi on oi.product_id = product.id
             			left join product_review pr on oi.product_review_id = pr.id
             			group by product.id ) as prd on prd.product_id = p.id
@@ -112,7 +112,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             join (select product.id as product_id, COALESCE(avg(pr.star), 0) as star
                   from (select *
                         from product p
-                        where (p.price between ?1 and ?2  or ?1 is null or ?2 is null) and p.status != 'HIDDEN') as product
+                        where (p.price between ?1 and ?2  or ?1 is null or ?2 is null) and p.status != 'INACTIVE') as product
                         left join order_item oi on oi.product_id = product.id
                         left join product_review pr on oi.product_review_id = pr.id
                         group by product.id ) as prd on prd.product_id = p.id

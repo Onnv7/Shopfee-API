@@ -13,7 +13,7 @@ public interface ProductSearchRepository extends ElasticsearchRepository<Product
     {
         "bool":{
             "must_not":[
-                { "match":{ "status":"HIDDEN" } }
+                { "match":{ "status":"INACTIVE" } }
               ],
             "must":[
                 {

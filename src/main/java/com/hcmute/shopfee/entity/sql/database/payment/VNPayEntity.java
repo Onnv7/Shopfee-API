@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
+import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "vnpay")
@@ -18,7 +18,7 @@ import static com.hcmute.shopfee.constant.EntityConstant.TIME_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class VNPayEntity {
     @Id
-    @GenericGenerator(name = "vnpay_id", strategy = TIME_ID_GENERATOR)
+    @GenericGenerator(name = "vnpay_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "vnpay_id")
     private String id;
 

@@ -29,8 +29,8 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class EmployeeEntity {
     @Id
-//    @GenericGenerator(name = "employee_id", strategy = TIME_ID_GENERATOR)
-    @GenericGenerator(name = "employee_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+//    @GenericGenerator(name = "employee_id", type = IdGenerator.class)
+    @GenericGenerator(name = "employee_id", type = StringPrefixedSequenceGenerator.class, parameters = {
             @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
             @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "E"),
             @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")

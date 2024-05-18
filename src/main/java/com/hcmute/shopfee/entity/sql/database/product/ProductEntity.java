@@ -4,13 +4,14 @@ package com.hcmute.shopfee.entity.sql.database.product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.dto.common.RatingSummaryDto;
-import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
-import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
+import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.listener.ProductListener;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -21,6 +22,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 
@@ -31,11 +33,10 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @EntityListeners({AuditingEntityListener.class, ProductListener.class})
 public class ProductEntity {
     @Id
-    @GenericGenerator(name = "product_id", strategy = SEQUENCE_ID_GENERATOR, parameters = {
+    @GenericGenerator(name = "product_id", type = StringPrefixedSequenceGenerator.class, parameters = {
             @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
             @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "P"),
             @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d")
@@ -66,7 +67,6 @@ public class ProductEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
 
-    //    private boolean enabled = true;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, columnDefinition = "varchar(255) default 'HIDDEN'")
@@ -97,5 +97,14 @@ public class ProductEntity {
     @JsonManagedReference
     @ToString.Exclude
     private List<OrderItemEntity> orderItemList;
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.REMOVE})
+    @JsonManagedReference
+    private List<BranchProductEntity> branchProductList;
+
+    public BranchProductEntity getBranchProduct(String branchId) {
+        return this.branchProductList.stream().filter(it -> it.getBranch().getId().equals(branchId)).findFirst()
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND));
+    }
 
 }
