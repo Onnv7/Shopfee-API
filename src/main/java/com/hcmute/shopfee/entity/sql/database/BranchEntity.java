@@ -35,8 +35,8 @@ public class BranchEntity {
     @GeneratedValue(generator = "branch_id")
     private String id;
 
-    @Column(name = "image_id", nullable = false)
-    private String imageId;
+    @Column(name = "cloudinary_image_id", nullable = false)
+    private String cloudinaryImageId;
 
     @Column(name = "image_url", nullable = false)
     private String imageUrl;

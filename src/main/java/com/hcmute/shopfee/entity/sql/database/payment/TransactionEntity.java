@@ -30,10 +30,10 @@ public class TransactionEntity {
     @GeneratedValue(generator = "transaction_id")
     private String id;
 
-    @OneToOne
-    @JoinColumn(name = "order_bill_id", nullable = false)
-    @JsonBackReference
-    private OrderBillEntity orderBill;
+//    @OneToOne
+//    @JoinColumn(name = "order_bill_id", nullable = false)
+//    @JsonBackReference
+//    private OrderBillEntity orderBill;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -65,4 +65,9 @@ public class TransactionEntity {
     @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private ZaloPayEntity zaloPay;
+
+
+    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private OrderBillEntity orderBill;
 }

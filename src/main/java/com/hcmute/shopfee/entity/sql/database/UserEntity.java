@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.sql.database;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.UserRole;
 import com.hcmute.shopfee.enums.UserStatus;
@@ -97,6 +98,7 @@ public class UserEntity {
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<UserFCMTokenEntity> userFcmTokenList;
+
     public String getFullName() {
         return firstName + " " + lastName;
     }

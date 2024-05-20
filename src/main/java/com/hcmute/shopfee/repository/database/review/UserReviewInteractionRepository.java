@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database.review;
 
-import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
+import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionID;
 import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserReviewInteractionRepository extends JpaRepository<UserReviewInteractionEntity, UserProductReviewInteractionPK> {
+public interface UserReviewInteractionRepository extends JpaRepository<UserReviewInteractionEntity, UserProductReviewInteractionID> {
     Optional<UserReviewInteractionEntity> findByUserIdAndProductReviewId(String userId, String productReviewId);
     List<UserReviewInteractionEntity> findByProductReviewIdAndInteraction(String productReviewId, ReviewInteraction interaction);
 }

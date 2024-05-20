@@ -158,7 +158,7 @@ public class ToolController {
                 .openTime(Time.valueOf("07:00:00"))
                 .closeTime(Time.valueOf("20:00:00"))
                 .status(BranchStatus.ACTIVE)
-                .imageId("imageId")
+                .cloudinaryImageId("imageId")
                 .imageUrl("imageUrl")
                 .name("HCM Vo Van Ngan")
                 .phoneNumber(PHONE_NUMBER_EX)
@@ -358,7 +358,7 @@ public class ToolController {
                 .content("Good product")
                 .orderItem(orderItemEntity)
                 .createdAt(new Date())
-                .createdBy(orderBill.getUser().getId())
+                .createdBy(userEntity2.getId())
                 .build();
         orderItemEntity.setProductReview(productReviewEntity);
         productReviewRepository.save(productReviewEntity);

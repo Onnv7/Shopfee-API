@@ -3,6 +3,7 @@ package com.hcmute.shopfee.entity.sql.database.product;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.dto.common.SizeDto;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
+import com.hcmute.shopfee.entity.sql.database.identifier.SizeID;
 import com.hcmute.shopfee.enums.ProductSize;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,12 +19,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(SizeID.class)
 public class SizeEntity {
     @Id
-    @GenericGenerator(name = "size_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "size_id")
-    private String id;
-
     @Column(name = "size", nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductSize size;
@@ -31,6 +29,7 @@ public class SizeEntity {
     @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 1000)")
     private Long price;
 
+    @Id
     @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "product_id", nullable = false)

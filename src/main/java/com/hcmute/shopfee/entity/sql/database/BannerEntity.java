@@ -29,8 +29,8 @@ public class BannerEntity {
     @Column(unique = true)
     private String name;
 
-    @Column(unique = true, name = "image_id", nullable = false)
-    private String imageId;
+    @Column(unique = true, name = "cloudinary_image_id", nullable = false)
+    private String cloudinaryImageId;
 
     @Column(name = "image_url", nullable = false)
     private String imageUrl;

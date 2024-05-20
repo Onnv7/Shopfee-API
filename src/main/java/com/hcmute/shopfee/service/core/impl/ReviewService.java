@@ -9,12 +9,11 @@ import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
 import com.hcmute.shopfee.dto.sql.GetProductReviewStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
-import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
+import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionID;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.review.UserReviewInteractionEntity;
 import com.hcmute.shopfee.enums.ActorType;
-import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.enums.param.ReviewSortType;
@@ -85,14 +84,15 @@ public class ReviewService implements IReviewService {
         SecurityUtils.checkUserId(body.getUserId());
         ProductReviewEntity productReviewEntity = productReviewRepository.findById(productReviewId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_REVIEW_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + productReviewId));
-
+        UserEntity user = userRepository.findById(body.getUserId())
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getUserId()));
         UserReviewInteractionEntity entity = userReviewInteractionRepository.findByUserIdAndProductReviewId(body.getUserId(), productReviewId)
                 .orElse(null);
         if (entity == null) {
             entity = new UserReviewInteractionEntity();
-            entity.setId(new UserProductReviewInteractionPK(body.getUserId(), productReviewId));
+            entity.setId(new UserProductReviewInteractionID(body.getUserId(), productReviewId));
             entity.setInteraction(body.getInteraction());
-            entity.setUserId(body.getUserId());
+            entity.setUser(user);
             entity.setProductReview(productReviewEntity);
             userReviewInteractionRepository.save(entity);
         } else {
@@ -134,8 +134,8 @@ public class ReviewService implements IReviewService {
 
             ReviewInteraction interaction = null;
             if (userId != null) {
-                UserReviewInteractionEntity userDisliked = userDislikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
-                UserReviewInteractionEntity userLiked = userLikeList.stream().filter(it -> Objects.equals(it.getUserId(), userId)).findFirst().orElse(null);
+                UserReviewInteractionEntity userDisliked = userDislikeList.stream().filter(it -> Objects.equals(it.getId().getUserId(), userId)).findFirst().orElse(null);
+                UserReviewInteractionEntity userLiked = userLikeList.stream().filter(it -> Objects.equals(it.getId().getUserId(), userId)).findFirst().orElse(null);
                 if (userDisliked != null) {
                     interaction = ReviewInteraction.DISLIKE;
                 } else if (userLiked != null) {

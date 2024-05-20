@@ -13,7 +13,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserProductReviewInteractionPK implements Serializable {
+public class UserProductReviewInteractionID implements Serializable {
     @Column(name = "user_id", nullable = false)
     private String userId;
     @Column(name = "product_review_id", nullable = false)
@@ -23,7 +23,7 @@ public class UserProductReviewInteractionPK implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserProductReviewInteractionPK that = (UserProductReviewInteractionPK) o;
+        UserProductReviewInteractionID that = (UserProductReviewInteractionID) o;
         return Objects.equals(userId, that.userId) &&
                 Objects.equals(productReviewId, that.productReviewId);
     }

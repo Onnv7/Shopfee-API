@@ -1,7 +1,8 @@
 package com.hcmute.shopfee.entity.sql.database.review;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionPK;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionID;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,15 +19,21 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 //@IdClass(UserProductReviewInteractionPK.class)
 public class UserReviewInteractionEntity {
     @EmbeddedId
-    private UserProductReviewInteractionPK id;
+    private UserProductReviewInteractionID id;
 
-    @MapsId("user_id")
-    @Column(name = "user_id", nullable = false, insertable=false, updatable=false)
-    private String userId;
+//    @MapsId("user_id")
+//    @Column(name = "user_id", nullable = false, insertable=false, updatable=false)
+//    private String userId;
 
-    @MapsId("product_review_id")
+    @MapsId("userId")
     @ManyToOne
-    @JoinColumn(name = "product_review_id", insertable=false, updatable=false)
+    @JoinColumn(name = "user_id", updatable=false)
+    @JsonBackReference
+    private UserEntity user;
+
+    @MapsId("productReviewId")
+    @ManyToOne
+    @JoinColumn(name = "product_review_id", updatable=false)
     @JsonBackReference
     private ProductReviewEntity productReview;
 

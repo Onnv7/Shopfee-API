@@ -41,7 +41,7 @@ public class BannerService implements IBannerService {
                     body.getImage().getBytes()
             );
             banner.setImageUrl(bannerImage.getUrl());
-            banner.setImageId(bannerImage.getPublicId());
+            banner.setCloudinaryImageId(bannerImage.getPublicId());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +58,7 @@ public class BannerService implements IBannerService {
         if(body.getImage() != null) {
             try {
                 // TODO: kiểm tra lại tính transaction khi xóa thành công -> upload new không thành công
-                cloudinaryService.deleteImage(bannerEntity.getImageId());
+                cloudinaryService.deleteImage(bannerEntity.getCloudinaryImageId());
 
                 CloudinaryUploadResponse bannerImage = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.BANNER_PATH,
@@ -67,7 +67,7 @@ public class BannerService implements IBannerService {
                 );
 
                 bannerEntity.setImageUrl(bannerImage.getUrl());
-                bannerEntity.setImageId(bannerImage.getPublicId());
+                bannerEntity.setCloudinaryImageId(bannerImage.getPublicId());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

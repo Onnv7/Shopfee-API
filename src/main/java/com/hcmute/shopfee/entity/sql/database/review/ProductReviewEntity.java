@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.review;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -76,6 +76,11 @@ public class OrderBillEntity {
     @JsonBackReference
     private BranchEntity branch;
 
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "transaction_id", nullable = false)
+    @JsonBackReference
+    private TransactionEntity transaction;
+
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     @Column(name = "created_at")
@@ -104,9 +109,9 @@ public class OrderBillEntity {
     @JsonManagedReference
     private ReceiverInformationEntity receiverInformation;
 
-    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonManagedReference
-    private TransactionEntity transaction;
+//    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @JsonManagedReference
+//    private TransactionEntity transaction;
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

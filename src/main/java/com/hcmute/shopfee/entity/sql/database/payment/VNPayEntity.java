@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.payment;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.identifier.ChildTransactionID;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -17,10 +18,8 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class VNPayEntity {
-    @Id
-    @GenericGenerator(name = "vnpay_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "vnpay_id")
-    private String id;
+    @EmbeddedId
+    private ChildTransactionID id;
 
     @Column(name = "payment_url", columnDefinition = "TEXT")
     private String paymentUrl;
@@ -31,7 +30,8 @@ public class VNPayEntity {
     @Column(name = "time_code")
     private String timeCode;
 
-    @OneToOne//(cascade = {CascadeType.MERGE})
+    @MapsId("transactionId")
+    @OneToOne
     @JoinColumn(name = "transaction_id", nullable = false)
     @JsonBackReference
     private TransactionEntity transaction;

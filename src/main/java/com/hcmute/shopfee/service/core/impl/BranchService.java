@@ -99,7 +99,7 @@ public class BranchService implements IBranchService {
                     StringUtils.generateFileName(body.getName(), "branch"),
                     originalImage
             );
-            branch.setImageId(imageUploaded.getPublicId());
+            branch.setCloudinaryImageId(imageUploaded.getPublicId());
             branch.setImageUrl(imageUploaded.getUrl());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -129,7 +129,7 @@ public class BranchService implements IBranchService {
                         StringUtils.generateFileName(body.getName(), "branch"),
                         originalImage
                 );
-                branch.setImageId(imageUploaded.getPublicId());
+                branch.setCloudinaryImageId(imageUploaded.getPublicId());
                 branch.setImageUrl(imageUploaded.getUrl());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -149,7 +149,7 @@ public class BranchService implements IBranchService {
 
         branchRepository.deleteById(branchId);
         try {
-            cloudinaryService.deleteImage(branch.getImageId());
+            cloudinaryService.deleteImage(branch.getCloudinaryImageId());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
