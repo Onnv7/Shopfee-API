@@ -3,10 +3,7 @@ package com.hcmute.shopfee.statemachine;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
-import com.hcmute.shopfee.enums.ActorType;
-import com.hcmute.shopfee.enums.OrderStatus;
-import com.hcmute.shopfee.enums.OrderType;
-import com.hcmute.shopfee.enums.Role;
+import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
@@ -103,8 +100,8 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
             Optional.ofNullable(context.getMessage()).ifPresent(msg -> {
                 OrderStatus orderStatus = context.getTarget().getId();
                 String note = msg.getHeaders().getOrDefault(NOTE_HEADER, null).toString();
-                ActorType actorType = SecurityUtils.getRoleList().contains(Role.ROLE_USER.name()) ? ActorType.USER :
-                        SecurityUtils.getRoleList().contains(Role.ROLE_WAITER.name()) ? ActorType.EMPLOYEE : ActorType.AUTOMATIC;
+                ActorType actorType = SecurityUtils.getRoleList().contains(UserRole.ROLE_USER.name()) ? ActorType.USER :
+                        SecurityUtils.getRoleList().contains(EmployeeRole.ROLE_WAITER.name()) ? ActorType.EMPLOYEE : ActorType.AUTOMATIC;
                 Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_ID_HEADER, ""))
                         .ifPresent(orderId -> {
                             OrderBillEntity orderBill = orderBillRepository.findById(orderId.toString())

@@ -13,8 +13,8 @@ import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeFCMTokenEntity;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
-import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.BranchRepository;
@@ -113,7 +113,7 @@ public class EmployeeService implements IEmployeeService {
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + employeeId));
         BranchEntity branchEntity = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
-        if (SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
+        if (SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
             EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
             if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
@@ -165,7 +165,7 @@ public class EmployeeService implements IEmployeeService {
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + id));
 
-        if (SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
+        if (SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
             EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
             if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {

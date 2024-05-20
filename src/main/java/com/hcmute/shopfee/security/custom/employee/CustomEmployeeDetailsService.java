@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,12 +28,7 @@ public class CustomEmployeeDetailsService implements UserDetailsService {
         EmployeeEntity employee = employeeService.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND));
 
-
-        List<String> roleNames = employee.getRoleList()
-                .stream()
-                .map(it -> it.getRoleName().name())
-                .toList();
-
+        List<String> roleNames = Collections.singletonList(employee.getRole().name());
         List<SimpleGrantedAuthority> authorities = roleNames.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());

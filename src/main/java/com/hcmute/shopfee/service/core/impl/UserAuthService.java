@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.enums.UserRole;
 import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.LoginResponse;
@@ -14,17 +15,14 @@ import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
 import com.hcmute.shopfee.dto.response.RegisterResponse;
 import com.hcmute.shopfee.entity.sql.database.ConfirmationEntity;
 import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
-import com.hcmute.shopfee.entity.sql.database.RoleEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
-import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.enums.UserStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.kafka.publisher.MailerKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.ConfirmationRepository;
 import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
-import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.repository.database.UserRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.user.UserUsernamePasswordAuthenticationToken;
@@ -61,7 +59,6 @@ public class UserAuthService implements IUserAuthService {
     private final ModelMapperService modelMapperService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
     private final UserTokenRedisService userTokenRedisService;
     private final ConfirmationRepository confirmationRepository;
@@ -103,16 +100,11 @@ public class UserAuthService implements IUserAuthService {
         modelMapperService.map(userEntity, resData);
 
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-
-        Set<RoleEntity> roleList = new HashSet<>();
-        RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + Role.ROLE_USER));
-        roleList.add(userRole);
-        userEntity.setRoleList(roleList);
+        userEntity.setRole(UserRole.ROLE_USER);
         userEntity.setStatus(UserStatus.ACTIVE);
 //        userEntity.setCoin(0L);
         userEntity = userRepository.save(userEntity);
-        List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
+        List<String> roleNameList = Collections.singletonList(userEntity.getRole().name());
         var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
         var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
 
@@ -146,15 +138,12 @@ public class UserAuthService implements IUserAuthService {
                     .lastName(lastname)
                     .build();
 
-            Set<RoleEntity> roleList = new HashSet<>();
-            RoleEntity userRole = roleRepository.findByRoleName(Role.ROLE_USER)
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + Role.ROLE_USER));
-            roleList.add(userRole);
-            userEntity.setRoleList(roleList);
+
+            userEntity.setRole(UserRole.ROLE_USER);
             userEntity.setStatus(UserStatus.ACTIVE);
 
             userEntity = userRepository.save(userEntity);
-            List<String> roleNameList = roleList.stream().map(it -> it.getRoleName().name()).toList();
+            List<String> roleNameList = Collections.singletonList(userEntity.getRole().name());
 
             var accessToken = jwtService.issueAccessToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
             var refreshToken = jwtService.issueRefreshToken(userEntity.getId(), userEntity.getEmail(), roleNameList);
@@ -223,7 +212,7 @@ public class UserAuthService implements IUserAuthService {
             String userId = user.getId();
             String username = user.getEmail();
 
-            List<String> roles = List.of(Role.ROLE_USER.name());
+            List<String> roles = List.of(UserRole.ROLE_USER.name());
 
             var accessToken = jwtService.issueAccessToken(userId, username, roles);
             String refreshToken = jwtService.issueRefreshToken(userId, username, roles);

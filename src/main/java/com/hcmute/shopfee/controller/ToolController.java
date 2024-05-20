@@ -116,7 +116,6 @@ public class ToolController {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final ProductReviewRepository productReviewRepository;
-    private final RoleRepository roleRepository;
     private final VNPayService vnPayService;
     private final CallbackService callbackService;
     private final ZaloPayService zaloPayService;
@@ -235,10 +234,7 @@ public class ToolController {
         branchProductEntity.setStatus(BranchProductStatus.AVAILABLE);
         branchProductRepository.save(branchProductEntity);
 
-        Set<RoleEntity> userRole = new HashSet<>();
-        RoleEntity role = roleRepository.findByRoleName(Role.ROLE_USER)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + "Role with name"));
-        userRole.add(role);
+
 
 
         UserEntity userEntity = UserEntity.builder()
@@ -249,7 +245,7 @@ public class ToolController {
 //                .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-11"))
                 .status(UserStatus.ACTIVE)
-                .roleList(userRole)
+                .role(UserRole.ROLE_USER)
                 .build();
         userRepository.save(userEntity);
         UserEntity userEntity2 = UserEntity.builder()
@@ -260,7 +256,7 @@ public class ToolController {
 //                .coin(0L)
                 .birthDate(java.sql.Date.valueOf("2002-06-12"))
                 .status(UserStatus.ACTIVE)
-                .roleList(userRole)
+                .role(UserRole.ROLE_USER)
                 .build();
         userRepository.save(userEntity2);
         AddressEntity addressEntity = AddressEntity.builder()
@@ -275,16 +271,12 @@ public class ToolController {
                 .build();
         addressRepository.save(addressEntity);
 
-        Set<RoleEntity> employeeRoleList = new HashSet<>();
-        RoleEntity employeeRole = roleRepository.findByRoleName(Role.ROLE_WAITER)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + "Role with name"));
-        employeeRoleList.add(employeeRole);
         EmployeeEntity employee = EmployeeEntity.builder()
                 .username("nva6112002")
                 .password(passwordEncoder.encode("112233"))
                 .firstName("an")
                 .lastName("nguyen")
-                .roleList(employeeRoleList)
+                .role(EmployeeRole.ROLE_WAITER)
                 .status(EmployeeStatus.ACTIVE)
                 .branch(branchEntity)
                 .isDeleted(false)

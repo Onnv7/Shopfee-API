@@ -2,12 +2,11 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
-import com.hcmute.shopfee.enums.Role;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IEmployeeAuthService;
 import com.hcmute.shopfee.utils.HeaderUtils;
@@ -87,8 +86,8 @@ public class EmployeeAuthController {
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
     @PostMapping(path = POST_EMPLOYEE_AUTH_REGISTER_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
-    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") Role role) {
-        employeeAuthService.employeeRegister(body, role);
+    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") EmployeeRole employeeRole) {
+        employeeAuthService.employeeRegister(body, employeeRole);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
                 .message(SuccessConstant.CREATED)

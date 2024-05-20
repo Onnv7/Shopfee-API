@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.utils;
 
-import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.enums.Role;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
@@ -41,8 +40,8 @@ public class SecurityUtils {
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(Object::toString).toList();
     }
 
-    public static boolean isOnlyRole(Role roleName) {
+    public static boolean isOnlyRole(EmployeeRole employeeRoleName) {
         List<String> roles = getRoleList();
-        return roles.size() == 1 && roles.get(0).equals(roleName.name());
+        return roles.size() == 1 && roles.get(0).equals(employeeRoleName.name());
     }
 }

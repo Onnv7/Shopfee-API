@@ -3,8 +3,10 @@ package com.hcmute.shopfee.entity.sql.database;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
+import com.hcmute.shopfee.enums.UserRole;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Parameter;
 import lombok.*;
@@ -81,11 +83,9 @@ public class EmployeeEntity {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "employee_role",
-            joinColumns = @JoinColumn(name = "employee_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleEntity> roleList;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EmployeeRole role;
 
     @ManyToOne
     @JoinColumn(name = "branch_id")

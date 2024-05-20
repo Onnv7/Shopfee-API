@@ -9,15 +9,13 @@ import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.EmployeeLoginResponse;
 import com.hcmute.shopfee.dto.response.RefreshEmployeeTokenResponse;
 import com.hcmute.shopfee.entity.sql.database.*;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
-import com.hcmute.shopfee.enums.Role;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
-import com.hcmute.shopfee.entity.redis.EmployeeTokenEntity;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.EmployeeFCMTokenRepository;
 import com.hcmute.shopfee.repository.database.EmployeeRepository;
-import com.hcmute.shopfee.repository.database.RoleRepository;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.employee.EmployeeUsernamePasswordAuthenticationToken;
 import com.hcmute.shopfee.service.core.IEmployeeAuthService;
@@ -37,12 +35,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import static com.hcmute.shopfee.constant.ErrorConstant.*;
 import static com.hcmute.shopfee.service.common.JwtService.ROLES_CLAIM_KEY;
 
 @Service
@@ -59,8 +54,6 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
-    @Autowired
-    private RoleRepository roleRepository;
     private void updateFcmTokenById(String fcmTokenId, EmployeeEntity employee) throws ExecutionException, InterruptedException {
         if(fcmTokenId == null) {
             return;
@@ -161,14 +154,14 @@ public class EmployeeAuthService implements IEmployeeAuthService {
     }
 
     @Override
-    public void employeeRegister(CreateEmployeeRequest body, Role roleName) {
+    public void employeeRegister(CreateEmployeeRequest body, EmployeeRole employeeRoleName) {
         List<String> roles = SecurityUtils.getRoleList();
         // manager không thể tạo manager khác
-        if(!roles.contains(Role.ROLE_ADMIN.name()) && roleName == Role.ROLE_MANAGER) {
+        if(!roles.contains(EmployeeRole.ROLE_ADMIN.name()) && employeeRoleName == EmployeeRole.ROLE_MANAGER) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN, "Managers cannot create another manager account");
         }
 
-        if(SecurityUtils.isOnlyRole(Role.ROLE_MANAGER)) {
+        if(SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
             EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
             // manager không được tạo emlpyee cho chi nhánh khác
@@ -186,11 +179,7 @@ public class EmployeeAuthService implements IEmployeeAuthService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Username account registered");
         }
 
-        Set<RoleEntity> employeeRole = new HashSet<>();
-        RoleEntity role = roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ROLE_NOT_FOUND, ErrorConstant.NOT_FOUND + roleName));
-        employeeRole.add(role);
-        employeeData.setRoleList(employeeRole);
+        employeeData.setRole(employeeRoleName);
 
         BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
