@@ -7,7 +7,7 @@ import java.sql.Time;
 
 @Data
 public class GetBranchDetailByIdResponse {
-    private Long id;
+    private String id;
     private String name;
     private String phoneNumber;
     private String imageUrl;

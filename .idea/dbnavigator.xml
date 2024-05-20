@@ -27,7 +27,9 @@ from shopfee.branch]]></console>
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="8729d6fc-8efc-43f7-be32-e669e2d643e1" object-ref="consoles/Connection" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="8729d6fc-8efc-43f7-be32-e669e2d643e1" />

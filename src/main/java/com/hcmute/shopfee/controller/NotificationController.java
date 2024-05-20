@@ -69,7 +69,7 @@ public class NotificationController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
     @Operation(summary = NOTIFICATION_UPDATE_SUM)
-    @PostMapping(path = PUT_NOTIFICATION_UPDATE_SUB_PATH)
+    @PutMapping(path = PUT_NOTIFICATION_UPDATE_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
     public ResponseEntity<ResponseAPI<?>> updateNotification(@PathVariable(NOTIFICATION_ID) String notificationId, @RequestBody @Valid UpsertNotificationFCMRequest body) {
         notificationService.updateNotification(notificationId, body);
