@@ -9,7 +9,6 @@ import com.hcmute.shopfee.enums.UsageConditionType;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -61,7 +60,7 @@ public class CheckCouponInCartResponse {
         private Short quantity;
         private static CheckCouponInCartResponse.ProductGift fromProductRewardEntity(ProductRewardEntity entity) {
             CheckCouponInCartResponse.ProductGift data = new CheckCouponInCartResponse.ProductGift();
-            data.setProductId(entity.getProductId());
+            data.setProductId(entity.getId().getProductId());
             data.setProductSize(entity.getProductSize());
             data.setProductName(entity.getProductName());
             data.setQuantity(entity.getQuantity());

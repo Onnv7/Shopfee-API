@@ -1,7 +1,8 @@
 package com.hcmute.shopfee.entity.sql.database.coupon_used.reward;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.MoneyRewardReceivedID;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import jakarta.persistence.*;
@@ -16,10 +17,13 @@ import org.hibernate.annotations.GenericGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MoneyRewardReceivedEntity {
-    @Id
-    @GenericGenerator(name = "money_reward_received_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "money_reward_received_id")
-    private String id;
+//    @Id
+//    @GenericGenerator(name = "money_reward_received_id", type = RandomTimeGenerator.class)
+//    @GeneratedValue(generator = "money_reward_received_id")
+//    private String id;
+
+    @EmbeddedId
+    private MoneyRewardReceivedID id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
@@ -29,7 +33,8 @@ public class MoneyRewardReceivedEntity {
     private Integer value;
 
     @OneToOne
-    @JoinColumn(name = "coupon_reward_received_id")
+    @MapsId("coupon_used_id")
+    @JoinColumn(name = "coupon_used_id", referencedColumnName = "coupon_id")
     @JsonBackReference
-    private CouponRewardReceivedEntity couponRewardReceived;
+    private CouponUsedEntity couponUsed;
 }

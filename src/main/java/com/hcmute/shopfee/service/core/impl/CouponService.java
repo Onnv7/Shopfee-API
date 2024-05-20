@@ -54,6 +54,9 @@ public class CouponService implements ICouponService {
     private final ProductRewardRepository productRewardRepository;
     private final SubjectConditionRepository subjectConditionRepository;
 
+    private boolean isExistedCouponCode(String couponCode) {
+        return couponRepository.findByCodeAndIsDeletedFalse(couponCode).orElse(null) != null;
+    }
     private List<CouponConditionEntity> getCouponConditionList(
             List<UsageConditionDto> usageConditionDtoList, MinPurchaseConditionDto minPurchaseConditionDto,
             List<CombinationConditionDto> combinationConditionDtoList, List<SubjectConditionDto> subjectConditionDtoList, CouponEntity couponEntity) {
@@ -157,6 +160,9 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createShippingCoupon(CreateShippingCouponRequest body) {
+        if(isExistedCouponCode(body.getCode())) {
+            throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
+        }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(CouponStatus.RELEASED);
@@ -367,6 +373,9 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createOrderCoupon(CreateOrderCouponRequest body) {
+        if(isExistedCouponCode(body.getCode())) {
+            throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
+        }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(CouponStatus.RELEASED);
@@ -423,6 +432,9 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createAmountOffProductCoupon(CreateProductMoneyCouponRequest body) {
+        if(isExistedCouponCode(body.getCode())) {
+            throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
+        }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
@@ -481,6 +493,9 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createGiftProductCoupon(CreateBuyXGetYCouponRequest body) {
+        if(isExistedCouponCode(body.getCode())) {
+            throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
+        }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
@@ -491,7 +506,7 @@ public class CouponService implements ICouponService {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
-                    .productId(reward.getProductId())
+                    .product(product)
                     .productSize(reward.getProductSize())
                     .productName(product.getName())
                     .quantity(reward.getQuantity())
@@ -505,7 +520,6 @@ public class CouponService implements ICouponService {
 
         // Saving coupon
         couponEntity.setConditionList(couponConditionEntityList);
-        System.out.println(couponEntity);
         couponRepository.save(couponEntity);
     }
 
@@ -534,7 +548,7 @@ public class CouponService implements ICouponService {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
-                    .productId(reward.getProductId())
+                    .product(product)
                     .productSize(reward.getProductSize())
                     .productName(product.getName())
                     .quantity(reward.getQuantity())

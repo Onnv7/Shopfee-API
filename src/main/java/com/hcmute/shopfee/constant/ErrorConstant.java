@@ -15,6 +15,7 @@ public class ErrorConstant {
     // sub err =================================================
     public static final String COUPON_INVALID = "Coupon is invalid";
     public static final String IMAGE_INVALID = "Invalid image";
+    public static final String COUPON_CODE_EXISTED = "Coupon code already exists";
     public static final String USER_NOT_FOUND = "User data not found";
     public static final String USER_TOKEN_NOT_FOUND = "User's token with user's id ";
     public static final String EMPLOYEE_TOKEN_NOT_FOUND = "Employee's token with employee's id ";

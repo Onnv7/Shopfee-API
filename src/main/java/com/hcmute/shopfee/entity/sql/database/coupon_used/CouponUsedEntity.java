@@ -3,12 +3,17 @@ package com.hcmute.shopfee.entity.sql.database.coupon_used;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.MoneyRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
+import com.hcmute.shopfee.enums.CouponRewardType;
 import com.hcmute.shopfee.enums.CouponType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.List;
 
 
 @Entity
@@ -40,9 +45,18 @@ public class CouponUsedEntity {
     @JsonBackReference
     private CouponEntity coupon;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reward_type", nullable = false)
+    private CouponRewardType rewardType;
+
     // =================================================
+
     @OneToOne(mappedBy = "couponUsed", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
-    private CouponRewardReceivedEntity couponRewardReceived;
+    private MoneyRewardReceivedEntity moneyRewardReceived;
+
+    @OneToMany(mappedBy = "couponUsed", cascade = {CascadeType.PERSIST})
+    @JsonManagedReference
+    private List<ProductRewardReceivedEntity> productRewardReceivedList;
 
 }

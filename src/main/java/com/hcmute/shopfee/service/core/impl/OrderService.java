@@ -13,7 +13,6 @@ import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.SubjectConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEntity;
-import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.MoneyRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
@@ -368,35 +367,31 @@ public class OrderService implements IOrderService {
                 .coupon(coupon)
                 .type(CouponType.ORDER)
                 .build();
-        CouponRewardReceivedEntity couponRewardReceived = new CouponRewardReceivedEntity();
 
         if (coupon.getRewardType() == CouponRewardType.MONEY) {
             MoneyRewardReceivedEntity moneyRewardReceived = MoneyRewardReceivedEntity.builder()
                     .unit(coupon.getMoneyReward().getUnit())
                     .value(coupon.getMoneyReward().getValue())
-                    .couponRewardReceived(couponRewardReceived)
+                    .couponUsed(couponUsed)
                     .build();
-            couponRewardReceived.setMoneyRewardReceived(moneyRewardReceived);
-            couponRewardReceived.setType(CouponRewardType.MONEY);
-            couponRewardReceived.setCouponUsed(couponUsed);
+            couponUsed.setRewardType(CouponRewardType.MONEY);
+            couponUsed.setMoneyRewardReceived(moneyRewardReceived);
         } else if (coupon.getRewardType() == CouponRewardType.PRODUCT_GIFT) {
             List<ProductRewardReceivedEntity> productRewardList = new ArrayList<>();
             coupon.getProductRewardList().forEach(productGift -> {
-
                 ProductRewardReceivedEntity productRewardReceived = ProductRewardReceivedEntity.builder()
-                        .productId(productGift.getProductId())
-                        .couponRewardReceived(couponRewardReceived)
+                        .product(productGift.getProduct())
+                        .couponUsed(couponUsed)
                         .productSize(productGift.getProductSize())
                         .quantity(productGift.getQuantity())
                         .productName(productGift.getProductName())
                         .build();
                 productRewardList.add(productRewardReceived);
             });
-            couponRewardReceived.setType(CouponRewardType.PRODUCT_GIFT);
-            couponRewardReceived.setCouponUsed(couponUsed);
-            couponRewardReceived.setProductRewardReceivedList(productRewardList);
+            couponUsed.setRewardType(CouponRewardType.PRODUCT_GIFT);
+            couponUsed.setProductRewardReceivedList(productRewardList);
         }
-        couponUsed.setCouponRewardReceived(couponRewardReceived);
+
         return couponUsed;
     }
 
@@ -408,12 +403,12 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(orderCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
-                if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
-                    orderBill.setOrderDiscount(Long.valueOf(couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue()));
+            if (couponUsed.getRewardType() == CouponRewardType.MONEY) {
+                if (couponUsed.getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
+                    orderBill.setOrderDiscount(Long.valueOf(couponUsed.getMoneyRewardReceived().getValue()));
                     amountReduced += orderBill.getOrderDiscount();
-                } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
-                    orderBill.setOrderDiscount(orderBill.getTotalItemPrice() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
+                } else if (couponUsed.getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
+                    orderBill.setOrderDiscount(orderBill.getTotalItemPrice() * couponUsed.getMoneyRewardReceived().getValue() / 100);
                     amountReduced += orderBill.getOrderDiscount();
                 }
             }
@@ -422,13 +417,13 @@ public class OrderService implements IOrderService {
             CouponUsedEntity couponUsed = createCouponUsedEntity(shippingCouponCode);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
-            if (couponUsed.getCouponRewardReceived().getType() == CouponRewardType.MONEY) {
-                if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
-                    long shippingFeeDiscount = couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue();
+            if (couponUsed.getRewardType() == CouponRewardType.MONEY) {
+                if (couponUsed.getMoneyRewardReceived().getUnit() == MoneyRewardUnit.MONEY) {
+                    long shippingFeeDiscount = couponUsed.getMoneyRewardReceived().getValue();
                     orderBill.setShippingDiscount(orderBill.getShippingFee() <= shippingFeeDiscount ? orderBill.getShippingFee() : shippingFeeDiscount);
                     amountReduced += orderBill.getShippingDiscount();
-                } else if (couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
-                    orderBill.setShippingDiscount(orderBill.getShippingFee() * couponUsed.getCouponRewardReceived().getMoneyRewardReceived().getValue() / 100);
+                } else if (couponUsed.getMoneyRewardReceived().getUnit() == MoneyRewardUnit.PERCENTAGE) {
+                    orderBill.setShippingDiscount(orderBill.getShippingFee() * couponUsed.getMoneyRewardReceived().getValue() / 100);
                     amountReduced += orderBill.getShippingDiscount();
                 }
             }

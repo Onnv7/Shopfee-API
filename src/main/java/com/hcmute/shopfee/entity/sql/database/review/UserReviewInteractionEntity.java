@@ -20,9 +20,11 @@ public class UserReviewInteractionEntity {
     @EmbeddedId
     private UserProductReviewInteractionPK id;
 
+    @MapsId("user_id")
     @Column(name = "user_id", nullable = false, insertable=false, updatable=false)
     private String userId;
 
+    @MapsId("product_review_id")
     @ManyToOne
     @JoinColumn(name = "product_review_id", insertable=false, updatable=false)
     @JsonBackReference

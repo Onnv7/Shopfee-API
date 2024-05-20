@@ -17,7 +17,7 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="8729d6fc-8efc-43f7-be32-e669e2d643e1">
-      <console name="Connection" type="STANDARD" schema="" session="Main"><![CDATA[use shopfee
+      <console name="Connection" type="STANDARD" schema="shopfee" session="Main"><![CDATA[use shopfee
 
 select *
 from shopfee.branch]]></console>
@@ -27,9 +27,7 @@ from shopfee.branch]]></console>
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="8729d6fc-8efc-43f7-be32-e669e2d643e1" object-ref="consoles/Connection" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="8729d6fc-8efc-43f7-be32-e669e2d643e1" />

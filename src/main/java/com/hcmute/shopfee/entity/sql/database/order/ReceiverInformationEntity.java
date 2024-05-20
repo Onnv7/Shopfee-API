@@ -2,6 +2,7 @@ package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.ReceiverInformationID;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -18,10 +19,13 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReceiverInformationEntity {
-    @Id
-    @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "receiver_information_id")
-    private String id;
+//    @Id
+//    @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
+//    @GeneratedValue(generator = "receiver_information_id")
+//    private String id;
+
+    @EmbeddedId
+    private ReceiverInformationID id;
 
     @Column(name = "address")
     private String address;
@@ -45,6 +49,7 @@ public class ReceiverInformationEntity {
     private String phoneNumber;
 
     @OneToOne()
+    @MapsId("order_bill_id")
     @JoinColumn(name = "order_bill_id", nullable = false)
     @JsonBackReference
     private OrderBillEntity orderBill;

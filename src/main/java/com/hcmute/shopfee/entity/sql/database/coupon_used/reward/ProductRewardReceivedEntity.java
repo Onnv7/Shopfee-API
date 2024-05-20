@@ -1,8 +1,10 @@
 package com.hcmute.shopfee.entity.sql.database.coupon_used.reward;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponRewardReceivedEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.ProductRewardReceivedID;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -16,13 +18,19 @@ import org.hibernate.annotations.GenericGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRewardReceivedEntity {
-    @Id
-    @GenericGenerator(name = "product_reward_received_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "product_reward_received_id")
-    private String id;
+//    @Id
+//    @GenericGenerator(name = "product_reward_received_id", type = RandomTimeGenerator.class)
+//    @GeneratedValue(generator = "product_reward_received_id")
+//    private String id;
 
-    @Column(name = "product_id", nullable = false)
-    private String productId;
+    @EmbeddedId
+    private ProductRewardReceivedID id;
+
+    @MapsId("productId")
+    @OneToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    @JsonBackReference
+    private ProductEntity product;
 
     @Column(name = "quantity", nullable = false)
     private Short quantity;
@@ -34,7 +42,8 @@ public class ProductRewardReceivedEntity {
     private String productSize;
 
     @ManyToOne
-    @JoinColumn(name = "coupon_reward_received_id")
+    @MapsId("couponUsedId")
+    @JoinColumn(name = "coupon_used_id", nullable = false)
     @JsonBackReference
-    private CouponRewardReceivedEntity couponRewardReceived;
+    private CouponUsedEntity couponUsed;
 }

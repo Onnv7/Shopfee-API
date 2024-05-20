@@ -109,11 +109,11 @@ public class GetOrderByIdResponse {
         RewardInformation rewardInformation = new RewardInformation(entity.getOrderDiscount(), entity.getShippingDiscount());
         CouponUsedEntity productCoupon = entity.getCouponUsedList().stream().filter(it -> it.getType() == CouponType.PRODUCT).findFirst().orElse(null);
         if (productCoupon != null) {
-            if (productCoupon.getCouponRewardReceived().getType() == CouponRewardType.PRODUCT_GIFT) {
-                List<ProductRewardReceivedEntity> productRewardReceivedEntityList = productCoupon.getCouponRewardReceived().getProductRewardReceivedList();
+            if (productCoupon.getRewardType() == CouponRewardType.PRODUCT_GIFT) {
+                List<ProductRewardReceivedEntity> productRewardReceivedEntityList = productCoupon.getProductRewardReceivedList();
                 List<GetOrderByIdResponse.ProductGift> productGiftList = new ArrayList<>();
                 for (ProductRewardReceivedEntity productGiftEntity: productRewardReceivedEntityList) {
-                    productGiftList.add(new ProductGift(productGiftEntity.getProductId(), productGiftEntity.getProductName(), productGiftEntity.getProductSize(), productGiftEntity.getQuantity()));
+                    productGiftList.add(new ProductGift(productGiftEntity.getId().getProductId(), productGiftEntity.getProductName(), productGiftEntity.getProductSize(), productGiftEntity.getQuantity()));
                 }
                 rewardInformation.setProductGiftList(productGiftList);
             }

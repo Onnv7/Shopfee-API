@@ -1,9 +1,7 @@
 package com.hcmute.shopfee.dto.common.coupon.reward;
 
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
-import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -24,7 +22,7 @@ public class ProductRewardDto {
 
     public static ProductRewardDto fromProductRewardEntity(ProductRewardEntity entity) {
         ProductRewardDto data = new ProductRewardDto();
-        data.setProductId(entity.getProductId());
+        data.setProductId(entity.getId().getProductId());
         data.setProductSize(entity.getProductSize());
         data.setQuantity(entity.getQuantity());
         return data;
