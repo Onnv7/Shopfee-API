@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.ReceiverInformationID;
 import jakarta.persistence.*;
@@ -19,13 +20,10 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReceiverInformationEntity {
-//    @Id
-//    @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
-//    @GeneratedValue(generator = "receiver_information_id")
-//    private String id;
-
-    @EmbeddedId
-    private ReceiverInformationID id;
+    @Id
+    @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
+    @GeneratedValue(generator = "receiver_information_id")
+    private String id;
 
     @Column(name = "address")
     private String address;
@@ -48,12 +46,11 @@ public class ReceiverInformationEntity {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @OneToOne()
-    @MapsId("order_bill_id")
-    @JoinColumn(name = "order_bill_id", nullable = false)
-    @JsonBackReference
-    private OrderBillEntity orderBill;
     // =================================================================
+
+    @OneToOne(mappedBy = "receiverInformation")
+    @JsonManagedReference
+    private OrderBillEntity orderBill;
 
     public void fromAddressEntity(AddressEntity address) {
         this.setNote(address.getNote());

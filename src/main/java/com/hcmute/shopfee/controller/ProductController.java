@@ -108,7 +108,6 @@ public class ProductController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
 
-
             @Parameter(name = "branch_id", required = false, example = "S001")
             @RequestParam(name = "branch_id", required = false) String branchId
     ) {
@@ -180,7 +179,7 @@ public class ProductController {
     @Operation(summary = PRODUCT_GET_ALL_SUM)
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
-    public ResponseEntity<ResponseAPI<GetProductListResponse>> getAllProducts(
+    public ResponseEntity<ResponseAPI<GetProductListResponse>> getProductList(
             @Parameter(name = "key", description = "Key is name or description", required = false, example = "name or description")
             @RequestParam(name = "key", required = false, defaultValue = "") String key,
             @Parameter(name = "page", required = true, example = "1")

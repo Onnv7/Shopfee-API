@@ -14,7 +14,7 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
     Optional<UserEntity> findByEmail(String email);
 
     @Query(value = """
-            select u.id, u.avatar_id, u.avatar_url, u.birth_date, u.created_at, u.email, u.first_name, u.gender, u.last_name, u.password, u.phone_number, u.status, u.updated_at
+            select u.*
             from `user` u\s
             where concat_ws(' ', u.first_name, u.last_name, u.id, u.email, u.phone_number) like concat('%', ?1, '%')\s
             and u.status like concat('%', ?2, '%')\s

@@ -41,6 +41,8 @@ import com.hcmute.shopfee.repository.database.coupon.condition.CombinationCondit
 import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
+import com.hcmute.shopfee.repository.database.payment.VNPayRepository;
+import com.hcmute.shopfee.repository.database.payment.ZaloPayRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.service.common.*;
@@ -94,6 +96,8 @@ public class OrderService implements IOrderService {
     private final UserNotificationKafkaPublisher userNotificationKafkaPublisher;
     private final EmployeeNotificationKafkaPublisher employeeNotificationKafkaPublisher;
     private final MailerKafkaPublisher mailerKafkaPublisher;
+    private final VNPayRepository vnPayRepository;
+    private final ZaloPayRepository zaloPayRepository;
 
     @Autowired
     @Lazy
@@ -103,11 +107,17 @@ public class OrderService implements IOrderService {
         TransactionEntity transData = new TransactionEntity();
 
         if (paymentType == PaymentType.CASHING) {
-            transData = TransactionEntity.builder()
-                    .status(TransactionStatus.UNPAID)
-                    .totalPaid(0L)
-                    .orderBill(orderBill)
-                    .paymentType(PaymentType.CASHING).build();
+            transData = new TransactionEntity();
+            transData.setStatus(TransactionStatus.UNPAID);
+            transData.setTotalPaid(0L);
+            transData.setOrderBill(orderBill);
+            transData.setPaymentType(PaymentType.CASHING);
+
+//                    TransactionEntity.builder()
+//                    .status(TransactionStatus.UNPAID)
+//                    .totalPaid(0L)
+//                    .orderBill(orderBill)
+//                    .paymentType(PaymentType.CASHING).build();
         } else if (paymentType == PaymentType.VNPAY) {
             VNPayPaymentUrl paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
             VNPayEntity vnPay = VNPayEntity.builder()
@@ -115,29 +125,45 @@ public class OrderService implements IOrderService {
                     .timeCode(paymentData.getVnpCreateDate())
                     .paymentUrl(paymentData.getVnpUrl())
                     .build();
-            transData = TransactionEntity.builder()
-                    .status(TransactionStatus.UNPAID)
-                    .paymentType(PaymentType.VNPAY)
-                    .vnPay(vnPay)
-                    .totalPaid(0L)
-                    .orderBill(orderBill)
-                    .build();
-            vnPay.setTransaction(transData);
+
+            vnPay.setStatus(TransactionStatus.UNPAID);
+            vnPay.setTotalPaid(0L);
+            vnPay.setOrderBill(orderBill);
+            vnPay.setPaymentType(PaymentType.VNPAY);
+
+            transData = vnPay;
+//            transData = TransactionEntity.builder()
+//                    .status(TransactionStatus.UNPAID)
+//                    .paymentType(PaymentType.VNPAY)
+//                    .vnPay(vnPay)
+//                    .totalPaid(0L)
+//                    .orderBill(orderBill)
+//                    .build();
+//            vnPay.setTransaction(transData);
         } else if (paymentType == PaymentType.ZALOPAY) {
             CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment());
             ZaloPayEntity zaloPay = ZaloPayEntity.builder()
-                    .transaction(transData)
+//                    .transaction(transData)
                     .paymentUrl(paymentData.getOrderUrl())
                     .appTransactionId(paymentData.getInvoiceCode())
                     .build();
-            transData = TransactionEntity.builder()
-                    .zaloPay(zaloPay)
-                    .status(TransactionStatus.UNPAID)
-                    .paymentType(PaymentType.ZALOPAY)
-                    .totalPaid(0L)
-                    .orderBill(orderBill)
-                    .build();
-            zaloPay.setTransaction(transData);
+
+
+            zaloPay.setStatus(TransactionStatus.UNPAID);
+            zaloPay.setTotalPaid(0L);
+            zaloPay.setOrderBill(orderBill);
+            zaloPay.setPaymentType(PaymentType.ZALOPAY);
+            transData = zaloPay;
+//            transData.setZaloPay(zaloPay);
+
+//            transData = TransactionEntity.builder()
+//                    .zaloPay(zaloPay)
+//                    .status(TransactionStatus.UNPAID)
+//                    .paymentType(PaymentType.ZALOPAY)
+//                    .totalPaid(0L)
+//                    .orderBill(orderBill)
+//                    .build();
+//            zaloPay.setTransaction(transData);
         }
 //        orderBill.setTransaction(transData);
         return transData;
@@ -545,8 +571,8 @@ public class OrderService implements IOrderService {
                 .build();
 
         // set schedule for payment, transaction
-        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? transaction.getZaloPay().getPaymentUrl() :
-                transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
+        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? ((ZaloPayEntity) transaction).getPaymentUrl() :
+                transaction.getPaymentType() == PaymentType.VNPAY ? ((VNPayEntity) transaction).getPaymentUrl() : null;
         if (paymentUrl != null && totalPayment > 0) {
             resData.setPaymentUrl(paymentUrl);
 
@@ -669,8 +695,8 @@ public class OrderService implements IOrderService {
 
 
         // set schedule for payment
-        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? transaction.getZaloPay().getPaymentUrl() :
-                transaction.getPaymentType() == PaymentType.VNPAY ? transaction.getVnPay().getPaymentUrl() : null;
+        String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? ((ZaloPayEntity) transaction).getPaymentUrl() :
+                transaction.getPaymentType() == PaymentType.VNPAY ? ((VNPayEntity) transaction).getPaymentUrl() : null;
         if (paymentUrl != null && totalPayment > 0) {
             resData.setPaymentUrl(paymentUrl);
             schedulerService.setScheduleTransaction(transaction);

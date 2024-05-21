@@ -84,6 +84,22 @@ public class ProductService implements IProductService {
         }
         return min;
     }
+    private void saveProductStatusByBranch(List<ProductEntity> productEntityList) {
+        List<BranchEntity> branchList = branchRepository.findAll();
+        for (ProductEntity productEntity : productEntityList) {
+            String productId = productEntity.getId();
+            for (BranchEntity branch : branchList) {
+                BranchProductEntity branchProductEntity = new BranchProductEntity();
+                BranchProductId branchProductId = new BranchProductId(branch.getId(), productId);
+                branchProductEntity.setId(branchProductId);
+                branchProductEntity.setBranch(branch);
+                branchProductEntity.setProduct(productEntity);
+                branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
+
+                branchProductRepository.save(branchProductEntity);
+            }
+        }
+    }
 
     private boolean checkProductData(List<String> listName) {
         Set<String> uniqueNames = new HashSet<>(listName);
@@ -904,22 +920,7 @@ public class ProductService implements IProductService {
         return data;
     }
 
-    private void saveProductStatusByBranch(List<ProductEntity> productEntityList) {
-        List<BranchEntity> branchList = branchRepository.findAll();
-        for (ProductEntity productEntity : productEntityList) {
-            String productId = productEntity.getId();
-            for (BranchEntity branch : branchList) {
-                BranchProductEntity branchProductEntity = new BranchProductEntity();
-                BranchProductId branchProductId = new BranchProductId(branch.getId(), productId);
-                branchProductEntity.setId(branchProductId);
-                branchProductEntity.setBranch(branch);
-                branchProductEntity.setProduct(productEntity);
-                branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
 
-                branchProductRepository.save(branchProductEntity);
-            }
-        }
-    }
 
     @Override
     public CheckExistedNameResponse isExistedProductName(String productName) {

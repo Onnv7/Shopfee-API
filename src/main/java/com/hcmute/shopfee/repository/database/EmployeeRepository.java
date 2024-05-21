@@ -15,7 +15,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Optional<EmployeeEntity> findByIdAndIsDeletedFalse(String username);
 
     @Query(value = """
-            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            select e.*\s
             from employee e
             where e.status regexp ?1
             and is_deleted = false
@@ -23,7 +23,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> getEmployeeList(String statusRegex, Pageable pageable);
 
     @Query(value = """
-            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            select e.*
             from employee e
             where is_deleted = false
             and status regexp  ?2
@@ -32,7 +32,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> searchEmployee(String key, String status, Pageable pageable);
 
     @Query(value = """
-            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            select e.*
             from employee e
             where e.branch_id = ?1
             and is_deleted = false
@@ -41,7 +41,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> getEmployeeListByBranchId(String branchId, String statusRegex, Pageable pageable);
 
     @Query(value = """
-            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            select e.*
             from employee e
             where e.branch_id = ?1
             and is_deleted = false
@@ -51,7 +51,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> searchEmployeeByBranchId(String branchId, String key, String status, Pageable pageable);
 
     @Query(value = """
-            select e.id, e.birth_date, e.created_at, e.first_name, e.last_name, e.gender, e.email, e.is_deleted, e.password, e.phone_number, e.status, e.updated_at, e.username, e.branch_id\s
+            select e.*
             from branch b\s
             join (
             	select *

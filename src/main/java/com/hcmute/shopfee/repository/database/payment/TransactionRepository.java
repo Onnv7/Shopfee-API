@@ -23,7 +23,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
                 SUM(t.total_paid) as revenue
             from
                 `transaction` t
-                join order_bill ob on ob.id = t.order_bill_id
+                join order_bill ob on ob.transaction_id = t.id
                 join branch b on b.id = ob.branch_id
             where
                 t.status = 'PAID'
@@ -34,7 +34,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = """
             select sum(t.total_paid) as revenue, DATE_FORMAT(t.created_at, ?3) as time
             from `transaction` t
-            join order_bill ob on ob.id = t.order_bill_id
+            join order_bill ob on ob.transaction_id = t.id
             JOIN branch b on b.id = ob.branch_id
             where t.status = 'PAID'
             and b.id LIKE concat('%', ?4,'%')
@@ -47,7 +47,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = """
             SELECT DATE_FORMAT(ob.created_at, '%Y-%m-%d') AS time, SUM(t.total_paid) as amount
             FROM `transaction` t\s
-            JOIN order_bill ob ON ob.id = t.order_bill_id\s
+            JOIN order_bill ob ON ob.transaction_id = t.id
             JOIN `user` u ON ob.user_id = u.id\s
             WHERE u.id = ?3\s
             AND t.status = 'PAID'
@@ -70,7 +70,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
             left join (
             	SELECT t.payment_type, sum(t.total_paid) as value
             	FROM `transaction` t\s
-            	join order_bill ob on t.order_bill_id = ob.id\s
+            	join order_bill ob on ob.transaction_id = t.id
             	join `user` u on u.id = ob.user_id\s
             	WHERE u.id = ?1
             	and t.status = 'PAID'
@@ -83,7 +83,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = """
             SELECT t.payment_type
             FROM `transaction` t
-            join order_bill ob on ob.id = t.order_bill_id
+            join order_bill ob on ob.transaction_id = t.id
             WHERE ob.id = ?1
             """, nativeQuery = true)
     PaymentType getPaymentTypeByOrderId(String orderId);
@@ -91,7 +91,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = """
             SELECT t.status
             FROM `transaction` t
-            join order_bill ob on ob.id = t.order_bill_id
+            join order_bill ob on ob.transaction_id = t.id
             WHERE ob.id = ?1
             """, nativeQuery = true)
     TransactionStatus getTransactionStatusByOrderId(String orderId);

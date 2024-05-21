@@ -6,6 +6,8 @@ import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.utils.DateUtils;
 import lombok.Builder;
@@ -168,8 +170,8 @@ public class GetOrderByIdResponse {
             transaction.setId(entity.getId());
             transaction.setStatus(entity.getStatus());
             transaction.setPaymentType(entity.getPaymentType());
-            String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? entity.getZaloPay().getPaymentUrl() :
-                    transaction.getPaymentType() == PaymentType.VNPAY ? entity.getVnPay().getPaymentUrl() : null;
+            String paymentUrl = transaction.getPaymentType() == PaymentType.ZALOPAY ? ((ZaloPayEntity) entity).getPaymentUrl() :
+                    transaction.getPaymentType() == PaymentType.VNPAY ? ((VNPayEntity) entity).getPaymentUrl() : null;
             transaction.setPaymentUrl(paymentUrl);
             return transaction;
         }

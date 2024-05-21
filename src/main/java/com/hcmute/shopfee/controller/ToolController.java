@@ -316,13 +316,21 @@ public class ToolController {
                 .build());
         orderBill.setOrderEventList(orderEventEntityList);
 
-        TransactionEntity transactionEntity = TransactionEntity.builder()
-                .createdAt(new Date())
-                .status(TransactionStatus.UNPAID)
-                .totalPaid(0L)
-                .paymentType(PaymentType.VNPAY)
-                .orderBill(orderBill)
-                .build();
+
+        TransactionEntity transactionEntity = new TransactionEntity();
+        transactionEntity.setStatus(TransactionStatus.UNPAID);
+        transactionEntity.setTotalPaid(0L);
+        transactionEntity.setOrderBill(orderBill);
+        transactionEntity.setPaymentType(PaymentType.VNPAY);
+        transactionEntity.setCreatedAt(new Date());
+
+//        TransactionEntity transactionEntity = TransactionEntity.builder()
+//                .createdAt(new Date())
+//                .status(TransactionStatus.UNPAID)
+//                .totalPaid(0L)
+//                .paymentType(PaymentType.VNPAY)
+//                .orderBill(orderBill)
+//                .build();
         orderBill.setTransaction(transactionEntity);
 
         List<OrderItemEntity> orderItemEntityList = new ArrayList<OrderItemEntity>();

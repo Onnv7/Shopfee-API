@@ -3,6 +3,7 @@ package com.hcmute.shopfee.dto.response;
 import com.hcmute.shopfee.dto.common.RatingSummaryDto;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
+import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.ProductStatus;
 import lombok.Data;
 
@@ -22,6 +23,7 @@ public class GetProductListResponse {
         private Long price;
         private String thumbnailUrl;
         private ProductStatus status;
+        private BranchProductStatus branchProductStatus;
         private RatingSummaryDto ratingSummary;
 
         private static Product fromProductEntity(ProductEntity entity) {

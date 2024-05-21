@@ -20,7 +20,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Optional<OrderBillEntity> findByTransaction_Id(String transactionId);
 
     @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id, ob.order_discount, ob.shipping_discount
+            select ob.*
             from order_bill ob
             join (
             	select order_bill_id, MAX(created_at) as created_at
@@ -34,7 +34,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Page<OrderBillEntity> getOrderBillByLastStatus(String status, Pageable pageable) ;
 
     @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id, ob.order_discount, ob.shipping_discount
+            select ob.*
             from order_bill ob
             join (
             	select order_bill_id, MAX(created_at) as created_at
@@ -58,7 +58,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
 
 
     @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id, ob.order_discount, ob.shipping_discount
+            select ob.*
             from order_bill ob
             join(select order_bill_id, MAX(created_at) as created_at
                  from order_event
@@ -70,7 +70,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Page<OrderBillEntity> getOrderListForAdmin(String orderStatus, Pageable pageable);
 
     @Query(value = """
-            select ob.id, ob.coin, ob.created_at, ob.note, ob.order_type, ob.shipping_fee, ob.total_item_price, ob.total_payment, ob.updated_at, ob.branch_id, ob.user_id, ob.order_discount, ob.shipping_discount
+            select ob.*
             from order_bill ob
             join(select order_bill_id, MAX(created_at) as created_at
                  from order_event

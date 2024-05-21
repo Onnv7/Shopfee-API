@@ -2,6 +2,7 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -63,7 +64,7 @@ public class TransactionService implements ITransactionService {
 
         // Goi den VNPay de lay thong tin
         if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), request);
+            TransactionInfoQuery transInfo = vnPayService.getTransactionInfo(((VNPayEntity) transaction).getInvoiceCode(), ((VNPayEntity) transaction).getTimeCode(), request);
             if(!transInfo.getResponseCode().equals("00")) {
                 return;
             }
@@ -87,20 +88,20 @@ public class TransactionService implements ITransactionService {
                 transaction.setStatus(TransactionStatus.FAILED);
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-            GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
+            GetOrderZaloPayResponse transResult = zaloPayService.getOrderTransactionInformation(((ZaloPayEntity) transaction).getAppTransactionId());
 
             if (transResult.getReturnCode() == 1 && transResult.getAmount() == orderBill.getTotalPayment()) {
                 isSuccess = true;
                 transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid((long) transResult.getAmount());
-                transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
+                ((ZaloPayEntity) transaction).setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
             } else if (transResult.getReturnCode() == 2) {
                 boolean rs = orderStateService.sendMonoEvent(orderBill.getId(), ShopfeeConstant.PAYMENT_FAILED_MSG, OrderEvent.PAYMENT_FAILED);
                 if (!rs) {
                     throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY);
                 }
 
-                transaction.getZaloPay().setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
+                ((ZaloPayEntity) transaction).setZalopayTransactionId(String.valueOf(transResult.getZpTransId()));
                 transaction.setTotalPaid(0L);
                 transaction.setStatus(TransactionStatus.FAILED);
                 orderBillRepository.save(orderBill);
@@ -165,7 +166,7 @@ public class TransactionService implements ITransactionService {
             return false;
         }
         if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            Map<String, Object> responseRefund = vnPayService.refundOrder(request, transaction.getVnPay().getTimeCode(), transaction.getVnPay().getInvoiceCode(), transaction.getTotalPaid());
+            Map<String, Object> responseRefund = vnPayService.refundOrder(request, ((VNPayEntity) transaction).getTimeCode(), ((VNPayEntity) transaction).getInvoiceCode(), transaction.getTotalPaid());
             String responseCode = responseRefund.get(VNPayConstant.VNP_RESPONSE_CODE).toString();
             if (responseCode.equals("00")) {
                 // refund thafnh coong
@@ -175,7 +176,7 @@ public class TransactionService implements ITransactionService {
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             RefundRequestDTO refundRequestDTO = new RefundRequestDTO();
-            ZaloPayEntity zaloPay = transaction.getZaloPay();
+            ZaloPayEntity zaloPay = ((ZaloPayEntity) transaction);
             refundRequestDTO.setAmount(transaction.getTotalPaid());
             refundRequestDTO.setZpTransId(zaloPay.getZalopayTransactionId());
             refundRequestDTO.setDescription("");

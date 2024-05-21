@@ -18,16 +18,17 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
 @Table(name = "transaction")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@Inheritance(strategy = InheritanceType.JOINED)
 public class TransactionEntity {
     @Id
     @GenericGenerator(name = "transaction_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "transaction_id")
+//    @Column(name = "transaction_id", nullable = false, updatable = false)
     private String id;
 
 //    @OneToOne
@@ -58,16 +59,16 @@ public class TransactionEntity {
 
     // =================================================================
 
-    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonManagedReference
-    private VNPayEntity vnPay;
+//    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @JsonManagedReference
+//    private VNPayEntity vnPay;
+//
+//    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+//    @JsonManagedReference
+//    private ZaloPayEntity zaloPay;
 
-    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonManagedReference
-    private ZaloPayEntity zaloPay;
 
-
-    @OneToOne(mappedBy = "transaction", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(mappedBy = "transaction")
     @JsonManagedReference
     private OrderBillEntity orderBill;
 }

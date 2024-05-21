@@ -4,6 +4,8 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
+import com.hcmute.shopfee.entity.sql.database.payment.ZaloPayEntity;
 import com.hcmute.shopfee.enums.ActorType;
 import com.hcmute.shopfee.enums.OrderStatus;
 import com.hcmute.shopfee.enums.TransactionStatus;
@@ -40,7 +42,7 @@ public class CheckTransactionValidJob extends QuartzJobBean {
                 orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.TRANSACTION_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + data.getString(TRANSACTION_ID)));
 
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
-            GetOrderZaloPayResponse zaloResult = zaloPayService.getOrderTransactionInformation(transaction.getZaloPay().getAppTransactionId());
+            GetOrderZaloPayResponse zaloResult = zaloPayService.getOrderTransactionInformation(((ZaloPayEntity) transaction).getAppTransactionId());
             if (zaloResult.getReturnCode() == 1) {
                 transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid((long) zaloResult.getAmount());
@@ -60,7 +62,7 @@ public class CheckTransactionValidJob extends QuartzJobBean {
                 orderBillRepository.save(orderBill);
             }
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(transaction.getVnPay().getInvoiceCode(), transaction.getVnPay().getTimeCode(), null);
+            TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(((VNPayEntity) transaction).getInvoiceCode(), ((VNPayEntity) transaction).getTimeCode(), null);
             if (vnpayResult.getTransactionStatus().equals("00")) {
                 transaction.setStatus(TransactionStatus.PAID);
                 transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);

@@ -31,7 +31,6 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class OrderBillEntity {
-    //    @GenericGenerator(name = "order_bill_id", type = IdGenerator.class)
     @Id
     @GenericGenerator(name = "order_bill_id", type = StringPrefixedSequenceGenerator.class, parameters = {
             @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
@@ -77,9 +76,14 @@ public class OrderBillEntity {
     private BranchEntity branch;
 
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "transaction_id", nullable = false)
+    @JoinColumn(name = "transaction_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private TransactionEntity transaction;
+
+    @OneToOne(cascade = {CascadeType.PERSIST})
+    @JoinColumn(name = "receiver_information_id", nullable = false)
+    @JsonBackReference
+    private ReceiverInformationEntity receiverInformation;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -104,14 +108,6 @@ public class OrderBillEntity {
     @OneToMany(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
     @JsonManagedReference
     private List<CouponUsedEntity> couponUsedList;
-
-    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST})
-    @JsonManagedReference
-    private ReceiverInformationEntity receiverInformation;
-
-//    @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-//    @JsonManagedReference
-//    private TransactionEntity transaction;
 
     @OneToOne(mappedBy = "orderBill", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

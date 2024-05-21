@@ -80,7 +80,7 @@ public class CallbackService implements ICallbackService {
                     .orElse(null);
 
             if (vnPayEntity != null) {
-                OrderBillEntity orderBillEntity = vnPayEntity.getTransaction().getOrderBill();
+                OrderBillEntity orderBillEntity = vnPayEntity.getOrderBill();
                 TransactionEntity transactionEntity = orderBillEntity.getTransaction();
                 if (orderBillEntity.getTotalPayment() == Long.parseLong((String) fields.get(VNPayConstant.VNP_AMOUNT_KEY)) / 100) {
                     if (transactionEntity.getStatus() == TransactionStatus.UNPAID) {
@@ -189,19 +189,18 @@ public class CallbackService implements ICallbackService {
                     .orElse(null);
 
             if (zaloPay != null) {
-                TransactionEntity transaction = zaloPay.getTransaction();
-                if (transaction.getOrderBill().getTotalPayment() != dataRequest.getAmount()) {
+                if (zaloPay.getOrderBill().getTotalPayment() != dataRequest.getAmount()) {
                     response.setReturnCode(-1);
                     response.setReturnMessage("exception");
                 } else {
-                    transaction.setTotalPaid((long) dataRequest.getAmount());
-                    transaction.setStatus(TransactionStatus.PAID);
+                    zaloPay.setTotalPaid((long) dataRequest.getAmount());
+                    zaloPay.setStatus(TransactionStatus.PAID);
                     zaloPay.setZalopayTransactionId(String.valueOf(dataRequest.getZpTransId()));
 
                     response.setReturnCode(1);
                     response.setReturnMessage("success");
 
-                    transactionRepository.save(transaction);
+                    transactionRepository.save((TransactionEntity) zaloPay);
                 }
             } else {
                 response.setReturnCode(-1);
