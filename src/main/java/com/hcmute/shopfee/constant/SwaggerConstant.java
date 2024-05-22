@@ -121,6 +121,8 @@ public class SwaggerConstant {
     public static final String ORDER_UPDATE_CANCEL_EVENT_SUM = "User cancels the placed order";
     public static final String ORDER_CREATE_SHIPPING_SUM = "Create a new shipping order";
     public static final String ORDER_CREATE_ONSITE_SUM = "Create a new onsite order";
+    public static final String ORDER_CHECK_TAKE_AWAY_ITEM_LIST_SUM = "Check product availability for take away order item";
+    public static final String ORDER_CHECK_SHIPPING_ITEM_LIST_SUM = "Check product availability for shipping order item";
     public static final String ORDER_GET_ALL_IN_DAY_SUM = "Get all shipping orders in current day for employee";
     public static final String ORDER_GET_ALL_BY_TYPE_AND_STATUS_IN_DAY_SUM = "Get all orders for employee by type and status of order in current day";
     public static final String ORDER_GET_DETAILS_BY_ID_SUM = "Get a details order by order id";

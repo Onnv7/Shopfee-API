@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.*;
 import com.hcmute.shopfee.dto.response.*;
@@ -60,6 +59,35 @@ public class OrderController {
                 .build();
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
+
+    @Operation(summary = ORDER_CHECK_TAKE_AWAY_ITEM_LIST_SUM)
+    @PostMapping(path = POST_ORDER_CHECK_TAKE_AWAY_ITEM_SUB_PATH)
+    public ResponseEntity<ResponseAPI<CheckTakeAwayOrderItemResponse>> checkTakeAwayOrderItem(
+            @RequestBody CheckTakeAwayOrderItemRequest body,
+            @RequestParam(name = "branch_id", required = true) String branchId
+    ) {
+        CheckTakeAwayOrderItemResponse resData = orderService.checkTakeAwayOrderItem(body, branchId);
+        ResponseAPI<CheckTakeAwayOrderItemResponse> res = ResponseAPI.<CheckTakeAwayOrderItemResponse>builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.CREATED)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+    @Operation(summary = ORDER_CHECK_SHIPPING_ITEM_LIST_SUM)
+    @PostMapping(path = POST_ORDER_CHECK_SHIPPING_ITEM_SUB_PATH)
+    public ResponseEntity<ResponseAPI<CheckShippingOrderItemResponse>> checkShippingOrderItem(
+            @RequestBody CheckShippingOrderItemRequest body
+    ) {
+        CheckShippingOrderItemResponse resData = orderService.checkShippingOrderItem(body);
+        ResponseAPI<CheckShippingOrderItemResponse> res = ResponseAPI.<CheckShippingOrderItemResponse>builder()
+                .timestamp(new Date())
+                .data(resData)
+                .message(SuccessConstant.CREATED)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+
     @Operation(summary = ORDER_GET_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUM)
     @GetMapping(path = GET_ORDER_ALL_ORDER_HISTORY_FOR_EMPLOYEE_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_WAITER)

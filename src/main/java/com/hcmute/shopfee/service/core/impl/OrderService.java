@@ -2,8 +2,10 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.dto.common.BranchDistanceDto;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.enums.param.OrderPhasesStatus;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.dto.request.*;
@@ -43,6 +45,7 @@ import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
 import com.hcmute.shopfee.repository.database.payment.VNPayRepository;
 import com.hcmute.shopfee.repository.database.payment.ZaloPayRepository;
+import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.payment.TransactionRepository;
 import com.hcmute.shopfee.service.common.*;
@@ -67,10 +70,13 @@ import java.sql.Time;
 import java.text.MessageFormat;
 import java.util.*;
 
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService implements IOrderService {
+    private final BranchProductRepository branchProductRepository;
     private final CoinHistoryRepository coinHistoryRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderBillRepository orderBillRepository;
@@ -691,6 +697,104 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public CheckTakeAwayOrderItemResponse checkTakeAwayOrderItem(CheckTakeAwayOrderItemRequest body, String branchId) {
+        List<BranchProductEntity> branchProductList = branchProductRepository.getBranchProductActive(branchId);
+        CheckTakeAwayOrderItemResponse data = new CheckTakeAwayOrderItemResponse();
+        List<OrderItemDto> orderItemList = body.getOrderItemList();
+        for(OrderItemDto orderItem : orderItemList) {
+            BranchProductEntity branchProduct = branchProductList.stream()
+                    .filter(it -> it.getId().getProductId().equals(orderItem.getProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND));
+            if(branchProduct.getStatus() == BranchProductStatus.UNAVAILABLE) {
+                CheckTakeAwayOrderItemResponse.OrderItemInvalid orderItemInvalid = new CheckTakeAwayOrderItemResponse.OrderItemInvalid(orderItem.getProductId());
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public CheckShippingOrderItemResponse checkShippingOrderItem(CheckShippingOrderItemRequest body) {
+        CheckShippingOrderItemResponse data = new CheckShippingOrderItemResponse();
+        Time currentTime = DateUtils.getCurrentTime();
+        List<OrderItemDto> itemList = body.getOrderItemList();
+        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
+        CheckShippingOrderItemRequest.Location userLocation = body.getDeliveryLocation();
+        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
+        String clientCoordinates = userLocation.getLat() + "," + userLocation.getLng();
+
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+        int branchListSize = branchEntityList.size();
+
+        List<BranchDistanceDto> branchDistanceList = new ArrayList<>();
+
+        // loc cac branch hop le
+        for (int i = 0; i < branchListSize; i++) {
+            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+                branchEntityList.remove(i);
+                distanceList.remove(i);
+                i--;
+                continue;
+            }
+            if (currentTime.after(branchEntityList.get(i).getCloseTime()) || currentTime.before(branchEntityList.get(i).getOpenTime())) {
+                branchEntityList.remove(i);
+                distanceList.remove(i);
+                i--;
+                continue;
+            }
+            branchDistanceList.add(new BranchDistanceDto(branchEntityList.get(i), distanceList.get(i).getValue()));
+        }
+
+        if (branchDistanceList.isEmpty()) {
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "Can't find a branch that can serve your current location and time");
+        }
+
+        // sap xep lai theo distance tu nho -> lon
+        branchDistanceList.sort(Comparator.comparingInt(BranchDistanceDto::getDistance));
+
+
+        // kiem tra item cua tung branch co distance tu nho -> lon
+        List<CheckShippingOrderItemResponse.BranchInvalid> branchInvalidList = new ArrayList<>();
+        CheckShippingOrderItemResponse.BranchValid branchValid = null;
+
+        for (BranchDistanceDto branchDistanceDto : branchDistanceList) {
+            boolean haveFullFillItem = true;
+            List<CheckShippingOrderItemResponse.OrderItemInvalid> orderItemInvalidList = new ArrayList<>();
+            CheckShippingOrderItemResponse.BranchInvalid branchInvalid = new CheckShippingOrderItemResponse.BranchInvalid();
+
+            for(OrderItemDto orderItemDto : itemList) {
+                BranchProductEntity branchProductEntity = branchProductRepository.getProductBranchAvailable(orderItemDto.getProductId(), branchDistanceDto.getBranch().getId())
+                        .orElse(null);
+                if(branchProductEntity == null) {
+                    haveFullFillItem = false;
+                    CheckShippingOrderItemResponse.OrderItemInvalid orderItemInvalid = new CheckShippingOrderItemResponse.OrderItemInvalid(orderItemDto.getProductId());
+                    orderItemInvalidList.add(orderItemInvalid);
+                }
+            }
+            if(haveFullFillItem) {
+                branchValid = new CheckShippingOrderItemResponse.BranchValid();//branchDistanceDto.getBranch();
+                branchValid.setBranchId(branchDistanceDto.getBranch().getId());
+                int shippingFee = ahamoveService.getShippingFee(userLocation.getLat(), userLocation.getLng(), branchDistanceDto.getBranch().getLatitude(), branchDistanceDto.getBranch().getLongitude());
+                branchValid.setShippingFee(shippingFee);
+
+                break;
+            } else {
+                branchInvalid.setBranchId(branchDistanceDto.getBranch().getId());
+                branchInvalid.setOrderItemInvalidList(orderItemInvalidList);
+                branchInvalidList.add(branchInvalid);
+            }
+        }
+        if(branchValid != null) {
+            data.setBranchValid(branchValid);
+            data.setBranchInvalidList(null);
+        } else {
+            data.setBranchValid(null);
+            data.setBranchInvalidList(branchInvalidList);
+        }
+        return data;
+    }
+
+    @Override
     public GetOrderHistoryForEmployeeResponse getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key) {
         String statusRegex = RegexUtils.generateFilterRegexString(orderStatus != null ? orderStatus.toString() : "");
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -899,7 +1003,6 @@ public class OrderService implements IOrderService {
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         int branchSize = branchEntityList.size();
-
 
         Time currentTime = DateUtils.getCurrentTime();
         BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);

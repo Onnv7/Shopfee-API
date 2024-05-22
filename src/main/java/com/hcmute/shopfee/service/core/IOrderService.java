@@ -11,6 +11,8 @@ import java.util.List;
 public interface IOrderService {
     CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request);
     CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request);
+    CheckTakeAwayOrderItemResponse checkTakeAwayOrderItem(CheckTakeAwayOrderItemRequest body, String branchId);
+    CheckShippingOrderItemResponse checkShippingOrderItem(CheckShippingOrderItemRequest body);
     GetOrderHistoryForEmployeeResponse getOrderHistoryPageForEmployee(OrderStatus orderStatus, int page, int size, String key);
     void insertOrderEventByEmployee(String id, UpdateOrderStatusRequest body, HttpServletRequest request);
     void createCancellationRequest(CreateCancellationDemandRequest body, String orderId);

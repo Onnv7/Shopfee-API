@@ -148,6 +148,8 @@ public class RouterConstant {
     // ENDPOINT URL ORDER =================================================================
     public static final String POST_ORDER_CREATE_SHIPPING_SUB_PATH = "/shipping";
     public static final String POST_ORDER_CREATE_ONSITE_SUB_PATH = "/onsite";
+    public static final String POST_ORDER_CHECK_TAKE_AWAY_ITEM_SUB_PATH = "/check-take-away-item";
+    public static final String POST_ORDER_CHECK_SHIPPING_ITEM_SUB_PATH = "/check-shipping-item";
     public static final String PATCH_ORDER_UPDATE_STATUS_SUB_PATH = ORDER_ID_PATH + "/employee/event";
     public static final String POST_ORDER_CREATE_CANCELLATION_REQUEST_SUB_PATH = ORDER_ID_PATH + "/cancellation-request";
     public static final String PATCH_ORDER_UPDATE_CANCEL_SUB_PATH = ORDER_ID_PATH + "/user/cancel";
