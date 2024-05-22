@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface BranchProductRepository extends JpaRepository<BranchProductEntity, BranchProductId> {
     @Query(value = """
@@ -24,5 +26,14 @@ public interface BranchProductRepository extends JpaRepository<BranchProductEnti
     Page<BranchProductEntity> getBranchProductListByProduct(String productId, String branchProductStatusRegex, String keyRegex, Pageable pageable);
 
 
-
+    @Query(value = """
+            select bp.*
+            from branch_product bp
+            join product p on p.id = bp.product_id
+            where bp.id = ?1
+                and p.status = 'ACTIVE'
+                and bp.status = 'AVAILABLE'
+                and bp.branch_id = ?2
+            """, nativeQuery = true)
+    Optional<BranchProductEntity> getProductBranchAvailable(String productId, String branchId);
 }

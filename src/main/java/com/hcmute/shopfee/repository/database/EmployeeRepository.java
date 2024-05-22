@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String> {
     Optional<EmployeeEntity> findByUsernameAndIsDeletedFalse(String username);
+    Optional<EmployeeEntity> findByUsername(String username);
     Optional<EmployeeEntity> findByIdAndIsDeletedFalse(String username);
 
     @Query(value = """

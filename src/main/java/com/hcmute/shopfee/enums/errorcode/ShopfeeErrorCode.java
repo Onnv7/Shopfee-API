@@ -26,16 +26,21 @@ public enum ShopfeeErrorCode {
     ALBUM_NOT_FOUND(1021, ErrorConstant.ALBUM_NOT_FOUND, SupErrorCode.NOT_FOUND),
     NOTIFICATION_NOT_FOUND(1022, ErrorConstant.NOTIFICATION_NOT_FOUND, SupErrorCode.NOT_FOUND),
 
-
+    // =======================================================================
     TOKEN_STOLEN(1601, ErrorConstant.TOKEN_STOLEN, SupErrorCode.UNAUTHORIZED),
     WRONG_PASSWORD(1602, ErrorConstant.WRONG_PASSWORD, SupErrorCode.UNAUTHORIZED),
     USER_BLOCKED(1603, ErrorConstant.USER_BLOCKED_STOLEN, SupErrorCode.UNAUTHORIZED),
     CREDENTIAL_WRONG(1604, ErrorConstant.CREDENTIAL_WRONG, SupErrorCode.UNAUTHORIZED),
+    // =======================================================================
 
+    CANT_CREATE_ADMIN_ACCOUNT(1501, ErrorConstant.CANT_CREATE_ADMIN_ACCOUNT, SupErrorCode.FORBIDDEN),
+    CANT_CREATE_MANAGER_ACCOUNT(1502, ErrorConstant.CANT_CREATE_MANAGER_ACCOUNT, SupErrorCode.FORBIDDEN),
+    CANT_CREATE_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH(1503, ErrorConstant.CANT_CREATE_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH, SupErrorCode.FORBIDDEN),
+
+    // =======================================================================
     IMAGE_INVALID(1301, ErrorConstant.IMAGE_INVALID, SupErrorCode.DATA_SEND_INVALID),
-
     COUPON_CODE_EXISTED(1302, ErrorConstant.COUPON_CODE_EXISTED, SupErrorCode.DATA_SEND_INVALID),
-
+    // =======================================================================
     ADD_MORE_5_ADDRESS(1401, ErrorConstant.ADD_MORE_5_ADDRESS, SupErrorCode.ACTING_INCORRECTLY);
     private final int code;
     private final String description;

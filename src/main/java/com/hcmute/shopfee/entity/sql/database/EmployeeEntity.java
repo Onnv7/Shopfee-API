@@ -64,8 +64,6 @@ public class EmployeeEntity {
     @Column(name = "email")
     private String email;
 
-//    private ObjectId branchId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private EmployeeStatus status;

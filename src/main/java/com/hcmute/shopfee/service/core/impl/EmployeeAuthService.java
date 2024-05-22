@@ -155,18 +155,22 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
     @Override
     public void employeeRegister(CreateEmployeeRequest body, EmployeeRole employeeRoleName) {
-        List<String> roles = SecurityUtils.getRoleList();
+        String employeeId = SecurityUtils.getCurrentUserId();
+        EmployeeEntity creator = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED));
+
+        if(employeeRoleName == EmployeeRole.ROLE_ADMIN && creator.getRole() != EmployeeRole.ROLE_ADMIN) {
+            throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_ADMIN_ACCOUNT);
+        }
         // manager không thể tạo manager khác
-        if(!roles.contains(EmployeeRole.ROLE_ADMIN.name()) && employeeRoleName == EmployeeRole.ROLE_MANAGER) {
-            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN, "Managers cannot create another manager account");
+        if(creator.getRole() == EmployeeRole.ROLE_MANAGER && employeeRoleName == EmployeeRole.ROLE_MANAGER) {
+            throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_MANAGER_ACCOUNT);
         }
 
-        if(SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
-            EmployeeEntity manager =  employeeRepository.findByIdAndIsDeletedFalse(SecurityUtils.getCurrentUserId())
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
+        if(creator.getRole() == EmployeeRole.ROLE_MANAGER) {
             // manager không được tạo emlpyee cho chi nhánh khác
-            if(!manager.getBranch().getId().equals(body.getBranchId())) {
-                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN, "Managers cannot create an employee account belonging to another branch");
+            if(!creator.getBranch().getId().equals(body.getBranchId())) {
+                throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH);
             }
         }
 
@@ -174,17 +178,18 @@ public class EmployeeAuthService implements IEmployeeAuthService {
 
         EmployeeEntity employeeData = modelMapperService.mapClass(body, EmployeeEntity.class);
 
-        EmployeeEntity existedEmployee = employeeRepository.findByUsernameAndIsDeletedFalse(employeeData.getUsername()).orElse(null);
+        EmployeeEntity existedEmployee = employeeRepository.findByUsername(employeeData.getUsername()).orElse(null);
         if (existedEmployee != null) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.EXISTED_DATA, "Username account registered");
         }
 
         employeeData.setRole(employeeRoleName);
+        if(employeeRoleName != EmployeeRole.ROLE_ADMIN) {
+            BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
+            employeeData.setBranch(branch);
+        }
 
-        BranchEntity branch = branchRepository.findById(String.valueOf(body.getBranchId()))
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
-
-        employeeData.setBranch(branch);
         employeeData.setPassword(passwordEncoder.encode(employeeData.getPassword()));
         employeeData.setStatus(EmployeeStatus.ACTIVE);
         employeeRepository.save(employeeData);

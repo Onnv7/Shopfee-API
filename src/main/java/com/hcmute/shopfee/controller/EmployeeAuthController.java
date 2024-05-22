@@ -85,8 +85,8 @@ public class EmployeeAuthController {
 
     @Operation(summary = AUTH_EMPLOYEE_REGISTER_SUM)
     @PostMapping(path = POST_EMPLOYEE_AUTH_REGISTER_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
-    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam("role") EmployeeRole employeeRole) {
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
+    public ResponseEntity<ResponseAPI<?>> registerEmployee(@RequestBody @Valid CreateEmployeeRequest body, @RequestParam(name = "role") EmployeeRole employeeRole) {
         employeeAuthService.employeeRegister(body, employeeRole);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

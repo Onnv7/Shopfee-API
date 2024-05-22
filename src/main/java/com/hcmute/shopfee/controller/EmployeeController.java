@@ -2,7 +2,6 @@ package com.hcmute.shopfee.controller;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
@@ -118,8 +117,8 @@ public class EmployeeController {
     @Operation(summary = EMPLOYEE_UPDATE_BY_ID_SUM)
     @PutMapping(path = PUT_EMPLOYEE_UPDATE_BY_ID_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
-    public ResponseEntity<ResponseAPI<?>> updateEmployeeForAdmin(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) throws ExecutionException, InterruptedException, FirebaseMessagingException {
-        employeeService.updateEmployeeForAdmin(body, id);
+    public ResponseEntity<ResponseAPI<?>> updateEmployee(@PathVariable(EMPLOYEE_ID) String id, @RequestBody @Valid UpdateEmployeeRequest body) throws ExecutionException, InterruptedException, FirebaseMessagingException {
+        employeeService.updateEmployee(body, id);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
 //                .data(resData)

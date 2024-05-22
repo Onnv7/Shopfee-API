@@ -190,7 +190,6 @@ public class ProductService implements IProductService {
             branchProductEntity.setProduct(productEntity);
             branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
 
-
             branchProductRepository.save(branchProductEntity);
         }
     }

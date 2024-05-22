@@ -108,9 +108,14 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public void updateEmployeeForAdmin(UpdateEmployeeRequest body, String employeeId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
+    public void updateEmployee(UpdateEmployeeRequest body, String employeeId)  {
+        String creatorId = SecurityUtils.getCurrentUserId();
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + employeeId));
+
+        EmployeeEntity creator = employeeRepository.findByIdAndIsDeletedFalse(creatorId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + creatorId));
+
         BranchEntity branchEntity = branchRepository.findById(body.getBranchId())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
         if (SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {

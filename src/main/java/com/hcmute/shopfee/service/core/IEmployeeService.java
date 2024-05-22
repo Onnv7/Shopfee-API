@@ -10,13 +10,12 @@ import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 
 import java.sql.Date;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public interface IEmployeeService {
     GetAllEmployeeResponse getEmployeeList(String key, int page, int size, EmployeeStatus status);
     GetAllEmployeeResponse getEmployeeListByBranchId(String branchId, String key, int page, int size, EmployeeStatus status);
-    void updateEmployeeForAdmin(UpdateEmployeeRequest data, String id) throws ExecutionException, InterruptedException, FirebaseMessagingException;
+    void updateEmployee(UpdateEmployeeRequest data, String id) throws ExecutionException, InterruptedException, FirebaseMessagingException;
     void updateEmployeeProfile(UpdateEmployeeProfileRequest data, String id);
     void deleteEmployeeById(String id);
     GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId);

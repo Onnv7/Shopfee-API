@@ -2,7 +2,9 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.BranchDistanceDto;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
+import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.request.CreateBranchRequest;
 import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
 import com.hcmute.shopfee.dto.response.*;
@@ -34,8 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
@@ -51,7 +52,6 @@ public class BranchService implements IBranchService {
     private final BranchProductRepository branchProductRepository;
 
     public BranchEntity getNearestBranchAndValidateTime(Double lat, Double lng, Time timeToCheck) {
-        // TODO: xem có status thì check status cửa hàng
         List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
         String clientCoordinates = lat + "," + lng;
@@ -85,6 +85,66 @@ public class BranchService implements IBranchService {
 
     }
 
+    public BranchEntity getNearestBranchForShippingOrder(Double lat, Double lng, List<OrderItemDto> itemList) {
+        Time currentTime = DateUtils.getCurrentTime();
+
+        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
+
+        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
+        String clientCoordinates = lat + "," + lng;
+
+        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+        int branchListSize = branchEntityList.size();
+
+        List<BranchDistanceDto> branchDistanceList = new ArrayList<>();
+        for (int i = 0; i < branchListSize; i++) {
+            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+                branchEntityList.remove(i);
+                distanceList.remove(i);
+                i--;
+                continue;
+            }
+
+            if (currentTime.after(branchEntityList.get(i).getCloseTime()) || currentTime.before(branchEntityList.get(i).getOpenTime())) {
+                branchEntityList.remove(i);
+                distanceList.remove(i);
+                i--;
+                continue;
+            }
+            branchDistanceList.add(new BranchDistanceDto(branchEntityList.get(i), distanceList.get(i).getValue()));
+
+        }
+
+        if (branchDistanceList.isEmpty()) {
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "Can't find a branch that can serve your current location and time");
+        }
+
+        // sap xep lai theo distance tu nho -> lon
+        branchDistanceList.sort(Comparator.comparingInt(BranchDistanceDto::getDistance));
+
+
+        // kiem tra item cua tung branch co distance tu nho -> lon
+        BranchEntity branchValid = null;
+        for (BranchDistanceDto branchDistanceDto : branchDistanceList) {
+            boolean haveFullFillItem = true;
+            for(OrderItemDto orderItemDto : itemList) {
+                BranchProductEntity branchProductEntity = branchProductRepository.getProductBranchAvailable(orderItemDto.getProductId(), branchDistanceDto.getBranch().getId())
+                        .orElse(null);
+                if(branchProductEntity == null) {
+                    haveFullFillItem = false;
+                    break;
+                }
+            }
+            if(haveFullFillItem) {
+                branchValid = branchDistanceDto.getBranch();
+            }
+        }
+
+
+        return branchValid;
+
+    }
+
     @Transactional
     @Override
     public void createBranch(CreateBranchRequest body) throws ExecutionException, InterruptedException {
@@ -106,7 +166,7 @@ public class BranchService implements IBranchService {
         }
         branch = branchRepository.save(branch);
         List<ProductEntity> productEntityList = productRepository.findAll();
-        for(ProductEntity product : productEntityList) {
+        for (ProductEntity product : productEntityList) {
             BranchProductId branchProductId = new BranchProductId(branch.getId(), product.getId());
             BranchProductEntity branchProductEntity = new BranchProductEntity();
             branchProductEntity.setId(branchProductId);
@@ -143,7 +203,7 @@ public class BranchService implements IBranchService {
     public void deleteBranchById(String branchId) {
         BranchEntity branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + branchId));
-        if(branchRepository.countEmployeeByBranch(branchId) > 0 || branchRepository.countOrderBillByBranch(branchId) > 0) {
+        if (branchRepository.countEmployeeByBranch(branchId) > 0 || branchRepository.countOrderBillByBranch(branchId) > 0) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.CANT_DELETE);
         }
 
@@ -205,7 +265,7 @@ public class BranchService implements IBranchService {
         List<BranchEntity> branchEntityList = branchPage.getContent();
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
 
-        if (branchEntityList.isEmpty()){
+        if (branchEntityList.isEmpty()) {
             data.setBranchList(new ArrayList<>());
             return data;
         }

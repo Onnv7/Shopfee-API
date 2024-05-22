@@ -113,11 +113,6 @@ public class OrderService implements IOrderService {
             transData.setOrderBill(orderBill);
             transData.setPaymentType(PaymentType.CASHING);
 
-//                    TransactionEntity.builder()
-//                    .status(TransactionStatus.UNPAID)
-//                    .totalPaid(0L)
-//                    .orderBill(orderBill)
-//                    .paymentType(PaymentType.CASHING).build();
         } else if (paymentType == PaymentType.VNPAY) {
             VNPayPaymentUrl paymentData = vnPayService.createUrlPayment(request, orderBill.getTotalPayment(), "Shipping Order Info");
             VNPayEntity vnPay = VNPayEntity.builder()
@@ -132,18 +127,9 @@ public class OrderService implements IOrderService {
             vnPay.setPaymentType(PaymentType.VNPAY);
 
             transData = vnPay;
-//            transData = TransactionEntity.builder()
-//                    .status(TransactionStatus.UNPAID)
-//                    .paymentType(PaymentType.VNPAY)
-//                    .vnPay(vnPay)
-//                    .totalPaid(0L)
-//                    .orderBill(orderBill)
-//                    .build();
-//            vnPay.setTransaction(transData);
         } else if (paymentType == PaymentType.ZALOPAY) {
             CreateOrderZaloPayResponse paymentData = zaloPayService.createOrderTransaction(orderBill.getTotalPayment());
             ZaloPayEntity zaloPay = ZaloPayEntity.builder()
-//                    .transaction(transData)
                     .paymentUrl(paymentData.getOrderUrl())
                     .appTransactionId(paymentData.getInvoiceCode())
                     .build();
@@ -154,18 +140,7 @@ public class OrderService implements IOrderService {
             zaloPay.setOrderBill(orderBill);
             zaloPay.setPaymentType(PaymentType.ZALOPAY);
             transData = zaloPay;
-//            transData.setZaloPay(zaloPay);
-
-//            transData = TransactionEntity.builder()
-//                    .zaloPay(zaloPay)
-//                    .status(TransactionStatus.UNPAID)
-//                    .paymentType(PaymentType.ZALOPAY)
-//                    .totalPaid(0L)
-//                    .orderBill(orderBill)
-//                    .build();
-//            zaloPay.setTransaction(transData);
         }
-//        orderBill.setTransaction(transData);
         return transData;
     }
 
@@ -489,17 +464,26 @@ public class OrderService implements IOrderService {
         orderBill.setUser(user);
         orderBill.setOrderType(OrderType.SHIPPING);
 
-        long totalItemPrice = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
-        orderBill.setTotalItemPrice(totalItemPrice);
-        totalPayment += totalItemPrice;
-
         // set địa chỉ giao hàng
         AddressEntity address = addressRepository.findById(body.getAddressId())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ADDRESS_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + body.getAddressId()));
         ReceiverInformationEntity shippingInformation = new ReceiverInformationEntity();
         shippingInformation.fromAddressEntity(address);
-
         shippingInformation.setOrderBill(orderBill);
+
+        // set chi nhánh xử lý đơn
+        Time currentTime = DateUtils.getCurrentTime();
+        BranchEntity branch = branchService.getNearestBranchForShippingOrder(address.getLatitude(), address.getLongitude(), body.getItemList());
+        if(branch == null) {
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "There is no store to serve your order");
+        }
+        orderBill.setBranch(branch);
+
+        // tinh tien san pham
+        long totalItemPrice = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
+        orderBill.setTotalItemPrice(totalItemPrice);
+        totalPayment += totalItemPrice;
+
         orderBill.setReceiverInformation(shippingInformation);
 
         // set sự kiện đơn hàng
@@ -512,10 +496,6 @@ public class OrderService implements IOrderService {
                 .build());
         orderBill.setOrderEventList(orderEventList);
 
-        // set chi nhánh xử lý đơn
-        Time currentTime = DateUtils.getCurrentTime();
-        BranchEntity branch = branchService.getNearestBranchAndValidateTime(address.getLatitude(), address.getLongitude(), currentTime);
-        orderBill.setBranch(branch);
 
         // set tổng hóa đơn và phí ship
         orderBill.setShippingFee(body.getShippingFee());
