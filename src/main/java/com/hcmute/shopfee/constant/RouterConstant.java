@@ -101,6 +101,8 @@ public class RouterConstant {
     public static final String GET_PRODUCT_ALL_VISIBLE_SUB_PATH = "/visible";
     public static final String GET_PRODUCT_USER_TRACKING_SUB_PATH = "/user-tracking";
     public static final String GET_PRODUCT_ALL_SUB_PATH = "";
+    public static final String GET_PRODUCT_BRANCH_LIST_SUB_PATH = PRODUCT_ID_PATH + "/branch-list";
+    public static final String PATCH_PRODUCT_BRANCH_CHANGE_STATUS_PATH = PRODUCT_ID_PATH + "/branch" + BRANCH_ID_PATH;
     public static final String PUT_PRODUCT_UPDATE_BY_ID_SUB_PATH = PRODUCT_ID_PATH;
     public static final String DELETE_PRODUCT_BY_ID_SUB_PATH = PRODUCT_ID_PATH;
     public static final String DELETE_SOME_PRODUCT_BY_ID_SUB_PATH = "";

@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.kafka.listener;
 
 import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
-import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.kafka.message.TrackingUserProductMsgData;
 import com.hcmute.shopfee.kafka.message.UserBlockedMsgData;
-import com.hcmute.shopfee.repository.elasticsearch.TrackingUserClickProductRepository;
+import com.hcmute.shopfee.repository.elasticsearch.TrackingUserClickProductESRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,13 +19,13 @@ import static com.hcmute.shopfee.kafka.KafkaConstant.*;
 @Slf4j
 @RequiredArgsConstructor
 public class TrackingUserProductKafkaListener {
-    private final TrackingUserClickProductRepository trackingUserClickProductRepository;
+    private final TrackingUserClickProductESRepository trackingUserClickProductESRepository;
 
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = TRACKING_USER_PRODUCT_TOPIC, groupId = TRACKING_USER_PRODUCT_GROUP_ID, id = TRACKING_USER_PRODUCT_GROUP_ID + "-1")
     public void analystUserProductData(TrackingUserProductMsgData message) {
         log.info("Listener 1 consume {}", message.toString());
-        TrackingUserProductIndex data = trackingUserClickProductRepository.findByUserIdAndProductId(message.getUserId(), message.getProductId())
+        TrackingUserProductIndex data = trackingUserClickProductESRepository.findByUserIdAndProductId(message.getUserId(), message.getProductId())
                 .orElse(null);
         if (data == null) {
             data = new TrackingUserProductIndex();
@@ -38,7 +37,7 @@ public class TrackingUserProductKafkaListener {
             data.setClickCount(data.getClickCount() + 1);
             data.setLastSeen(new Date());
         }
-        trackingUserClickProductRepository.save(data);
+        trackingUserClickProductESRepository.save(data);
     }
 
     @KafkaListener(topics = TRACKING_USER_PRODUCT_TOPIC + "-dlt", groupId = TRACKING_USER_PRODUCT_GROUP_ID, id = TRACKING_USER_PRODUCT_GROUP_ID + "-dlt")

@@ -7,7 +7,7 @@ import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.elasticsearch.OrderIndex;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
-import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
+import com.hcmute.shopfee.repository.elasticsearch.OrderESRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,11 +20,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderEService {
-    private final OrderSearchRepository orderSearchRepository;
+public class OrderESService {
+    private final OrderESRepository orderESRepository;
     private final OrderBillRepository orderBillRepository;
     public void syncOrderIndexAndDatabase() {
-        orderSearchRepository.deleteAll();
+        orderESRepository.deleteAll();
         List<OrderBillEntity> productEntityList = orderBillRepository.findAll();
         for (OrderBillEntity productEntity : productEntityList) {
             createOrder(productEntity);
@@ -54,14 +54,14 @@ public class OrderEService {
                 .createdAt(orderBillEntity.getCreatedAt())
                 .email(user.getEmail())
                 .build();
-        return orderSearchRepository.save(orderIndex);
+        return orderESRepository.save(orderIndex);
     }
 
     public void upsertOrder(OrderBillEntity orderBillEntity) {
         UserEntity user = orderBillEntity.getUser();
         List<OrderItemEntity> orderItemList = orderBillEntity.getOrderItemList();
         ProductEntity product = orderItemList.get(0).getProduct();
-        OrderIndex order = orderSearchRepository.findById(orderBillEntity.getId()).orElse(null);
+        OrderIndex order = orderESRepository.findById(orderBillEntity.getId()).orElse(null);
 
         OrderEventEntity lastStatus = orderBillEntity.getOrderEventList().get(0);
         if (order != null) {
@@ -75,7 +75,7 @@ public class OrderEService {
             order.setProductThumbnail(product.getImage().getThumbnailUrl());
             order.setCustomerCode(user.getId());
             order.setTimeLastEvent(lastStatus.getCreatedAt());
-            orderSearchRepository.save(order);
+            orderESRepository.save(order);
         } else {
             createOrder(orderBillEntity);
         }
@@ -86,6 +86,6 @@ public class OrderEService {
         Sort sort = Sort.by(Sort.Order.desc("createdAt"));
         Pageable pageable = PageRequest.of(page - 1, size, sort);
 
-        return orderSearchRepository.searchOrderForAdmin(key, status, pageable);
+        return orderESRepository.searchOrderForAdmin(key, status, pageable);
     }
 }

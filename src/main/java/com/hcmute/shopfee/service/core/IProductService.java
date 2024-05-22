@@ -3,6 +3,7 @@ package com.hcmute.shopfee.service.core;
 import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.enums.param.ProductSortType;
@@ -18,7 +19,9 @@ public interface IProductService {
     GetProductsByCategoryIdResponse getProductsByCategoryId(String branchId, String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size);
     GetProductCardListResponse getVisibleProductList(String branchId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size, String key);
     List<GetUserProductTrackingCardResponse> getProductUserTracking(String branchId, Integer size);
-    GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus);
+    GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus, BranchProductStatus branchProductStatus, String branchId);
+    GetBranchProductListByProductResponse getBranchProductListByProduct(String productId, String key, int page, int size, BranchProductStatus branchProductStatus);
+    void updateBranchProductStatus(String productId, String branchId, BranchProductStatus branchProductStatus);
     void deleteProductById(String id);
     void deleteSomeProductById(List<String> productIdList);
     void updateProductById(UpdateProductRequest body, String id, ProductType productType);

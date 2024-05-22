@@ -26,13 +26,16 @@ public class GetProductListResponse {
         private BranchProductStatus branchProductStatus;
         private RatingSummaryDto ratingSummary;
 
-        private static Product fromProductEntity(ProductEntity entity) {
+        private static Product fromProductEntity(ProductEntity entity, String branchId) {
             Product data = new Product();
             data.setId(entity.getId());
             data.setName(entity.getName());
             data.setPrice(entity.getPrice());
             data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
             data.setStatus(entity.getStatus());
+            if(branchId != null) {
+                data.setBranchProductStatus(entity.getBranchProduct(branchId).getStatus());
+            }
             return data;
         }
         private static Product fromProductIndex(ProductIndex index) {
@@ -45,10 +48,10 @@ public class GetProductListResponse {
             return data;
         }
     }
-    public static List<Product> fromProductEntityList(List<ProductEntity> entityList) {
+    public static List<Product> fromProductEntityList(List<ProductEntity> entityList, String branchId) {
         List<Product> data= new ArrayList<>();
         for(ProductEntity entity : entityList) {
-            data.add(Product.fromProductEntity(entity));
+            data.add(Product.fromProductEntity(entity, branchId));
         }
         return data;
     }

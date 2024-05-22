@@ -1,8 +1,8 @@
 package com.hcmute.shopfee.command;
 
-import com.hcmute.shopfee.service.elasticsearch.OrderEService;
-import com.hcmute.shopfee.service.elasticsearch.ProductEService;
-import com.hcmute.shopfee.service.elasticsearch.RatingProductEService;
+import com.hcmute.shopfee.service.elasticsearch.OrderESService;
+import com.hcmute.shopfee.service.elasticsearch.ProductESService;
+import com.hcmute.shopfee.service.elasticsearch.RatingProductESService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +24,14 @@ public class SyncDatabaseCommand implements CommandLineRunner {
 
     @Autowired
     @Lazy
-    private ProductEService productEService;
-    private final OrderEService orderEService;
-    private final RatingProductEService ratingProductEService;
+    private ProductESService productESService;
+    private final OrderESService orderESService;
+    private final RatingProductESService ratingProductESService;
     @Override
     public void run(String... args) throws Exception {
-        productEService.syncProductIndexAndDatabase();
-        orderEService.syncOrderIndexAndDatabase();
-        ratingProductEService.syncProductIndexAndDatabase();
+        productESService.syncProductIndexAndDatabase();
+        orderESService.syncOrderIndexAndDatabase();
+        ratingProductESService.syncProductIndexAndDatabase();
         clearCacheByPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VIEW, "*"));
         clearCacheByPattern(String.format(ProductRedisService.PATTERN_KEY_GET_PRODUCT_VISIBLE, "*"));
     }

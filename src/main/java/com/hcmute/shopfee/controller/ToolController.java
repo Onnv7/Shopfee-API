@@ -42,12 +42,12 @@ import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
-import com.hcmute.shopfee.repository.elasticsearch.OrderSearchRepository;
-import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
+import com.hcmute.shopfee.repository.elasticsearch.OrderESRepository;
+import com.hcmute.shopfee.repository.elasticsearch.ProductESRepository;
 import com.hcmute.shopfee.service.common.*;
 import com.hcmute.shopfee.service.core.impl.CallbackService;
-import com.hcmute.shopfee.service.elasticsearch.OrderEService;
-import com.hcmute.shopfee.service.elasticsearch.ProductEService;
+import com.hcmute.shopfee.service.elasticsearch.OrderESService;
+import com.hcmute.shopfee.service.elasticsearch.ProductESService;
 import com.hcmute.shopfee.service.core.impl.OrderService;
 import com.hcmute.shopfee.service.redis.EmployeeTokenRedisService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
@@ -96,11 +96,11 @@ import static com.hcmute.shopfee.module.vnpay.VNPayConstant.VNP_TXN_REF_KEY;
 @RequiredArgsConstructor
 //@Slf4j
 public class ToolController {
-    private final ProductSearchRepository productSearchRepository;
-    private final OrderEService orderEService;
+    private final ProductESRepository productESRepository;
+    private final OrderESService orderESService;
     private final ProductRepository productRepository;
-    private final ProductEService productEService;
-    private final OrderSearchRepository orderSearchRepository;
+    private final ProductESService productESService;
+    private final OrderESRepository orderESRepository;
     private final OrderBillRepository orderBillRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
@@ -133,14 +133,14 @@ public class ToolController {
     @DeleteMapping(value = "/deleteOrderElastisearch")
     public ResponseEntity<String> deleteOrderElastisearch() {
 //        orderService.checkOrderCoupon(code);
-        orderSearchRepository.deleteAll();
+        orderESRepository.deleteAll();
         return ResponseEntity.status(200).body("Ok fine");
     }
 
     @DeleteMapping(value = "/deleteProductElastisearch")
     public ResponseEntity<String> deleteProductElastisearch() {
 //        orderService.checkOrderCoupon(code);
-        productSearchRepository.deleteAll();
+        productESRepository.deleteAll();
         return ResponseEntity.status(200).body("Ok fine");
     }
 
@@ -429,20 +429,20 @@ public class ToolController {
 
     @GetMapping("/sync-product-elasticsearch")
     public String syncProductElasticSearch() {
-        productSearchRepository.deleteAll();
+        productESRepository.deleteAll();
         List<ProductEntity> productList = productRepository.findAll();
         for (ProductEntity item : productList) {
-            productEService.createProduct(item);
+            productESService.createProduct(item);
         }
         return "okokok";
     }
 
     @GetMapping("/sync-order-elasticsearch")
     public String syncOrder() {
-        orderSearchRepository.deleteAll();
+        orderESRepository.deleteAll();
         List<OrderBillEntity> productList = orderBillRepository.findAll();
         for (OrderBillEntity item : productList) {
-            orderEService.createOrder(item);
+            orderESService.createOrder(item);
         }
         return "okokok";
     }

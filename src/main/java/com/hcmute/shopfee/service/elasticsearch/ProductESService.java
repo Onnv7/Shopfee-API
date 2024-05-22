@@ -6,7 +6,7 @@ import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
-import com.hcmute.shopfee.repository.elasticsearch.ProductSearchRepository;
+import com.hcmute.shopfee.repository.elasticsearch.ProductESRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -19,14 +19,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProductEService {
-    private final ProductSearchRepository productSearchRepository;
+public class ProductESService {
+    private final ProductESRepository productESRepository;
     @Autowired
     @Lazy
     private ProductRepository productRepository;
 
     public void syncProductIndexAndDatabase() {
-        productSearchRepository.deleteAll();
+        productESRepository.deleteAll();
         List<ProductEntity> productEntityList = productRepository.findAll();
         for (ProductEntity productEntity : productEntityList) {
             createProduct(productEntity);
@@ -45,11 +45,11 @@ public class ProductEService {
                 .price(data.getPrice())
                 .build();
 
-        return productSearchRepository.save(dataSearch);
+        return productESRepository.save(dataSearch);
     }
 
     public void upsertProduct(ProductEntity data) {
-        ProductIndex product = productSearchRepository.findById(data.getId()).orElse(null);
+        ProductIndex product = productESRepository.findById(data.getId()).orElse(null);
         if (product != null) {
             product.setName(data.getName());
             product.setThumbnailUrl(data.getImage().getThumbnailUrl());
@@ -57,26 +57,26 @@ public class ProductEService {
             product.setPrice(data.getPrice());
             product.setDescription(data.getDescription());
             product.setCategoryId(data.getCategory().getId());
-            productSearchRepository.save(product);
+            productESRepository.save(product);
         } else {
             createProduct(data);
         }
     }
 
     public void deleteProduct(String id) {
-        ProductIndex productIndex = productSearchRepository.findById(id)
+        ProductIndex productIndex = productESRepository.findById(id)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
-        productSearchRepository.delete(productIndex);
+        productESRepository.delete(productIndex);
     }
 
     public Page<ProductIndex> searchVisibleProduct(String key,  Pageable pageable) {
 //        Pageable pageable = PageRequest.of(page - 1, size);
 //        String textRegex = RegexUtils.generateFilterRegexString(key);
-        return productSearchRepository.searchVisibleProduct(key, pageable);
+        return productESRepository.searchVisibleProduct(key, pageable);
     }
 
     public Page<ProductIndex> searchProduct(String key, String categoryIdRegex, String productStatusRegex, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return productSearchRepository.searchProduct(key, categoryIdRegex, productStatusRegex, pageable);
+        return productESRepository.searchProduct(key, categoryIdRegex, productStatusRegex, pageable);
     }
 }

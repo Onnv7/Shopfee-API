@@ -13,6 +13,7 @@ import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
+import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -28,14 +29,15 @@ import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
+import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
-import com.hcmute.shopfee.service.elasticsearch.ProductEService;
-import com.hcmute.shopfee.service.elasticsearch.TrackingUserProductEService;
+import com.hcmute.shopfee.service.elasticsearch.ProductESService;
+import com.hcmute.shopfee.service.elasticsearch.TrackingUserProductESService;
 import com.hcmute.shopfee.service.redis.ProductRedisService;
 import com.hcmute.shopfee.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -44,10 +46,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,18 +61,19 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
+    private final EmployeeRepository employeeRepository;
     private final BranchProductRepository branchProductRepository;
     private final BranchRepository branchRepository;
     private final ProductRepository productRepository;
     private final ModelMapperService modelMapperService;
     private final CategoryRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
-    private final ProductEService productEService;
+    private final ProductESService productESService;
     private final ProductReviewRepository productReviewRepository;
     private final AlbumRepository albumRepository;
     private final ProductRedisService productRedisService;
     private final TrackingUserProductKafkaPublisher trackingUserProductKafkaPublisher;
-    private final TrackingUserProductEService trackingUserProductEService;
+    private final TrackingUserProductESService trackingUserProductESService;
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
@@ -84,6 +84,7 @@ public class ProductService implements IProductService {
         }
         return min;
     }
+
     private void saveProductStatusByBranch(List<ProductEntity> productEntityList) {
         List<BranchEntity> branchList = branchRepository.findAll();
         for (ProductEntity productEntity : productEntityList) {
@@ -188,6 +189,7 @@ public class ProductService implements IProductService {
             branchProductEntity.setBranch(branch);
             branchProductEntity.setProduct(productEntity);
             branchProductEntity.setStatus(branch.getStatus() == BranchStatus.ACTIVE ? BranchProductStatus.AVAILABLE : BranchProductStatus.UNAVAILABLE);
+
 
             branchProductRepository.save(branchProductEntity);
         }
@@ -321,7 +323,7 @@ public class ProductService implements IProductService {
         if (!key.trim().isEmpty()) {
             // TODO: xem lai xem save branh product vao elasticsearch dc khong?
             // neu luu dc thi xem lai fromProductIndex va set Status luon -> bo loop "set status theo cua hang"
-            Page<ProductIndex> productIndexPage = productEService.searchVisibleProduct(key, pageable);
+            Page<ProductIndex> productIndexPage = productESService.searchVisibleProduct(key, pageable);
             data.setTotalPage(productIndexPage.getTotalPages());
             List<ProductIndex> productIndexList = productIndexPage.getContent();
             for (ProductIndex index : productIndexList) {
@@ -366,7 +368,7 @@ public class ProductService implements IProductService {
     public List<GetUserProductTrackingCardResponse> getProductUserTracking(String branchId, Integer size) {
         List<GetUserProductTrackingCardResponse> data = new ArrayList<>();
         String userId = SecurityUtils.getCurrentUserId();
-        List<TrackingUserProductIndex> userProductList = trackingUserProductEService.getProductByUserId(userId, size).getContent();
+        List<TrackingUserProductIndex> userProductList = trackingUserProductESService.getProductByUserId(userId, size).getContent();
         for (TrackingUserProductIndex userProduct : userProductList) {
             ProductEntity product = productRepository.findByIdAndStatusNot(userProduct.getProductId(), ProductStatus.INACTIVE)
                     .orElse(null);
@@ -379,24 +381,22 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus) {
+    public GetProductListResponse getProductList(String key, int page, int size, String categoryId, ProductStatus productStatus, BranchProductStatus branchProductStatus, String branchId) {
         Pageable pageable = PageRequest.of(page - 1, size);
         String categoryIdRegex = RegexUtils.generateFilterRegexString(categoryId != null ? categoryId : "");
         String productStatusRegex = RegexUtils.generateFilterRegexString(productStatus != null ? productStatus.toString() : "");
+        String branchProductStatusRegex = RegexUtils.generateFilterRegexString(branchProductStatus != null ? branchProductStatus.toString() : "");
+        String keyRegex = RegexUtils.generateFilterRegexString(key);
         GetProductListResponse productList = new GetProductListResponse();
-        if (key.isBlank()) {
-            Page<ProductEntity> productPage = productRepository.getProductList(categoryIdRegex, productStatusRegex, pageable);
-
-            productList.setTotalPage(productPage.getTotalPages());
-            productList.setProductList(GetProductListResponse.fromProductEntityList(productPage.getContent()));
-
+        Page<ProductEntity> productPage = null;
+        if (branchId == null) {
+            productPage = productRepository.getProductList(keyRegex, categoryIdRegex, productStatusRegex, pageable);
         } else {
-            Page<ProductIndex> productPage = productEService.searchProduct(key, categoryIdRegex, productStatusRegex, page, size);
-
-            productList.setTotalPage(productPage.getTotalPages());
-            productList.setProductList(GetProductListResponse.fromProductIndexList(productPage.getContent()));
-
+            productPage = productRepository.getProductListByBranch(branchId, keyRegex, categoryIdRegex, productStatusRegex, branchProductStatusRegex, pageable);
         }
+
+        productList.setTotalPage(productPage.getTotalPages());
+        productList.setProductList(GetProductListResponse.fromProductEntityList(productPage.getContent(), branchId));
 
         for (GetProductListResponse.Product product : productList.getProductList()) {
             RatingSummaryQueryDto ratingSummaryQueryDto = productReviewRepository.getRatingSummary(product.getId());
@@ -404,6 +404,35 @@ public class ProductService implements IProductService {
         }
 
         return productList;
+    }
+
+    @Override
+    public GetBranchProductListByProductResponse getBranchProductListByProduct(String productId, String key, int page, int size, BranchProductStatus branchProductStatus) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        GetBranchProductListByProductResponse data = new GetBranchProductListByProductResponse();
+        String branchProductStatusRegex = RegexUtils.generateFilterRegexString(branchProductStatus != null ? branchProductStatus.toString() : "");
+        String keyRegex = RegexUtils.generateFilterRegexString(key);
+
+        Page<BranchProductEntity> branchProductPage = branchProductRepository.getBranchProductListByProduct(productId, branchProductStatusRegex, keyRegex, pageable);
+        data.setTotalPage(branchProductPage.getTotalPages());
+        data.setBranchProductList(GetBranchProductListByProductResponse.fromBranchProductEntityList(branchProductPage.getContent()));
+
+        return data;
+    }
+
+    @Override
+    public void updateBranchProductStatus(String productId, String branchId, BranchProductStatus branchProductStatus) {
+        String employeeId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : "";
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND));
+        if(!employeeEntity.getBranch().getId().equals(branchId)) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
+        }
+        BranchProductId branchProductId = new BranchProductId(branchId, productId);
+        BranchProductEntity branchProductEntity = branchProductRepository.findById(branchProductId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND));
+        branchProductEntity.setStatus(branchProductStatus);
+        branchProductRepository.save(branchProductEntity);
     }
 
     @Override
@@ -919,7 +948,6 @@ public class ProductService implements IProductService {
         }
         return data;
     }
-
 
 
     @Override

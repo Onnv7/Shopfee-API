@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.entity.elasticsearch.RatingProductIndex;
-import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
-import com.hcmute.shopfee.repository.elasticsearch.RatingProductRepository;
+import com.hcmute.shopfee.repository.elasticsearch.RatingProductESRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +11,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class RatingProductEService {
+public class RatingProductESService {
     private final ProductReviewRepository productReviewRepository;
-    private final RatingProductRepository ratingProductRepository;
+    private final RatingProductESRepository ratingProductESRepository;
     public void syncProductIndexAndDatabase() {
-        ratingProductRepository.deleteAll();
+        ratingProductESRepository.deleteAll();
         List<ProductReviewEntity> reviewList = productReviewRepository.findAll();
         for (ProductReviewEntity productReviewEntity : reviewList) {
             createRatingProductIndex(productReviewEntity);
@@ -29,6 +28,6 @@ public class RatingProductEService {
                 .userId(productReviewEntity.getCreatedBy())
                 .productId(productReviewEntity.getOrderItem().getProduct().getId())
                 .build();
-        ratingProductRepository.save(data);
+        ratingProductESRepository.save(data);
     }
 }

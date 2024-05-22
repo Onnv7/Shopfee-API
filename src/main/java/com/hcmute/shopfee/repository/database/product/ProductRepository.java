@@ -1,5 +1,6 @@
 package com.hcmute.shopfee.repository.database.product;
 
+import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.ProductStatus;
 import org.springframework.data.domain.Page;
@@ -30,12 +31,27 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             """, nativeQuery = true)
     List<String> getProductNameList();
     @Query(value = """
-            select *
+            select p.*
             from product p
-            where category_id regexp ?1
-            	and status regexp ?2
+            join branch_product bp on bp.product_id = p.id\s
+            where p.category_id regexp ?2
+               and p.status regexp ?3
+               and p.name regexp ?1
+               and p.id regexp ?1
             """, nativeQuery = true)
-    Page<ProductEntity> getProductList(String categoryIdRegex, String productStatusRegex, Pageable pageable);
+    Page<ProductEntity> getProductList(String keyRegex, String categoryIdRegex, String productStatusRegex, Pageable pageable);
+    @Query(value = """
+            select p.*
+            from product p
+            join branch_product bp on bp.product_id = p.id\s
+            where bp.branch_id = ?1
+                and bp.status regexp ?5
+                and p.category_id regexp ?3
+                and p.status regexp ?4
+                and p.name regexp ?2
+                and p.id regexp ?2
+            """, nativeQuery = true)
+    Page<ProductEntity> getProductListByBranch(String branchId, String keyRegex, String categoryIdRegex, String productStatusRegex,  String branchProductStatusRegex, Pageable pageable);
 
     @Query(value = """
             select count(*)

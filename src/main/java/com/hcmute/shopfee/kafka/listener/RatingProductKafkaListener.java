@@ -3,7 +3,7 @@ package com.hcmute.shopfee.kafka.listener;
 import com.hcmute.shopfee.entity.elasticsearch.RatingProductIndex;
 import com.hcmute.shopfee.kafka.message.RatingProductMsgData;
 import com.hcmute.shopfee.kafka.message.UserBlockedMsgData;
-import com.hcmute.shopfee.repository.elasticsearch.RatingProductRepository;
+import com.hcmute.shopfee.repository.elasticsearch.RatingProductESRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -17,7 +17,7 @@ import static com.hcmute.shopfee.kafka.KafkaConstant.*;
 @Slf4j
 @RequiredArgsConstructor
 public class RatingProductKafkaListener {
-    private final RatingProductRepository ratingProductRepository;
+    private final RatingProductESRepository ratingProductESRepository;
 
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
     @KafkaListener(topics = RATING_PRODUCT_TOPIC, groupId = RATING_PRODUCT_GROUP_ID, id = RATING_PRODUCT_GROUP_ID + "-1")
@@ -28,7 +28,7 @@ public class RatingProductKafkaListener {
                 .userId(message.getUserId())
                 .productId(message.getProductId())
                 .build();
-        ratingProductRepository.save(data);
+        ratingProductESRepository.save(data);
     }
 
     @RetryableTopic(attempts = "3", dltTopicSuffix = "-dlt", backoff = @Backoff(delay = 1000, multiplier = 2))
@@ -40,7 +40,7 @@ public class RatingProductKafkaListener {
                 .userId(message.getUserId())
                 .productId(message.getProductId())
                 .build();
-        ratingProductRepository.save(data);
+        ratingProductESRepository.save(data);
     }
 
     @KafkaListener(topics = RATING_PRODUCT_TOPIC + "-dlt", groupId = RATING_PRODUCT_GROUP_ID, id = RATING_PRODUCT_GROUP_ID + "-dlt")

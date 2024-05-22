@@ -7,6 +7,7 @@ import com.hcmute.shopfee.dto.request.CreateProductRequest;
 import com.hcmute.shopfee.dto.request.DeleteSomeProductRequest;
 import com.hcmute.shopfee.dto.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.enums.param.ProductSortType;
@@ -180,16 +181,22 @@ public class ProductController {
     @GetMapping(path = GET_PRODUCT_ALL_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetProductListResponse>> getProductList(
-            @Parameter(name = "key", description = "Key is name or description", required = false, example = "name or description")
+            @Parameter(name = "key", description = "Key is name or description", required = false, example = "")
             @RequestParam(name = "key", required = false, defaultValue = "") String key,
             @Parameter(name = "page", required = true, example = "1")
             @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
-            @RequestParam(name = CATEGORY_ID, required = false) String categoryId,
-            @RequestParam(name = "productStatus", required = false) ProductStatus productStatus
+            @Parameter(name = "category_id", required = false, example = "C01")
+            @RequestParam(name = "category_id", required = false) String categoryId,
+            @Parameter(name = "product_status", required = false)
+            @RequestParam(name = "product_status", required = false) ProductStatus productStatus,
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false) String branchId,
+            @Parameter(name = "branch_product_status", required = false)
+            @RequestParam(name = "branch_product_status", required = false) BranchProductStatus branchProductStatus
     ) {
-        GetProductListResponse resData = productService.getProductList(key, page, size, categoryId, productStatus);
+        GetProductListResponse resData = productService.getProductList(key, page, size, categoryId, productStatus, branchProductStatus, branchId);
         ResponseAPI res = ResponseAPI.builder()
                 .message(SuccessConstant.GET)
                 .timestamp(new Date())
@@ -197,6 +204,46 @@ public class ProductController {
                 .build();
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
+
+    @Operation(summary = PRODUCT_GET_BRANCH_LIST_SUM)
+    @GetMapping(path = GET_PRODUCT_BRANCH_LIST_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    public ResponseEntity<ResponseAPI<GetBranchProductListByProductResponse>> getBranchProductListByProduct(
+            @PathVariable(PRODUCT_ID) String productId,
+            @Parameter(name = "key", description = "Key is name or id of branch", required = false)
+            @RequestParam(name = "key", required = false, defaultValue = "") String key,
+            @Parameter(name = "page", required = true, example = "1")
+            @RequestParam("page") @Min(value = 1, message = "Page must be greater than 0") int page,
+            @Parameter(name = "size", required = true, example = "10")
+            @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size,
+            @RequestParam(name = "branch_product_status", required = false) BranchProductStatus branchProductStatus
+    ) {
+        GetBranchProductListByProductResponse resData = productService.getBranchProductListByProduct(productId, key, page, size, branchProductStatus);
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(resData)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @Operation(summary = PRODUCT_PATCH_CHANGE_BRANCH_PRODUCT_STATUS_SUM)
+    @PatchMapping(path = PATCH_PRODUCT_BRANCH_CHANGE_STATUS_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_MANAGER)
+    public ResponseEntity<ResponseAPI<?>> updateBranchProductStatus(
+            @PathVariable(PRODUCT_ID) String productId,
+            @PathVariable(BRANCH_ID) String branchId,
+            @Parameter(name = "branch_product_status", required = true, example = "UNAVAILABLE")
+            @RequestParam(name = "branch_product_status", required = true) BranchProductStatus branchProductStatus
+    ) {
+        productService.updateBranchProductStatus(productId, branchId, branchProductStatus);
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.UPDATED)
+                .timestamp(new Date())
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
 
     @Operation(summary = PRODUCT_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_PRODUCT_BY_ID_SUB_PATH)
