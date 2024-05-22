@@ -17,7 +17,7 @@ public interface IEmployeeService {
     GetAllEmployeeResponse getEmployeeListByBranchId(String branchId, String key, int page, int size, EmployeeStatus status);
     void updateEmployee(UpdateEmployeeRequest data, String id) throws ExecutionException, InterruptedException, FirebaseMessagingException;
     void updateEmployeeProfile(UpdateEmployeeProfileRequest data, String id);
-    void deleteEmployeeById(String id);
+    void deleteEmployeeById(String employeeId);
     GetEmployeeProfileByIdResponse getEmployeeProfileById(String employeeId);
     GetEmployeeByIdResponse getEmployeeById(String employeeId);
     GetSaleStatisticTodayResponse getStatisticToday(String employeeId, Date startDate, Date endDate);

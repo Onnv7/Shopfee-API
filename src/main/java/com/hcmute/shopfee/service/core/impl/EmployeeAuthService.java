@@ -160,17 +160,17 @@ public class EmployeeAuthService implements IEmployeeAuthService {
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.UNAUTHORIZED));
 
         if(employeeRoleName == EmployeeRole.ROLE_ADMIN && creator.getRole() != EmployeeRole.ROLE_ADMIN) {
-            throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_ADMIN_ACCOUNT);
+            throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_ADMIN_ACCOUNT);
         }
         // manager không thể tạo manager khác
         if(creator.getRole() == EmployeeRole.ROLE_MANAGER && employeeRoleName == EmployeeRole.ROLE_MANAGER) {
-            throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_MANAGER_ACCOUNT);
+            throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_MANAGER_ACCOUNT);
         }
 
         if(creator.getRole() == EmployeeRole.ROLE_MANAGER) {
             // manager không được tạo emlpyee cho chi nhánh khác
             if(!creator.getBranch().getId().equals(body.getBranchId())) {
-                throw new ShopfeeException(ShopfeeErrorCode.CANT_CREATE_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH);
+                throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH);
             }
         }
 

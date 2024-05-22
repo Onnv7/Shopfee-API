@@ -1,7 +1,5 @@
 package com.hcmute.shopfee.service.core.impl;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
 import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
@@ -10,9 +8,7 @@ import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
 import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
-import com.hcmute.shopfee.entity.sql.database.EmployeeFCMTokenEntity;
 import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -36,7 +32,6 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +45,22 @@ public class EmployeeService implements IEmployeeService {
     public Optional<EmployeeEntity> findByUsername(String username) {
         return employeeRepository.findByUsernameAndIsDeletedFalse(username);
     }
+    void checkManagerPermissionCRUDEmployee(String creatorId, EmployeeEntity employee) {
+        EmployeeEntity creator = employeeRepository.findByIdAndIsDeletedFalse(creatorId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + creatorId));
 
+        if (creator.getRole() == EmployeeRole.ROLE_MANAGER) {
+            if (employee.getRole() == EmployeeRole.ROLE_MANAGER) {
+                throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH);
+            }
+            if (employee.getRole() == EmployeeRole.ROLE_ADMIN) {
+                throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_ADMIN_ACCOUNT);
+            }
+            if (!creator.getBranch().getId().equals(employee.getBranch().getId())) {
+                throw new ShopfeeException(ShopfeeErrorCode.CANT_CRUD_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH);
+            }
+        }
+    }
     @Override
     public GetAllEmployeeResponse getEmployeeList(String key, int page, int size, EmployeeStatus status) {
         String statusRegex = RegexUtils.generateFilterRegexString(status != null ? status.name() : "");
@@ -108,48 +118,14 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public void updateEmployee(UpdateEmployeeRequest body, String employeeId)  {
+    public void updateEmployee(UpdateEmployeeRequest body, String employeeId) {
         String creatorId = SecurityUtils.getCurrentUserId();
         EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + employeeId));
 
-        EmployeeEntity creator = employeeRepository.findByIdAndIsDeletedFalse(creatorId)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + creatorId));
+        checkManagerPermissionCRUDEmployee(creatorId, employee);
 
-        BranchEntity branchEntity = branchRepository.findById(body.getBranchId())
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, ErrorConstant.NOT_FOUND + body.getBranchId()));
-        if (SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
-            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
-            if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
-                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN, "Manager cannot update an employee account belonging to another branch");
-            }
-        }
-
-
-
-        String oldBranchId = employee.getBranch().getId();
-        if (oldBranchId != null && !oldBranchId.equals(body.getBranchId())){
-            try {
-                List<EmployeeFCMTokenEntity> employeeFCMTokenList = employeeFCMTokenRepository.findByEmployeeId(employeeId);
-                List<String> deviceTokenList = employeeFCMTokenList.stream().map(EmployeeFCMTokenEntity::getToken).toList();
-                // unsubscribe all device which employee use
-                FirebaseMessaging.getInstance().unsubscribeFromTopicAsync(
-                        deviceTokenList,
-                        oldBranchId
-                ).get();
-                // subscribe new branch
-                FirebaseMessaging.getInstance().subscribeToTopic(
-                        deviceTokenList,
-                        body.getBranchId()
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
         modelMapperService.mapNotNull(body, employee);
-        employee.setBranch(branchEntity);
 
         employeeRepository.save(employee);
     }
@@ -164,19 +140,14 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public void deleteEmployeeById(String id) {
-        List<String> roleList = SecurityUtils.getRoleList();
+    public void deleteEmployeeById(String employeeId) {
+        String editorId = SecurityUtils.getCurrentUserId();
 
-        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + id));
+        EmployeeEntity employee = employeeRepository.findByIdAndIsDeletedFalse(employeeId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + employeeId));
 
-        if (SecurityUtils.isOnlyRole(EmployeeRole.ROLE_MANAGER)) {
-            EmployeeEntity manager = employeeRepository.findByIdAndIsDeletedFalse(id)
-                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND, ErrorConstant.NOT_FOUND + SecurityUtils.getCurrentUserId()));
-            if (!manager.getBranch().getId().equals(employee.getBranch().getId())) {
-                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN, "Manager cannot delete an employee account belonging to another branch");
-            }
-        }
+        checkManagerPermissionCRUDEmployee(editorId, employee);
+
         employee.setDeleted(true);
         employeeRepository.save(employee);
     }
@@ -199,10 +170,10 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public GetSaleStatisticTodayResponse getStatisticToday(String employeeId, Date startDate, Date endDate) {
         SecurityUtils.checkUserId(employeeId);
-        if(!DateUtils.isWithin31Days(startDate, endDate)) {
+        if (!DateUtils.isWithin31Days(startDate, endDate)) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The selected time period exceeds 31 days");
         }
-        List<GetEmployeeOrderStatisticDto>  dataList = orderBillRepository.getEmployeeOrderStatistic(employeeId, startDate, endDate);
+        List<GetEmployeeOrderStatisticDto> dataList = orderBillRepository.getEmployeeOrderStatistic(employeeId, startDate, endDate);
         return GetSaleStatisticTodayResponse.fromEmployeeOrderStatisticRecordList(dataList, startDate, endDate);
     }
 

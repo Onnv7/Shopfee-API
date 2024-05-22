@@ -145,8 +145,8 @@ public class EmployeeController {
     @Operation(summary = EMPLOYEE_DELETE_BY_ID_SUM)
     @DeleteMapping(path = DELETE_EMPLOYEE_BY_ID_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
-    public ResponseEntity<ResponseAPI<?>> deleteEmployeeById(@PathVariable(EMPLOYEE_ID) String id) {
-        employeeService.deleteEmployeeById(id);
+    public ResponseEntity<ResponseAPI<?>> deleteEmployeeById(@PathVariable(EMPLOYEE_ID) String employeeId) {
+        employeeService.deleteEmployeeById(employeeId);
 
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())

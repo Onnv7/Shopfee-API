@@ -182,6 +182,9 @@ public class ProductService implements IProductService {
         productEntity = productRepository.save(productEntity);
         String productId = productEntity.getId();
         List<BranchEntity> branchList = branchRepository.findAll();
+        if(branchList.isEmpty()) {
+            throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Must create a branch before create product");
+        }
         for (BranchEntity branch : branchList) {
             BranchProductEntity branchProductEntity = new BranchProductEntity();
             BranchProductId branchProductId = new BranchProductId(branch.getId(), productId);
@@ -451,13 +454,11 @@ public class ProductService implements IProductService {
 
     @Override
     public void deleteSomeProductById(List<String> productIdList) {
-        int successCount = 0;
         for (String id : productIdList) {
             try {
                 deleteProductById(id);
-                successCount++;
             } catch (Exception e) {
-                // TODO: xử lý e ở đây
+                log.error(Arrays.toString(e.getStackTrace()));
             }
         }
     }
