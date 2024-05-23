@@ -14,6 +14,7 @@ import java.util.List;
 
 public interface IProductService {
     void createProduct(CreateProductRequest body, MultipartFile image, ProductType productType);
+    GetAutocompleteResponse getAutocompleteTextList(String key);
     GetProductByIdResponse getProductDetailsById(String id);
     GetProductViewByIdResponse getProductViewById(String productId, String branchId);
     GetProductsByCategoryIdResponse getProductsByCategoryId(String branchId, String categoryId, Long minPrice, Long maxPrice, Integer minStar, ProductSortType productSortType, int page, int size);

@@ -77,6 +77,7 @@ public class SwaggerConstant {
     // For product =================================================================
     public static final String PRODUCT_CONTROLLER_TITLE = "PRODUCT MANAGEMENT";
     public static final String PRODUCT_CREATE_SUM = "Create a new product (food or beverage)";
+    public static final String PRODUCT_GET_AUTOCOMPLETE_SUM = "Get autocomplete text list for product";
     public static final String PRODUCT_GET_BY_ID_SUM = "Get a product's details by product id";
     public static final String PRODUCT_GET_VIEW_BY_ID_SUM = "Get a product enabled by product id";
     public static final String PRODUCT_GET_BY_CATEGORY_ID_SUM = "Get products by category id and filtering";

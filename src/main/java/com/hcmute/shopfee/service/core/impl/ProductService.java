@@ -75,6 +75,7 @@ public class ProductService implements IProductService {
     private final TrackingUserProductKafkaPublisher trackingUserProductKafkaPublisher;
     private final TrackingUserProductESService trackingUserProductESService;
 
+
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
         for (SizeEntity item : sizeList) {
@@ -195,6 +196,18 @@ public class ProductService implements IProductService {
 
             branchProductRepository.save(branchProductEntity);
         }
+    }
+
+    @Override
+    public GetAutocompleteResponse getAutocompleteTextList(String key) {
+        GetAutocompleteResponse data = new GetAutocompleteResponse();
+        data.setAutocompleteTextList(new ArrayList<>());
+        try {
+            data.setAutocompleteTextList(productESService.getAutoCompleteSuggestions(key));
+        } catch (IOException e) {
+            log.error(Arrays.toString(e.getStackTrace()));
+        }
+        return data;
     }
 
     @Override

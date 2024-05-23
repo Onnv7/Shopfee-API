@@ -8,6 +8,18 @@ import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.elasticsearch.ProductESRepository;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -15,7 +27,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
+
+import static co.elastic.clients.elasticsearch._types.aggregations.Aggregation.Kind.Terms;
 
 @Service
 @RequiredArgsConstructor
@@ -78,5 +93,39 @@ public class ProductESService {
     public Page<ProductIndex> searchProduct(String key, String categoryIdRegex, String productStatusRegex, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return productESRepository.searchProduct(key, categoryIdRegex, productStatusRegex, pageable);
+    }
+
+    @Autowired
+    private RestHighLevelClient client;
+    public List<String> getAutoCompleteSuggestions(String key) throws IOException {
+        SearchRequest searchRequest = new SearchRequest("product");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        // Tạo query bool với wildcard query
+        searchSourceBuilder.query(QueryBuilders.boolQuery()
+                .must(QueryBuilders.wildcardQuery("name", key + "*")));
+
+        // Tạo aggregation để lấy các term từ field name.keyword
+        searchSourceBuilder.aggregation(
+                AggregationBuilders.terms("auto_complete")
+                        .field("name.keyword")
+                        .size(10)
+                        .order(BucketOrder.count(false))
+        );
+
+        // Bỏ qua các field _source
+        searchSourceBuilder.fetchSource(false);
+
+        // Thiết lập kích thước của kết quả trả về là 0 vì chúng ta chỉ quan tâm đến aggregation
+        searchSourceBuilder.size(0);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // Xử lý kết quả aggregation
+        Aggregation autoCompleteAggregation = searchResponse.getAggregations().get("auto_complete");
+
+        return ((ParsedStringTerms) autoCompleteAggregation).getBuckets().stream().map(it -> it.getKey().toString()).toList();
     }
 }

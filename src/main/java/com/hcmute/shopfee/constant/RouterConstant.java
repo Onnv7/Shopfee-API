@@ -107,6 +107,7 @@ public class RouterConstant {
     public static final String DELETE_PRODUCT_BY_ID_SUB_PATH = PRODUCT_ID_PATH;
     public static final String DELETE_SOME_PRODUCT_BY_ID_SUB_PATH = "";
     public static final String POST_PRODUCT_CREATE_SUB_PATH = "";
+    public static final String GET_PRODUCT_AUTOCOMPLETE_SUB_PATH = "/autocomplete";
     public static final String GET_PRODUCT_TOP_RATED_PRODUCTS_SUB_PATH = "/top-rating/{quantity}";
     public static final String GET_PRODUCT_TOP_SELLING_PRODUCTS_SUB_PATH = "/top-selling/{quantity}";
     public static final String POST_PRODUCT_CREATE_FROM_FILE_SUB_PATH = "/import";

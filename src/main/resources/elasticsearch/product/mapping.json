@@ -2,7 +2,12 @@
   "properties": {
     "name": {
       "type": "text",
-      "analyzer": "ngram_analyzer"
+      "analyzer": "ngram_analyzer",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
     },
     "description": {
       "type": "text",

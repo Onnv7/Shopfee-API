@@ -43,6 +43,20 @@ import static com.hcmute.shopfee.constant.SwaggerConstant.*;
 public class ProductController {
     private final IProductService productService;
 
+
+    @Operation(summary = PRODUCT_GET_AUTOCOMPLETE_SUM)
+    @GetMapping(path = GET_PRODUCT_AUTOCOMPLETE_SUB_PATH)
+    public ResponseEntity<ResponseAPI<?>> getAutocompleteTextList(@RequestParam("key") String key) {
+        GetAutocompleteResponse data = productService.getAutocompleteTextList(key);
+
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(data)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
     @Operation(summary = PRODUCT_CREATE_SUM)
     @PostMapping(path = POST_PRODUCT_CREATE_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)

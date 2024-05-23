@@ -737,6 +737,11 @@ public class ToolController {
         return "ok";
     }
 
+    @GetMapping(value = "/test-autocompletet")
+    public List<String> autocompletet(@RequestParam String text) throws IOException {
+        return productESService.getAutoCompleteSuggestions(text);
+    }
+
     public class HelloWorldJob implements Job {
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {
