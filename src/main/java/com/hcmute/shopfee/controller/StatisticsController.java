@@ -52,8 +52,10 @@ public class StatisticsController {
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetStatisticsOfOrderQuantityResponse>> getStatisticOfOrderQuantity(
             @Parameter(name = "branch_id", required = false, example = "171473213040354")
-            @RequestParam(name = "branch_id", required = false) String branchId) {
-        GetStatisticsOfOrderQuantityResponse resData = statisticsService.getStatisticOfOrderQuantity(branchId);
+            @RequestParam(name = "branch_id", required = false, defaultValue = "") String branchId,
+            @Parameter(name = "time_type", required = true, example = "day")
+            @RequestParam(name = "time_type", required = true) TimeUnit timeUnit) {
+        GetStatisticsOfOrderQuantityResponse resData = statisticsService.getStatisticOfOrderQuantity(branchId, timeUnit);
         ResponseAPI<GetStatisticsOfOrderQuantityResponse> res = ResponseAPI.<GetStatisticsOfOrderQuantityResponse>builder()
                 .message(SuccessConstant.GET)
                 .data(resData)

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE_METTER;
 import static com.hcmute.shopfee.dto.response.GetBranchViewListResponse.BranchCard.fromBranchEntity;
 
 @Data
@@ -56,10 +56,10 @@ public class GetBranchViewListResponse {
         for(int i=0; i<size; i++) {
             BranchCard card = fromBranchEntity(entityList.get(i));
             // if all = false => filter 12km
-            if(!isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+            if(!isGetAll && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE_METTER) {
                 continue;
             } else if(isGetAll) {
-                card.setCanServe(distanceList.get(i).getValue() <= OPERATING_RANGE_DISTANCE);
+                card.setCanServe(distanceList.get(i).getValue() <= OPERATING_RANGE_DISTANCE_METTER);
             }
             card.setDistance(distanceList.get(i).getText());
             card.setDistanceValue(distanceList.get(i).getValue());

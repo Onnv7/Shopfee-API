@@ -27,15 +27,15 @@ public class StatisticsService implements IStatisticsService {
 
     @Override
     public GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit, String branchId) {
-        if(startDate.compareTo(endDate) > 0) {
+        if (startDate.compareTo(endDate) > 0) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The start date must be less than the end date");
         }
-        if(branchId == null) {
+        if (branchId == null) {
             branchId = "";
         }
-        GetRevenueByTimeResponse data= new GetRevenueByTimeResponse();
+        GetRevenueByTimeResponse data = new GetRevenueByTimeResponse();
         String formatTime = "%Y-%m-%d";
-        switch(timeUnit) {
+        switch (timeUnit) {
             case day -> {
                 formatTime = "%Y-%m-%d";
             }
@@ -48,13 +48,13 @@ public class StatisticsService implements IStatisticsService {
         }
 
         List<RevenueStatisticsQueryDto> revenueStatistics = transactionRepository.getRevenueStatistics(startDate, endDate, formatTime, branchId);
-        data.setRevenueList( GetRevenueByTimeResponse.Revenue.fromRevenueStatisticList(revenueStatistics));
+        data.setRevenueList(GetRevenueByTimeResponse.Revenue.fromRevenueStatisticList(revenueStatistics));
         return data;
     }
 
     @Override
     public GetRevenueCurrentDateResponse getRevenueCurrentDate(String branchId) {
-        if(branchId == null) {
+        if (branchId == null) {
             branchId = "";
         }
         GetRevenueQueryDto revenueQueryDto = transactionRepository.getRevenueByDate(new Timestamp(System.currentTimeMillis()), branchId);
@@ -62,11 +62,20 @@ public class StatisticsService implements IStatisticsService {
     }
 
     @Override
-    public GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity(String branchId) {
-        if(branchId == null) {
-            branchId = "";
+    public GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity(String branchId, TimeUnit timeUnit) {
+        String formatTime = "%Y-%m-%d";
+        switch (timeUnit) {
+            case day -> {
+                formatTime = "%Y-%m-%d";
+            }
+            case month -> {
+                formatTime = "%Y-%m";
+            }
+            case year -> {
+                formatTime = "%Y";
+            }
         }
-        GetStatisticOfOrderQuantityQueryDto queryDto = orderBillRepository.getStatisticOfOrderQuantity(branchId);
+        GetStatisticOfOrderQuantityQueryDto queryDto = orderBillRepository.getStatisticOfOrderQuantity(branchId, formatTime);
         return GetStatisticsOfOrderQuantityResponse.fromStatisticOrderQuantityQuery(queryDto);
     }
 }

@@ -246,22 +246,22 @@ public class OrderController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @Operation(summary = ORDER_GET_SHIPPING_FEE_SUM)
-    @GetMapping(path = GET_ORDER_SHIPPING_FEE_SUB_PATH)
-    public ResponseEntity<ResponseAPI<GetShippingFeeResponse>> getShippingFee(
-            @Parameter(name = "lat", required = true, example = "10.8005397")
-            @RequestParam("lat")  Double lat,
-            @Parameter(name = "lng", required = true, example = "106.6393208")
-            @RequestParam("lng")  Double lng
-    ) {
-        GetShippingFeeResponse resData = orderService.getShippingFee(lat, lng);
-        ResponseAPI<GetShippingFeeResponse> res = ResponseAPI.<GetShippingFeeResponse>builder()
-                .timestamp(new Date())
-                .data(resData)
-                .message(SuccessConstant.GET)
-                .build();
-        return new ResponseEntity<>(res, HttpStatus.OK);
-    }
+//    @Operation(summary = ORDER_GET_SHIPPING_FEE_SUM)
+//    @GetMapping(path = GET_ORDER_SHIPPING_FEE_SUB_PATH)
+//    public ResponseEntity<ResponseAPI<GetShippingFeeResponse>> getShippingFee(
+//            @Parameter(name = "lat", required = true, example = "10.8005397")
+//            @RequestParam("lat")  Double lat,
+//            @Parameter(name = "lng", required = true, example = "106.6393208")
+//            @RequestParam("lng")  Double lng
+//    ) {
+//        GetShippingFeeResponse resData = orderService.getShippingFee(lat, lng);
+//        ResponseAPI<GetShippingFeeResponse> res = ResponseAPI.<GetShippingFeeResponse>builder()
+//                .timestamp(new Date())
+//                .data(resData)
+//                .message(SuccessConstant.GET)
+//                .build();
+//        return new ResponseEntity<>(res, HttpStatus.OK);
+//    }
 
     @Operation(summary = ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM)
     @GetMapping(path = GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH)

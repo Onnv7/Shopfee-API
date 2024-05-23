@@ -70,7 +70,7 @@ import java.sql.Time;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE_METTER;
 
 @Service
 @RequiredArgsConstructor
@@ -730,7 +730,7 @@ public class OrderService implements IOrderService {
 
         // loc cac branch hop le
         for (int i = 0; i < branchListSize; i++) {
-            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE_METTER) {
                 branchEntityList.remove(i);
                 distanceList.remove(i);
                 i--;
@@ -995,22 +995,22 @@ public class OrderService implements IOrderService {
         return GetOrderItemAndReviewResponse.fromOrderItemEntityList(orderItemEntityList);
     }
 
-    @Override
-    public GetShippingFeeResponse getShippingFee(Double lat, Double lng) {
-        GetShippingFeeResponse data = new GetShippingFeeResponse();
-        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
-        String clientCoordinates = lat + "," + lng;
-        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
-        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
-        int branchSize = branchEntityList.size();
-
-        Time currentTime = DateUtils.getCurrentTime();
-        BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime);
-
-        int shippingFee = ahamoveService.getShippingFee(lat, lng, branchEntity.getLatitude(), branchEntity.getLongitude());
-        data.setShippingFee(shippingFee);
-        return data;
-    }
+//    @Override
+//    public GetShippingFeeResponse getShippingFee(Double lat, Double lng) {
+//        GetShippingFeeResponse data = new GetShippingFeeResponse();
+//        List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
+//        String clientCoordinates = lat + "," + lng;
+//        List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
+//        List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
+//        int branchSize = branchEntityList.size();
+//
+//        Time currentTime = DateUtils.getCurrentTime();
+//        BranchEntity branchEntity = branchService.getNearestBranchAndValidateTime(lat, lng, currentTime, OrderType.SHIPPING);
+//
+//        int shippingFee = ahamoveService.getShippingFee(lat, lng, branchEntity.getLatitude(), branchEntity.getLongitude());
+//        data.setShippingFee(shippingFee);
+//        return data;
+//    }
 
     @Override
     public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size) {

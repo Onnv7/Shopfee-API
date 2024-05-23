@@ -14,15 +14,15 @@ public class ShopfeeConstant {
     public static final String TOKEN_NOT_FOUND_ERR_MSG = "Token not found in database";
 
     // config
-    public static final int OPERATING_RANGE_DISTANCE = 12000;
+    public static final int OPERATING_RANGE_DISTANCE_METTER = 12000;
+    public static final int ORDER_BOOM_COUNT_LIMIT = 3;
     public static final int HOURS_REQUEST_REFUND = 3;
-    public static int ACCESS_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
-    public static final int REFRESH_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
     public static final int TIMEOUT_REFUSE_ORDER_MINUTES = 30;
+    public static final int ACCESS_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
+    public static final int REFRESH_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
     public static final int TIMEOUT_VNPAY_TRANSACTION_MINUTES = 17;
     public static final int TIMEOUT_ZALO_TRANSACTION_MINUTES = 15;
     public static final int TIME_AFTER_PENDING_PICKUP_MINUTES = 30;
-    public static final int ORDER_BOOM_COUNT_LIMIT = 3;
 
     // notification messages
 

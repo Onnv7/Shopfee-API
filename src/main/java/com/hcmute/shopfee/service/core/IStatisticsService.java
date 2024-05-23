@@ -10,5 +10,5 @@ import java.sql.Date;
 public interface IStatisticsService {
     GetRevenueByTimeResponse getRevenueByTimeRange(Date startDate, Date endDate, TimeUnit timeUnit, String branchId);
     GetRevenueCurrentDateResponse getRevenueCurrentDate(String branchId);
-    GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity(String branchId);
+    GetStatisticsOfOrderQuantityResponse getStatisticOfOrderQuantity(String branchId, TimeUnit timeUnit);
 }

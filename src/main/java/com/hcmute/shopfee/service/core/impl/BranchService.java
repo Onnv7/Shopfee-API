@@ -14,6 +14,7 @@ import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.BranchStatus;
+import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
@@ -39,7 +40,7 @@ import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE;
+import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTANCE_METTER;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class BranchService implements IBranchService {
     private final ProductRepository productRepository;
     private final BranchProductRepository branchProductRepository;
 
-    public BranchEntity getNearestBranchAndValidateTime(Double lat, Double lng, Time timeToCheck) {
+    public BranchEntity getNearestBranchAndValidateTime(Double lat, Double lng, Time timeToCheck, OrderType orderType) {
         List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
         String clientCoordinates = lat + "," + lng;
@@ -64,7 +65,7 @@ public class BranchService implements IBranchService {
         int minDistance = distanceList.get(0).getValue();
 
         for (int i = 0; i < branchListSize; i++) {
-            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+            if (orderType == OrderType.SHIPPING && distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE_METTER) {
                 continue;
             }
 
@@ -77,7 +78,7 @@ public class BranchService implements IBranchService {
             }
         }
 
-        if (minDistance > OPERATING_RANGE_DISTANCE || timeToCheck.after(nearestBranch.getCloseTime()) || timeToCheck.before(nearestBranch.getOpenTime())) {
+        if (minDistance > OPERATING_RANGE_DISTANCE_METTER || timeToCheck.after(nearestBranch.getCloseTime()) || timeToCheck.before(nearestBranch.getOpenTime())) {
             throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND, "Can't find a branch that can serve your current location and time");
         }
 
@@ -98,7 +99,7 @@ public class BranchService implements IBranchService {
 
         List<BranchDistanceDto> branchDistanceList = new ArrayList<>();
         for (int i = 0; i < branchListSize; i++) {
-            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE) {
+            if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE_METTER) {
                 branchEntityList.remove(i);
                 distanceList.remove(i);
                 i--;
@@ -227,7 +228,7 @@ public class BranchService implements IBranchService {
 
     @Override
     public GetBranchNearestResponse getBranchNearest(Double latitude, Double longitude, Time time) {
-        BranchEntity branchEntity = getNearestBranchAndValidateTime(latitude, longitude, time);
+        BranchEntity branchEntity = getNearestBranchAndValidateTime(latitude, longitude, time, OrderType.ONSITE);
 
         return GetBranchNearestResponse.fromBranchEntity(branchEntity);
     }

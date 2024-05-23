@@ -108,9 +108,12 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
                  group by order_bill_id) as last_event on ob.id = last_event.order_bill_id
             join order_event oe on last_event.created_at = oe.created_at
             join branch b on b.id = ob.branch_id
-            where b.id LIKE concat('%', ?1,'%')
+            where
+            	DATE_FORMAT(ob.created_at, ?2) = DATE_FORMAT(CURRENT_DATE(), ?2)
+            	and b.id LIKE concat('%', ?1,'%')
+            GROUP BY DATE_FORMAT(ob.created_at, ?2)
             """, nativeQuery = true)
-    GetStatisticOfOrderQuantityQueryDto getStatisticOfOrderQuantity(String branchId);
+    GetStatisticOfOrderQuantityQueryDto getStatisticOfOrderQuantity(String branchId, String formatTime);
 
 
     @Query(value = """
