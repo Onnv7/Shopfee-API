@@ -20,7 +20,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
             select
                 SUM(case when YEAR(t.created_at) = YEAR(?1) AND MONTH(t.created_at) = MONTH(?1) and DATE(t.created_at) = DATE(?1)  then t.total_paid else 0 end) as revenueByToday,
                 SUM(case when YEAR(t.created_at) = YEAR(?1) AND MONTH(t.created_at) = MONTH(?1) THEN t.total_paid ELSE 0 END) AS revenueByThisMonth,
-                SUM(t.total_paid) as revenue
+                SUM(case when YEAR(t.created_at) = YEAR(?1) THEN t.total_paid ELSE 0 END) AS revenueByThisYear,
             from
                 `transaction` t
                 join order_bill ob on ob.transaction_id = t.id

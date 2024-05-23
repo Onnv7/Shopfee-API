@@ -54,9 +54,6 @@ public class StatisticsService implements IStatisticsService {
 
     @Override
     public GetRevenueCurrentDateResponse getRevenueCurrentDate(String branchId) {
-        if (branchId == null) {
-            branchId = "";
-        }
         GetRevenueQueryDto revenueQueryDto = transactionRepository.getRevenueByDate(new Timestamp(System.currentTimeMillis()), branchId);
         return GetRevenueCurrentDateResponse.fromRevenueQueryDto(revenueQueryDto);
     }

@@ -37,8 +37,8 @@ public class StatisticsController {
     @GetMapping(path = GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetRevenueCurrentDateResponse>> getRevenueCurrentDate(
-            @Parameter(name = "branch_id", required = false, example = "171473213040354")
-            @RequestParam(name = "branch_id", required = false) String branchId) {
+            @Parameter(name = "branch_id", required = false, example = "S001")
+            @RequestParam(name = "branch_id", required = false, defaultValue = "") String branchId) {
         GetRevenueCurrentDateResponse revenue = statisticsService.getRevenueCurrentDate(branchId);
         ResponseAPI<GetRevenueCurrentDateResponse> res = ResponseAPI.<GetRevenueCurrentDateResponse>builder()
                 .message(SuccessConstant.GET)
@@ -51,7 +51,7 @@ public class StatisticsController {
     @GetMapping(path = GET_STATISTICS_QUANTITY_BY_STAGE_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<GetStatisticsOfOrderQuantityResponse>> getStatisticOfOrderQuantity(
-            @Parameter(name = "branch_id", required = false, example = "171473213040354")
+            @Parameter(name = "branch_id", required = false, example = "S001")
             @RequestParam(name = "branch_id", required = false, defaultValue = "") String branchId,
             @Parameter(name = "time_type", required = true, example = "day")
             @RequestParam(name = "time_type", required = true) TimeUnit timeUnit) {
