@@ -33,7 +33,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
     @Query(value = """
             select p.*
             from product p
-            join branch_product bp on bp.product_id = p.id\s
             where p.category_id regexp ?2
                and p.status regexp ?3
                and p.name regexp ?1

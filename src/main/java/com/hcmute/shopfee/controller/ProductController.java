@@ -229,7 +229,7 @@ public class ProductController {
 
     @Operation(summary = PRODUCT_PATCH_CHANGE_BRANCH_PRODUCT_STATUS_SUM)
     @PatchMapping(path = PATCH_PRODUCT_BRANCH_CHANGE_STATUS_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_MANAGER)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
     public ResponseEntity<ResponseAPI<?>> updateBranchProductStatus(
             @PathVariable(PRODUCT_ID) String productId,
             @PathVariable(BRANCH_ID) String branchId,

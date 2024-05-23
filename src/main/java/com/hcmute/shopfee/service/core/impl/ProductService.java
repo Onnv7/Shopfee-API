@@ -427,7 +427,7 @@ public class ProductService implements IProductService {
         String employeeId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : "";
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND));
-        if(!employeeEntity.getBranch().getId().equals(branchId)) {
+        if(employeeEntity.getRole() == EmployeeRole.ROLE_MANAGER && !employeeEntity.getBranch().getId().equals(branchId)) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
         }
         BranchProductId branchProductId = new BranchProductId(branchId, productId);
