@@ -203,7 +203,7 @@ public class ProductService implements IProductService {
         GetAutocompleteResponse data = new GetAutocompleteResponse();
         data.setAutocompleteTextList(new ArrayList<>());
         try {
-            data.setAutocompleteTextList(productESService.getAutoCompleteSuggestions(key));
+            data = productESService.getAutoCompleteSuggestions(key);
         } catch (IOException e) {
             log.error(Arrays.toString(e.getStackTrace()));
         }

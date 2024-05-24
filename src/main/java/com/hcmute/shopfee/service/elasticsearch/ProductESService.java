@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -12,6 +13,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -20,6 +22,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -28,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import static co.elastic.clients.elasticsearch._types.aggregations.Aggregation.Kind.Terms;
@@ -97,35 +101,40 @@ public class ProductESService {
 
     @Autowired
     private RestHighLevelClient client;
-    public List<String> getAutoCompleteSuggestions(String key) throws IOException {
-        SearchRequest searchRequest = new SearchRequest("product");
+    public GetAutocompleteResponse getAutoCompleteSuggestions(String key) throws IOException {
+        GetAutocompleteResponse data = new GetAutocompleteResponse();
+
+        // Tạo query bool
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.matchQuery("name", key.trim()));
+
+        // Tạo highlight
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("name");
+
+        // Tạo searchSourceBuilder
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchSourceBuilder.highlighter(highlightBuilder);
 
-        // Tạo query bool với wildcard query
-        searchSourceBuilder.query(QueryBuilders.boolQuery()
-                .must(QueryBuilders.wildcardQuery("name", key + "*")));
+        // Tạo aggregation
+        TermsAggregationBuilder aggregation = AggregationBuilders.terms("autocomplete").field("name.keyword").size(10);
 
-        // Tạo aggregation để lấy các term từ field name.keyword
-        searchSourceBuilder.aggregation(
-                AggregationBuilders.terms("auto_complete")
-                        .field("name.keyword")
-                        .size(10)
-                        .order(BucketOrder.count(false))
-        );
+        // Thêm aggregation vào searchSourceBuilder
+        searchSourceBuilder.aggregation(aggregation);
 
-        // Bỏ qua các field _source
-        searchSourceBuilder.fetchSource(false);
-
-        // Thiết lập kích thước của kết quả trả về là 0 vì chúng ta chỉ quan tâm đến aggregation
-        searchSourceBuilder.size(0);
-
+        // Tạo request search
+        SearchRequest searchRequest = new SearchRequest("product");
         searchRequest.source(searchSourceBuilder);
 
+        // Thực hiện truy vấn
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-        // Xử lý kết quả aggregation
-        Aggregation autoCompleteAggregation = searchResponse.getAggregations().get("auto_complete");
 
-        return ((ParsedStringTerms) autoCompleteAggregation).getBuckets().stream().map(it -> it.getKey().toString()).toList();
+        // Xử lý kết quả aggregation
+        Aggregation autoCompleteAggregation = searchResponse.getAggregations().get("autocomplete");
+        data.setAutocompleteTextList(((ParsedStringTerms) autoCompleteAggregation).getBuckets().stream().map(it -> it.getKey().toString()).toList());
+        data.setHighlightTextList(Arrays.stream(searchResponse.getHits().getHits()).map(it -> it.getHighlightFields().get("name").getFragments()[0].string()).toList());
+        return data;
     }
 }

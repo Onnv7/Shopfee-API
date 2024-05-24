@@ -8,6 +8,7 @@ import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
@@ -738,7 +739,7 @@ public class ToolController {
     }
 
     @GetMapping(value = "/test-autocompletet")
-    public List<String> autocompletet(@RequestParam String text) throws IOException {
+    public GetAutocompleteResponse autocompletet(@RequestParam String text) throws IOException {
         return productESService.getAutoCompleteSuggestions(text);
     }
 
