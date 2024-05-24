@@ -102,6 +102,7 @@ public class BranchService implements IBranchService {
             if (distanceList.get(i).getValue() > OPERATING_RANGE_DISTANCE_METTER) {
                 branchEntityList.remove(i);
                 distanceList.remove(i);
+                branchListSize--;
                 i--;
                 continue;
             }
@@ -109,6 +110,7 @@ public class BranchService implements IBranchService {
             if (currentTime.after(branchEntityList.get(i).getCloseTime()) || currentTime.before(branchEntityList.get(i).getOpenTime())) {
                 branchEntityList.remove(i);
                 distanceList.remove(i);
+                branchListSize--;
                 i--;
                 continue;
             }
