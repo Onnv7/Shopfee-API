@@ -39,7 +39,7 @@ public interface BranchProductRepository extends JpaRepository<BranchProductEnti
             select bp.*
             from branch_product bp
             join product p on p.id = bp.product_id
-            where bp.id = ?1
+            where p.id = ?1
                 and p.status = 'ACTIVE'
                 and bp.status = 'AVAILABLE'
                 and bp.branch_id = ?2
