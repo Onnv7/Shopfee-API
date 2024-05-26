@@ -700,6 +700,8 @@ public class OrderService implements IOrderService {
     public CheckTakeAwayOrderItemResponse checkTakeAwayOrderItem(CheckTakeAwayOrderItemRequest body, String branchId) {
         List<BranchProductEntity> branchProductList = branchProductRepository.getBranchProductActive(branchId);
         CheckTakeAwayOrderItemResponse data = new CheckTakeAwayOrderItemResponse();
+
+        List<CheckTakeAwayOrderItemResponse.OrderItemInvalid> orderItemInvalidList = new ArrayList<>();
         List<OrderItemDto> orderItemList = body.getOrderItemList();
         for(OrderItemDto orderItem : orderItemList) {
             BranchProductEntity branchProduct = branchProductList.stream()
@@ -708,8 +710,11 @@ public class OrderService implements IOrderService {
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND));
             if(branchProduct.getStatus() == BranchProductStatus.UNAVAILABLE) {
                 CheckTakeAwayOrderItemResponse.OrderItemInvalid orderItemInvalid = new CheckTakeAwayOrderItemResponse.OrderItemInvalid(orderItem.getProductId());
+                orderItemInvalidList.add(orderItemInvalid);
             }
         }
+
+        data.setOrderItemInvalidList(orderItemInvalidList);
         return data;
     }
 
