@@ -70,7 +70,7 @@ public class SwaggerConstant {
 
     // For statistics =================================================================
     public static final String STATISTICS_CONTROLLER_TITLE = "STATISTICS MANAGEMENT";
-    public static final String STATISTICS_GET_REVENUE_CURRENT_DATE_SUM = "Get revenue of store at current date";
+    public static final String STATISTICS_GET_REVENUE_CURRENT_DATE_SUM = "Get revenue of store at current by day/month/year mode";
     public static final String STATISTICS_GET_REVENUE_BY_TIME_SUM = "Get all revenue of store by range time and time unit";
     public static final String STATISTICS_GET_ORDER_QUANTITY_BY_STAGE_SUM = "Get order's quantity by stage of order bill";
 

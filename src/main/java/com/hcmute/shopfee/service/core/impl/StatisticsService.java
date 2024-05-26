@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
+import com.hcmute.shopfee.dto.response.GetRevenueCurrentTimeResponse;
 import com.hcmute.shopfee.dto.response.GetStatisticsOfOrderQuantityResponse;
 import com.hcmute.shopfee.dto.sql.GetRevenueQueryDto;
 import com.hcmute.shopfee.dto.sql.GetStatisticOfOrderQuantityQueryDto;
@@ -53,9 +53,9 @@ public class StatisticsService implements IStatisticsService {
     }
 
     @Override
-    public GetRevenueCurrentDateResponse getRevenueCurrentDate(String branchId) {
+    public GetRevenueCurrentTimeResponse getRevenueCurrent(String branchId) {
         GetRevenueQueryDto revenueQueryDto = transactionRepository.getRevenueByDate(new Timestamp(System.currentTimeMillis()), branchId);
-        return GetRevenueCurrentDateResponse.fromRevenueQueryDto(revenueQueryDto);
+        return GetRevenueCurrentTimeResponse.fromRevenueQueryDto(revenueQueryDto);
     }
 
     @Override

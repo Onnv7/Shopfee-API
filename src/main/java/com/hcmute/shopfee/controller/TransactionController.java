@@ -1,10 +1,7 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.ITransactionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;

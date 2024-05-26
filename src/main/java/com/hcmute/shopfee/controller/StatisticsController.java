@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
 import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentDateResponse;
+import com.hcmute.shopfee.dto.response.GetRevenueCurrentTimeResponse;
 import com.hcmute.shopfee.dto.response.GetStatisticsOfOrderQuantityResponse;
 import com.hcmute.shopfee.enums.param.TimeUnit;
 import com.hcmute.shopfee.model.ResponseAPI;
@@ -36,11 +35,11 @@ public class StatisticsController {
     @Operation(summary = STATISTICS_GET_REVENUE_CURRENT_DATE_SUM)
     @GetMapping(path = GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER)
-    public ResponseEntity<ResponseAPI<GetRevenueCurrentDateResponse>> getRevenueCurrentDate(
+    public ResponseEntity<ResponseAPI<GetRevenueCurrentTimeResponse>> getRevenueCurrent(
             @Parameter(name = "branch_id", required = false, example = "S001")
             @RequestParam(name = "branch_id", required = false, defaultValue = "") String branchId) {
-        GetRevenueCurrentDateResponse revenue = statisticsService.getRevenueCurrentDate(branchId);
-        ResponseAPI<GetRevenueCurrentDateResponse> res = ResponseAPI.<GetRevenueCurrentDateResponse>builder()
+        GetRevenueCurrentTimeResponse revenue = statisticsService.getRevenueCurrent(branchId);
+        ResponseAPI<GetRevenueCurrentTimeResponse> res = ResponseAPI.<GetRevenueCurrentTimeResponse>builder()
                 .message(SuccessConstant.GET)
                 .data(revenue)
                 .build();

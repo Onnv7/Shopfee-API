@@ -90,7 +90,7 @@ public class RouterConstant {
     public static final String GET_PRODUCT_REVIEW_STATISTIC_BY_PRODUCT_ID_SUB_PATH = "/statistic/product" + PRODUCT_ID_PATH;
 
     // ENDPOINT URL STATISTICS =================================================================
-    public static final String GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH = "/revenue/today";
+    public static final String GET_STATISTICS_REVENUE_CURRENT_DATE_SUB_PATH = "/revenue/current";
     public static final String GET_STATISTICS_QUANTITY_BY_STAGE_SUB_PATH = "/order-quantity";
     public static final String GET_STATISTICS_REVENUE_BY_TIME_SUB_PATH = "/chart/revenue";
 

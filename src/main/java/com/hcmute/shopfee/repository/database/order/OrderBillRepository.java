@@ -97,10 +97,11 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     @Query(value = """
             select
                 COUNT(*) AS orderQuantity,
-                SUM(CASE WHEN oe.order_status  = 'SUCCEED' THEN 1 ELSE 0 END) as succeedOrderQuantity,
+                SUM(CASE WHEN oe.order_status = 'SUCCEED' THEN 1 ELSE 0 END) as succeedOrderQuantity,
                 SUM(CASE WHEN oe.order_status = 'CANCELED' THEN 1 ELSE 0 END) as canceledOrderQuantity,
+                SUM(CASE WHEN oe.order_status = 'NOT_RECEIVED' THEN 1 ELSE 0 END) as boomOrderQuantity,
                 SUM(CASE WHEN oe.order_status = 'CREATED' THEN 1 ELSE 0 END) as pendingOrderQuantity,
-                SUM(CASE WHEN oe.order_status IN ('ACCEPTED', 'DELIVERING') THEN 1 ELSE 0 END) as processingOrderQuantity
+                SUM(CASE WHEN oe.order_status IN ('ACCEPTED', 'CANCELLATION_REQUEST', 'CANCELLATION_REQUEST_REFUSED', 'PENDING_PICK_UP', 'IN_DELIVERY') THEN 1 ELSE 0 END) as processingOrderQuantity
             from order_bill ob
             join
             	(select order_bill_id,  MAX(created_at) as created_at

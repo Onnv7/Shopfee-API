@@ -6,4 +6,5 @@ public interface GetStatisticOfOrderQuantityQueryDto {
     Long getProcessingOrderQuantity();
     Long getSucceedOrderQuantity();
     Long getCanceledOrderQuantity();
+    Long getBoomOrderQuantity();
 }
