@@ -719,9 +719,12 @@ public class OrderService implements IOrderService {
         Time currentTime = DateUtils.getCurrentTime();
         List<OrderItemDto> itemList = body.getOrderItemList();
         List<BranchEntity> branchEntityList = branchRepository.findByStatus(BranchStatus.ACTIVE);
-        CheckShippingOrderItemRequest.Location userLocation = body.getDeliveryLocation();
+
+        AddressEntity address = addressRepository.findById(body.getAddressId())
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.ADDRESS_NOT_FOUND));
+
         List<String> destinationCoordinatesList = LocationUtils.getCoordinatesListFromBranchList(branchEntityList);
-        String clientCoordinates = userLocation.getLat() + "," + userLocation.getLng();
+        String clientCoordinates = address.getLatitude() + "," + address.getLongitude();
 
         List<DistanceMatrixResponse.Row.Element.Distance> distanceList = goongService.getDistanceFromClientToBranches(clientCoordinates, destinationCoordinatesList, "bike");
         int branchListSize = branchEntityList.size();
@@ -776,7 +779,7 @@ public class OrderService implements IOrderService {
             if(haveFullFillItem) {
                 branchValid = new CheckShippingOrderItemResponse.BranchValid();//branchDistanceDto.getBranch();
                 branchValid.setBranchId(branchDistanceDto.getBranch().getId());
-                int shippingFee = ahamoveService.getShippingFee(userLocation.getLat(), userLocation.getLng(), branchDistanceDto.getBranch().getLatitude(), branchDistanceDto.getBranch().getLongitude());
+                int shippingFee = ahamoveService.getShippingFee(address.getLatitude(), address.getLongitude(), branchDistanceDto.getBranch().getLatitude(), branchDistanceDto.getBranch().getLongitude());
                 branchValid.setShippingFee(shippingFee);
 
                 break;
