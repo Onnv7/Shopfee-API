@@ -1,12 +1,12 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.request.UpdateEmployeeProfileRequest;
-import com.hcmute.shopfee.dto.request.UpdateEmployeeRequest;
-import com.hcmute.shopfee.dto.response.GetAllEmployeeResponse;
-import com.hcmute.shopfee.dto.response.GetEmployeeByIdResponse;
-import com.hcmute.shopfee.dto.response.GetEmployeeProfileByIdResponse;
-import com.hcmute.shopfee.dto.response.GetSaleStatisticTodayResponse;
+import com.hcmute.shopfee.payload.request.UpdateEmployeeProfileRequest;
+import com.hcmute.shopfee.payload.request.UpdateEmployeeRequest;
+import com.hcmute.shopfee.payload.response.GetAllEmployeeResponse;
+import com.hcmute.shopfee.payload.response.GetEmployeeByIdResponse;
+import com.hcmute.shopfee.payload.response.GetEmployeeProfileByIdResponse;
+import com.hcmute.shopfee.payload.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeRole;

@@ -5,9 +5,8 @@ import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.BranchDistanceDto;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
-import com.hcmute.shopfee.dto.request.CreateBranchRequest;
-import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateBranchRequest;
+import com.hcmute.shopfee.payload.request.UpdateBranchRequest;
 import com.hcmute.shopfee.entity.sql.database.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
@@ -18,6 +17,7 @@ import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
+import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -159,7 +159,7 @@ public class BranchService implements IBranchService {
 
             CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
-                    StringUtils.generateFileName(body.getName(), "branch"),
+                    StringUtils.generateFileNameByTime(body.getName(), "branch"),
                     originalImage
             );
             branch.setCloudinaryImageId(imageUploaded.getPublicId());
@@ -189,7 +189,7 @@ public class BranchService implements IBranchService {
 
                 CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.PRODUCT_PATH,
-                        StringUtils.generateFileName(body.getName(), "branch"),
+                        StringUtils.generateFileNameByTime(body.getName(), "branch"),
                         originalImage
                 );
                 branch.setCloudinaryImageId(imageUploaded.getPublicId());

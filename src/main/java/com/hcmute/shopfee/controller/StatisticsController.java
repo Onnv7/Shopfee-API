@@ -2,9 +2,9 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentTimeResponse;
-import com.hcmute.shopfee.dto.response.GetStatisticsOfOrderQuantityResponse;
+import com.hcmute.shopfee.payload.response.GetRevenueByTimeResponse;
+import com.hcmute.shopfee.payload.response.GetRevenueCurrentTimeResponse;
+import com.hcmute.shopfee.payload.response.GetStatisticsOfOrderQuantityResponse;
 import com.hcmute.shopfee.enums.param.TimeUnit;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IStatisticsService;

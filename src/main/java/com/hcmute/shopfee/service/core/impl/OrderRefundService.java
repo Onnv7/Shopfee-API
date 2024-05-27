@@ -4,8 +4,8 @@ import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
-import com.hcmute.shopfee.dto.request.CreateOrderReturnRequest;
-import com.hcmute.shopfee.dto.response.GetOrderRefundResponse;
+import com.hcmute.shopfee.payload.request.CreateOrderReturnRequest;
+import com.hcmute.shopfee.payload.response.GetOrderRefundResponse;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
@@ -81,7 +81,7 @@ public class OrderRefundService implements IOrderRefundService {
                 String thumbnailUrl = "";
                 MediaType mediaType = MediaUtils.getMediaType(media);
 
-                CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, StringUtils.generateFileName(orderId, "order_return"), media.getBytes());
+                CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.ORDER_RETURN_PATH, StringUtils.generateFileNameByTime(orderId, "order_return"), media.getBytes());
                 if(mediaType == MediaType.IMAGE) {
                     thumbnailUrl = cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId());
                 } else if(mediaType == MediaType.VIDEO) {

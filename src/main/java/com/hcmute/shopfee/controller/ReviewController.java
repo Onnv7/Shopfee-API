@@ -2,22 +2,16 @@ package com.hcmute.shopfee.controller;
 
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateReviewRequest;
-import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
-import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
-import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
-import com.hcmute.shopfee.enums.ReviewInteraction;
+import com.hcmute.shopfee.payload.request.CreateReviewRequest;
+import com.hcmute.shopfee.payload.request.InteractProductReviewRequest;
+import com.hcmute.shopfee.payload.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.payload.response.GetProductReviewStatisticResponse;
 import com.hcmute.shopfee.enums.param.ReviewSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -28,7 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.List;
 
 import static com.hcmute.shopfee.constant.RouterConstant.*;
 import static com.hcmute.shopfee.constant.SwaggerConstant.*;

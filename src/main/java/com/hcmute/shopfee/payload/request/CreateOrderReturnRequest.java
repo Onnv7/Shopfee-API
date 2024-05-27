@@ -1,0 +1,25 @@
+package com.hcmute.shopfee.payload.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+import static com.hcmute.shopfee.constant.SwaggerConstant.NOTE_EX;
+import static com.hcmute.shopfee.constant.SwaggerConstant.REASON_EX;
+
+@Data
+public class CreateOrderReturnRequest {
+    @Schema(example = REASON_EX)
+    @NotBlank
+    private String reason;
+
+    @Schema(example = NOTE_EX)
+    private String note;
+
+    @NotEmpty
+    private List<MultipartFile> mediaList;
+}

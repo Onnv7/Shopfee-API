@@ -1,17 +1,16 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateProductRequest;
-import com.hcmute.shopfee.dto.request.DeleteSomeProductRequest;
-import com.hcmute.shopfee.dto.request.UpdateProductRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateProductRequest;
+import com.hcmute.shopfee.payload.request.DeleteSomeProductRequest;
+import com.hcmute.shopfee.payload.request.UpdateProductRequest;
 import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.enums.param.ProductSortType;
 import com.hcmute.shopfee.model.ResponseAPI;
+import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.utils.HeaderUtils;
 import io.swagger.v3.oas.annotations.Operation;

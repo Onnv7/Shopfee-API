@@ -46,6 +46,7 @@ public class ErrorConstant {
     public static final String CANT_CRUD_EMPLOYEE_ACCOUNT_OF_ANOTHER_BRANCH = "Managers cannot CRUD an employee account belonging to another branch";
     public static final String ALBUM_NOT_FOUND = "Image data not found";
     public static final String NOTIFICATION_NOT_FOUND = "Notification data not found";
+    public static final String BLOG_NOT_FOUND = "Blog data not found";
     public static final String ADD_MORE_5_ADDRESS = "Do not add more than 5 addresses";
 
     // dev message

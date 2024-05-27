@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.CloudinaryConstant;
-import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
-import com.hcmute.shopfee.dto.request.UploadImageRequest;
-import com.hcmute.shopfee.dto.response.GetAllImageResponse;
+import com.hcmute.shopfee.payload.request.UploadImageRequest;
+import com.hcmute.shopfee.payload.response.GetAllImageResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
@@ -40,7 +39,7 @@ public class AlbumService implements IAlbumService {
             throw new ShopfeeException(ShopfeeErrorCode.IMAGE_INVALID);
         }
         String pathCloudinary = body.getType() == AlbumType.CATEGORY ? CloudinaryConstant.CATEGORY_PATH : CloudinaryConstant.PRODUCT_PATH;
-        String fileName = StringUtils.generateFileName("", "album");
+        String fileName = StringUtils.generateFileNameByTime("", "album");
         try {
             CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(pathCloudinary, fileName, body.getImage().getBytes());
             AlbumEntity album = AlbumEntity.builder()

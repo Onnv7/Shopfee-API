@@ -1,8 +1,8 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.response.GetRevenueByTimeResponse;
-import com.hcmute.shopfee.dto.response.GetRevenueCurrentTimeResponse;
-import com.hcmute.shopfee.dto.response.GetStatisticsOfOrderQuantityResponse;
+import com.hcmute.shopfee.payload.response.GetRevenueByTimeResponse;
+import com.hcmute.shopfee.payload.response.GetRevenueCurrentTimeResponse;
+import com.hcmute.shopfee.payload.response.GetStatisticsOfOrderQuantityResponse;
 import com.hcmute.shopfee.enums.param.TimeUnit;
 
 import java.sql.Date;

@@ -3,12 +3,12 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
-import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
-import com.hcmute.shopfee.dto.request.UpdateCategoryRequest;
-import com.hcmute.shopfee.dto.response.CheckExistedNameResponse;
-import com.hcmute.shopfee.dto.response.GetCategoryByIdResponse;
-import com.hcmute.shopfee.dto.response.GetCategoryListResponse;
-import com.hcmute.shopfee.dto.response.GetVisibleCategoryListResponse;
+import com.hcmute.shopfee.payload.request.CreateCategoryRequest;
+import com.hcmute.shopfee.payload.request.UpdateCategoryRequest;
+import com.hcmute.shopfee.payload.response.CheckExistedNameResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryByIdResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleCategoryListResponse;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
 import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
 import com.hcmute.shopfee.enums.AlbumType;
@@ -52,7 +52,7 @@ public class CategoryService implements ICategoryService {
             originalImage = body.getImage().getBytes();
             byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
             CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.CATEGORY_PATH,
-                    StringUtils.generateFileName(body.getName(), "category"), newImage);
+                    StringUtils.generateFileNameByTime(body.getName(), "category"), newImage);
             AlbumEntity image = AlbumEntity.builder()
                     .type(AlbumType.CATEGORY)
                     .cloudinaryImageId(fileUploaded.getPublicId())
@@ -99,7 +99,7 @@ public class CategoryService implements ICategoryService {
 
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.CATEGORY_PATH,
-                        StringUtils.generateFileName(body.getName(), "category"),
+                        StringUtils.generateFileNameByTime(body.getName(), "category"),
                         newImage
                 );
                 AlbumEntity image = AlbumEntity.builder()

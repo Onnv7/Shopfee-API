@@ -8,7 +8,7 @@ import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.response.GetAutocompleteResponse;
+import com.hcmute.shopfee.payload.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;

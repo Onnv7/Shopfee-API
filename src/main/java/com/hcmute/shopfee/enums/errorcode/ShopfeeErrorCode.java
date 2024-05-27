@@ -25,6 +25,7 @@ public enum ShopfeeErrorCode {
     PRODUCT_REVIEW_NOT_FOUND(1020, ErrorConstant.PRODUCT_REVIEW_NOT_FOUND, SupErrorCode.NOT_FOUND),
     ALBUM_NOT_FOUND(1021, ErrorConstant.ALBUM_NOT_FOUND, SupErrorCode.NOT_FOUND),
     NOTIFICATION_NOT_FOUND(1022, ErrorConstant.NOTIFICATION_NOT_FOUND, SupErrorCode.NOT_FOUND),
+    BLOG_NOT_FOUND(1023, ErrorConstant.BLOG_NOT_FOUND, SupErrorCode.NOT_FOUND),
 
     // =======================================================================
     TOKEN_STOLEN(1601, ErrorConstant.TOKEN_STOLEN, SupErrorCode.UNAUTHORIZED),

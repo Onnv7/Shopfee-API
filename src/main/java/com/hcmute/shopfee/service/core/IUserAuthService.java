@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.*;
-import com.hcmute.shopfee.dto.response.LoginResponse;
-import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
-import com.hcmute.shopfee.dto.response.RegisterResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import com.hcmute.shopfee.payload.request.*;
+import com.hcmute.shopfee.payload.response.LoginResponse;
+import com.hcmute.shopfee.payload.response.RefreshTokenResponse;
+import com.hcmute.shopfee.payload.response.RegisterResponse;
 
 public interface IUserAuthService {
     RegisterResponse registerUser(RegisterUserRequest body);

@@ -2,10 +2,10 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
-import com.hcmute.shopfee.dto.request.CreateReviewRequest;
-import com.hcmute.shopfee.dto.request.InteractProductReviewRequest;
-import com.hcmute.shopfee.dto.response.GetProductReviewListResponse;
-import com.hcmute.shopfee.dto.response.GetProductReviewStatisticResponse;
+import com.hcmute.shopfee.payload.request.CreateReviewRequest;
+import com.hcmute.shopfee.payload.request.InteractProductReviewRequest;
+import com.hcmute.shopfee.payload.response.GetProductReviewListResponse;
+import com.hcmute.shopfee.payload.response.GetProductReviewStatisticResponse;
 import com.hcmute.shopfee.dto.sql.GetProductReviewStatisticDto;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;

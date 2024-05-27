@@ -186,6 +186,15 @@ public class SwaggerConstant {
     public static final String BANNER_GET_LIST_SUM = "Get banner list";
     public static final String BANNER_GET_VISIBLE_LIST_SUM = "Get visible banner list";
     public static final String BANNER_GET_DETAILS_BY_ID_LIST_SUM = "Get banner's details by id";
+    // For banner =================================================================
+    public static final String BLOG_CONTROLLER_TITLE = "BLOG MANAGEMENT";
+    public static final String BLOG_CREATE_SUM = "Create a new blog";
+    public static final String BLOG_GET_VIEW_BY_ID_SUM = "Get a blog by id";
+    public static final String BLOG_GET_DETAILS_BY_ID_SUM = "Get details blog by id";
+    public static final String BLOG_GET_LIST_SUM = "Get blog list";
+    public static final String BLOG_GET_DETAILS_LIST_SUM = "Get details blog list";
+    public static final String BLOG_UPDATE_BY_ID_SUM = "Update a blog by id";
+    public static final String BLOG_DELETE_BY_ID_SUM = "Delete a blog by id";
 
     // For banner =================================================================
     public static final String COUPON_CONTROLLER_TITLE = "COUPON MANAGEMENT";
@@ -304,5 +313,7 @@ public class SwaggerConstant {
     public static final String FCM_TOKEN_EX = "ep-xdyteTi6h1O16emTaLy:APA91bF_DJ1hpU_VqOv2olMzTeIn02Jpyjzhnq0mrXzHBhaZwei7RYVKvCK90Kh3wneZRvpJKA9AIGZBX1e20UNrU0QJoJxuP3a3LJB36wXuKTPmkniiGzJYNUQIOINOejCqFGZmGcI3";
     public static final String TITLE_NOTI_EX = "This is title";
     public static final String CONTENT_NOTI_EX = "This is title";
+    public static final String BLOG_STATUS_EX = "VISIBLE";
+    public static final String BLOG_SUMMARY_EX = "this is summary";
     public static final String IMAGE_URL_NOTI_EX = "https://static1.srcdn.com/wordpress/wp-content/uploads/2023/09/sasauke-on-the-road-to-redemption.jpg";
 }

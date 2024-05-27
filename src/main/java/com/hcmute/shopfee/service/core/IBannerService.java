@@ -1,10 +1,10 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.CreateBannerRequest;
-import com.hcmute.shopfee.dto.request.UpdateBannerRequest;
-import com.hcmute.shopfee.dto.response.GetBannerDetailResponse;
-import com.hcmute.shopfee.dto.response.GetBannerListResponse;
-import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
+import com.hcmute.shopfee.payload.request.CreateBannerRequest;
+import com.hcmute.shopfee.payload.request.UpdateBannerRequest;
+import com.hcmute.shopfee.payload.response.GetBannerDetailResponse;
+import com.hcmute.shopfee.payload.response.GetBannerListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleBannerListResponse;
 
 import java.util.List;
 

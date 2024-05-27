@@ -1,11 +1,9 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.AddPhoneNumberRequest;
-import com.hcmute.shopfee.dto.request.UpdateUserRequest;
-import com.hcmute.shopfee.dto.request.UploadUserAvatarRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.*;
 import com.hcmute.shopfee.enums.param.UserChartStatisticType;
 import com.hcmute.shopfee.enums.UserStatus;
+import com.hcmute.shopfee.payload.response.*;
 
 import java.sql.Date;
 

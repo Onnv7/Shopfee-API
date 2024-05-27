@@ -1,12 +1,12 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.CreateProductRequest;
-import com.hcmute.shopfee.dto.request.UpdateProductRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateProductRequest;
+import com.hcmute.shopfee.payload.request.UpdateProductRequest;
 import com.hcmute.shopfee.enums.BranchProductStatus;
 import com.hcmute.shopfee.enums.ProductStatus;
 import com.hcmute.shopfee.enums.ProductType;
 import com.hcmute.shopfee.enums.param.ProductSortType;
+import com.hcmute.shopfee.payload.response.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

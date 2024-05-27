@@ -1,12 +1,14 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
-import com.hcmute.shopfee.dto.request.UpdateCategoryRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateCategoryRequest;
+import com.hcmute.shopfee.payload.request.UpdateCategoryRequest;
 import com.hcmute.shopfee.model.ResponseAPI;
+import com.hcmute.shopfee.payload.response.CheckExistedNameResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryByIdResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleCategoryListResponse;
 import com.hcmute.shopfee.service.core.ICategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

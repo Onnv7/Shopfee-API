@@ -2,12 +2,11 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.*;
-import com.hcmute.shopfee.dto.response.LoginResponse;
-import com.hcmute.shopfee.dto.response.RefreshTokenResponse;
-import com.hcmute.shopfee.dto.response.RegisterResponse;
+import com.hcmute.shopfee.payload.request.*;
+import com.hcmute.shopfee.payload.response.LoginResponse;
+import com.hcmute.shopfee.payload.response.RefreshTokenResponse;
+import com.hcmute.shopfee.payload.response.RegisterResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IUserAuthService;
 import com.hcmute.shopfee.utils.HeaderUtils;

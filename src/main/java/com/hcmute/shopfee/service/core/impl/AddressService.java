@@ -1,9 +1,9 @@
 package com.hcmute.shopfee.service.core.impl;
 
-import com.hcmute.shopfee.dto.request.CreateAddressRequest;
-import com.hcmute.shopfee.dto.request.UpdateAddressRequest;
-import com.hcmute.shopfee.dto.response.GetAddressDetailsByIdResponse;
-import com.hcmute.shopfee.dto.response.GetAddressListByUserIdResponse;
+import com.hcmute.shopfee.payload.request.CreateAddressRequest;
+import com.hcmute.shopfee.payload.request.UpdateAddressRequest;
+import com.hcmute.shopfee.payload.response.GetAddressDetailsByIdResponse;
+import com.hcmute.shopfee.payload.response.GetAddressListByUserIdResponse;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -16,7 +16,6 @@ import com.hcmute.shopfee.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.hcmute.shopfee.constant.ErrorConstant.*;

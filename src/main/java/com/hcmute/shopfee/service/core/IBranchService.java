@@ -1,8 +1,8 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.CreateBranchRequest;
-import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateBranchRequest;
+import com.hcmute.shopfee.payload.request.UpdateBranchRequest;
+import com.hcmute.shopfee.payload.response.*;
 
 import java.sql.Time;
 import java.util.concurrent.ExecutionException;

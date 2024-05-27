@@ -5,9 +5,8 @@ import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.common.RatingSummaryDto;
-import com.hcmute.shopfee.dto.request.CreateProductRequest;
-import com.hcmute.shopfee.dto.request.UpdateProductRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateProductRequest;
+import com.hcmute.shopfee.payload.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
 import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
 import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
@@ -26,6 +25,7 @@ import com.hcmute.shopfee.kafka.message.TrackingUserProductMsgData;
 import com.hcmute.shopfee.kafka.publisher.TrackingUserProductKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
+import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.repository.database.AlbumRepository;
 import com.hcmute.shopfee.repository.database.BranchRepository;
 import com.hcmute.shopfee.repository.database.CategoryRepository;
@@ -164,7 +164,7 @@ public class ProductService implements IProductService {
             productEntity.setCategory(categoryEntity);
             CloudinaryUploadResponse imageUploaded = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.PRODUCT_PATH,
-                    StringUtils.generateFileName(body.getName().trim(), "product"),
+                    StringUtils.generateFileNameByTime(body.getName().trim(), "product"),
                     originalImage
             );
 
@@ -499,7 +499,7 @@ public class ProductService implements IProductService {
 
                 byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
-                        StringUtils.generateFileName(body.getName(), "product"), newImage);
+                        StringUtils.generateFileNameByTime(body.getName(), "product"), newImage);
 
                 AlbumEntity productImage = AlbumEntity.builder()
                         .type(AlbumType.PRODUCT)

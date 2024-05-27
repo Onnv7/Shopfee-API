@@ -1,11 +1,11 @@
 package com.hcmute.shopfee.service.core;
 
-import com.hcmute.shopfee.dto.request.CreateCategoryRequest;
-import com.hcmute.shopfee.dto.request.UpdateCategoryRequest;
-import com.hcmute.shopfee.dto.response.CheckExistedNameResponse;
-import com.hcmute.shopfee.dto.response.GetCategoryByIdResponse;
-import com.hcmute.shopfee.dto.response.GetCategoryListResponse;
-import com.hcmute.shopfee.dto.response.GetVisibleCategoryListResponse;
+import com.hcmute.shopfee.payload.request.CreateCategoryRequest;
+import com.hcmute.shopfee.payload.request.UpdateCategoryRequest;
+import com.hcmute.shopfee.payload.response.CheckExistedNameResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryByIdResponse;
+import com.hcmute.shopfee.payload.response.GetCategoryListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleCategoryListResponse;
 
 import java.util.List;
 

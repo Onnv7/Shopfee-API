@@ -1,13 +1,12 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateBranchRequest;
-import com.hcmute.shopfee.dto.request.UpdateBranchRequest;
-import com.hcmute.shopfee.dto.response.*;
+import com.hcmute.shopfee.payload.request.CreateBranchRequest;
+import com.hcmute.shopfee.payload.request.UpdateBranchRequest;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.module.goong.Goong;
+import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.service.core.IBranchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

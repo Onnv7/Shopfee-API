@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
-import com.hcmute.shopfee.dto.response.GetAutocompleteResponse;
+import com.hcmute.shopfee.payload.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -17,9 +17,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -33,8 +31,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import static co.elastic.clients.elasticsearch._types.aggregations.Aggregation.Kind.Terms;
 
 @Service
 @RequiredArgsConstructor

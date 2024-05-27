@@ -3,11 +3,11 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
-import com.hcmute.shopfee.dto.request.CreateBannerRequest;
-import com.hcmute.shopfee.dto.request.UpdateBannerRequest;
-import com.hcmute.shopfee.dto.response.GetBannerDetailResponse;
-import com.hcmute.shopfee.dto.response.GetBannerListResponse;
-import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
+import com.hcmute.shopfee.payload.request.CreateBannerRequest;
+import com.hcmute.shopfee.payload.request.UpdateBannerRequest;
+import com.hcmute.shopfee.payload.response.GetBannerDetailResponse;
+import com.hcmute.shopfee.payload.response.GetBannerListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleBannerListResponse;
 import com.hcmute.shopfee.entity.sql.database.BannerEntity;
 import com.hcmute.shopfee.enums.BannerStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -37,7 +37,7 @@ public class BannerService implements IBannerService {
         try {
             CloudinaryUploadResponse bannerImage = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.BANNER_PATH,
-                    StringUtils.generateFileName(body.getName(), "banner"),
+                    StringUtils.generateFileNameByTime(body.getName(), "banner"),
                     body.getImage().getBytes()
             );
             banner.setImageUrl(bannerImage.getUrl());
@@ -62,7 +62,7 @@ public class BannerService implements IBannerService {
 
                 CloudinaryUploadResponse bannerImage = cloudinaryService.uploadFileToFolder(
                         CloudinaryConstant.BANNER_PATH,
-                        StringUtils.generateFileName(body.getName(), "banner"),
+                        StringUtils.generateFileNameByTime(body.getName(), "banner"),
                         body.getImage().getBytes()
                 );
 

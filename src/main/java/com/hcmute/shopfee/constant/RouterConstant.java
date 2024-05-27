@@ -11,6 +11,7 @@ public class RouterConstant {
     public static final String EMPLOYEE_AUTH_BASE_PATH = "/api/auth/employee";
     public static final String USER_AUTH_BASE_PATH = "/api/auth/user";
     public static final String BANNER_BASE_PATH = "/api/banner";
+    public static final String BLOG_BASE_PATH = "/api/blog";
     public static final String CATEGORY_BASE_PATH = "/api/category";
     public static final String COUPON_BASE_PATH = "/api/coupon";
     public static final String PRODUCT_BASE_PATH = "/api/product";
@@ -37,6 +38,8 @@ public class RouterConstant {
     public static final String PRODUCT_ID = "productId";
     public static final String BANNER_ID_PATH = "/{bannerId}";
     public static final String BANNER_ID = "bannerId";
+    public static final String BLOG_ID_PATH = "/{blogId}";
+    public static final String BLOG_ID = "blogId";
     public static final String USER_ID_PATH = "/{userId}";
     public static final String USER_ID = "userId";
     public static final String PRODUCT_REVIEW_ID_PATH = "/{productReviewId}";
@@ -207,7 +210,14 @@ public class RouterConstant {
     public static final String GET_BANNER_LIST_SUB_PATH = "";
     public static final String GET_BANNER_VISIBLE_LIST_SUB_PATH = "/visible";
     public static final String GET_BANNER_DETAILS_BY_ID_SUB_PATH = BANNER_ID_PATH + "/details";
-
+    // ENDPOINT URL BLOG =================================================================
+    public static final String POST_BLOG_CREATE_SUB_PATH = "";
+    public static final String DELETE_BLOG_BY_ID_SUB_PATH = BLOG_ID_PATH;
+    public static final String GET_BLOG_VIEW_BY_ID_SUB_PATH = BLOG_ID_PATH + "/view";
+    public static final String GET_BLOG_DETAILS_BY_ID_SUB_PATH = BLOG_ID_PATH + "/details";
+    public static final String GET_BLOG_VIEW_LIST_SUB_PATH = "/view-list";
+    public static final String GET_BLOG_DETAILS_LIST_SUB_PATH = "/list";
+    public static final String PUT_BLOG_UPDATE_BY_ID_SUB_PATH = BLOG_ID_PATH;
     // ENDPOINT URL COUPON =================================================================
     public static final String POST_COUPON_CREATE_SHIPPING_TYPE_SUB_PATH = "/shipping";
     public static final String PUT_COUPON_UPDATE_SHIPPING_TYPE_SUB_PATH = "/shipping" + COUPON_ID_PATH;

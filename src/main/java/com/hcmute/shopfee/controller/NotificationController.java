@@ -2,12 +2,12 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.UpsertNotificationFCMRequest;
-import com.hcmute.shopfee.dto.request.UpsertEmployeeFcmTokenRequest;
-import com.hcmute.shopfee.dto.request.UpsertUserFcmTokenRequest;
-import com.hcmute.shopfee.dto.response.GetNotificationList;
-import com.hcmute.shopfee.dto.response.GetSystemNotificationDetailResponse;
-import com.hcmute.shopfee.dto.response.UpsertFcmTokenResponse;
+import com.hcmute.shopfee.payload.request.UpsertNotificationFCMRequest;
+import com.hcmute.shopfee.payload.request.UpsertEmployeeFcmTokenRequest;
+import com.hcmute.shopfee.payload.request.UpsertUserFcmTokenRequest;
+import com.hcmute.shopfee.payload.response.GetNotificationList;
+import com.hcmute.shopfee.payload.response.GetSystemNotificationDetailResponse;
+import com.hcmute.shopfee.payload.response.UpsertFcmTokenResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.INotificationService;
 import io.swagger.v3.oas.annotations.Operation;

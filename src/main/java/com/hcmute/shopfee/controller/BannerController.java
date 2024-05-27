@@ -1,13 +1,12 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateBannerRequest;
-import com.hcmute.shopfee.dto.request.UpdateBannerRequest;
-import com.hcmute.shopfee.dto.response.GetBannerDetailResponse;
-import com.hcmute.shopfee.dto.response.GetBannerListResponse;
-import com.hcmute.shopfee.dto.response.GetVisibleBannerListResponse;
+import com.hcmute.shopfee.payload.request.CreateBannerRequest;
+import com.hcmute.shopfee.payload.request.UpdateBannerRequest;
+import com.hcmute.shopfee.payload.response.GetBannerDetailResponse;
+import com.hcmute.shopfee.payload.response.GetBannerListResponse;
+import com.hcmute.shopfee.payload.response.GetVisibleBannerListResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IBannerService;
 import io.swagger.v3.oas.annotations.Operation;

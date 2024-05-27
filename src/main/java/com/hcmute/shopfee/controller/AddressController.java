@@ -1,12 +1,11 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.CreateAddressRequest;
-import com.hcmute.shopfee.dto.request.UpdateAddressRequest;
-import com.hcmute.shopfee.dto.response.GetAddressDetailsByIdResponse;
-import com.hcmute.shopfee.dto.response.GetAddressListByUserIdResponse;
+import com.hcmute.shopfee.payload.request.CreateAddressRequest;
+import com.hcmute.shopfee.payload.request.UpdateAddressRequest;
+import com.hcmute.shopfee.payload.response.GetAddressDetailsByIdResponse;
+import com.hcmute.shopfee.payload.response.GetAddressListByUserIdResponse;
 import com.hcmute.shopfee.model.ResponseAPI;
 import com.hcmute.shopfee.service.core.IAddressService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;

@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
-import com.hcmute.shopfee.constant.StatusCode;
 import com.hcmute.shopfee.constant.SuccessConstant;
-import com.hcmute.shopfee.dto.request.UploadImageRequest;
-import com.hcmute.shopfee.dto.response.GetAllImageResponse;
+import com.hcmute.shopfee.payload.request.UploadImageRequest;
+import com.hcmute.shopfee.payload.response.GetAllImageResponse;
 import com.hcmute.shopfee.enums.AlbumSortType;
 import com.hcmute.shopfee.enums.AlbumType;
 import com.hcmute.shopfee.model.ResponseAPI;
