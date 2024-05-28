@@ -120,9 +120,9 @@ public class BlogController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
     @Operation(summary = BLOG_UPDATE_BY_ID_SUM)
-    @PutMapping(path = PUT_BLOG_UPDATE_BY_ID_SUB_PATH)
+    @PutMapping(path = PUT_BLOG_UPDATE_BY_ID_SUB_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN)
-    public ResponseEntity<ResponseAPI<?>> updateBlog(@PathVariable(BLOG_ID) String blogId, @RequestBody UpdateBlogRequest body) {
+    public ResponseEntity<ResponseAPI<?>> updateBlog(@PathVariable(BLOG_ID) String blogId, @ModelAttribute @Valid UpdateBlogRequest body) {
         blogService.updateBlog(blogId, body);
         ResponseAPI res = ResponseAPI.builder()
                 .timestamp(new Date())
