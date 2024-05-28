@@ -93,6 +93,8 @@ public class BlogService implements IBlogService {
                 throw new RuntimeException(e);
             }
         }
+
+        blogRepository.save(blogEntity);
     }
 
     @Override
