@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.payload.response;
 
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class GetAllEmployeeResponse {
         private String lastName;
         private String username;
         private Date birthDate;
+        private EmployeeRole role;
         private Gender gender;
         private EmployeeStatus status;
 
@@ -34,6 +36,7 @@ public class GetAllEmployeeResponse {
             employee.setBirthDate(entity.getBirthDate());
             employee.setGender(entity.getGender());
             employee.setStatus(entity.getStatus());
+            employee.setRole(entity.getRole());
             return employee;
         }
     }
