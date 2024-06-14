@@ -1,6 +1,8 @@
 package com.hcmute.shopfee.security.custom.employee;
 
 import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.service.core.impl.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +26,9 @@ public class CustomEmployeeDetailsService implements UserDetailsService {
 
     @SneakyThrows
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws ShopfeeException {
         EmployeeEntity employee = employeeService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND));
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG));
 
         List<String> roleNames = Collections.singletonList(employee.getRole().name());
         List<SimpleGrantedAuthority> authorities = roleNames.stream()

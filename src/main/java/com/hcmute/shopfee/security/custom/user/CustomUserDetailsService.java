@@ -2,6 +2,8 @@ package com.hcmute.shopfee.security.custom.user;
 
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.service.core.impl.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +25,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @SneakyThrows
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userService.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException(ErrorConstant.NOT_FOUND));
+    public UserDetails loadUserByUsername(String username) throws ShopfeeException {
+        UserEntity user = userService.findByEmail(username).orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG));
 
 
         List<String> roleNames = Collections.singletonList(user.getRole().name());
