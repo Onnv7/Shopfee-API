@@ -5,6 +5,7 @@ import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.BranchDistanceDto;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
+import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.enums.param.OrderPhasesStatus;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
@@ -163,8 +164,8 @@ public class OrderService implements IOrderService {
 
 
             if (productCoupon.getRewardType() == CouponRewardType.MONEY) {
-                productDiscountValue = productCoupon.getMoneyReward().getValue();
-                productDiscountUnit = productCoupon.getMoneyReward().getUnit();
+                productDiscountValue = ((MoneyRewardEntity) productCoupon).getValue();
+                productDiscountUnit = ((MoneyRewardEntity) productCoupon).getUnit();
 
                 List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT)
                         .findFirst().orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
@@ -377,8 +378,8 @@ public class OrderService implements IOrderService {
 
         if (coupon.getRewardType() == CouponRewardType.MONEY) {
             MoneyRewardReceivedEntity moneyRewardReceived = MoneyRewardReceivedEntity.builder()
-                    .unit(coupon.getMoneyReward().getUnit())
-                    .value(coupon.getMoneyReward().getValue())
+                    .unit(((MoneyRewardEntity) coupon).getUnit())
+                    .value(((MoneyRewardEntity) coupon).getValue())
                     .couponUsed(couponUsed)
                     .build();
             couponUsed.setRewardType(CouponRewardType.MONEY);

@@ -42,6 +42,7 @@ public class VNPayTransaction {
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone(VNP_TIME_ZONE));
         SimpleDateFormat formatter = new SimpleDateFormat(VNP_TIME_FORMAT);
         String vnp_CreateDate = formatter.format(cld.getTime());
+
         vnp_Params.put(VNP_CREATE_DATE_KEY, vnp_CreateDate);
 
         cld.add(Calendar.MINUTE, 15);

@@ -7,6 +7,7 @@ import com.hcmute.shopfee.dto.common.coupon.condition.SubjectConditionDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.UsageConditionDto;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.MoneyRewardUnit;
 import lombok.Data;
@@ -37,8 +38,8 @@ public class GetAmountOffProductCouponDetailByIdResponse {
         data.setStatus(entity.getStatus());
         data.setStartDate(entity.getStartDate());
         data.setExpirationDate(entity.getExpirationDate());
-        data.setUnitReward(entity.getMoneyReward().getUnit());
-        data.setValueReward(entity.getMoneyReward().getValue());
+        data.setUnitReward(((MoneyRewardEntity) entity).getUnit());
+        data.setValueReward(((MoneyRewardEntity) entity).getValue());
 
         List<CouponConditionEntity>  conditionEntityList = entity.getConditionList();
         for (CouponConditionEntity condition: conditionEntityList) {

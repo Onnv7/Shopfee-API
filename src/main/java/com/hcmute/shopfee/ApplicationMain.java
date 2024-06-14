@@ -26,6 +26,7 @@ import java.util.TimeZone;
 public class ApplicationMain {
 
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+7:00"));
         SpringApplication.run(ApplicationMain.class, args);
     }
 
