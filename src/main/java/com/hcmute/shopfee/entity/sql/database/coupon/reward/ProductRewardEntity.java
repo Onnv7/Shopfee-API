@@ -16,13 +16,14 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRewardEntity {
-    @EmbeddedId
-    private ProductRewardID id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @MapsId("productId")
     @OneToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
@@ -36,7 +37,6 @@ public class ProductRewardEntity {
     private Short quantity;
 
     @ManyToOne
-    @MapsId("couponId")
     @JoinColumn(name = "coupon_id", nullable = false)
     @JsonBackReference
     private CouponEntity coupon;

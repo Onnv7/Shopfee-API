@@ -22,7 +22,7 @@ public class ProductRewardDto {
 
     public static ProductRewardDto fromProductRewardEntity(ProductRewardEntity entity) {
         ProductRewardDto data = new ProductRewardDto();
-        data.setProductId(entity.getId().getProductId());
+        data.setProductId(entity.getProduct().getId());
         data.setProductSize(entity.getProductSize());
         data.setQuantity(entity.getQuantity());
         return data;

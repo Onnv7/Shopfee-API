@@ -14,6 +14,7 @@ import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEnt
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.MoneyRewardID;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -167,8 +168,10 @@ public class CouponService implements ICouponService {
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
+        couponEntity = couponRepository.save(couponEntity);
 
         MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        moneyRewardEntity.setCouponId(couponEntity.getId());
         couponEntity.setMoneyReward(moneyRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), null, couponEntity);
@@ -380,9 +383,11 @@ public class CouponService implements ICouponService {
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
+        couponEntity = couponRepository.save(couponEntity);
 
 
         MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        moneyRewardEntity.setCouponId(couponEntity.getId());
         couponEntity.setMoneyReward(moneyRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), null, couponEntity);
@@ -439,9 +444,11 @@ public class CouponService implements ICouponService {
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
-
+        couponEntity = couponRepository.save(couponEntity);
         MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        moneyRewardEntity.setId(new MoneyRewardID(couponEntity.getId()));
         couponEntity.setMoneyReward(moneyRewardEntity);
+//        moneyRewardEntity.setCouponId(couponEntity.getId());
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), body.getSubjectConditionList(), couponEntity);
         couponEntity.setConditionList(couponConditionEntityList);

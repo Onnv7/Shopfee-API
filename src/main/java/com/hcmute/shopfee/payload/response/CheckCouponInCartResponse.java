@@ -60,7 +60,7 @@ public class CheckCouponInCartResponse {
         private Short quantity;
         private static CheckCouponInCartResponse.ProductGift fromProductRewardEntity(ProductRewardEntity entity) {
             CheckCouponInCartResponse.ProductGift data = new CheckCouponInCartResponse.ProductGift();
-            data.setProductId(entity.getId().getProductId());
+            data.setProductId(entity.getProduct().getId());
             data.setProductSize(entity.getProductSize());
             data.setProductName(entity.getProductName());
             data.setQuantity(entity.getQuantity());

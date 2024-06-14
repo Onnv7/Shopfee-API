@@ -22,7 +22,7 @@ public class GetRewardOfCouponResponse {
         private Short quantity;
         private static ProductGift fromProductRewardEntity(ProductRewardEntity entity) {
             ProductGift data = new ProductGift();
-            data.setProductId(entity.getId().getProductId());
+            data.setProductId(entity.getProduct().getId());
             data.setProductSize(entity.getProductSize());
             data.setProductName(entity.getProductName());
             data.setQuantity(entity.getQuantity());
