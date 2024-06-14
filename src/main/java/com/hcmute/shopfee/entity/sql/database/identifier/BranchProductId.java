@@ -1,6 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.identifier;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,9 +12,9 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode
 public class BranchProductId implements Serializable {
-    @Column(name = "branch_id")
+    @JoinColumn(name = "branch_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private String branchId;
-    @Column(name = "product_id")
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private String productId;
 
     public BranchProductId() {

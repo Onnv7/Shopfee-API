@@ -1,5 +1,7 @@
 package com.hcmute.shopfee.service.common;
 
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.module.goong.Goong;
 import com.hcmute.shopfee.module.goong.distancematrix.reponse.DistanceMatrixResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,9 @@ public class GoongService {
     private final Goong goong;
 
     public List<DistanceMatrixResponse.Row.Element.Distance> getDistanceFromClientToBranches(String clientLocation, List<String> branchLocationList, String vehicle) {
+        if(branchLocationList.isEmpty()) {
+            throw new ShopfeeException(ShopfeeErrorCode.BRANCH_NOT_FOUND);
+        }
         StringBuilder branchLocations = new StringBuilder();
         for (String branch : branchLocationList) {
             branchLocations.append(branch).append("|");

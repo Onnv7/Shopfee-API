@@ -11,7 +11,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "money_reward_received")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,8 +21,15 @@ public class MoneyRewardReceivedEntity {
 //    @GeneratedValue(generator = "money_reward_received_id")
 //    private String id;
 
+
+    public MoneyRewardReceivedEntity(MoneyRewardUnit unit, Integer value, CouponUsedEntity couponUsed) {
+        this.unit = unit;
+        this.value = value;
+        this.couponUsed = couponUsed;
+    }
+
     @EmbeddedId
-    private MoneyRewardReceivedID id;
+    private MoneyRewardReceivedID id = new MoneyRewardReceivedID();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
@@ -33,8 +39,8 @@ public class MoneyRewardReceivedEntity {
     private Integer value;
 
     @OneToOne
-    @MapsId("coupon_used_id")
-    @JoinColumn(name = "coupon_used_id", referencedColumnName = "coupon_id")
+    @MapsId("couponUsedId")
+//    @JoinColumn(name = "coupon_used_id", referencedColumnName = "coupon_id")
     @JsonBackReference
     private CouponUsedEntity couponUsed;
 }

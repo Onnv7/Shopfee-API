@@ -85,9 +85,9 @@ public class CouponEntity {
 //    private CouponRewardEntity couponReward;
 
 
-//    @OneToOne(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-//    @JsonManagedReference
-//    private MoneyRewardEntity moneyReward;
+    @OneToOne(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonManagedReference
+    private MoneyRewardEntity moneyReward;
 
     @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference

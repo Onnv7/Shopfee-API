@@ -12,23 +12,25 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "product_reward_received")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductRewardReceivedEntity {
-//    @Id
-//    @GenericGenerator(name = "product_reward_received_id", type = RandomTimeGenerator.class)
-//    @GeneratedValue(generator = "product_reward_received_id")
-//    private String id;
+
+    public ProductRewardReceivedEntity(ProductEntity product, Short quantity, String productName, String productSize, CouponUsedEntity couponUsed) {
+        this.product = product;
+        this.quantity = quantity;
+        this.productName = productName;
+        this.productSize = productSize;
+        this.couponUsed = couponUsed;
+    }
 
     @EmbeddedId
-    private ProductRewardReceivedID id;
+    private ProductRewardReceivedID id = new ProductRewardReceivedID();
 
     @MapsId("productId")
     @OneToOne
-    @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
     private ProductEntity product;
 
@@ -43,7 +45,6 @@ public class ProductRewardReceivedEntity {
 
     @ManyToOne
     @MapsId("couponUsedId")
-    @JoinColumn(name = "coupon_used_id", nullable = false)
     @JsonBackReference
     private CouponUsedEntity couponUsed;
 }

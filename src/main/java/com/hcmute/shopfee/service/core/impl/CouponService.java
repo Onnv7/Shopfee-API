@@ -14,7 +14,6 @@ import com.hcmute.shopfee.entity.sql.database.coupon.condition.UsageConditionEnt
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
-import com.hcmute.shopfee.entity.sql.database.identifier.MoneyRewardID;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.*;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -148,11 +147,13 @@ public class CouponService implements ICouponService {
         return couponConditionEntityList;
     }
 
-    private static MoneyRewardEntity getMoneyRewardEntity(MoneyRewardUnit unit, Integer value, CouponEntity couponEntity) {
+    private static MoneyRewardEntity setMoneyReward( MoneyRewardUnit unit, Integer value, CouponEntity couponEntity) {
         if (unit == MoneyRewardUnit.PERCENTAGE && value > 100) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.CANNOT_HAVE_A_VALUE_GREATER_THAN_100);
         }
-        return new MoneyRewardEntity(unit, value);
+//        moneyRewardEntity.setValue(value);
+//        moneyRewardEntity.setUnit(unit);
+        return new MoneyRewardEntity(unit, value, couponEntity);
 //        return MoneyRewardEntity.builder()
 //                .unit(unit)
 //                .coupon(couponEntity)
@@ -167,13 +168,15 @@ public class CouponService implements ICouponService {
         if(isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
-        MoneyRewardEntity couponEntity = modelMapperService.mapClass(body, MoneyRewardEntity.class);
+        CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.SHIPPING);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
 
-        MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
-        couponEntity.setUnit(body.getUnitReward());
+        MoneyRewardEntity moneyRewardEntity = setMoneyReward(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        couponEntity.setUnit(body.getUnitReward());
+//        couponEntity.setValue(body.getValueReward());
+        couponEntity.setMoneyReward(moneyRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), null, couponEntity);
 
@@ -185,7 +188,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void updateShippingCoupon(UpdateShippingCouponRequest body, String couponId) {
-        MoneyRewardEntity couponEntity = (MoneyRewardEntity) couponRepository.findByIdAndIsDeletedFalse(couponId)
+        CouponEntity couponEntity =couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + couponId));
 
         couponEntity.setCouponType(CouponType.SHIPPING);
@@ -197,8 +200,8 @@ public class CouponService implements ICouponService {
         couponEntity.setExpirationDate(body.getExpirationDate());
 
 
-        couponEntity.setUnit(body.getUnitReward());
-        couponEntity.setValue(body.getValueReward());
+        couponEntity.getMoneyReward().setUnit(body.getUnitReward());
+        couponEntity.getMoneyReward().setValue(body.getValueReward());
 
 
 
@@ -378,15 +381,16 @@ public class CouponService implements ICouponService {
         if(isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
-        MoneyRewardEntity couponEntity = modelMapperService.mapClass(body, MoneyRewardEntity.class);
+        CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.ORDER);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
 
 
-        MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
-        couponEntity.setUnit(body.getUnitReward());
-        couponEntity.setValue(body.getValueReward());
+        MoneyRewardEntity moneyRewardEntity = setMoneyReward(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        couponEntity.setUnit(body.getUnitReward());
+//        couponEntity.setValue(body.getValueReward());
+        couponEntity.setMoneyReward(moneyRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), null, couponEntity);
 
@@ -400,7 +404,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void updateOrderCoupon(UpdateOrderCouponRequest body, String couponId) {
-        MoneyRewardEntity couponEntity = (MoneyRewardEntity) couponRepository.findByIdAndIsDeletedFalse(couponId)
+        CouponEntity couponEntity =  couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponId));
 
         couponEntity.setCouponType(CouponType.ORDER);
@@ -411,8 +415,8 @@ public class CouponService implements ICouponService {
         couponEntity.setStartDate(body.getStartDate());
         couponEntity.setExpirationDate(body.getExpirationDate());
 
-        couponEntity.setUnit(body.getUnitReward());
-        couponEntity.setValue(body.getValueReward());
+        couponEntity.getMoneyReward().setUnit(body.getUnitReward());
+        couponEntity.getMoneyReward().setValue(body.getValueReward());
 
         // Usage condition
         List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
@@ -436,15 +440,15 @@ public class CouponService implements ICouponService {
         if(isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
-        MoneyRewardEntity couponEntity = modelMapperService.mapClass(body, MoneyRewardEntity.class);
+        CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(CouponStatus.RELEASED);
         couponEntity.setRewardType(CouponRewardType.MONEY);
 
-        MoneyRewardEntity moneyRewardEntity = getMoneyRewardEntity(body.getUnitReward(), body.getValueReward(), couponEntity);
-        couponEntity.setUnit(moneyRewardEntity.getUnit());
-        couponEntity.setValue(moneyRewardEntity.getValue());
-//        couponEntity.set(moneyRewardEntity);
+        MoneyRewardEntity moneyRewardEntity = setMoneyReward(body.getUnitReward(), body.getValueReward(), couponEntity);
+//        couponEntity.setUnit(moneyRewardEntity.getUnit());
+//        couponEntity.setValue(moneyRewardEntity.getValue());
+        couponEntity.setMoneyReward(moneyRewardEntity);
 
         List<CouponConditionEntity> couponConditionEntityList = getCouponConditionList(body.getUsageConditionList(), body.getMinPurchaseCondition(), body.getCombinationConditionList(), body.getSubjectConditionList(), couponEntity);
         couponEntity.setConditionList(couponConditionEntityList);
@@ -458,7 +462,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void updateAmountOffProductCoupon(UpdateProductMoneyCouponRequest body, String couponId) {
-        MoneyRewardEntity couponEntity = (MoneyRewardEntity) couponRepository.findByIdAndIsDeletedFalse(couponId)
+        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponId));
         couponEntity.setCouponType(CouponType.PRODUCT);
         couponEntity.setStatus(body.getStatus());
@@ -469,8 +473,8 @@ public class CouponService implements ICouponService {
         couponEntity.setExpirationDate(body.getExpirationDate());
 
 
-        couponEntity.setUnit(body.getUnitReward());
-        couponEntity.setValue(body.getValueReward());
+        couponEntity.getMoneyReward().setUnit(body.getUnitReward());
+        couponEntity.getMoneyReward().setValue(body.getValueReward());
 
         // Usage condition
         List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
@@ -507,13 +511,13 @@ public class CouponService implements ICouponService {
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
-            ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
-                    .product(product)
-                    .productSize(reward.getProductSize())
-                    .productName(product.getName())
-                    .quantity(reward.getQuantity())
-                    .coupon(couponEntity)
-                    .build();
+            ProductRewardEntity productRewardEntity = new ProductRewardEntity(product.getName(), product, reward.getProductSize(), reward.getQuantity(), couponEntity);
+//                    .product(product)
+//                    .productSize(reward.getProductSize())
+//                    .productName(product.getName())
+//                    .quantity(reward.getQuantity())
+//                    .coupon(couponEntity)
+//                    .build();
             productRewardEntityList.add(productRewardEntity);
         });
         couponEntity.setProductRewardList(productRewardEntityList);
@@ -549,13 +553,13 @@ public class CouponService implements ICouponService {
         body.getProductRewardList().forEach(reward -> {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
-            ProductRewardEntity productRewardEntity = ProductRewardEntity.builder()
-                    .product(product)
-                    .productSize(reward.getProductSize())
-                    .productName(product.getName())
-                    .quantity(reward.getQuantity())
-                    .coupon(couponEntity)
-                    .build();
+            ProductRewardEntity productRewardEntity = new ProductRewardEntity(product.getName(), product, reward.getProductSize(), reward.getQuantity(), couponEntity);
+//                    .product(product)
+//                    .productSize(reward.getProductSize())
+//                    .productName(product.getName())
+//                    .quantity(reward.getQuantity())
+//                    .coupon(couponEntity)
+//                    .build();
             productRewardEntityList.add(productRewardEntity);
         });
 
@@ -1013,7 +1017,7 @@ public class CouponService implements ICouponService {
             CheckCouponInCartResponse.Reward reward = new CheckCouponInCartResponse.Reward();
 
             if (couponEntity.getRewardType() == CouponRewardType.MONEY) {
-                reward.setMoneyReward(CheckCouponInCartResponse.fromMoneyRewardEntity((MoneyRewardEntity) couponEntity));
+                reward.setMoneyReward(CheckCouponInCartResponse.fromMoneyRewardEntity(couponEntity.getMoneyReward()));
             } else if (couponEntity.getRewardType() == CouponRewardType.PRODUCT_GIFT) {
                 reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponEntity.getProductRewardList()));
             }

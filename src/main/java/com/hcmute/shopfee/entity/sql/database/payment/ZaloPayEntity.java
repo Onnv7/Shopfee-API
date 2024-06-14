@@ -17,11 +17,7 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-//@IdClass(ChildTransactionID.class)
 public class ZaloPayEntity extends TransactionEntity {
-//    @EmbeddedId
-//    private ChildTransactionID id;
-
     @Column(name = "payment_url", columnDefinition = "TEXT")
     private String paymentUrl;
 
@@ -30,11 +26,4 @@ public class ZaloPayEntity extends TransactionEntity {
 
     @Column(name = "zp_trans_id")
     private String zalopayTransactionId;
-
-//    @Id
-//    @MapsId("transactionId")
-//    @OneToOne
-//    @JoinColumn(name = "transaction_id", nullable = false)
-//    @JsonBackReference
-//    private TransactionEntity transaction;
 }

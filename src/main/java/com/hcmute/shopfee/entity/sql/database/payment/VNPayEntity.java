@@ -17,10 +17,7 @@ import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-//@IdClass(ChildTransactionID.class)
 public class VNPayEntity extends TransactionEntity{
-//    @EmbeddedId
-//    public ChildTransactionID id;
 
     @Column(name = "payment_url", columnDefinition = "TEXT")
     private String paymentUrl;

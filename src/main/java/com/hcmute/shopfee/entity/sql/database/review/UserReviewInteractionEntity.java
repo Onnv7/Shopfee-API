@@ -10,30 +10,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "user_review_interaction")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-//@IdClass(UserProductReviewInteractionPK.class)
 public class UserReviewInteractionEntity {
     @EmbeddedId
-    private UserProductReviewInteractionID id;
-
-//    @MapsId("user_id")
-//    @Column(name = "user_id", nullable = false, insertable=false, updatable=false)
-//    private String userId;
+    private UserProductReviewInteractionID id = new UserProductReviewInteractionID();
 
     @MapsId("userId")
     @ManyToOne
-    @JoinColumn(name = "user_id", updatable=false)
     @JsonBackReference
     private UserEntity user;
 
     @MapsId("productReviewId")
     @ManyToOne
-    @JoinColumn(name = "product_review_id", updatable=false)
     @JsonBackReference
     private ProductReviewEntity productReview;
 

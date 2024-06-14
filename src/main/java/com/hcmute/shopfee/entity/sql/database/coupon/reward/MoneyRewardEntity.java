@@ -13,17 +13,23 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-//@AllArgsConstructor
-public class MoneyRewardEntity extends CouponEntity {
-//    @EmbeddedId
-//    private MoneyRewardID id;
-
-
-    public MoneyRewardEntity(MoneyRewardUnit unit, Integer value) {
-        super();
+@AllArgsConstructor
+public class MoneyRewardEntity  {
+    public MoneyRewardEntity( MoneyRewardUnit unit, Integer value, CouponEntity coupon) {
         this.unit = unit;
         this.value = value;
+        this.coupon = coupon;
     }
+
+    @EmbeddedId
+    private MoneyRewardID id = new MoneyRewardID();
+
+
+//    public MoneyRewardEntity(MoneyRewardUnit unit, Integer value) {
+//        super();
+//        this.unit = unit;
+//        this.value = value;
+//    }
 
     @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
@@ -32,9 +38,9 @@ public class MoneyRewardEntity extends CouponEntity {
     @Column(name = "value", nullable = false)
     private Integer value;
 
-//    @OneToOne(cascade = CascadeType.MERGE)
-//    @MapsId("coupon_id")
+    @OneToOne(cascade = CascadeType.MERGE)
+    @MapsId("couponId")
 //    @JoinColumn(name = "coupon_id")
-//    @JsonBackReference
-//    private CouponEntity coupon;
+    @JsonBackReference
+    private CouponEntity coupon;
 }

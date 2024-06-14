@@ -10,21 +10,27 @@ import lombok.*;
 
 @Entity
 @Table(name = "product_reward")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductRewardEntity {
+    public ProductRewardEntity( String productName, ProductEntity product, String productSize, Short quantity, CouponEntity coupon) {
+        this.productName = productName;
+        this.product = product;
+        this.productSize = productSize;
+        this.quantity = quantity;
+        this.coupon = coupon;
+    }
+
     @EmbeddedId
-    private ProductRewardID id;
+    private ProductRewardID id = new ProductRewardID();
 
     @Column(name = "product_name", nullable = false)
     private String productName;
 
     @MapsId("productId")
     @OneToOne
-    @JoinColumn(name = "product_id", nullable = false)
+//    @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
     private ProductEntity product;
 
@@ -37,7 +43,7 @@ public class ProductRewardEntity {
 
     @ManyToOne
     @MapsId("couponId")
-    @JoinColumn(name = "coupon_id", nullable = false)
+//    @JoinColumn(name = "coupon_id", nullable = false)
     @JsonBackReference
     private CouponEntity coupon;
 }

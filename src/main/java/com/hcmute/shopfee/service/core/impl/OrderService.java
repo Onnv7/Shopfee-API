@@ -164,8 +164,8 @@ public class OrderService implements IOrderService {
 
 
             if (productCoupon.getRewardType() == CouponRewardType.MONEY) {
-                productDiscountValue = ((MoneyRewardEntity) productCoupon).getValue();
-                productDiscountUnit = ((MoneyRewardEntity) productCoupon).getUnit();
+                productDiscountValue = productCoupon.getMoneyReward().getValue();
+                productDiscountUnit = productCoupon.getMoneyReward().getUnit();
 
                 List<SubjectConditionEntity> subjectConditionList = productCoupon.getConditionList().stream().filter(condition -> condition.getType() == ConditionType.SUBJECT)
                         .findFirst().orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SupErrorCode.SERVER_ERROR, "Coupon condition is invalid")).getSubjectConditionList();
@@ -377,23 +377,15 @@ public class OrderService implements IOrderService {
                 .build();
 
         if (coupon.getRewardType() == CouponRewardType.MONEY) {
-            MoneyRewardReceivedEntity moneyRewardReceived = MoneyRewardReceivedEntity.builder()
-                    .unit(((MoneyRewardEntity) coupon).getUnit())
-                    .value(((MoneyRewardEntity) coupon).getValue())
-                    .couponUsed(couponUsed)
-                    .build();
+            MoneyRewardReceivedEntity moneyRewardReceived = new MoneyRewardReceivedEntity(coupon.getMoneyReward().getUnit(), coupon.getMoneyReward().getValue(), couponUsed);
+
             couponUsed.setRewardType(CouponRewardType.MONEY);
             couponUsed.setMoneyRewardReceived(moneyRewardReceived);
         } else if (coupon.getRewardType() == CouponRewardType.PRODUCT_GIFT) {
             List<ProductRewardReceivedEntity> productRewardList = new ArrayList<>();
             coupon.getProductRewardList().forEach(productGift -> {
-                ProductRewardReceivedEntity productRewardReceived = ProductRewardReceivedEntity.builder()
-                        .product(productGift.getProduct())
-                        .couponUsed(couponUsed)
-                        .productSize(productGift.getProductSize())
-                        .quantity(productGift.getQuantity())
-                        .productName(productGift.getProductName())
-                        .build();
+                ProductRewardReceivedEntity productRewardReceived = new ProductRewardReceivedEntity(productGift.getProduct(), productGift.getQuantity(), productGift.getProductName(), productGift.getProductSize(), couponUsed);
+
                 productRewardList.add(productRewardReceived);
             });
             couponUsed.setRewardType(CouponRewardType.PRODUCT_GIFT);

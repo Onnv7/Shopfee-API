@@ -37,8 +37,8 @@ public class GetShippingCouponDetailsByIdResponse {
         data.setStatus(entity.getStatus());
         data.setStartDate(entity.getStartDate());
         data.setExpirationDate(entity.getExpirationDate());
-        data.setUnitReward(((MoneyRewardEntity) entity).getUnit());
-        data.setValueReward(((MoneyRewardEntity) entity).getValue());
+        data.setUnitReward(entity.getMoneyReward().getUnit());
+        data.setValueReward(entity.getMoneyReward().getValue());
 
 
         List<CouponConditionEntity>  conditionEntityList = entity.getConditionList();

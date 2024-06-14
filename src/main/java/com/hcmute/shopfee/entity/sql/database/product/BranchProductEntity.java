@@ -9,23 +9,22 @@ import lombok.*;
 
 @Entity
 @Table(name = "branch_product")
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class BranchProductEntity {
     @EmbeddedId
-    private BranchProductId id;
+    private BranchProductId id = new BranchProductId();
 
     @ManyToOne
+    @MapsId("branchId")
     @JsonBackReference
-    @JoinColumn(name = "branch_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private BranchEntity branch;
 
     @ManyToOne
+    @MapsId("productId")
     @JsonBackReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private ProductEntity product;
 
     @Enumerated(EnumType.STRING)
