@@ -1016,7 +1016,7 @@ public class OrderService implements IOrderService {
 //    }
 
     @Override
-    public List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size) {
+    public GetAllOrderHistoryByUserIdResponse getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size) {
         SecurityUtils.checkUserId(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
         List<String> orderStatusList = new ArrayList<>();
@@ -1036,12 +1036,15 @@ public class OrderService implements IOrderService {
             orderStatusList.add(OrderStatus.NOT_RECEIVED.name());
         }
 //        orderStatusList = List.of("sadsd");
-        List<OrderBillEntity> orderList = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable).getContent();
+        Page<OrderBillEntity> orderPage = orderBillRepository.getOrderListByUserIdAndStatus(orderStatusList, userId, pageable);
 
-        List<GetAllOrderHistoryByUserIdResponse> response = new ArrayList<>();
-        orderList.forEach(it -> {
-            GetAllOrderHistoryByUserIdResponse order = GetAllOrderHistoryByUserIdResponse.fromOrderBillEntity(it);
-            response.add(order);
+        GetAllOrderHistoryByUserIdResponse response = new GetAllOrderHistoryByUserIdResponse();
+        response.setTotalPage(orderPage.getTotalPages());
+        List<GetAllOrderHistoryByUserIdResponse.OrderHistory> orderHistoryList = new ArrayList<>();
+        response.setOrderList(orderHistoryList);
+        orderPage.forEach(it -> {
+            GetAllOrderHistoryByUserIdResponse.OrderHistory order = GetAllOrderHistoryByUserIdResponse.OrderHistory.fromOrderBillEntity(it);
+            orderHistoryList.add(order);
         });
 
         return response;

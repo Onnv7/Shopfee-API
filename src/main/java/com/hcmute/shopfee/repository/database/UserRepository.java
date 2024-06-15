@@ -14,7 +14,7 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
     Optional<UserEntity> findByEmail(String email);
 
     @Query(value = """
-            select u.*
+            select u.*, u.id as fakeColumns
             from `user` u\s
             where concat_ws(' ', u.first_name, u.last_name, u.id, u.email, u.phone_number) like concat('%', ?1, '%')\s
             and u.status like concat('%', ?2, '%')\s

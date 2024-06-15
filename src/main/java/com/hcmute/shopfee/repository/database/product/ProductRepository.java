@@ -31,7 +31,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             """, nativeQuery = true)
     List<String> getProductNameList();
     @Query(value = """
-            select p.*
+            select p.*, p.id as fakeColumns
             from product p
             where p.category_id regexp ?2
                and p.status regexp ?3
@@ -40,7 +40,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             """, nativeQuery = true)
     Page<ProductEntity> getProductList(String keyRegex, String categoryIdRegex, String productStatusRegex, Pageable pageable);
     @Query(value = """
-            select p.*
+            select p.*, p.id as fakeColumns
             from product p
             join branch_product bp on bp.product_id = p.id\s
             where bp.branch_id = ?1

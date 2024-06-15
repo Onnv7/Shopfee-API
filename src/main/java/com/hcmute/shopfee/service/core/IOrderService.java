@@ -24,6 +24,6 @@ public interface IOrderService {
     GetOrderByIdResponse getOrderDetailsById(String orderId);
     List<GetOrderItemAndReviewResponse> getOrderItemAndReviewByOrderBillId(String orderBillId);
 //    GetShippingFeeResponse getShippingFee(Double lat, Double lng);
-    List<GetAllOrderHistoryByUserIdResponse> getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size);
+    GetAllOrderHistoryByUserIdResponse getOrdersHistoryByUserId(String userId, OrderPhasesStatus orderPhasesStatus, int page, int size);
     List<GetOrderStatusLineResponse> getOrderEventLogById(String orderId);
 }

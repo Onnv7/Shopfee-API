@@ -20,7 +20,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Optional<OrderBillEntity> findByTransaction_Id(String transactionId);
 
     @Query(value = """
-            select ob.*
+            select ob.*, ob.id as fakeColumns
             from order_bill ob
             join (
             	select order_bill_id, MAX(created_at) as created_at
@@ -34,7 +34,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Page<OrderBillEntity> getOrderBillByLastStatus(String status, Pageable pageable) ;
 
     @Query(value = """
-            select ob.*
+            select ob.*, ob.id as fakeColumns
             from order_bill ob
             join (
             	select order_bill_id, MAX(created_at) as created_at
@@ -58,7 +58,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
 
 
     @Query(value = """
-            select ob.*
+            select ob.*, ob.id as fakeColumns
             from order_bill ob
             join(select order_bill_id, MAX(created_at) as created_at
                  from order_event
@@ -70,7 +70,7 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
     Page<OrderBillEntity> getOrderListForAdmin(String orderStatus, Pageable pageable);
 
     @Query(value = """
-            select ob.*
+            select ob.*, ob.id as fakeColumns
             from order_bill ob
             join(select order_bill_id, MAX(created_at) as created_at
                  from order_event

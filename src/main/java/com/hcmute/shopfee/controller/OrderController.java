@@ -266,7 +266,7 @@ public class OrderController {
     @Operation(summary = ORDER_GET_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUM)
     @GetMapping(path = GET_ORDER_ORDERS_BY_USER_ID_AND_ORDER_STATUS_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_USER)
-    public ResponseEntity<ResponseAPI<List<GetAllOrderHistoryByUserIdResponse>>> getOrdersHistoryByUserId(
+    public ResponseEntity<ResponseAPI<GetAllOrderHistoryByUserIdResponse>> getOrdersHistoryByUserId(
             @PathVariable("userId") String id,
             @RequestParam("order_phases_status") OrderPhasesStatus orderPhasesStatus,
             @Parameter(name = "page", required = true, example = "1")
@@ -275,8 +275,8 @@ public class OrderController {
             @Parameter(name = "size", required = true, example = "10")
             @RequestParam("size") @Min(value = 1, message = "Size must be greater than 0") int size
     ) {
-        List<GetAllOrderHistoryByUserIdResponse> savedData = orderService.getOrdersHistoryByUserId(id, orderPhasesStatus, page, size);
-        ResponseAPI<List<GetAllOrderHistoryByUserIdResponse>> res = ResponseAPI.<List<GetAllOrderHistoryByUserIdResponse>>builder()
+        GetAllOrderHistoryByUserIdResponse savedData = orderService.getOrdersHistoryByUserId(id, orderPhasesStatus, page, size);
+        ResponseAPI<GetAllOrderHistoryByUserIdResponse> res = ResponseAPI.<GetAllOrderHistoryByUserIdResponse>builder()
                 .timestamp(new Date())
                 .data(savedData)
                 .message(SuccessConstant.GET)

@@ -16,7 +16,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Optional<EmployeeEntity> findByIdAndIsDeletedFalse(String username);
 
     @Query(value = """
-            select e.*\s
+            select e.*, e.id as fakeColumns
             from employee e
             where e.status regexp ?1
             and is_deleted = false
@@ -24,7 +24,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> getEmployeeList(String statusRegex, Pageable pageable);
 
     @Query(value = """
-            select e.*
+            select e.*, e.id as fakeColumns
             from employee e
             where is_deleted = false
             and status regexp  ?2
@@ -33,7 +33,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> searchEmployee(String key, String status, Pageable pageable);
 
     @Query(value = """
-            select e.*
+            select e.*, e.id as fakeColumns
             from employee e
             where e.branch_id = ?1
             and is_deleted = false
@@ -42,7 +42,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> getEmployeeListByBranchId(String branchId, String statusRegex, Pageable pageable);
 
     @Query(value = """
-            select e.*
+            select e.*, e.id as fakeColumns
             from employee e
             where e.branch_id = ?1
             and is_deleted = false
@@ -52,7 +52,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Page<EmployeeEntity> searchEmployeeByBranchId(String branchId, String key, String status, Pageable pageable);
 
     @Query(value = """
-            select e.*
+            select e.*, e.id as fakeColumns
             from branch b\s
             join (
             	select *

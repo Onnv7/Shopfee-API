@@ -3,7 +3,9 @@ package com.hcmute.shopfee.repository.database.coupon;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.enums.CouponStatus;
 import com.hcmute.shopfee.enums.CouponType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +18,8 @@ public interface CouponRepository extends JpaRepository<CouponEntity, String> {
 
     Optional<CouponEntity> findByIdAndIsDeletedFalse(String id);
     Optional<CouponEntity> findByCodeAndIsDeletedFalse(String code);
+
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
     Optional<CouponEntity> findByCodeAndStatusAndIsDeletedFalse(String code, CouponStatus status);
     Optional<CouponEntity> findByCodeAndStatusAndCouponTypeAndIsDeletedFalse(String code,CouponStatus status, CouponType couponType);
     List<CouponEntity> findByIsDeletedFalse();

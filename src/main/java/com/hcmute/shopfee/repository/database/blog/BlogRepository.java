@@ -17,7 +17,7 @@ public interface BlogRepository extends JpaRepository<BlogEntity, String> {
     Page<BlogEntity> findByIsDeletedFalse(Pageable pageable);
     Page<BlogEntity> findByStatusAndIsDeletedFalse(BlogStatus status, Pageable pageable);
     @Query(value = """
-            select b.*
+            select b.*, b.id as fakeColumns
             from blog b
             where b.is_deleted = false
             and b.status = ?1

@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface BranchRepository extends JpaRepository<BranchEntity, String> {
 
     @Query(value = """
-            select b.*
+            select b.*, b.id as fakeColumns
             from branch b\s
             where b.status = ?1
             and(concat_ws(' ', b.detail, b.ward, b.district, b.province, b.name)  LIKE concat('%', ?2,'%') OR ?2 = '')

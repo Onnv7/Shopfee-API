@@ -350,7 +350,6 @@ public class ProductService implements IProductService {
             Page<ProductEntity> productPage = null;
             productPage = productRepository.getAllProductAndFilter(minPrice, maxPrice, minStar, pageable);
 
-
             data.setTotalPage(productPage.getTotalPages());
             List<ProductEntity> productEntityList = productPage.getContent();
             for (ProductEntity entity : productEntityList) {

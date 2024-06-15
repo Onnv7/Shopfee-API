@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface CouponUsedRepository extends JpaRepository<CouponUsedEntity, String> {
 
     @Query(value = """
-            select cu.*
+            select cu.*, cu.id as fakeColumns
             from coupon_used cu\s
             join order_bill ob on cu.order_bill_id = ob.id\s
             where ob.user_id = ?1\s
