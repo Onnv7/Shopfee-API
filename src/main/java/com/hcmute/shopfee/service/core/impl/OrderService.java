@@ -5,7 +5,6 @@ import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.dto.common.BranchDistanceDto;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
-import com.hcmute.shopfee.entity.sql.database.coupon.reward.MoneyRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.enums.param.OrderPhasesStatus;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
@@ -41,6 +40,7 @@ import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.coupon.CouponRepository;
 import com.hcmute.shopfee.repository.database.coupon.condition.CombinationConditionRepository;
+import com.hcmute.shopfee.repository.database.coupon.condition.UsageConditionRepository;
 import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.order.OrderEventRepository;
@@ -77,6 +77,7 @@ import static com.hcmute.shopfee.constant.ShopfeeConstant.OPERATING_RANGE_DISTAN
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService implements IOrderService {
+    private final UsageConditionRepository usageConditionRepository;
     private final BranchProductRepository branchProductRepository;
     private final CoinHistoryRepository coinHistoryRepository;
     private final OrderItemRepository orderItemRepository;
@@ -278,7 +279,11 @@ public class OrderService implements IOrderService {
         });
     }
 
+    @Transactional
     public void validateCoupon(String couponCode, List<OrderItemDto> orderItemList, long total, String userId) {
+        Random random = new Random();
+        int x = random.nextInt(10);
+        log.error("Starting validation " + x);
         CouponEntity coupon = couponRepository.findByCodeAndStatusAndIsDeletedFalse(couponCode, CouponStatus.RELEASED)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponCode));
 
@@ -297,7 +302,12 @@ public class OrderService implements IOrderService {
             } else if (condition.getType() == ConditionType.USAGE) {
                 for (UsageConditionEntity usageCondition : condition.getUsageConditionList()) {
                     if (usageCondition.getType() == UsageConditionType.QUANTITY) {
+                        log.error("Find UsageConditionEntity " + x);
                         int usedCount = couponUsedRepository.getUsedCouponCount(coupon.getId());
+                        log.error("Found result count UsageConditionEntity " + x + " " + usedCount);
+//                        List<CouponUsedEntity> couponUsedEntities = couponUsedRepository.findWithLockingByCoupon_Id(coupon.getId());
+
+//                        int usedCount = couponUsedEntities.size();
                         if (usedCount >= usageCondition.getValue()) {
                             // invalid
                             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Coupon quantity: " + usageCondition.getValue() + " - coupon used quantity: " + usedCount);
@@ -337,6 +347,7 @@ public class OrderService implements IOrderService {
         }
     }
 
+//    @Transactional
     public void validateCouponForOrder(long totalItemPrice, List<OrderItemDto> itemList, String orderCouponCode, String shippingCouponCode, String productCouponCode) {
         String userId = SecurityUtils.getCurrentUserId();
         List<CouponType> cantCombinedCouponTypeList = new ArrayList<>();
@@ -440,6 +451,8 @@ public class OrderService implements IOrderService {
     @Transactional
     @Override
     public CreateOrderResponse createShippingOrder(CreateShippingOrderRequest body, HttpServletRequest request) {
+        log.error("Starting " + new Date());
+
         SecurityUtils.checkUserId(body.getUserId());
 
         if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
@@ -448,6 +461,9 @@ public class OrderService implements IOrderService {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);
         }
 
+        List<CouponUsedEntity> raceShipping = couponUsedRepository.getWithLockingByCouponCode(body.getShippingCouponCode());
+        List<CouponUsedEntity> raceOrder = couponUsedRepository.getWithLockingByCouponCode(body.getOrderCouponCode());
+        List<CouponUsedEntity> raceProduct = couponUsedRepository.getWithLockingByCouponCode(body.getProductCouponCode());
         long totalPayment = 0L;
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = userRepository.findById(userId)
@@ -563,7 +579,8 @@ public class OrderService implements IOrderService {
             NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG, orderBill.getId()));
             userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
-
+//        throw new RuntimeException();
+        log.error("Ending " + new Date());
         return resData;
     }
 
@@ -572,6 +589,8 @@ public class OrderService implements IOrderService {
     public CreateOrderResponse createOnsiteOrder(CreateOnsiteOrderRequest body, HttpServletRequest request) {
         SecurityUtils.checkUserId(body.getUserId());
 
+        List<CouponUsedEntity> raceOrder = couponUsedRepository.getWithLockingByCouponCode(body.getOrderCouponCode());
+        List<CouponUsedEntity> raceProduct = couponUsedRepository.getWithLockingByCouponCode(body.getProductCouponCode());
         if ((body.getTotal() < 10000 && body.getPaymentType() == PaymentType.VNPAY)
                 || (body.getTotal() < 2000 && body.getPaymentType() == PaymentType.ZALOPAY)) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.VNPAY_MONEY_INVALID);

@@ -8,6 +8,7 @@ import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.payload.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
@@ -39,6 +40,7 @@ import com.hcmute.shopfee.dto.common.zalopay.GetOrderZaloPayResponse;
 import com.hcmute.shopfee.dto.common.zalopay.ZaloCallbackResponse;
 import com.hcmute.shopfee.dto.common.zalopay.RefundRequestDTO;
 import com.hcmute.shopfee.repository.database.*;
+import com.hcmute.shopfee.repository.database.coupon_used.CouponUsedRepository;
 import com.hcmute.shopfee.repository.database.order.OrderBillRepository;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
@@ -729,6 +731,8 @@ public class ToolController {
     private final MailerKafkaPublisher mailerKafkaPublisher;
     @Autowired
     private BranchProductRepository branchProductRepository;
+    @Autowired
+    private CouponUsedRepository couponUsedRepository;
 
     @PostMapping(value = "/test-send-email-block")
     public String testSendEmailBLoc(@RequestBody UserBlockedMsgData msg) throws IOException {
@@ -741,6 +745,15 @@ public class ToolController {
     @GetMapping(value = "/test-autocompletet")
     public GetAutocompleteResponse autocompletet(@RequestParam String text) throws IOException {
         return productESService.getAutoCompleteSuggestions(text);
+    }
+
+    @Transactional
+    @GetMapping(value = "/test-fetchLazy")
+    public CouponUsedEntity fetchLazy(@RequestParam String text) throws IOException {
+        CouponUsedEntity couponUsed = couponUsedRepository.findById("171846461673196").orElse(null);
+        OrderBillEntity x = couponUsed != null ? couponUsed.getOrderBill() : null;
+        OrderBillEntity orderBill = orderBillRepository.findById("OB000000051").orElse(null);
+        return couponUsed;
     }
 
     public class HelloWorldJob implements Job {

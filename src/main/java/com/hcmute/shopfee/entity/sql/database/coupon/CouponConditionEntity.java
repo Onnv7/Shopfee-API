@@ -11,6 +11,7 @@ import com.hcmute.shopfee.enums.ConditionType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.util.List;
 
