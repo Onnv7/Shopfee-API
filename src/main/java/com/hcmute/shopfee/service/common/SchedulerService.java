@@ -50,7 +50,7 @@ public class SchedulerService {
         if (transaction.getPaymentType() == PaymentType.ZALOPAY) {
             checkTransactionTime = DateUtils.plus(checkTransactionTime, ShopfeeConstant.TIMEOUT_ZALO_TRANSACTION_MINUTES, ChronoUnit.MINUTES);
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
-            checkTransactionTime = DateUtils.plus(checkTransactionTime, ShopfeeConstant.TIMEOUT_VNPAY_TRANSACTION_MINUTES, ChronoUnit.MINUTES);
+            checkTransactionTime = DateUtils.plus(checkTransactionTime, 1, ChronoUnit.MINUTES);
         }
         checkTransactionData.put(CheckTransactionValidJob.TRANSACTION_ID, transaction.getId());
         checkTransactionData.put(CheckTransactionValidJob.PAYMENT_TYPE, transaction.getPaymentType());

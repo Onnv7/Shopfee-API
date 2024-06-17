@@ -172,6 +172,7 @@ public class TransactionService implements ITransactionService {
                 // refund thafnh coong
                 return true;
             } else {
+                // chuc nang refund ko hoat dong nen gia dinh la true luon
                 return true;
             }
         } else if (transaction.getPaymentType() == PaymentType.ZALOPAY) {

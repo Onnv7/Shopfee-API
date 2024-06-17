@@ -570,7 +570,6 @@ public class OrderService implements IOrderService {
                 transaction.getPaymentType() == PaymentType.VNPAY ? ((VNPayEntity) transaction).getPaymentUrl() : null;
         if (paymentUrl != null && totalPayment > 0) {
             resData.setPaymentUrl(paymentUrl);
-
             schedulerService.setScheduleTransaction(transaction);
         }
         schedulerService.setAutoCancelOrder(orderBill);

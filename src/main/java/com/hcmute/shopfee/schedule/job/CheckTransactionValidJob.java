@@ -63,13 +63,19 @@ public class CheckTransactionValidJob extends QuartzJobBean {
             }
         } else if (transaction.getPaymentType() == PaymentType.VNPAY) {
             TransactionInfoQuery vnpayResult = vnPayService.getTransactionInfo(((VNPayEntity) transaction).getInvoiceCode(), ((VNPayEntity) transaction).getTimeCode(), null);
-            if (vnpayResult.getTransactionStatus().equals("00")) {
-                transaction.setStatus(TransactionStatus.PAID);
-                transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);
-            } else {
+            if(!vnpayResult.getResponseCode().equals("00")) {
                 transaction.setStatus(TransactionStatus.FAILED);
                 transaction.setTotalPaid(0L);
+            } else {
+                if (vnpayResult.getTransactionStatus().equals("00")) {
+                    transaction.setStatus(TransactionStatus.PAID);
+                    transaction.setTotalPaid(Long.parseLong(vnpayResult.getAmount()) / 100);
+                } else {
+                    transaction.setStatus(TransactionStatus.FAILED);
+                    transaction.setTotalPaid(0L);
+                }
             }
+
         }
         transactionRepository.save(transaction);
     }
