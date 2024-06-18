@@ -173,6 +173,8 @@ public class BranchService implements IBranchService {
             BranchProductId branchProductId = new BranchProductId(branch.getId(), product.getId());
             BranchProductEntity branchProductEntity = new BranchProductEntity();
             branchProductEntity.setId(branchProductId);
+            branchProductEntity.setProduct(product);
+            branchProductEntity.setBranch(branch);
             branchProductEntity.setStatus(BranchProductStatus.AVAILABLE);
             branchProductRepository.save(branchProductEntity);
         }

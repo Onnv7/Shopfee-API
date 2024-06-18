@@ -15,6 +15,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -89,9 +90,12 @@ public class CouponEntity {
     @JsonManagedReference
     private MoneyRewardEntity moneyReward;
 
-    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
     @JsonManagedReference
     private List<ProductRewardEntity> productRewardList;
 
-
+    public void clearAndSetProductRewardList(Collection<ProductRewardEntity> newProductRewardNewList) {
+        this.productRewardList.clear();
+        this.productRewardList.addAll(newProductRewardNewList);
+    }
 }

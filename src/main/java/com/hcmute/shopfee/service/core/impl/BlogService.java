@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,7 +107,7 @@ public class BlogService implements IBlogService {
 
     @Override
     public GetBlogViewListResponse getBlogViewList(int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<BlogEntity> blogPage = blogRepository.findByStatusAndIsDeletedFalse(BlogStatus.VISIBLE, pageable);
         List<GetBlogViewListResponse.Blog> blogList = modelMapperService.mapList(blogPage.getContent(), GetBlogViewListResponse.Blog.class);
         GetBlogViewListResponse data = new GetBlogViewListResponse();

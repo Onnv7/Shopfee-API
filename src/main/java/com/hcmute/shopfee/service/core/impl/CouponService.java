@@ -554,16 +554,10 @@ public class CouponService implements ICouponService {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = new ProductRewardEntity(product.getName(), product, reward.getProductSize(), reward.getQuantity(), couponEntity);
-//                    .product(product)
-//                    .productSize(reward.getProductSize())
-//                    .productName(product.getName())
-//                    .quantity(reward.getQuantity())
-//                    .coupon(couponEntity)
-//                    .build();
             productRewardEntityList.add(productRewardEntity);
         });
 
-        couponEntity.setProductRewardList(productRewardEntityList);
+        couponEntity.clearAndSetProductRewardList(productRewardEntityList);
 
 
         List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
