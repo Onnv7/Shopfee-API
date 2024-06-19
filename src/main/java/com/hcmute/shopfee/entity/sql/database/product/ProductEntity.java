@@ -3,7 +3,6 @@ package com.hcmute.shopfee.entity.sql.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.dto.common.RatingSummaryDto;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
@@ -23,9 +22,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 
 @Entity
 @Table(name = "product")
@@ -103,9 +99,9 @@ public class ProductEntity {
     @JsonManagedReference
     private List<BranchProductEntity> branchProductList;
 
-    @OneToOne(mappedBy = "product")
+    @OneToMany(mappedBy = "product")
     @JsonManagedReference
-    private ProductRewardEntity productReward;
+    private List<ProductRewardEntity> productRewardList;
 
     public BranchProductEntity getBranchProduct(String branchId) {
         return this.branchProductList.stream().filter(it -> it.getBranch().getId().equals(branchId)).findFirst()

@@ -29,7 +29,7 @@ public class ProductRewardEntity {
     private String productName;
 
     @MapsId("productId")
-    @OneToOne
+    @ManyToOne
 //    @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
     private ProductEntity product;
