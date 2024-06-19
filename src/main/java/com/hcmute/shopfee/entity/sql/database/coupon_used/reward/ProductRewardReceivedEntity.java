@@ -30,7 +30,7 @@ public class ProductRewardReceivedEntity {
     private ProductRewardReceivedID id = new ProductRewardReceivedID();
 
     @MapsId("productId")
-    @OneToOne
+    @ManyToOne
     @JsonBackReference
     private ProductEntity product;
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
+import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.listener.ProductListener;
@@ -102,6 +103,10 @@ public class ProductEntity {
     @OneToMany(mappedBy = "product")
     @JsonManagedReference
     private List<ProductRewardEntity> productRewardList;
+
+    @OneToMany(mappedBy = "product")
+    @JsonManagedReference
+    private List<ProductRewardReceivedEntity> productRewardReceivedList;
 
     public BranchProductEntity getBranchProduct(String branchId) {
         return this.branchProductList.stream().filter(it -> it.getBranch().getId().equals(branchId)).findFirst()
