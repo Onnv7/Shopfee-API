@@ -41,7 +41,7 @@ public class ProductRewardEntity {
     @Column(name = "quantity", nullable = false)
     private Short quantity;
 
-    @ManyToOne
+    @ManyToOne()
     @MapsId("couponId")
 //    @JoinColumn(name = "coupon_id", nullable = false)
     @JsonBackReference

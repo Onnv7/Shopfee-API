@@ -26,7 +26,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 public class CouponEntity {
     @Id
@@ -90,7 +89,7 @@ public class CouponEntity {
     @JsonManagedReference
     private MoneyRewardEntity moneyReward;
 
-    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "coupon", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     @JsonManagedReference
     private List<ProductRewardEntity> productRewardList;
 

@@ -30,7 +30,7 @@ public class ToppingEntity {
     @Id
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name = "product_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
 
     public static List<ToppingEntity> fromToppingDtoList(List<ToppingDto> toppingDtoList, ProductEntity product) {

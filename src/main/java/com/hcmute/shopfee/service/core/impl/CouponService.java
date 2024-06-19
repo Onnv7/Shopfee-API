@@ -5,6 +5,7 @@ import com.hcmute.shopfee.dto.common.CouponConditionDto;
 import com.hcmute.shopfee.dto.common.ItemDetailDto;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.dto.common.coupon.condition.*;
+import com.hcmute.shopfee.dto.common.coupon.reward.ProductRewardDto;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponConditionEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.CouponEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.condition.CombinationConditionEntity;
@@ -33,6 +34,8 @@ import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.service.core.ICouponService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.utils.SecurityUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +59,13 @@ public class CouponService implements ICouponService {
     private final ProductRewardRepository productRewardRepository;
     private final SubjectConditionRepository subjectConditionRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private boolean isExistedCouponCode(String couponCode) {
         return couponRepository.findByCodeAndIsDeletedFalse(couponCode).orElse(null) != null;
     }
+
     private List<CouponConditionEntity> getCouponConditionList(
             List<UsageConditionDto> usageConditionDtoList, MinPurchaseConditionDto minPurchaseConditionDto,
             List<CombinationConditionDto> combinationConditionDtoList, List<SubjectConditionDto> subjectConditionDtoList, CouponEntity couponEntity) {
@@ -147,7 +154,7 @@ public class CouponService implements ICouponService {
         return couponConditionEntityList;
     }
 
-    private static MoneyRewardEntity setMoneyReward( MoneyRewardUnit unit, Integer value, CouponEntity couponEntity) {
+    private static MoneyRewardEntity setMoneyReward(MoneyRewardUnit unit, Integer value, CouponEntity couponEntity) {
         if (unit == MoneyRewardUnit.PERCENTAGE && value > 100) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, ErrorConstant.CANNOT_HAVE_A_VALUE_GREATER_THAN_100);
         }
@@ -165,7 +172,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createShippingCoupon(CreateShippingCouponRequest body) {
-        if(isExistedCouponCode(body.getCode())) {
+        if (isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -188,7 +195,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void updateShippingCoupon(UpdateShippingCouponRequest body, String couponId) {
-        CouponEntity couponEntity =couponRepository.findByIdAndIsDeletedFalse(couponId)
+        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + couponId));
 
         couponEntity.setCouponType(CouponType.SHIPPING);
@@ -202,7 +209,6 @@ public class CouponService implements ICouponService {
 
         couponEntity.getMoneyReward().setUnit(body.getUnitReward());
         couponEntity.getMoneyReward().setValue(body.getValueReward());
-
 
 
         // Usage condition
@@ -224,6 +230,9 @@ public class CouponService implements ICouponService {
     }
 
     private void modifyMinPurchaseCondition(CouponEntity couponEntity, MinPurchaseConditionDto minPurchaseConditionDto) {
+        if (minPurchaseConditionDto == null) {
+            return;
+        }
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.MIN_PURCHASE).findFirst().orElseThrow(
                 () -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.ERROR_DUE_TO_MISSING_DATA_DURING_CREATION_PROCESS)
@@ -233,6 +242,9 @@ public class CouponService implements ICouponService {
     }
 
     private void modifyCombinationCondition(List<CombinationConditionDto> combinationConditionDtoList, CouponEntity couponEntity) {
+        if (combinationConditionDtoList == null) {
+            return;
+        }
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.COMBINATION).findFirst().orElse(null);
         if (condition == null) {
@@ -300,6 +312,7 @@ public class CouponService implements ICouponService {
     }
 
     private void modifyUsageCondition(List<UsageConditionDto> usageConditionDtoList, CouponEntity couponEntity) {
+
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         CouponConditionEntity condition = conditionEntityList.stream().filter(cd -> cd.getType() == ConditionType.USAGE).findFirst().orElse(null);
 
@@ -378,7 +391,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createOrderCoupon(CreateOrderCouponRequest body) {
-        if(isExistedCouponCode(body.getCode())) {
+        if (isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -404,7 +417,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void updateOrderCoupon(UpdateOrderCouponRequest body, String couponId) {
-        CouponEntity couponEntity =  couponRepository.findByIdAndIsDeletedFalse(couponId)
+        CouponEntity couponEntity = couponRepository.findByIdAndIsDeletedFalse(couponId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND + couponId));
 
         couponEntity.setCouponType(CouponType.ORDER);
@@ -437,7 +450,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createAmountOffProductCoupon(CreateProductMoneyCouponRequest body) {
-        if(isExistedCouponCode(body.getCode())) {
+        if (isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -499,7 +512,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createGiftProductCoupon(CreateBuyXGetYCouponRequest body) {
-        if(isExistedCouponCode(body.getCode())) {
+        if (isExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -546,21 +559,18 @@ public class CouponService implements ICouponService {
 
         List<ProductRewardEntity> productRewardEntityList = new ArrayList<>();
 
-        for (ProductRewardEntity oldProductRewardEntity : couponEntity.getProductRewardList()) {
-            productRewardRepository.delete(oldProductRewardEntity);
-        }
 
-        body.getProductRewardList().forEach(reward -> {
+        couponEntity.getProductRewardList().clear();
+        couponRepository.saveAndFlush(couponEntity);
+
+        for (ProductRewardDto reward : body.getProductRewardList()) {
             ProductEntity product = productRepository.findById(reward.getProductId())
                     .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + reward.getProductId()));
             ProductRewardEntity productRewardEntity = new ProductRewardEntity(product.getName(), product, reward.getProductSize(), reward.getQuantity(), couponEntity);
             productRewardEntityList.add(productRewardEntity);
-        });
+        }
 
-        couponEntity.clearAndSetProductRewardList(productRewardEntityList);
-
-
-        List<CouponConditionEntity> couponConditionEntityList = new ArrayList<>();
+        couponEntity.getProductRewardList().addAll(productRewardEntityList);
 
         // Usage condition
         List<UsageConditionDto> usageConditionDtoList = body.getUsageConditionList();
@@ -580,7 +590,7 @@ public class CouponService implements ICouponService {
 
 
         // Saving coupon
-        couponRepository.save(couponEntity);
+        couponRepository.saveAndFlush(couponEntity);
     }
 
     private void modifySubjectConditionList(List<SubjectConditionDto> subjectConditionDtoList, List<CouponConditionEntity> conditionEntityList) {
@@ -750,9 +760,9 @@ public class CouponService implements ICouponService {
 
         List<GetCouponOptionsResponse.CouponCard> shippingCouponCard = checkAndGetCouponCard(CouponType.SHIPPING, userId, body, couponTypeList, shippingNoCombineBy.isEmpty(), body.getShippingCouponCode());
         data.setShippingCouponList(shippingCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCard(CouponType.ORDER, userId, body, couponTypeList,  orderNoCombineBy.isEmpty(), body.getOrderCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> orderCouponCard = checkAndGetCouponCard(CouponType.ORDER, userId, body, couponTypeList, orderNoCombineBy.isEmpty(), body.getOrderCouponCode());
         data.setOrderCouponList(orderCouponCard);
-        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCard(CouponType.PRODUCT, userId, body, couponTypeList,  productNoCombineBy.isEmpty(), body.getProductCouponCode());
+        List<GetCouponOptionsResponse.CouponCard> productCouponCard = checkAndGetCouponCard(CouponType.PRODUCT, userId, body, couponTypeList, productNoCombineBy.isEmpty(), body.getProductCouponCode());
         data.setProductCouponList(productCouponCard);
 
         return data;
