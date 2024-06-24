@@ -140,7 +140,8 @@ zalo_pay:
   key2: ${ZALO_PAY_KEY_2}
   callback_url: ${ZALO_PAY_CALLBACK_URL}
 
-
+recommender:
+  url: ${RECOMMEND_HOST}:${RECOMMEND_PORT}
 app:
   username_admin: ${APP_USERNAME_ADMIN}
   password_admin: ${APP_PASSWORD_ADMIN}

@@ -2,6 +2,7 @@ package com.hcmute.shopfee.controller;
 
 import com.hcmute.shopfee.constant.SecurityConstant;
 import com.hcmute.shopfee.constant.SuccessConstant;
+import com.hcmute.shopfee.dto.common.RecommendationResponse;
 import com.hcmute.shopfee.payload.request.CreateProductRequest;
 import com.hcmute.shopfee.payload.request.DeleteSomeProductRequest;
 import com.hcmute.shopfee.payload.request.UpdateProductRequest;
@@ -26,8 +27,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -388,5 +392,17 @@ public class ProductController {
 
 
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    @Operation(summary = PRODUCT_GET_RECOMMEND)
+    @GetMapping(path = GET_PRODUCT_RECOMMEND_SUB_PATH)
+    public ResponseEntity<ResponseAPI<List<GetProductRecommendResponse>>> getProductRecommend(@RequestParam("user_id") String userId, @RequestParam("quantity") int quantity) throws IOException {
+        List<GetProductRecommendResponse> data = productService.getProductRecommend(userId, quantity);
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(data)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

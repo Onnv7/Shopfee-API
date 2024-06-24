@@ -6,8 +6,10 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.google.gson.JsonObject;
+import com.hcmute.shopfee.config.RecommenderConfig;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.dto.common.RecommendationResponse;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.payload.response.GetAutocompleteResponse;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
@@ -74,6 +76,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -83,6 +86,7 @@ import java.net.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Time;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -112,6 +116,7 @@ public class ToolController {
     private final BranchRepository branchRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRedisService productRedisService;
+    private final RecommenderConfig recommenderConfig;
     private final Scheduler scheduler;
     @Autowired
     @Lazy
@@ -754,6 +759,16 @@ public class ToolController {
         OrderBillEntity x = couponUsed != null ? couponUsed.getOrderBill() : null;
         OrderBillEntity orderBill = orderBillRepository.findById("OB000000051").orElse(null);
         return couponUsed;
+    }
+
+    @GetMapping(value = "/test-recommend-kafka")
+    public RecommendationResponse testKafkaSync(@RequestParam String userId, @RequestParam int quantity) throws IOException {
+        RestTemplate rest = new RestTemplate();
+
+        String url = MessageFormat.format("http://"+recommenderConfig.getUrl() +"/recommend?user_id={0}&quantity={1}", userId, quantity);
+        System.out.println(url);
+        RecommendationResponse response = rest.getForObject(url, RecommendationResponse.class);
+        return response;
     }
 
     public class HelloWorldJob implements Job {

@@ -1,18 +1,18 @@
 package com.hcmute.shopfee.service.core.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hcmute.shopfee.config.RecommenderConfig;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.controller.ToolController;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.common.RatingSummaryDto;
+import com.hcmute.shopfee.dto.common.RecommendationResponse;
+import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.payload.request.CreateProductRequest;
 import com.hcmute.shopfee.payload.request.UpdateProductRequest;
 import com.hcmute.shopfee.dto.sql.RatingSummaryQueryDto;
 import com.hcmute.shopfee.entity.elasticsearch.TrackingUserProductIndex;
-import com.hcmute.shopfee.entity.sql.database.AlbumEntity;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
-import com.hcmute.shopfee.entity.sql.database.CategoryEntity;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -26,10 +26,7 @@ import com.hcmute.shopfee.kafka.publisher.TrackingUserProductKafkaPublisher;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.entity.elasticsearch.ProductIndex;
 import com.hcmute.shopfee.payload.response.*;
-import com.hcmute.shopfee.repository.database.AlbumRepository;
-import com.hcmute.shopfee.repository.database.BranchRepository;
-import com.hcmute.shopfee.repository.database.CategoryRepository;
-import com.hcmute.shopfee.repository.database.EmployeeRepository;
+import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
@@ -49,18 +46,23 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
+    private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final BranchProductRepository branchProductRepository;
     private final BranchRepository branchRepository;
@@ -74,7 +76,7 @@ public class ProductService implements IProductService {
     private final ProductRedisService productRedisService;
     private final TrackingUserProductKafkaPublisher trackingUserProductKafkaPublisher;
     private final TrackingUserProductESService trackingUserProductESService;
-
+    private final RecommenderConfig recommenderConfig;
 
     public static long getMinPrice(List<SizeEntity> sizeList) {
         long min = sizeList.get(0).getPrice();
@@ -967,6 +969,36 @@ public class ProductService implements IProductService {
         ProductEntity product = productRepository.findByName(productName).orElse(null);
         CheckExistedNameResponse data = new CheckExistedNameResponse();
         data.setExisted(product != null);
+        return data;
+    }
+
+    @Override
+    public List<GetProductRecommendResponse> getProductRecommend(String userId, int quantity) {
+        List<GetProductRecommendResponse> data = new ArrayList<>();
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND));
+        RestTemplate rest = new RestTemplate();
+        String url = MessageFormat.format("http://"+recommenderConfig.getUrl() +"/recommend?user_id={0}&quantity={1}", userId, quantity);
+        System.out.println(url);
+        RecommendationResponse response = rest.getForObject(url, RecommendationResponse.class);
+        List<String> productIds = response.getRecommendations();
+        for (String productId : productIds) {
+            ProductEntity product = productRepository.findByIdAndStatusNot(productId, ProductStatus.INACTIVE)
+                    .orElse(null);
+            if(product != null) {
+                data.add(GetProductRecommendResponse.fromProductEntity(product, null));
+            }
+        }
+
+
+//        WebClient webClient = WebClient.create();
+//        Mono<String> result = webClient.get()
+//                .uri(url)
+//                .retrieve()
+//                .bodyToMono(String.class);
+//
+//        // In kết quả ra console
+//        result.subscribe(System.out::println);
         return data;
     }
 

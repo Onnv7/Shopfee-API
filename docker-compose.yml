@@ -2,6 +2,7 @@ version: '3'
 services:
   mysql:
     container_name: mysql
+#    image: on611/shopfee-database:1.0.0
     image: mysql:8.0.28
     restart: always
     ports:
@@ -67,23 +68,27 @@ services:
       - elasticsearch
     ports:
       - 5601:5601
-
-  spring-app:
-    container_name: spring-app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-#    image: on611/shopfee-api:1.0.0
+  recommender:
+    container_name: recommender
+    image: on611/recommend-shopfee:1.0.2
     ports:
-      - 7777:8080
-    depends_on:
-      - mysql
-      - elasticsearch
-      - redis
-      - kafka
-    environment:
-      SQL_HOST: mysql
-      SQL_PORT: 3306
-      KAFKA_BOOTSTRAP_SERVER: kafka:9092
-      REDIS_HOST: redis
-      ELASTICSEARCH_HOST: elasticsearch
+      - 5000:5000
+#  spring-app:
+#    container_name: spring-app
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfile
+##    image: on611/shopfee-api:1.0.0
+#    ports:
+#      - 7777:8080
+#    depends_on:
+#      - mysql
+#      - elasticsearch
+#      - redis
+#      - kafka
+#    environment:
+#      SQL_HOST: mysql
+#      SQL_PORT: 3306
+#      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+#      REDIS_HOST: redis
+#      ELASTICSEARCH_HOST: elasticsearch

@@ -31,6 +31,7 @@ public interface IProductService {
     List<CreateProductFromFileErrorResponse> createBeverageFromFile(MultipartFile file, boolean force);
     List<CreateProductFromFileErrorResponse>  createCakeFromFile(MultipartFile file, boolean force);
     CheckExistedNameResponse isExistedProductName(String productName);
+    List<GetProductRecommendResponse> getProductRecommend(String userId, int quantity);
     byte[] downloadImportBeverageFile();
     byte[] downloadImportCakeFile();
 }

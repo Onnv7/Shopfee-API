@@ -5,8 +5,11 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.hcmute.shopfee.config.RecommenderConfig;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.dto.common.UserNode;
+import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.UserRole;
 import com.hcmute.shopfee.kafka.message.CodeEmailMsgData;
 import com.hcmute.shopfee.payload.request.*;
@@ -37,6 +40,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,6 +50,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -65,10 +72,31 @@ public class UserAuthService implements IUserAuthService {
     private final MailerKafkaPublisher mailerKafkaPublisher;
     private final UserFCMTokenRepository userFcmTokenRepository;
     private final INotificationService notificationService;
+    private final RecommenderConfig recommenderConfig;
     @Autowired
     @Lazy
     private PasswordEncoder passwordEncoder;
 
+    private void addUserNodeToGraph(String userId, Gender gender) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Địa chỉ URL của API
+        String url = "http://" +recommenderConfig.getUrl() + "/add-new-user";
+
+        // Tạo một đối tượng chứa dữ liệu cần gửi trong body
+        UserNode userRequest = new UserNode(userId, gender == null? null : gender.name());
+
+        // Tạo HttpHeaders và set content type là JSON
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Tạo HttpEntity chứa headers và body
+        HttpEntity<UserNode> request = new HttpEntity<>(userRequest, headers);
+
+        // Gửi yêu cầu POST và nhận kết quả trả về dưới dạng String
+        String result = restTemplate.postForObject(url, request, String.class);
+        System.out.println(result);
+    }
     private void updateFcmTokenById(String fcmTokenId, UserEntity user) {
         if (fcmTokenId == null) {
             return;
@@ -114,6 +142,7 @@ public class UserAuthService implements IUserAuthService {
         resData.setRefreshToken(refreshToken);
         resData.setUserId(userEntity.getId());
         updateFcmTokenById(body.getFcmTokenId(), userEntity);
+        addUserNodeToGraph(userEntity.getId(), userEntity.getGender());
         return resData;
     }
 
@@ -154,6 +183,7 @@ public class UserAuthService implements IUserAuthService {
             resData.setRefreshToken(refreshToken);
             resData.setUserId(userEntity.getId());
             updateFcmTokenById(body.getFcmTokenId(), userEntity);
+            addUserNodeToGraph(userEntity.getId(), userEntity.getGender());
             return resData;
         } catch (FirebaseAuthException e) {
             throw new RuntimeException(e);

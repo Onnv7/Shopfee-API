@@ -1,7 +1,10 @@
 package com.hcmute.shopfee.service.core.impl;
 
+import com.hcmute.shopfee.config.RecommenderConfig;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
+import com.hcmute.shopfee.dto.common.RatingEdge;
+import com.hcmute.shopfee.dto.common.UserNode;
 import com.hcmute.shopfee.payload.request.CreateReviewRequest;
 import com.hcmute.shopfee.payload.request.InteractProductReviewRequest;
 import com.hcmute.shopfee.payload.response.GetProductReviewListResponse;
@@ -33,7 +36,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +56,28 @@ public class ReviewService implements IReviewService {
     private final UserRepository userRepository;
     private final CoinHistoryRepository coinHistoryRepository;
     private final RatingProductKafkaPublisher ratingProductKafkaPublisher;
+    private final RecommenderConfig recommenderConfig;
 
+    private void createEdgeRating(String userId, String productId, int rating) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Địa chỉ URL của API
+        String url = "http://"+recommenderConfig.getUrl() +"/add-new-rating";
+
+        // Tạo một đối tượng chứa dữ liệu cần gửi trong body
+        RatingEdge edge = new RatingEdge(userId, productId, rating);
+
+        // Tạo HttpHeaders và set content type là JSON
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Tạo HttpEntity chứa headers và body
+        HttpEntity<RatingEdge> request = new HttpEntity<>(edge, headers);
+
+        // Gửi yêu cầu POST và nhận kết quả trả về dưới dạng String
+        String result = restTemplate.postForObject(url, request, String.class);
+        System.out.println(result);
+    }
     @Override
     public void createProductReview(CreateReviewRequest body) {
         ProductReviewEntity productReviewEntity = modelMapperService.mapClass(body, ProductReviewEntity.class);
@@ -77,6 +105,7 @@ public class ReviewService implements IReviewService {
         data.setRating(body.getStar());
         data.setUserId(userId);
         ratingProductKafkaPublisher.collectRatingProductData(data);
+        createEdgeRating(userId, orderItemEntity.getProduct().getId(), body.getStar());
     }
 
     @Override

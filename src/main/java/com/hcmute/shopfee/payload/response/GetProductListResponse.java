@@ -18,7 +18,6 @@ public class GetProductListResponse {
     @Data
     public static class Product {
         private String id;
-//        private String code;
         private String name;
         private Long price;
         private String thumbnailUrl;
