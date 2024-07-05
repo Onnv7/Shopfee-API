@@ -235,7 +235,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_ORDER_ITEM_REVIEW_SUM)
     @GetMapping(path = GET_ORDER_ITEM_REVIEW_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_USER)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_USER)
     public ResponseEntity<ResponseAPI<List<GetOrderItemAndReviewResponse>>> getOrderItemAndReview(@PathVariable(ORDER_ID) String id) {
         List<GetOrderItemAndReviewResponse> resData = orderService.getOrderItemAndReviewByOrderBillId(id);
         ResponseAPI<List<GetOrderItemAndReviewResponse>> res = ResponseAPI.<List<GetOrderItemAndReviewResponse>>builder()
@@ -286,7 +286,7 @@ public class OrderController {
 
     @Operation(summary = ORDER_GET_STATUS_LINE_SUM)
     @GetMapping(path = GET_ORDER_STATUS_LINE_SUB_PATH)
-    @PreAuthorize(SecurityConstant.ROLE_WAITER_USER)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN_WAITER_USER)
     public ResponseEntity<ResponseAPI<List<GetOrderStatusLineResponse>>> getOrderStatusLine(@PathVariable(ORDER_ID) String orderId) {
         List<GetOrderStatusLineResponse> resData = orderService.getOrderEventLogById(orderId);
 
