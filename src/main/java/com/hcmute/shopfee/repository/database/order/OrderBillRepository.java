@@ -44,10 +44,10 @@ public interface OrderBillRepository extends JpaRepository<OrderBillEntity, Stri
             join order_event oe on last_event.created_at = oe.created_at
             join (
             	select *
-            	from `transaction` t\s
+            	from `transaction` t
             	where (t.status = 'PAID' and t.payment_type != 'CASHING')
             	or (t.status = 'UNPAID' and t.payment_type = 'CASHING')
-            ) as trans on trans.order_bill_id = ob.id\s
+            ) as trans on trans.id = ob.transaction_id
             where oe.order_status = ?1
             and ob.branch_id = ?2
             and ob.order_type = ?3
