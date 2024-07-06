@@ -99,7 +99,7 @@ public class OrderStateMachineConfig extends StateMachineConfigurerAdapter<Order
         return context -> {
             Optional.ofNullable(context.getMessage()).ifPresent(msg -> {
                 OrderStatus orderStatus = context.getTarget().getId();
-                String note = msg.getHeaders().getOrDefault(NOTE_HEADER, null).toString();
+                String note = msg.getHeaders().getOrDefault(NOTE_HEADER, null) != null ? msg.getHeaders().getOrDefault(NOTE_HEADER, null).toString() : null;
                 ActorType actorType = SecurityUtils.getRoleList().contains(UserRole.ROLE_USER.name()) ? ActorType.USER :
                         SecurityUtils.getRoleList().contains(EmployeeRole.ROLE_WAITER.name()) ? ActorType.EMPLOYEE : ActorType.AUTOMATIC;
                 Optional.ofNullable(msg.getHeaders().getOrDefault(ORDER_ID_HEADER, ""))
