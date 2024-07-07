@@ -68,6 +68,7 @@ public class WebSecurityConfig {
                 "https://admin-shopfee.surge.sh",
                 "https://admin-shopfee.surge.sh",
                 "http://localhost:5000",
+                "https://shopfee-store.surge.sh",
                 "http://localhost:3001")); //"http://localhost:3000", "http://tender-grackle-gratefully.ngrok-free.app", "https://tender-grackle-gratefully.ngrok-free.app"
         configuration.setAllowCredentials(true);
 

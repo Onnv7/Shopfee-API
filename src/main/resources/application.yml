@@ -132,6 +132,7 @@ ahamove:
 vnpay:
   secret_key: ${VNPAY_SECRET_KEY}
   tmn_code: ${VNPAY_TMN_CODE}
+  return_url: ${VNPAY_RETURN_URL}
 
 # zalopay
 zalo_pay:

@@ -12,6 +12,7 @@ import java.util.*;
 public class VNPay {
     private final String SECRET_KEY;
     private final String TMN_CODE;
+    public static String RETURN_URL;
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_ReturnUrl = "http://localhost:8080/vnpay_jsp/vnpay_return.jsp";
     public static String vnp_Version = "2.1.0";
@@ -32,7 +33,8 @@ public class VNPay {
         return TMN_CODE;
     }
 
-    public VNPay(String secretKey, String tmnCode) {
+    public VNPay(String secretKey, String tmnCode, String returnUrl) {
+        RETURN_URL = returnUrl;
         SECRET_KEY = secretKey;
         TMN_CODE = tmnCode;
         vnPayTransaction = new VNPayTransaction(this);

@@ -34,7 +34,7 @@ public class VNPayTransaction {
 
         vnp_Params.put(VNP_TXN_REF_KEY, vnp_TxnRef);
         vnp_Params.put(VNP_ORDER_INFO_KEY, orderInfo);
-        vnp_Params.put(VNP_RETURN_URL_KEY, "https://www.youtube.com");  //"http://localhost:8080/api/test/ok"
+        vnp_Params.put(VNP_RETURN_URL_KEY, VNPay.RETURN_URL);  //"http://localhost:8080/api/test/ok"
         vnp_Params.put(VNP_IP_ADDRESS_KEY, vnp_IpAddr);
         vnp_Params.put(VNP_ORDER_TYPE_KEY, "other");
         vnp_Params.put(VNP_LOCALE_KEY, "vn");

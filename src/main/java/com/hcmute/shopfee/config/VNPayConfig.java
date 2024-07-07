@@ -11,9 +11,11 @@ public class VNPayConfig {
     private String SECRET_KEY;
     @Value("${vnpay.tmn_code}")
     private String TMN_CODE;
+    @Value("${vnpay.return_url}")
+    private String RETURN_URL;
 
     @Bean
     public VNPay vnPay() {
-        return new VNPay(SECRET_KEY, TMN_CODE);
+        return new VNPay(SECRET_KEY, TMN_CODE, RETURN_URL);
     }
 }
