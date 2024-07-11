@@ -288,6 +288,16 @@ public class CouponController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-
-
+    @Operation(summary = COUPON_CHECK_EXISTED_NAME_SUM)
+    @GetMapping(path = GET_COUPON_CHECK_CODE_SUB_PATH)
+    @PreAuthorize(SecurityConstant.ROLE_ADMIN)
+    protected ResponseEntity<ResponseAPI<CheckExistedNameResponse>> isExistedCouponCode(@RequestParam("coupon_code") String couponCode) {
+        CheckExistedCouponCodeResponse data = couponService.isExistedCouponCode(couponCode);
+        ResponseAPI res = ResponseAPI.builder()
+                .message(SuccessConstant.GET)
+                .timestamp(new Date())
+                .data(data)
+                .build();
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
 }

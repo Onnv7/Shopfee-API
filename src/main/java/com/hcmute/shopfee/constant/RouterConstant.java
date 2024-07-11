@@ -238,5 +238,6 @@ public class RouterConstant {
     public static final String GET_COUPON_AMOUNT_OFF_PRODUCT_DETAIL_BY_ID_SUB_PATH = COUPON_ID_PATH + "/amount-off-product";
     public static final String POST_COUPON_GET_VALIDATE_COUPON_LIST_SUB_PATH = "/get-validate-list";
     public static final String POST_COUPON_CHECK_LIST_IN_CART_SUB_PATH = "/check-coupon-in-cart";
+    public static final String GET_COUPON_CHECK_CODE_SUB_PATH = "/existed-code";
 
 }

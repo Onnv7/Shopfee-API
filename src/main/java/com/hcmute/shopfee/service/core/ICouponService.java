@@ -25,4 +25,5 @@ public interface ICouponService {
     GetAmountOffProductCouponDetailByIdResponse getAmountOffProductCouponDetailById(String couponId);
     GetCouponOptionsResponse getCouponListForCartResponse(GetCouponListForCartRequest body);
     List<CheckCouponInCartResponse> validateCouponAndItemInCart(GetCouponListForCartRequest body);
+    CheckExistedCouponCodeResponse isExistedCouponCode(String couponCode);
 }

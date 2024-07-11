@@ -62,7 +62,8 @@ public class CouponService implements ICouponService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private boolean isExistedCouponCode(String couponCode) {
+
+    private boolean checkExistedCouponCode(String couponCode) {
         return couponRepository.findByCodeAndIsDeletedFalse(couponCode).orElse(null) != null;
     }
 
@@ -172,7 +173,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createShippingCoupon(CreateShippingCouponRequest body) {
-        if (isExistedCouponCode(body.getCode())) {
+        if (checkExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -391,7 +392,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createOrderCoupon(CreateOrderCouponRequest body) {
-        if (isExistedCouponCode(body.getCode())) {
+        if (checkExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -450,7 +451,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createAmountOffProductCoupon(CreateProductMoneyCouponRequest body) {
-        if (isExistedCouponCode(body.getCode())) {
+        if (checkExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -512,7 +513,7 @@ public class CouponService implements ICouponService {
     @Transactional
     @Override
     public void createGiftProductCoupon(CreateBuyXGetYCouponRequest body) {
-        if (isExistedCouponCode(body.getCode())) {
+        if (checkExistedCouponCode(body.getCode())) {
             throw new ShopfeeException(ShopfeeErrorCode.COUPON_CODE_EXISTED);
         }
         CouponEntity couponEntity = modelMapperService.mapClass(body, CouponEntity.class);
@@ -923,6 +924,13 @@ public class CouponService implements ICouponService {
         if (body.getShippingCouponCode() != null) {
             data.add(checkCouponCodeWithOrderItemCart(body.getShippingCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
         }
+        return data;
+    }
+
+    @Override
+    public CheckExistedCouponCodeResponse isExistedCouponCode(String couponCode) {
+        CheckExistedCouponCodeResponse data = new CheckExistedCouponCodeResponse();
+        data.setExisted(couponRepository.findByCodeAndIsDeletedFalse(couponCode).orElse(null) != null);
         return data;
     }
 
