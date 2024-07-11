@@ -3,7 +3,6 @@ package com.hcmute.shopfee.entity.sql.database.order;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.AddressEntity;
-import com.hcmute.shopfee.entity.sql.database.identifier.ReceiverInformationID;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;

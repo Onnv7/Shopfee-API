@@ -5,9 +5,7 @@ import com.hcmute.shopfee.config.RecommenderConfig;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.controller.ToolController;
-import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
-import com.hcmute.shopfee.dto.common.RatingSummaryDto;
-import com.hcmute.shopfee.dto.common.RecommendationResponse;
+import com.hcmute.shopfee.dto.common.*;
 import com.hcmute.shopfee.entity.sql.database.*;
 import com.hcmute.shopfee.payload.request.CreateProductRequest;
 import com.hcmute.shopfee.payload.request.UpdateProductRequest;
@@ -29,6 +27,8 @@ import com.hcmute.shopfee.payload.response.*;
 import com.hcmute.shopfee.repository.database.*;
 import com.hcmute.shopfee.repository.database.product.BranchProductRepository;
 import com.hcmute.shopfee.repository.database.product.ProductRepository;
+import com.hcmute.shopfee.repository.database.product.SizeRepository;
+import com.hcmute.shopfee.repository.database.product.ToppingRepository;
 import com.hcmute.shopfee.repository.database.review.ProductReviewRepository;
 import com.hcmute.shopfee.service.core.IProductService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
@@ -62,6 +62,8 @@ import java.util.*;
 @Slf4j
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
+    private final ToppingRepository toppingRepository;
+    private final SizeRepository sizeRepository;
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final BranchProductRepository branchProductRepository;
@@ -185,7 +187,7 @@ public class ProductService implements IProductService {
         productEntity = productRepository.save(productEntity);
         String productId = productEntity.getId();
         List<BranchEntity> branchList = branchRepository.findAll();
-        if(branchList.isEmpty()) {
+        if (branchList.isEmpty()) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.ACTING_INCORRECTLY, "Must create a branch before create product");
         }
         for (BranchEntity branch : branchList) {
@@ -441,7 +443,7 @@ public class ProductService implements IProductService {
         String employeeId = SecurityUtils.getCurrentUserId() != null ? SecurityUtils.getCurrentUserId() : "";
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND));
-        if(employeeEntity.getRole() == EmployeeRole.ROLE_MANAGER && !employeeEntity.getBranch().getId().equals(branchId)) {
+        if (employeeEntity.getRole() == EmployeeRole.ROLE_MANAGER && !employeeEntity.getBranch().getId().equals(branchId)) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.FORBIDDEN);
         }
         BranchProductId branchProductId = new BranchProductId(branchId, productId);
@@ -488,19 +490,101 @@ public class ProductService implements IProductService {
             }
         }
 
-        ProductEntity product = productRepository.findById(id)
+        ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
 
 
-        modelMapperService.map(body, product);
+        if (body.getToppingList() != null) {
+//            toppingRepository.deleteAll(productEntity.getToppingList());
+//            productEntity.getToppingList().clear();
+            List<ToppingEntity> toppingList = ToppingEntity.fromToppingDtoList(body.getToppingList(), productEntity);
+            if (!checkProductData(toppingList.stream().map(it -> it.getName().trim()).toList())) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The topping's name list is duplicated");
+            }
+
+            List<ToppingEntity> newToppingList = new ArrayList<>();
+            for (int i = 0; i < body.getToppingList().size(); i++) {
+                ToppingDto toppingDto = body.getToppingList().get(i);
+                ToppingEntity toppingExisted = productEntity.getToppingList().stream().filter(size -> size.getName().equals(toppingDto.getName())).findFirst().orElse(null);
+                if (toppingExisted != null) {
+                    productEntity.getToppingList().get(i).setPrice(toppingDto.getPrice());
+                } else {
+                    // cái mới
+                    ToppingEntity newTopping = new ToppingEntity();
+                    newTopping.setProduct(productEntity);
+                    newTopping.setName(toppingDto.getName());
+                    newTopping.setPrice(toppingDto.getPrice());
+                    newToppingList.add(newTopping);
+                }
+            }
+            for (int i = 0; i < productEntity.getToppingList().size(); i++) {
+                ToppingEntity topping = productEntity.getToppingList().get(i);
+                ToppingDto toppingExisted = body.getToppingList().stream().filter(s -> s.getName().equals(topping.getName())).findFirst().orElse(null);
+
+                // neu khong tim thay size -> size da bị xoa
+                if (toppingExisted == null) {
+                    productEntity.getToppingList().remove((i));
+                    i--;
+                }
+            }
+            productEntity.getToppingList().addAll(newToppingList);
+        }
+        productRepository.flush();
+
+        if (body.getSizeList() != null) {
+            List<SizeEntity> sizeList = SizeEntity.fromToppingDtoList(body.getSizeList(), productEntity);
+            if (!checkProductData(sizeList.stream().map(it -> it.getSize().name()).toList())) {
+                throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "The size's name list is duplicated");
+            }
+
+            List<SizeEntity> newSizeList = new ArrayList<>();
+            for (int i = 0; i < body.getSizeList().size(); i++) {
+                SizeDto sizeDto = body.getSizeList().get(i);
+                SizeEntity sizeExisted = productEntity.getSizeList().stream().filter(size -> size.getSize().equals(sizeDto.getSize())).findFirst().orElse(null);
+                if (sizeExisted != null) {
+                    productEntity.getSizeList().get(i).setPrice(sizeDto.getPrice());
+                } else {
+                    // cái mới
+                    SizeEntity newSize = new SizeEntity();
+                    newSize.setProduct(productEntity);
+                    newSize.setSize(sizeDto.getSize());
+                    newSize.setPrice(sizeDto.getPrice());
+                    newSizeList.add(newSize);
+                }
+            }
+            for (int i = 0; i < productEntity.getSizeList().size(); i++) {
+                SizeEntity size = productEntity.getSizeList().get(i);
+                SizeDto sizeExisted = body.getSizeList().stream().filter(s -> s.getSize().equals(size.getSize())).findFirst().orElse(null);
+
+                // neu khong tim thay size -> size da bị xoa
+                if (sizeExisted == null) {
+                    productEntity.getSizeList().remove((i));
+                    i--;
+                }
+            }
+            productEntity.getSizeList().addAll(newSizeList);
+        }
+        productRepository.flush();
+//        productRepository.saveAndFlush(productEntity);
+        productEntity.setType(productType);
+        productEntity.setName(body.getName().trim());
+        productEntity.setDescription(body.getDescription());
+        productEntity.setStatus(body.getStatus());
+
+        if (productType == ProductType.CAKE) {
+            productEntity.setPrice(body.getPrice());
+        } else if (productType == ProductType.BEVERAGE) {
+            productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
+        }
+
 
         if (body.getImage() != null) {
             try {
                 byte[] originalImage = body.getImage().getBytes();
 
-                byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
+//                byte[] newImage = MediaUtils.resizeImage(originalImage, 200, 200);
                 CloudinaryUploadResponse fileUploaded = cloudinaryService.uploadFileToFolder(CloudinaryConstant.PRODUCT_PATH,
-                        StringUtils.generateFileNameByTime(body.getName(), "product"), newImage);
+                        StringUtils.generateFileNameByTime(body.getName(), "product"), originalImage);
 
                 AlbumEntity productImage = AlbumEntity.builder()
                         .type(AlbumType.PRODUCT)
@@ -508,23 +592,23 @@ public class ProductService implements IProductService {
                         .cloudinaryImageId(fileUploaded.getPublicId())
                         .thumbnailUrl(cloudinaryService.getThumbnailUrlOfImage(fileUploaded.getPublicId()))
                         .build();
-                product.setImage(productImage);
+                productEntity.setImage(productImage);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
         if (productType == ProductType.CAKE) {
-            product.setPrice(body.getPrice());
+            productEntity.setPrice(body.getPrice());
         } else {
-            product.setPrice(getMinPrice(product.getSizeList()));
+            productEntity.setPrice(getMinPrice(productEntity.getSizeList()));
         }
 
         CategoryEntity category = categoryRepository.findById(body.getCategoryId())
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.CATEGORY_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + id));
-        product.setCategory(category);
-
-        productRepository.save(product);
+        productEntity.setCategory(category);
+        productRepository.save(productEntity);
+//        productRepository.saveAndFlush(productEntity);
     }
 
     @Override
@@ -978,14 +1062,14 @@ public class ProductService implements IProductService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.USER_NOT_FOUND));
         RestTemplate rest = new RestTemplate();
-        String url = MessageFormat.format("http://"+recommenderConfig.getUrl() +"/recommend?user_id={0}&quantity={1}", userId, quantity);
+        String url = MessageFormat.format("http://" + recommenderConfig.getUrl() + "/recommend?user_id={0}&quantity={1}", userId, quantity);
         System.out.println(url);
         RecommendationResponse response = rest.getForObject(url, RecommendationResponse.class);
         List<String> productIds = response.getRecommendations();
         for (String productId : productIds) {
             ProductEntity product = productRepository.findByIdAndStatusNot(productId, ProductStatus.INACTIVE)
                     .orElse(null);
-            if(product != null) {
+            if (product != null) {
                 data.add(GetProductRecommendResponse.fromProductEntity(product, null));
             }
         }

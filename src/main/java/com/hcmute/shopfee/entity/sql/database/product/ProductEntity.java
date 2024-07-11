@@ -81,14 +81,14 @@ public class ProductEntity {
     private Date updatedAt;
 
     // =================================================================
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JsonManagedReference
-    @ToString.Exclude
+//    @ToString.Exclude
     private List<SizeEntity> sizeList;
 
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JsonManagedReference
-    @ToString.Exclude
+//    @ToString.Exclude
     private List<ToppingEntity> toppingList;
 
     @OneToMany(mappedBy = "product")

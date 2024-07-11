@@ -588,7 +588,6 @@ public class CouponService implements ICouponService {
         List<CouponConditionEntity> conditionEntityList = couponEntity.getConditionList();
         modifySubjectConditionList(body.getSubjectConditionList(), conditionEntityList);
 
-
         // Saving coupon
         couponRepository.saveAndFlush(couponEntity);
     }
