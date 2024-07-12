@@ -151,7 +151,95 @@ public class OrderService implements IOrderService {
         }
         return transData;
     }
+    private long calculateTotalPriceItemWithoutCoupon(List<OrderItemDto> orderItemList) {
+        long totalPrice = 0;
+        int itemSize = orderItemList.size();
 
+
+        for (int i = 0; i < itemSize; i++) {
+            OrderItemDto orderItemDto = orderItemList.get(i);
+
+            ProductEntity productInfo = productRepository.findByIdAndStatus(orderItemDto.getProductId(), ProductStatus.ACTIVE)
+                    .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + orderItemDto.getProductId()));
+//
+//            OrderItemEntity item = new OrderItemEntity(); // modelMapperService.mapClass(orderItemDto, OrderItemEntity.class);
+//            item.setProduct(productInfo);
+//            item.setName(productInfo.getName());
+//            item.setImageUrl(productInfo.getImage().getImageUrl());
+//            item.setThumbnailUrl(productInfo.getImage().getThumbnailUrl());
+//
+//            item.setName(productInfo.getName());
+//
+            List<ToppingEntity> toppingList = productInfo.getToppingList();
+            List<SizeEntity> sizeList = productInfo.getSizeList();
+//
+//            List<ItemToppingEntity> itemsToppingList = new ArrayList<>();
+//            List<ItemDetailEntity> itemsDetailEntityList = new ArrayList<>();
+
+            for (ItemDetailDto itemDetail : orderItemDto.getItemDetailList()) {
+                long totalPriceToppings = 0;
+                List<String> toppingNameList = itemDetail.getToppingNameList() != null ? itemDetail.getToppingNameList() : new ArrayList<>();
+
+                // Khởi tạo và set các thuộc tính cơ bản
+//                ItemDetailEntity itemDetailEntity = new ItemDetailEntity();
+//                itemDetailEntity.setOrderItem(item);
+//                itemDetailEntity.setNote(itemDetail.getNote());
+//                itemDetailEntity.setQuantity(itemDetail.getQuantity());
+
+                // tinh topping cua tung detail trong 1 sp
+                if (productInfo.getType() == ProductType.BEVERAGE) {
+                    for (String toppingName : toppingNameList) {
+//                        ItemToppingEntity itemTopping = new ItemToppingEntity();
+                        ToppingEntity toppingEntity = toppingList.stream()
+                                .filter(topping -> toppingName.equals(topping.getName()))
+                                .findFirst()
+                                .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.TOPPING_NOT_FOUND, ErrorConstant.NOT_FOUND + toppingName));
+//                        itemTopping.setName(toppingName);
+//                        itemTopping.setPrice(toppingEntity.getPrice());
+//                        itemTopping.setItemDetail(itemDetailEntity);
+//                        itemsToppingList.add(itemTopping);
+                        totalPriceToppings += toppingEntity.getPrice();
+                    }
+//                    itemDetailEntity.setItemToppingList(itemsToppingList);
+                }
+
+                // set size
+                long productDiscount = 0;
+                long sizePrice = 0;
+                if (productInfo.getType() == ProductType.BEVERAGE) {
+                    SizeEntity sizeItem = sizeList.stream()
+                            .filter(it -> it.getSize() == itemDetail.getSize())
+                            .findFirst().orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.SIZE_NOT_FOUND, ErrorConstant.NOT_FOUND + itemDetail.getSize()));
+
+                    sizePrice = sizeItem.getPrice();
+
+//                    itemDetailEntity.setSize(itemDetail.getSize());
+//                    long productSizePrice = sizeItem.getPrice();
+//                    productDiscount = getProductDiscount(productIdDiscountList, orderItemDto.getProductId(), productDiscountUnit, productDiscountValue, productSizePrice);
+//                    itemDetailEntity.setPrice(sizeItem.getPrice());
+//                    itemDetailEntity.setProductDiscount(productDiscount);
+
+                } else if (productInfo.getType() == ProductType.CAKE) {
+                    sizePrice = productInfo.getPrice();
+//                    itemDetailEntity.setPrice(productInfo.getPrice());
+//                    productDiscount = getProductDiscount(productIdDiscountList, orderItemDto.getProductId(), productDiscountUnit, productDiscountValue, productInfo.getPrice());
+//                    itemDetailEntity.setProductDiscount(productDiscount);
+                }
+
+//                itemsDetailEntityList.add(itemDetailEntity);
+//                long productPriceFinal = itemDetailEntity.getPrice() - productDiscount > 0 ? itemDetailEntity.getPrice() - productDiscount : 0;
+                totalPrice += (long) ((sizePrice + totalPriceToppings) * itemDetail.getQuantity());
+            }
+
+//            item.setItemDetailList(itemsDetailEntityList);
+//            item.setOrderBill(orderBill);
+//            orderItemEntityList.add(item);
+        }
+
+//        orderBill.setOrderItemList(orderItemEntityList);
+
+        return totalPrice;
+    }
     private long calculateTotalPriceItem(List<OrderItemDto> orderItemList, OrderBillEntity orderBill, String productCouponCode) {
         long totalPrice = 0;
         List<OrderItemEntity> orderItemEntityList = new ArrayList<>();
@@ -496,6 +584,7 @@ public class OrderService implements IOrderService {
 
         // tinh tien san pham
         long totalItemPrice = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
+        long totalItemPriceWithoutCoupon = calculateTotalPriceItemWithoutCoupon(body.getItemList());
         orderBill.setTotalItemPrice(totalItemPrice);
         totalPayment += totalItemPrice;
 
@@ -517,7 +606,7 @@ public class OrderService implements IOrderService {
 
 
         // xử lý coupon
-        validateCouponForOrder(totalItemPrice, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
+        validateCouponForOrder(totalItemPriceWithoutCoupon, body.getItemList(), body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), body.getShippingCouponCode(), body.getProductCouponCode());
 
         totalPayment -= amountReduced;
@@ -611,10 +700,11 @@ public class OrderService implements IOrderService {
         orderBill.setOrderType(OrderType.ONSITE);
 
         long totalPriceItem = calculateTotalPriceItem(body.getItemList(), orderBill, body.getProductCouponCode());
+        long totalItemPriceWithoutCoupon = calculateTotalPriceItemWithoutCoupon(body.getItemList());
         orderBill.setTotalItemPrice(totalPriceItem);
         totalPayment += totalPriceItem;
 
-        validateCouponForOrder(totalPriceItem, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
+        validateCouponForOrder(totalItemPriceWithoutCoupon, body.getItemList(), body.getOrderCouponCode(), null, body.getProductCouponCode());
         long amountReduced = applyCouponForOrder(orderBill, body.getOrderCouponCode(), null, body.getProductCouponCode());
 
         totalPayment -= amountReduced;

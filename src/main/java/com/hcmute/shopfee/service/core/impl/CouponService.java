@@ -819,7 +819,7 @@ public class CouponService implements ICouponService {
                     else if (condition.getType() == ConditionType.MIN_PURCHASE) {
                         MinPurchaseConditionEntity minPurchaseCondition = condition.getMinPurchaseCondition();
                         GetCouponOptionsResponse.MinPurchaseCondition minPurchaseConditionData = new GetCouponOptionsResponse.MinPurchaseCondition();
-                        if (body.getTotalPayment() < minPurchaseCondition.getValue()) {
+                        if (body.getTotalItemPrice() < minPurchaseCondition.getValue()) {
                             // invalid
                             minPurchaseConditionData.setValue(minPurchaseCondition.getValue());
                             couponCard.setMinPurchaseCondition(minPurchaseConditionData);
@@ -916,13 +916,13 @@ public class CouponService implements ICouponService {
         String userId = SecurityUtils.getCurrentUserId();
         List<OrderItemDto> orderItemDtoList = body.getOrderItemList();
         if (body.getOrderCouponCode() != null) {
-            data.add(checkCouponCodeWithOrderItemCart(body.getOrderCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+            data.add(checkCouponCodeWithOrderItemCart(body.getOrderCouponCode(), body.getTotalItemPrice(), userId, orderItemDtoList));
         }
         if (body.getProductCouponCode() != null) {
-            data.add(checkCouponCodeWithOrderItemCart(body.getProductCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+            data.add(checkCouponCodeWithOrderItemCart(body.getProductCouponCode(), body.getTotalItemPrice(), userId, orderItemDtoList));
         }
         if (body.getShippingCouponCode() != null) {
-            data.add(checkCouponCodeWithOrderItemCart(body.getShippingCouponCode(), body.getTotalPayment(), userId, orderItemDtoList));
+            data.add(checkCouponCodeWithOrderItemCart(body.getShippingCouponCode(), body.getTotalItemPrice(), userId, orderItemDtoList));
         }
         return data;
     }
