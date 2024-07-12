@@ -289,7 +289,7 @@ public class OrderService implements IOrderService {
 
         Date currentTime = new Date();
 
-        if (coupon.getStartDate().after(currentTime) || coupon.getExpirationDate().before(currentTime)) {
+        if (coupon.getStartDate().after(currentTime) || (coupon.getExpirationDate() != null && coupon.getExpirationDate().before(currentTime))) {
             throw new ShopfeeException(ShopfeeErrorCode.SupErrorCode.DATA_SEND_INVALID, "Coupon is expired");
         }
 
