@@ -11,7 +11,9 @@ public class GetTopSellingProductResponse {
     private String id;
     //    private String code;
     private String name;
+    private String description;
     private Long price;
+
     private String thumbnailUrl;
     private BranchProductStatus status;
     private RatingSummaryDto ratingSummary;
@@ -19,6 +21,7 @@ public class GetTopSellingProductResponse {
     public static GetTopSellingProductResponse fromProductEntity(ProductEntity entity, RatingSummaryQueryDto ratingSummaryQueryDto, String branchId) {
         GetTopSellingProductResponse data = new GetTopSellingProductResponse();
         data.setId(entity.getId());
+        data.setDescription(entity.getDescription());
         data.setName(entity.getName());
         data.setPrice(entity.getPrice());
         data.setThumbnailUrl(entity.getImage().getThumbnailUrl());
