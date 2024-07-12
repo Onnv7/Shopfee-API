@@ -819,7 +819,7 @@ public class CouponService implements ICouponService {
                     else if (condition.getType() == ConditionType.MIN_PURCHASE) {
                         MinPurchaseConditionEntity minPurchaseCondition = condition.getMinPurchaseCondition();
                         GetCouponOptionsResponse.MinPurchaseCondition minPurchaseConditionData = new GetCouponOptionsResponse.MinPurchaseCondition();
-                        if (body.getTotalItemPrice() < minPurchaseCondition.getValue()) {
+                        if (body.getTotalPayment() < minPurchaseCondition.getValue()) {
                             // invalid
                             minPurchaseConditionData.setValue(minPurchaseCondition.getValue());
                             couponCard.setMinPurchaseCondition(minPurchaseConditionData);
@@ -1033,15 +1033,17 @@ public class CouponService implements ICouponService {
                 reward.setProductRewardList(CheckCouponInCartResponse.fromProductRewardEntityList(couponEntity.getProductRewardList()));
             }
             if (couponEntity.getCouponType() == CouponType.PRODUCT) {
+                List<CheckCouponInCartResponse.SubjectInformation> subjectList = new ArrayList<>();
                 for (String subjectId : subjectIdListInCart) {
                     if (productIdListInCart.contains(subjectId)) {
                         ProductEntity productEntity = productRepository.findById(subjectId)
                                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.PRODUCT_NOT_FOUND, ErrorConstant.NOT_FOUND + subjectId));
 
                         CheckCouponInCartResponse.SubjectInformation subjectInformation = new CheckCouponInCartResponse.SubjectInformation(subjectId, productEntity.getName());
-                        reward.setSubjectInformation(subjectInformation);
+                        subjectList.add(subjectInformation);
                     }
                 }
+                reward.setSubjectInformationList(subjectList);
             }
             couponResult.setReward(reward);
         } else {
