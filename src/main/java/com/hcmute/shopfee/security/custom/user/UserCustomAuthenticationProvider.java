@@ -1,5 +1,7 @@
 package com.hcmute.shopfee.security.custom.user;
 
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,7 @@ public class UserCustomAuthenticationProvider implements AuthenticationProvider
             return new UserUsernamePasswordAuthenticationToken(userPrincipal, userPrincipal.getPassword(), userPrincipal.getAuthorities());
         }
         else {
-            throw new BadCredentialsException("Authentication failed");
+            throw new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG);
         }
     }
 

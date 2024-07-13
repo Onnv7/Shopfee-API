@@ -8,7 +8,7 @@ public class ErrorConstant {
     public static final String DATA_SEND_INVALID = "Data submitted is invalid";
     public static final String ACTING_INCORRECTLY = "Acting incorrectly according to established procedures";
     public static final String FORBIDDEN = "Access is denied";
-    public static final String UNAUTHORIZED = "Client is not authenticated";
+    public static final String UNAUTHORIZED = "Credentials are not authorized";
     public static final String SERVER_ERROR = "Server error";
     public static final String OTHER_ERROR = "Other error";
 

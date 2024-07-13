@@ -33,6 +33,7 @@ public class CouponUsedEntity {
     private String code;
 
     @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
     private CouponType type;
 
     @ManyToOne

@@ -1,5 +1,7 @@
 package com.hcmute.shopfee.security.custom.employee;
 
+import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
+import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.security.UserPrincipal;
 import com.hcmute.shopfee.security.custom.user.UserUsernamePasswordAuthenticationToken;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +36,7 @@ public class EmployeeCustomAuthenticationProvider implements AuthenticationProvi
             return new EmployeeUsernamePasswordAuthenticationToken(emplPrincipal, emplPrincipal.getPassword(), emplPrincipal.getAuthorities());
         }
         else {
-            throw new BadCredentialsException("Authentication failed");
+            throw new ShopfeeException(ShopfeeErrorCode.CREDENTIAL_WRONG);
         }
     }
 
