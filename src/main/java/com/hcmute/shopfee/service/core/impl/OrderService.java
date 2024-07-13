@@ -465,14 +465,14 @@ public class OrderService implements IOrderService {
     }
 
 
-    private CouponUsedEntity createCouponUsedEntity(String couponCode) {
+    private CouponUsedEntity createCouponUsedEntity(String couponCode, CouponType couponType) {
         CouponEntity coupon = couponRepository.findByCodeAndIsDeletedFalse(couponCode)
                 .orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.COUPON_NOT_FOUND, ErrorConstant.NOT_FOUND_WITH_INPUT + couponCode));
 
         CouponUsedEntity couponUsed = CouponUsedEntity.builder()
                 .code(couponCode)
                 .coupon(coupon)
-                .type(CouponType.ORDER)
+                .type(couponType)
                 .build();
 
         if (coupon.getRewardType() == CouponRewardType.MONEY) {
@@ -499,7 +499,7 @@ public class OrderService implements IOrderService {
         List<CouponUsedEntity> couponUsedList = new ArrayList<>();
 
         if (orderCouponCode != null) {
-            CouponUsedEntity couponUsed = createCouponUsedEntity(orderCouponCode);
+            CouponUsedEntity couponUsed = createCouponUsedEntity(orderCouponCode, CouponType.ORDER);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
             if (couponUsed.getRewardType() == CouponRewardType.MONEY) {
@@ -513,7 +513,7 @@ public class OrderService implements IOrderService {
             }
         }
         if (shippingCouponCode != null) {
-            CouponUsedEntity couponUsed = createCouponUsedEntity(shippingCouponCode);
+            CouponUsedEntity couponUsed = createCouponUsedEntity(shippingCouponCode, CouponType.SHIPPING);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
             if (couponUsed.getRewardType() == CouponRewardType.MONEY) {
@@ -528,7 +528,7 @@ public class OrderService implements IOrderService {
             }
         }
         if (productCouponCode != null) {
-            CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode);
+            CouponUsedEntity couponUsed = createCouponUsedEntity(productCouponCode, CouponType.PRODUCT);
             couponUsed.setOrderBill(orderBill);
             couponUsedList.add(couponUsed);
         }
