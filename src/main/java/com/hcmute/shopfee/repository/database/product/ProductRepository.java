@@ -35,8 +35,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
             from product p
             where p.category_id regexp ?2
                and p.status regexp ?3
-               and p.name regexp ?1
-               and p.id regexp ?1
+               and (p.name regexp ?1 or p.id regexp ?1)
             """, nativeQuery = true)
     Page<ProductEntity> getProductList(String keyRegex, String categoryIdRegex, String productStatusRegex, Pageable pageable);
     @Query(value = """
@@ -47,8 +46,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
                 and bp.status regexp ?5
                 and p.category_id regexp ?3
                 and p.status regexp ?4
-                and p.name regexp ?2
-                and p.id regexp ?2
+                and (p.name regexp ?2 or p.id regexp ?2)
             """, nativeQuery = true)
     Page<ProductEntity> getProductListByBranch(String branchId, String keyRegex, String categoryIdRegex, String productStatusRegex,  String branchProductStatusRegex, Pageable pageable);
 
