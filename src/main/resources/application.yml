@@ -140,6 +140,7 @@ zalo_pay:
   key1: ${ZALO_PAY_KEY_1}
   key2: ${ZALO_PAY_KEY_2}
   callback_url: ${ZALO_PAY_CALLBACK_URL}
+  redirect_url: ${ZALO_PAY_REDIRECT_URL}
 
 recommender:
   url: ${RECOMMEND_HOST}:${RECOMMEND_PORT}

@@ -41,7 +41,7 @@ public class OrderZaloAPI {
             put("description", "Shopfee - Payment for the order");
             put("bank_code", "");
             put("item", "[]");
-            put("embed_data", "{}");
+            put("embed_data", String.format("{\"redirecturl\":\"%s\"}", zaloPay.getRedirectUrl() != null ? zaloPay.getRedirectUrl() : ""));
             put("callback_url", zaloPay.getCallbackUrl() != null ? zaloPay.getCallbackUrl() : "");
         }};
 

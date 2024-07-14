@@ -17,8 +17,11 @@ public class ZaloPayConfig {
     @Value("${zalo_pay.callback_url}")
     private String CALLBACK_URL;
 
+    @Value("${zalo_pay.redirect_url}")
+    private String REDIRECT_URL;
+
     @Bean
     public ZaloPay zaloPay() {
-        return new ZaloPay(CALLBACK_URL, APP_ID, KEY1, KEY2);
+        return new ZaloPay(REDIRECT_URL, CALLBACK_URL, APP_ID, KEY1, KEY2);
     }
 }

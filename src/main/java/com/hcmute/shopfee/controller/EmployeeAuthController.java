@@ -54,7 +54,7 @@ public class EmployeeAuthController {
     @PostMapping(path = POST_EMPLOYEE_AUTH_LOGOUT_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_ADMIN_MANAGER_WAITER)
     public ResponseEntity<ResponseAPI<?>> logoutEmployee(@RequestBody @Valid EmployeeLogoutRequest body,
-                                                         @CookieValue(name = "refreshToken", required = true) String refreshToken) {
+                                                         @CookieValue(name = "refreshToken", required = false) String refreshToken) {
 
         employeeAuthService.employeeLogout(body, refreshToken);
 

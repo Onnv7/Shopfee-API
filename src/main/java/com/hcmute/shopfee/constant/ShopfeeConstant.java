@@ -18,7 +18,7 @@ public class ShopfeeConstant {
     public static final int ORDER_BOOM_COUNT_LIMIT = 3;
     public static final int HOURS_REQUEST_REFUND = 3;
     public static final int TIMEOUT_REFUSE_ORDER_MINUTES = 30;
-    public static final int ACCESS_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
+    public static final int ACCESS_TOKEN_EXPIRE_MINUTES_TIME = 15;
     public static final int REFRESH_TOKEN_EXPIRE_MINUTES_TIME = 60 * 24 * 7;
     public static final int TIMEOUT_VNPAY_TRANSACTION_MINUTES = 17;
     public static final int TIMEOUT_ZALO_TRANSACTION_MINUTES = 15;

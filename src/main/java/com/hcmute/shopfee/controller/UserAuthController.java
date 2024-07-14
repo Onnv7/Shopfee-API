@@ -100,7 +100,7 @@ public class UserAuthController {
     @Operation(summary = USER_AUTH_LOGOUT_SUM)
     @PostMapping(path = POST_AUTH_USER_LOGOUT_SUB_PATH)
     @PreAuthorize(SecurityConstant.ROLE_USER)
-    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = true) String refreshToken,
+    public ResponseEntity<ResponseAPI<?>> logoutUser(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                                      @RequestBody @Valid UserLogoutRequest body) {
         userAuthService.logoutUser(body, refreshToken);
 

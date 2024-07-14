@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class ZaloPay {
     private final String CALLBACK_URL;
+    private final String REDIRECT_URL;
     private final String APP_ID;
     private final String KEY1;
     private final String KEY2;
@@ -16,6 +17,9 @@ public class ZaloPay {
     private final RefundZaloAPI refundZaloAPI;
     public String getCallbackUrl() {
         return CALLBACK_URL;
+    }
+    public String getRedirectUrl() {
+        return REDIRECT_URL;
     }
 
     public String getAppId() {
@@ -30,7 +34,8 @@ public class ZaloPay {
         return KEY2;
     }
 
-    public ZaloPay(String CALLBACK_URL, String APP_ID, String KEY1, String KEY2) {
+    public ZaloPay(String REDIRECT_URL, String CALLBACK_URL, String APP_ID, String KEY1, String KEY2) {
+        this.REDIRECT_URL = REDIRECT_URL;
         this.CALLBACK_URL = CALLBACK_URL;
         this.APP_ID = APP_ID;
         this.KEY1 = KEY1;

@@ -75,10 +75,10 @@ services:
       - 5000:5000
   spring-app:
     container_name: spring-app
-#    build:
-#      context: .
-#      dockerfile: ./Dockerfile
-    image: on611/shopfee-api:1.0.4
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+#    image: on611/shopfee-api:1.0.5
     ports:
       - 7777:8080
     depends_on:
