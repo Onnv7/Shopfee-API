@@ -48,6 +48,7 @@ public class ErrorConstant {
     public static final String NOTIFICATION_NOT_FOUND = "Notification data not found";
     public static final String BLOG_NOT_FOUND = "Blog data not found";
     public static final String ADD_MORE_5_ADDRESS = "Do not add more than 5 addresses";
+    public static final String CANT_IMPORT = "The imported file is not in the correct format";
 
     // dev message
     public static final String NOT_FOUND_WITH_INPUT = "Not found with input ";

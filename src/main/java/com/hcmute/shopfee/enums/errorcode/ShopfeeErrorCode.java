@@ -41,6 +41,7 @@ public enum ShopfeeErrorCode {
     // =======================================================================
     IMAGE_INVALID(1301, ErrorConstant.IMAGE_INVALID, SupErrorCode.DATA_SEND_INVALID),
     COUPON_CODE_EXISTED(1302, ErrorConstant.COUPON_CODE_EXISTED, SupErrorCode.DATA_SEND_INVALID),
+    CANT_IMPORT(1303, ErrorConstant.CANT_IMPORT, SupErrorCode.DATA_SEND_INVALID),
     // =======================================================================
     ADD_MORE_5_ADDRESS(1401, ErrorConstant.ADD_MORE_5_ADDRESS, SupErrorCode.ACTING_INCORRECTLY);
     private final int code;

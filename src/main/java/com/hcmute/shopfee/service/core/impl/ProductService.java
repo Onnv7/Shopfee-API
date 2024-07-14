@@ -885,6 +885,8 @@ public class ProductService implements IProductService {
             } else {
                 if (!hasError) {
                     productEntityList = productRepository.saveAll(productValidList);
+                } else {
+                    throw new ShopfeeException(ShopfeeErrorCode.CANT_IMPORT);
                 }
             }
             saveProductStatusByBranch(productEntityList);
@@ -1032,6 +1034,8 @@ public class ProductService implements IProductService {
             } else {
                 if (!hasError) {
                     productEntityList = productRepository.saveAll(productValidList);
+                } else {
+                    throw new ShopfeeException(ShopfeeErrorCode.CANT_IMPORT);
                 }
             }
             saveProductStatusByBranch(productEntityList);
