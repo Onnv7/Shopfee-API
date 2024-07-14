@@ -3,6 +3,7 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.entity.sql.database.payment.VNPayEntity;
+import com.hcmute.shopfee.enums.OrderType;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
@@ -111,8 +112,9 @@ public class TransactionService implements ITransactionService {
                 transaction.setStatus(TransactionStatus.UNPAID);
             }
         }
+        String orderType  = orderBill.getOrderType() == OrderType.ONSITE ? ShopfeeConstant.ONSITE_ORDER_TITLE_MSG : ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG;
         if(isSuccess && transaction.getPaymentType() != PaymentType.CASHING) {
-            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), ShopfeeConstant.NEW_ORDER_MSG + user.getId());
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, orderType, orderBill.getId()));
             userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
         // Cập nhật kết quả từ vnpay vào database
