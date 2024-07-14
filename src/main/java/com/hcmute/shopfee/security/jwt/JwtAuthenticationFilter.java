@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String uri = request.getRequestURI();
-            if(uri.equals("/api/callback/dialogflow")) {
+            if(uri.equals("/api/callback/dialogflow") || uri.equals("/api/auth/employee/refresh-token") || uri.equals("/api/auth/user/refresh-token")) {
                 filterChain.doFilter(request, response);
                 return;
             }

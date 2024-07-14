@@ -80,6 +80,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         // set route sẽ ăn từ trên xuống (ưu tiên cái đầu tiên)
         http
                 .cors(Customizer.withDefaults())

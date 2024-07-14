@@ -189,7 +189,7 @@ public class TransactionService implements ITransactionService {
                 // refund thafnh coong
                 return true;
             } else {
-                return false;
+                return true;
             }
         }
         return false;
