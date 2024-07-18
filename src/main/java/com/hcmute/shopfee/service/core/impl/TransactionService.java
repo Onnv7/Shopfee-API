@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.hcmute.shopfee.constant.ShopfeeConstant.REFUND_COIN_ORDER;
@@ -114,7 +115,9 @@ public class TransactionService implements ITransactionService {
         }
         String orderType  = orderBill.getOrderType() == OrderType.ONSITE ? ShopfeeConstant.ONSITE_ORDER_TITLE_MSG : ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG;
         if(isSuccess && transaction.getPaymentType() != PaymentType.CASHING) {
-            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, orderType, orderBill.getId()));
+            Map<String, String> data = new HashMap<String, String>();
+            data.put("order_id", orderBill.getId());
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, orderType, orderBill.getId()), data);
             userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
         // Cập nhật kết quả từ vnpay vào database

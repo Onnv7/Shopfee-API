@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class OrderStatusMsgData {
     private String clientId;
     private String title;
     private String body;
+    private Map<String, String> data;
 }

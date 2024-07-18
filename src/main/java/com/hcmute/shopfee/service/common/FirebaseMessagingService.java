@@ -29,6 +29,7 @@ public class FirebaseMessagingService {
         Message message = Message.builder()
                 .setTopic(msg.getBranchId())
                 .setNotification(notification)
+                .putAllData(msg.getData())
                 .build();
         try {
             firebaseMessaging.send(message);
@@ -45,6 +46,7 @@ public class FirebaseMessagingService {
         for(UserFCMTokenEntity entity: userFCMTokenEntityList) {
             Message message = Message.builder()
                     .setToken(entity.getToken())
+                    .putAllData(msg.getData())
                     .setNotification(notification)
                     .build();
             try {

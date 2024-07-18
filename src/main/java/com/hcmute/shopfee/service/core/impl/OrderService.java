@@ -664,7 +664,10 @@ public class OrderService implements IOrderService {
         schedulerService.setAutoCancelOrder(orderBill);
 
         if (transaction.getPaymentType() == PaymentType.CASHING) {
-            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG, orderBill.getId()));
+            Map<String, String> data = new HashMap<String, String>();
+            data.put("order_id", orderBill.getId());
+
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.SHIPPING_ORDER_TITLE_MSG, orderBill.getId()), data);
             userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
 //        throw new RuntimeException();
@@ -791,7 +794,10 @@ public class OrderService implements IOrderService {
         schedulerService.setAutoCancelOrder(orderBill);
 
         if (transaction.getPaymentType() == PaymentType.CASHING) {
-            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.ONSITE_ORDER_TITLE_MSG, orderBill.getId()));
+
+            Map<String, String> data = new HashMap<String, String>();
+            data.put("order_id", orderBill.getId());
+            NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), String.format(ShopfeeConstant.NEW_ORDER_MSG, ShopfeeConstant.ONSITE_ORDER_TITLE_MSG, orderBill.getId()), data);
             userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
         }
         return resData;
@@ -975,10 +981,14 @@ public class OrderService implements IOrderService {
             }
         }
 
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("order_id", orderId);
+
         OrderStatusMsgData message = OrderStatusMsgData.builder()
                 .clientId(orderBill.getUser().getId())
                 .title(ShopfeeConstant.USER_NOTI_TITLE_MSG)
                 .body(MessageFormat.format(body.getEvent().getNotificationMsg(), orderId, employeeId))
+                .data(data)
                 .build();
 
         employeeNotificationKafkaPublisher.sendNotificationToUserId(message);
@@ -1005,7 +1015,9 @@ public class OrderService implements IOrderService {
         orderESService.upsertOrder(orderBill);
 
 
-        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("order_id", orderBill.getId());
+        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId(), data);
         userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
@@ -1027,7 +1039,9 @@ public class OrderService implements IOrderService {
         OrderBillEntity updatedOrder = orderBillRepository.save(orderBill);
         orderESService.upsertOrder(updatedOrder);
 
-        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId());
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("order_id", orderBill.getId());
+        NewOrderMsgData notificationDto = new NewOrderMsgData(orderBill.getBranch().getId(), "A new cancellation request", "From customer " + user.getId(), data);
         userNotificationKafkaPublisher.sendNotificationToBranch(notificationDto);
     }
 
