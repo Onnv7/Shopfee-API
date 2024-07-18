@@ -140,6 +140,7 @@ public class BranchService implements IBranchService {
             }
             if(haveFullFillItem) {
                 branchValid = branchDistanceDto.getBranch();
+                break;
             }
         }
 
