@@ -1,7 +1,10 @@
 package com.hcmute.shopfee.entity.sql.database.blog;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
 import com.hcmute.shopfee.enums.BlogStatus;
 import jakarta.persistence.*;
@@ -24,12 +27,13 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class BlogEntity {
     @Id
-    @GenericGenerator(name = "blog_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "BLG"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
+    @GenericGenerator(name = "blog_id", type = SeqIdentifierGenerator.class, parameters = {
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "BlogEntity"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "BLG"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
     })
     @GeneratedValue(generator = "blog_id")
+    @Column(length = 7)
     private String id;
 
     @Enumerated(EnumType.STRING)
@@ -56,6 +60,11 @@ public class BlogEntity {
 
     @Column(name = "is_deleted",  columnDefinition = "BOOLEAN DEFAULT false", nullable = false)
     private boolean isDeleted;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = false)
+    @JsonBackReference
+    private EmployeeEntity employee;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

@@ -19,6 +19,7 @@ public class ItemToppingEntity {
     @Id
     @GenericGenerator(name = "order_event_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "order_event_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "name", nullable = false)

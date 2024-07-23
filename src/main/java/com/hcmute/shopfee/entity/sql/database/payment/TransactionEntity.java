@@ -28,6 +28,7 @@ public class TransactionEntity {
     @Id
     @GenericGenerator(name = "transaction_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "transaction_id")
+    @Column(length = 16)
 //    @Column(name = "transaction_id", nullable = false, updatable = false)
     private String id;
 

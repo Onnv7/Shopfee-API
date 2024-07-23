@@ -26,6 +26,7 @@ public class CouponConditionEntity {
     @Id
     @GenericGenerator(name = "coupon_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_condition_id")
+    @Column(length = 16)
     private String id;
 
     @Enumerated(EnumType.STRING)

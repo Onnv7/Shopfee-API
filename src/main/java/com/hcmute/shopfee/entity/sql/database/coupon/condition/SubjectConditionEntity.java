@@ -19,6 +19,7 @@ public class SubjectConditionEntity {
     @Id
     @GenericGenerator(name = "subject_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "subject_condition_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "object_id", nullable = false)

@@ -1,8 +1,8 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.admin;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.CategoryStatus;
 import jakarta.persistence.*;
@@ -25,12 +25,13 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class CategoryEntity {
     @Id
-    @GenericGenerator(name = "category_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "C"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%02d")
+    @GenericGenerator(name = "category_id", type = SeqIdentifierGenerator.class, parameters = {
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "CategoryEntity"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "C"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%02d")
     })
     @GeneratedValue(generator = "category_id")
+    @Column(length = 3)
     private String id;
 
     @Column(nullable = false)

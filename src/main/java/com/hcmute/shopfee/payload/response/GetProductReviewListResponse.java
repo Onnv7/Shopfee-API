@@ -1,10 +1,9 @@
 package com.hcmute.shopfee.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
 import com.hcmute.shopfee.enums.ReviewInteraction;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Date;

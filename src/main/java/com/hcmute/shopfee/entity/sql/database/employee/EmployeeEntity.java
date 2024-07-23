@@ -1,12 +1,14 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.employee;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.admin.BannerEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.blog.BlogEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
-import com.hcmute.shopfee.enums.UserRole;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Parameter;
 import lombok.*;
@@ -17,9 +19,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 
 @Entity
 @Table(name = "employee")
@@ -32,12 +31,13 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 public class EmployeeEntity {
     @Id
 //    @GenericGenerator(name = "employee_id", type = IdGenerator.class)
-    @GenericGenerator(name = "employee_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "E"),
-            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d")
+    @GenericGenerator(name = "employee_id", type = SeqIdentifierGenerator.class, parameters = {
+            @Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "E"),
+            @Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%05d"),
+            @Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "EmployeeEntity")
     })
     @GeneratedValue(generator = "employee_id")
+    @Column(length = 6)
     private String id;
 
     @Column(unique = true, nullable = false)
@@ -94,6 +94,14 @@ public class EmployeeEntity {
     @OneToMany(mappedBy = "employee")
     @JsonManagedReference
     private List<EmployeeFCMTokenEntity> employeeFcmTokenList;
+
+    @OneToMany(mappedBy = "employee")
+    @JsonManagedReference
+    private List<BannerEntity> bannerList;
+
+    @OneToMany(mappedBy = "employee")
+    @JsonManagedReference
+    private List<BlogEntity> blogList;
 
 
     public String getFullName() {

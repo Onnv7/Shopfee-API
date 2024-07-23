@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.employee;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -18,6 +18,7 @@ public class EmployeeFCMTokenEntity {
     @Id
     @GenericGenerator(name = "fcm_token_employee_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "fcm_token_employee_id")
+    @Column(length = 16)
     private String id;
 
     @ManyToOne

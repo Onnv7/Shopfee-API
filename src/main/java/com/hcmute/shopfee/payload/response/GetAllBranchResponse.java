@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.payload.response;
 
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
 import lombok.Data;
 

@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.dto.common;
 
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
 import lombok.Data;
 
 @Data

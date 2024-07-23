@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.payload.response;
 
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.UserStatus;
 import lombok.Data;

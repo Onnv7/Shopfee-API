@@ -20,6 +20,7 @@ public class UsageConditionEntity {
     @Id
     @GenericGenerator(name = "usage_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "usage_condition_id")
+    @Column(length = 16)
     private String id;
 
     @Enumerated(EnumType.STRING)

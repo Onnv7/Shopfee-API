@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.command;
 
 
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;

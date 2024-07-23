@@ -20,6 +20,7 @@ public class SystemNotificationEntity {
     @Id
     @GenericGenerator(name = "system_notification_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "system_notification_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "title", nullable = false)

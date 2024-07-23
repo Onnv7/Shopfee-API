@@ -1,6 +1,8 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.user;
 
-import com.hcmute.shopfee.enums.BannerStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
+import com.hcmute.shopfee.enums.ActorType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -13,34 +15,34 @@ import java.util.Date;
 import com.hcmute.shopfee.entity.sql.database.identifier.RandomTimeGenerator;
 
 @Entity
-@Table(name = "banner")
+@Table(name = "coin_history")
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class BannerEntity {
+public class CoinHistoryEntity {
     @Id
-    @GenericGenerator(name = "banner_id", type = RandomTimeGenerator.class)
-    @GeneratedValue(generator = "banner_id")
+    @GenericGenerator(name = "coin_history_id", type = RandomTimeGenerator.class)
+    @GeneratedValue(generator = "coin_history_id")
+    @Column(length = 16)
     private String id;
 
-    @Column(unique = true)
-    private String name;
+    @Column(name = "coin", nullable = false)
+    private Long coin;
 
-    @Column(unique = true, name = "cloudinary_image_id", nullable = false)
-    private String cloudinaryImageId;
-
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
+    @Column(name = "description", nullable = false)
+    private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private BannerStatus status;
+    @Column(name = "actor", nullable = false)
+    private ActorType actor;
 
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private boolean isDeleted;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+    private UserEntity user;
 
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -51,4 +53,6 @@ public class BannerEntity {
     @LastModifiedDate
     @Column(name = "updated_at")
     private Date updatedAt;
+
+
 }

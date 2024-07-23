@@ -19,6 +19,7 @@ public class MinPurchaseConditionEntity {
     @Id
     @GenericGenerator(name = "min_purchase_order_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "min_purchase_order_condition_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "value", nullable = false)

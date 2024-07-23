@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
 import com.hcmute.shopfee.entity.sql.database.order.*;

@@ -1,5 +1,8 @@
 package com.hcmute.shopfee.entity.sql.database;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.hcmute.shopfee.entity.sql.database.admin.AlbumEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.enums.ConfirmationCodeStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,16 +27,23 @@ public class ConfirmationEntity {
     @Id
     @GenericGenerator(name = "confirmation_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "confirmation_id")
+    @Column(length = 16)
     private String id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private String code;
 
     @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ConfirmationCodeStatus status;
+
+    @OneToOne()
+    @JoinColumn(name = "user_id", nullable = true)
+    @JsonBackReference
+    private UserEntity user;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "expire_at")

@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.payload.response;
 
-import com.hcmute.shopfee.entity.sql.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.user.AddressEntity;
 import lombok.Data;
 
 import java.util.ArrayList;

@@ -3,6 +3,7 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.entity.sql.database.blog.BlogEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.enums.BlogStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
@@ -12,11 +13,13 @@ import com.hcmute.shopfee.payload.response.GetBlogDetailsByIdResponse;
 import com.hcmute.shopfee.payload.response.GetBlogDetailsListResponse;
 import com.hcmute.shopfee.payload.response.GetBlogViewByIdResponse;
 import com.hcmute.shopfee.payload.response.GetBlogViewListResponse;
+import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.repository.database.blog.BlogRepository;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
 import com.hcmute.shopfee.service.core.IBlogService;
 import com.hcmute.shopfee.utils.MediaUtils;
+import com.hcmute.shopfee.utils.SecurityUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogService implements IBlogService {
+    private final EmployeeRepository employeeRepository;
     private final BlogRepository blogRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
@@ -43,6 +47,8 @@ public class BlogService implements IBlogService {
     @Override
     public void createBlog(CreateBlogRequest body) {
         BlogEntity blogEntity = modelMapperService.mapClass(body, BlogEntity.class);
+        String adminId = SecurityUtils.getCurrentUserId();
+        EmployeeEntity admin = employeeRepository.findById(adminId).orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND));
 
         try {
             if(!MediaUtils.isValidImageFile(body.getImage())) {
@@ -52,6 +58,7 @@ public class BlogService implements IBlogService {
             blogEntity.setThumbnailUrl(cloudinaryService.getThumbnailUrlOfImage(imageResponse.getPublicId()));
             blogEntity.setImageUrl(imageResponse.getUrl());
             blogEntity.setCloudinaryImageId(imageResponse.getPublicId());
+            blogEntity.setEmployee(admin);
         } catch (IOException e) {
             log.error(Arrays.toString(e.getStackTrace()));
             throw new RuntimeException(e);

@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.service.elasticsearch;
 
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderEventEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;

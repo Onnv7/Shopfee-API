@@ -7,7 +7,7 @@ import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
 import com.hcmute.shopfee.dto.common.OrderItemDto;
 import com.hcmute.shopfee.payload.request.CreateBranchRequest;
 import com.hcmute.shopfee.payload.request.UpdateBranchRequest;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;

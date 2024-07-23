@@ -3,10 +3,10 @@ package com.hcmute.shopfee.entity.sql.database.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.CouponUsedEntity;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.payment.TransactionEntity;
 import com.hcmute.shopfee.enums.OrderType;
 import jakarta.persistence.*;
@@ -20,8 +20,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.Date;
 import java.util.List;
 
-import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
-
 @Entity
 @Table(name = "order_bill")
 @Builder
@@ -32,12 +30,13 @@ import static com.hcmute.shopfee.constant.EntityConstant.SEQUENCE_ID_GENERATOR;
 @EntityListeners(AuditingEntityListener.class)
 public class OrderBillEntity {
     @Id
-    @GenericGenerator(name = "order_bill_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "OB"),
-            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%09d")
+    @GenericGenerator(name = "order_bill_id", type = SeqIdentifierGenerator.class, parameters = {
+            @Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "OrderBillEntity"),
+            @Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "OB"),
+            @Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%09d")
     })
     @GeneratedValue(generator = "order_bill_id")
+    @Column(length = 10)
     private String id;
 
     @ManyToOne(cascade = {CascadeType.MERGE})

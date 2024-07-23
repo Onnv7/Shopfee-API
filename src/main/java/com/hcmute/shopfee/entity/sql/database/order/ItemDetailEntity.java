@@ -23,6 +23,7 @@ public class ItemDetailEntity {
     @Id
     @GenericGenerator(name = "item_detail_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "item_detail_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "quantity", nullable = false)

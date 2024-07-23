@@ -2,6 +2,10 @@ package com.hcmute.shopfee.service.core.impl;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.hcmute.shopfee.constant.ErrorConstant;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeFCMTokenEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserFCMTokenEntity;
 import com.hcmute.shopfee.payload.request.UpsertNotificationFCMRequest;
 import com.hcmute.shopfee.payload.request.UpsertEmployeeFcmTokenRequest;
 import com.hcmute.shopfee.payload.request.UpsertUserFcmTokenRequest;

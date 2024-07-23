@@ -25,6 +25,7 @@ public class OrderEventEntity {
     @Id
     @GenericGenerator(name = "order_event_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "order_event_id")
+    @Column(length = 16)
     private String id;
 
     @Enumerated(EnumType.STRING)
@@ -42,7 +43,7 @@ public class OrderEventEntity {
     private ActorType actor;
 
     @CreatedBy
-    @Column(name = "created_by")
+    @Column(name = "created_by", length = 9)
     private String createdBy;
 
     @Temporal(TemporalType.TIMESTAMP)

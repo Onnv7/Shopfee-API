@@ -27,9 +27,10 @@ public class CouponUsedEntity {
     @Id
     @GenericGenerator(name = "coupon_used_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_used_id")
+    @Column(length = 16)
     private String id;
 
-    @Column(name = "code", nullable = false)
+    @Column(name = "code", nullable = false, length = 20)
     private String code;
 
     @Column(name = "type", nullable = false)

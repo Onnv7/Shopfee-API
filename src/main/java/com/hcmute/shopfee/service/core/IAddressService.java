@@ -4,7 +4,7 @@ import com.hcmute.shopfee.payload.request.CreateAddressRequest;
 import com.hcmute.shopfee.payload.request.UpdateAddressRequest;
 import com.hcmute.shopfee.payload.response.GetAddressDetailsByIdResponse;
 import com.hcmute.shopfee.payload.response.GetAddressListByUserIdResponse;
-import com.hcmute.shopfee.entity.sql.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.user.AddressEntity;
 
 import java.util.List;
 

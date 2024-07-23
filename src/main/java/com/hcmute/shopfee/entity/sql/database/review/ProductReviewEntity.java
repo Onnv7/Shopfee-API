@@ -1,7 +1,6 @@
 package com.hcmute.shopfee.entity.sql.database.review;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +26,7 @@ public class ProductReviewEntity {
     @Id
     @GenericGenerator(name = "product_review_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "product_review_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "star", nullable = false, columnDefinition = "INT CHECK(star > 0 and star <= 5)")
@@ -41,7 +41,7 @@ public class ProductReviewEntity {
     private Date createdAt;
 
     @CreatedBy
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by", nullable = false, length = 9)
     private String createdBy;
 
     // =================================================

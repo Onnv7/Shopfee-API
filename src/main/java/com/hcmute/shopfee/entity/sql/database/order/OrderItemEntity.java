@@ -23,6 +23,7 @@ public class OrderItemEntity {
     @Id
     @GenericGenerator(name = "order_item_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "order_item_id")
+    @Column(length = 16)
     private String id;
 
     @ManyToOne

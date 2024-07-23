@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database;
 
-import com.hcmute.shopfee.entity.sql.database.CoinHistoryEntity;
+import com.hcmute.shopfee.entity.sql.database.user.CoinHistoryEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

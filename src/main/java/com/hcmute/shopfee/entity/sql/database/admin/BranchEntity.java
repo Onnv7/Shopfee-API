@@ -1,7 +1,8 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.admin;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
 import com.hcmute.shopfee.entity.sql.database.product.BranchProductEntity;
 import com.hcmute.shopfee.enums.BranchStatus;
@@ -27,12 +28,13 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class BranchEntity {
     @Id
-    @GenericGenerator(name = "branch_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "S"),
-            @org.hibernate.annotations.Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
+    @GenericGenerator(name = "branch_id", type = SeqIdentifierGenerator.class, parameters = {
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "BranchEntity"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "S"),
+            @org.hibernate.annotations.Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%03d")
     })
     @GeneratedValue(generator = "branch_id")
+    @Column(length = 4)
     private String id;
 
     @Column(name = "cloudinary_image_id", nullable = false)

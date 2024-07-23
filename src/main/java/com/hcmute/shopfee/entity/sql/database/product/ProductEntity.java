@@ -3,10 +3,11 @@ package com.hcmute.shopfee.entity.sql.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.*;
+import com.hcmute.shopfee.entity.sql.database.admin.AlbumEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.CategoryEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon.reward.ProductRewardEntity;
 import com.hcmute.shopfee.entity.sql.database.coupon_used.reward.ProductRewardReceivedEntity;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderItemEntity;
 import com.hcmute.shopfee.entity.sql.listener.ProductListener;
 import com.hcmute.shopfee.enums.ProductStatus;
@@ -34,12 +35,13 @@ import java.util.List;
 @EntityListeners({AuditingEntityListener.class, ProductListener.class})
 public class ProductEntity {
     @Id
-    @GenericGenerator(name = "product_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "P"),
-            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d")
+    @GenericGenerator(name = "product_id", type = SeqIdentifierGenerator.class, parameters = {
+            @Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "ProductEntity"),
+            @Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "P"),
+            @Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d")
     })
     @GeneratedValue(generator = "product_id", strategy = GenerationType.SEQUENCE)
+    @Column(length = 5)
     private String id;
 
     @Column(nullable = false)

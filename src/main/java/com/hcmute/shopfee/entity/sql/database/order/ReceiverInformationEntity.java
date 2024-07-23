@@ -1,8 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.order;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.AddressEntity;
+import com.hcmute.shopfee.entity.sql.database.user.AddressEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -22,6 +21,7 @@ public class ReceiverInformationEntity {
     @Id
     @GenericGenerator(name = "receiver_information_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "receiver_information_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "address")

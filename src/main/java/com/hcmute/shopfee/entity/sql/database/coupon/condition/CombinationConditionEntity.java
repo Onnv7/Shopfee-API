@@ -20,6 +20,7 @@ public class CombinationConditionEntity {
     @Id
     @GenericGenerator(name = "combination_condition_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "combination_condition_id")
+    @Column(length = 16)
     private String id;
 
     @Enumerated(EnumType.STRING)

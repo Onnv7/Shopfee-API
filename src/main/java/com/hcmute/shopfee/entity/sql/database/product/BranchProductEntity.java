@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.product;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.database.BranchEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BranchEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.BranchProductId;
 import com.hcmute.shopfee.enums.BranchProductStatus;
 import jakarta.persistence.*;

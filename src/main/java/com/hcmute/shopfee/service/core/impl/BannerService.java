@@ -3,19 +3,22 @@ package com.hcmute.shopfee.service.core.impl;
 import com.hcmute.shopfee.constant.CloudinaryConstant;
 import com.hcmute.shopfee.constant.ErrorConstant;
 import com.hcmute.shopfee.dto.common.CloudinaryUploadResponse;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.payload.request.CreateBannerRequest;
 import com.hcmute.shopfee.payload.request.UpdateBannerRequest;
 import com.hcmute.shopfee.payload.response.GetBannerDetailResponse;
 import com.hcmute.shopfee.payload.response.GetBannerListResponse;
 import com.hcmute.shopfee.payload.response.GetVisibleBannerListResponse;
-import com.hcmute.shopfee.entity.sql.database.BannerEntity;
+import com.hcmute.shopfee.entity.sql.database.admin.BannerEntity;
 import com.hcmute.shopfee.enums.BannerStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;
 import com.hcmute.shopfee.model.ShopfeeException;
 import com.hcmute.shopfee.repository.database.BannerRepository;
+import com.hcmute.shopfee.repository.database.EmployeeRepository;
 import com.hcmute.shopfee.service.core.IBannerService;
 import com.hcmute.shopfee.service.common.CloudinaryService;
 import com.hcmute.shopfee.service.common.ModelMapperService;
+import com.hcmute.shopfee.utils.SecurityUtils;
 import com.hcmute.shopfee.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,11 +32,13 @@ public class BannerService implements IBannerService {
     private final BannerRepository bannerRepository;
     private final ModelMapperService modelMapperService;
     private final CloudinaryService cloudinaryService;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public void createBanner(CreateBannerRequest body) {
         BannerEntity banner = modelMapperService.mapClass(body, BannerEntity.class);
-
+        String adminId = SecurityUtils.getCurrentUserId();
+        EmployeeEntity admin = employeeRepository.findById(adminId).orElseThrow(() -> new ShopfeeException(ShopfeeErrorCode.EMPLOYEE_NOT_FOUND));
         try {
             CloudinaryUploadResponse bannerImage = cloudinaryService.uploadFileToFolder(
                     CloudinaryConstant.BANNER_PATH,
@@ -45,6 +50,7 @@ public class BannerService implements IBannerService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        banner.setEmployee(admin);
         banner.setDeleted(false);
         banner.setStatus(BannerStatus.VISIBLE);
         bannerRepository.save(banner);

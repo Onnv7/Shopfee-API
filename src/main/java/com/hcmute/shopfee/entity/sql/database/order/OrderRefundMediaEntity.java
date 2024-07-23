@@ -24,6 +24,7 @@ public class OrderRefundMediaEntity {
     @Id
     @GenericGenerator(name = "order_refund_media_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "order_refund_media_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "media_url")

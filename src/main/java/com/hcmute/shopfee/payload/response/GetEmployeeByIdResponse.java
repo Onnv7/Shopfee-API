@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.Gender;
 import lombok.Data;

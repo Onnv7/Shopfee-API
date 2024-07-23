@@ -31,9 +31,10 @@ public class CouponEntity {
     @Id
     @GenericGenerator(name = "coupon_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "coupon_id")
+    @Column(length = 16)
     private String id;
 
-    @Column(name = "code", nullable = false)
+    @Column(name = "code", nullable = false, length = 20)
     private String code;
 
     @Enumerated(EnumType.STRING)

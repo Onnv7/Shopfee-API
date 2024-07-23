@@ -5,7 +5,7 @@ import com.hcmute.shopfee.constant.ShopfeeConstant;
 import com.hcmute.shopfee.entity.sql.database.SystemNotificationEntity;
 import com.hcmute.shopfee.kafka.message.NewOrderMsgData;
 import com.hcmute.shopfee.kafka.message.OrderStatusMsgData;
-import com.hcmute.shopfee.entity.sql.database.UserFCMTokenEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserFCMTokenEntity;
 import com.hcmute.shopfee.repository.database.UserFCMTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

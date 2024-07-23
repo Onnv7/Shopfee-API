@@ -1,7 +1,7 @@
 package com.hcmute.shopfee.entity.sql.database.review;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.hcmute.shopfee.entity.sql.database.UserEntity;
+import com.hcmute.shopfee.entity.sql.database.user.UserEntity;
 import com.hcmute.shopfee.entity.sql.database.identifier.UserProductReviewInteractionID;
 import com.hcmute.shopfee.enums.ReviewInteraction;
 import jakarta.persistence.*;

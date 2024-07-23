@@ -1,9 +1,10 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.user;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.hcmute.shopfee.entity.sql.database.identifier.StringPrefixedSequenceGenerator;
+import com.hcmute.shopfee.entity.sql.database.ConfirmationEntity;
+import com.hcmute.shopfee.entity.sql.database.identifier.SeqIdentifierGenerator;
 import com.hcmute.shopfee.entity.sql.database.order.OrderBillEntity;
-import com.hcmute.shopfee.entity.sql.database.review.ProductReviewEntity;
+import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
 import com.hcmute.shopfee.enums.Gender;
 import com.hcmute.shopfee.enums.UserRole;
 import com.hcmute.shopfee.enums.UserStatus;
@@ -29,12 +30,13 @@ import java.util.List;
 public class UserEntity {
 //    @GenericGenerator(name = "user_id", type = IdGenerator.class)
     @Id
-    @GenericGenerator(name = "user_id", type = StringPrefixedSequenceGenerator.class, parameters = {
-            @Parameter(name = StringPrefixedSequenceGenerator.INCREMENT_PARAM, value = "1"),
-            @Parameter(name = StringPrefixedSequenceGenerator.VALUE_PREFIX_PARAMETER, value = "U"),
-            @Parameter(name = StringPrefixedSequenceGenerator.NUMBER_FORMAT_PARAMETER, value = "%08d")
+    @GenericGenerator(name = "user_id", type = SeqIdentifierGenerator.class, parameters = {
+            @Parameter(name = SeqIdentifierGenerator.ENTITY_NAME_PARAMETER, value = "UserEntity"),
+            @Parameter(name = SeqIdentifierGenerator.VALUE_PREFIX_PARAMETER, value = "U"),
+            @Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%08d")
     })
     @GeneratedValue(generator = "user_id")
+    @Column(length = 9)
     private String id;
 
     @Column(name = "avatar_id", unique = true)
@@ -98,6 +100,10 @@ public class UserEntity {
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<UserFCMTokenEntity> userFcmTokenList;
+
+    @OneToOne(mappedBy = "user")
+    @JsonManagedReference
+    private ConfirmationEntity confirmation;
 
     public String getFullName() {
         return firstName + " " + lastName;

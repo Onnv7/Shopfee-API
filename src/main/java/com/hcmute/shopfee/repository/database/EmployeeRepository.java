@@ -1,6 +1,6 @@
 package com.hcmute.shopfee.repository.database;
 
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +15,10 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, String
     Optional<EmployeeEntity> findByUsername(String username);
     Optional<EmployeeEntity> findByIdAndIsDeletedFalse(String username);
 
+    @Query(value = """
+            SELECT * FROM employee ORDER BY ID DESC LIMIT 1
+            """, nativeQuery = true)
+    Optional<EmployeeEntity> getTheLastEmployee();
     @Query(value = """
             select e.*, e.id as fakeColumns
             from employee e

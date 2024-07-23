@@ -8,7 +8,7 @@ import com.hcmute.shopfee.payload.response.GetEmployeeByIdResponse;
 import com.hcmute.shopfee.payload.response.GetEmployeeProfileByIdResponse;
 import com.hcmute.shopfee.payload.response.GetSaleStatisticTodayResponse;
 import com.hcmute.shopfee.dto.sql.GetEmployeeOrderStatisticDto;
-import com.hcmute.shopfee.entity.sql.database.EmployeeEntity;
+import com.hcmute.shopfee.entity.sql.database.employee.EmployeeEntity;
 import com.hcmute.shopfee.enums.EmployeeRole;
 import com.hcmute.shopfee.enums.EmployeeStatus;
 import com.hcmute.shopfee.enums.errorcode.ShopfeeErrorCode;

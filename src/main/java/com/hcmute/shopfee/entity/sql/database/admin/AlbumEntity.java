@@ -1,4 +1,4 @@
-package com.hcmute.shopfee.entity.sql.database;
+package com.hcmute.shopfee.entity.sql.database.admin;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hcmute.shopfee.entity.sql.database.product.ProductEntity;
@@ -26,6 +26,7 @@ public class AlbumEntity {
     @Id
     @GenericGenerator(name = "album_id", type = RandomTimeGenerator.class)
     @GeneratedValue(generator = "album_id")
+    @Column(length = 16)
     private String id;
 
     @Column(name = "image_url")
