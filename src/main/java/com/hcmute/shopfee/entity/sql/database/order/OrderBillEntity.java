@@ -36,7 +36,7 @@ public class OrderBillEntity {
             @Parameter(name = SeqIdentifierGenerator.NUMBER_FORMAT_PARAMETER, value = "%09d")
     })
     @GeneratedValue(generator = "order_bill_id")
-    @Column(length = 10)
+    @Column(length = 11)
     private String id;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
